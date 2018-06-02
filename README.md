@@ -1,17 +1,20 @@
 # Transphire
 
-cryo-EM on the fly processing pipeline
+Cryo-EM on the fly processing pipeline.
+
+If you have any questions contact:  
+markus.stabrin@mpi-dortmund.mpg.de
 
 ## External programs
 
 To enjoy the full functionaly of TranSPHIRE, install the following programs:
 
-IMOD 4.9: http://bio3d.colorado.edu/imod
-MotionCor2 1.0.0/1.0.5/1.1.0: http://msg.ucsf.edu/em/software/motioncor2.html
-SumMovie 1.0.2: http://grigoriefflab.janelia.org/unblur
-CTER 1.0: http://sphire.mpg.de
-CTFFIND 4.1.8/4.1.10: http://grigoriefflab.janelia.org/ctf
-Gctf 1.06,1.18: https://www.mrc-lmb.cam.ac.uk/kzhang
+IMOD 4.9: http://bio3d.colorado.edu/imod  
+MotionCor2 1.0.0/1.0.5/1.1.0: http://msg.ucsf.edu/em/software/motioncor2.html  
+SumMovie 1.0.2: http://grigoriefflab.janelia.org/unblur  
+CTER 1.0: http://sphire.mpg.de  
+CTFFIND 4.1.8/4.1.10: http://grigoriefflab.janelia.org/ctf  
+Gctf 1.06,1.18: https://www.mrc-lmb.cam.ac.uk/kzhang  
 
 ## Installation
 
