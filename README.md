@@ -22,6 +22,8 @@ TranSPHIRE needs an environment that includes Python version 3.6, QT version 5 a
 
 ### Installation using Anaconda
 
+https://www.anaconda.com/download/#linux
+
 Create a new virtual environment
 
 > conda create -n transphire python=3.6 pyqt=5
