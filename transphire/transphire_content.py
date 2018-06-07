@@ -251,6 +251,8 @@ def default_others():
     items = [
         ['Image', '', str, '', 'FILE'],
         ['Mount/umount needs sudo password?', ['True', 'False'], bool, '', 'COMBO'],
+        ['Project name pattern', '', str, '', 'PLAIN'],
+        ['Project name pattern example', '', str, '', 'PLAIN'],
         ]
     return items
 

@@ -17,6 +17,7 @@
 """
 import sys
 import os
+import re
 try:
     QT_VERSION = 4
     from PyQt4.QtGui import (
@@ -251,6 +252,20 @@ class MainWindow(QMainWindow):
         self.start_threads(content_pipeline=content_pipeline)
         postprocess_content = self.fill_content(content_gui=content_gui)
         self.postprocess_content(postprocess_content)
+
+        for content in content_gui:
+            if content['name'] == 'Status':
+                for entry in content['content']:
+                    for widget in entry:
+                        for key in widget:
+                            if key == 'Project name pattern':
+                                self.project_name_pattern = widget[key][0]
+                            elif key == 'Project name pattern example':
+                                self.project_name_pattern_example = widget[key][0]
+                            else:
+                                pass
+            else:
+                pass
 
         # Load settings saved in load_file
         if load_file is not None:
@@ -800,6 +815,21 @@ class MainWindow(QMainWindow):
                 name = line.split('\t')[0]
                 settings['user_{0}'.format(device_name)] = name
         settings['user_Later'] = None
+
+        if not re.match(
+                self.project_name_pattern,
+                settings['General']['Project name']
+                ):
+            self.enable(True)
+            tu.message(
+                'Project name needs to match pattern:\n{0}\n For example: {1}'.format(
+                    self.project_name_pattern,
+                    self.project_name_pattern_example
+                    )
+                )
+            return None
+        else:
+            pass
 
         # Project folder names
         settings['project_folder'] = os.path.join(

@@ -133,11 +133,9 @@ class StatusContainer(QWidget):
                         layout_v1.addWidget(self.content[name])
 
         # Add picture
-        picture = image
-
         pic_label = QLabel(self)
         pic_label.setObjectName('picture')
-        pic_label.setStyleSheet('border-image: url("{0}")'.format(picture))
+        pic_label.setStyleSheet('border-image: url("{0}")'.format(image))
         pic_label.setMinimumSize(100, 100)
 
         small_layout = QHBoxLayout()
