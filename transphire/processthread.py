@@ -1418,17 +1418,20 @@ class ProcessThread(QThread):
                             value_y = re.match('.*<Y>(.*)</Y>.*', lines).group(1)
                             value_z = re.match('.*<Z>(.*)</Z>.*', lines).group(1)
                             defocus = re.match('.*<Defocus>(.*)</Defocus>.*', lines).group(1)
+                            applied_defocus = re.match('.*<a:Key>AppliedDefocus</a:Key><a:Value .*>(.*)</a:Value>.*', lines).group(1)
                         except AttributeError:
                             pass
                         else:
                             entries.append(value_x)
                             entries.append(value_y)
                             entries.append(value_z)
+                            entries.append(applied_defocus)
                             entries.append(defocus)
                             if first_entry:
                                 first_entry.append('_pipeCoordX')
                                 first_entry.append('_pipeCoordY')
                                 first_entry.append('_pipeCoordZ')
+                                first_entry.append('_pipeAppliedDefocusMicroscope')
                                 first_entry.append('_pipeDefocusMicroscope')
                             else:
                                 pass
