@@ -427,7 +427,7 @@ def find_related_frames_to_jpg(frames_root, root_name, settings, queue_com, name
                     compare_name_frames,
                     settings['General']['Input extension']
                     ))
-                return frames, compare_name_meta
+                return frames, compare_name_frames, compare_name_meta
 
             else:
                 message = '\n'.join([
@@ -454,7 +454,7 @@ def find_related_frames_to_jpg(frames_root, root_name, settings, queue_com, name
                         settings['General']['Input extension']
                         )
                     ))
-                return frames, None
+                return frames, frames_root, root_name
 
             elif settings['General']['Camera'] == 'Falcon2' or \
                     settings['General']['Camera'] == 'Falcon3':
@@ -501,7 +501,7 @@ def find_related_frames_to_jpg(frames_root, root_name, settings, queue_com, name
                         settings['General']['Input extension']
                         ))
                 frames = [frame for frame in raw_frames if frames_re.match(frame) is not None]
-                return frames, compare_name_meta
+                return frames, compare_name_frames, compare_name_meta
 
             elif settings['General']['Camera'] == 'Falcon2' or \
                     settings['General']['Camera'] == 'Falcon3':
@@ -728,7 +728,7 @@ def get_copy_command_for_frames(settings, queue_com, name):
     raise IOError(message)
 
 
-def find_all_files(root_name, compare_name_meta, settings, queue_com, name):
+def find_all_files(root_name, compare_name_frames, compare_name_meta, settings, queue_com, name):
     """
     Find other files that relate to root_name.
 
@@ -743,11 +743,17 @@ def find_all_files(root_name, compare_name_meta, settings, queue_com, name):
     if settings['General']['Software'] == 'EPU 1.8':
 
         if settings['General']['Camera'] == 'K2':
-            return glob.glob('{0}.*'.format(root_name))
+            meta_files = glob.glob('{0}.*'.format(root_name))
+            frame_files = glob.glob('{0}*'.format(compare_name_frames))
+            meta_files.extend(frame_files)
+            return set(meta_files)
 
         elif settings['General']['Camera'] == 'Falcon2' or \
                 settings['General']['Camera'] == 'Falcon3':
-            return glob.glob('{0}*'.format(compare_name_meta))
+            meta_files = glob.glob('{0}.*'.format(compare_name_meta))
+            frame_files = glob.glob('{0}*'.format(compare_name_frames))
+            meta_files.extend(frame_files)
+            return set(meta_files)
 
         else:
             message = '\n'.join([
@@ -758,7 +764,10 @@ def find_all_files(root_name, compare_name_meta, settings, queue_com, name):
     elif settings['General']['Software'] == 'EPU 1.9':
 
         if settings['General']['Camera'] == 'K2':
-            return glob.glob('{0}*'.format(compare_name_meta))
+            meta_files = glob.glob('{0}*'.format(compare_name_meta))
+            frame_files = glob.glob('{0}*'.format(compare_name_frames))
+            meta_files.extend(frame_files)
+            return set(meta_files)
 
         elif settings['General']['Camera'] == 'Falcon2' or \
                 settings['General']['Camera'] == 'Falcon3':

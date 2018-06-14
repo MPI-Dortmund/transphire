@@ -1086,7 +1086,7 @@ class ProcessThread(QThread):
             self.settings['General']['Search path meta'],
             self.settings['General']['Search path frames'],
             )
-        frames, compare_name_meta = tus.find_related_frames_to_jpg(
+        frames, compare_name_frames, compare_name_meta = tus.find_related_frames_to_jpg(
             frames_root=frames_root,
             root_name=root_name,
             settings=self.settings,
@@ -1222,6 +1222,7 @@ class ProcessThread(QThread):
 
         all_files = tus.find_all_files(
             root_name=root_name,
+            compare_name_frames=compare_name_frames,
             compare_name_meta=compare_name_meta,
             settings=self.settings,
             queue_com=self.queue_com,
