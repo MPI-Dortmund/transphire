@@ -750,7 +750,7 @@ def find_all_files(root_name, compare_name_frames, compare_name_meta, settings, 
 
         elif settings['General']['Camera'] == 'Falcon2' or \
                 settings['General']['Camera'] == 'Falcon3':
-            meta_files = glob.glob('{0}.*'.format(compare_name_meta))
+            meta_files = glob.glob('{0}*'.format(compare_name_meta))
             frame_files = glob.glob('{0}*'.format(compare_name_frames))
             meta_files.extend(frame_files)
             return set(meta_files)
