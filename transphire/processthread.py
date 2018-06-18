@@ -588,6 +588,10 @@ class ProcessThread(QThread):
                 'method': self.run_ctf,
                 'lost_connect': 'full_transphire'
                 },
+            'Picking': {
+                'method': self.run_picking,
+                'lost_connect': 'full_transphire'
+                },
             'Compress': {
                 'method': self.run_compress,
                 'lost_connect': 'full_transphire'
@@ -1972,6 +1976,130 @@ class ProcessThread(QThread):
             self.add_to_queue(aim='Copy_backup', root_name=output_name_star)
         else:
             pass
+
+        # Add to queue
+        for aim in self.content_settings['aim']:
+            *compare, aim_name = aim.split(':')
+            var = True
+            for typ in compare:
+                name = typ.split('!')[-1]
+                if typ.startswith('!'):
+                    if self.settings['Copy'][name] == 'False':
+                        continue
+                    else:
+                        var = False
+                        break
+                else:
+                    if not self.settings['Copy'][name] == 'False':
+                        continue
+                    else:
+                        var = False
+                        break
+            if var:
+                if '!Compress data' in compare or 'Compress data' in compare:
+                    self.add_to_queue(aim=aim_name, root_name=file_input)
+                else:
+                    for log_file in copied_log_files:
+                        self.add_to_queue(aim=aim_name, root_name=log_file)
+            else:
+                pass
+
+        # Plot CTF information
+        self.queue_com['plot_ctf'].put(True)
+
+    def run_picking(self, root_name):
+        """
+        Run picking particles.
+
+        root_name - name of the file to process.
+
+        Returns:
+        None
+        """
+
+        # New name
+        file_name = os.path.basename(root_name.splitext()[0])
+        new_name = os.path.join(
+            self.settings['picking_folder'],
+            '{0}.txt'.format(file_name)
+            )
+
+        # Create the command
+        command, check_files = tup.get_picking_command(
+            file_input=file_input,
+            new_name=new_name,
+            settings=self.settings,
+            queue_com=self.queue_com,
+            name=self.name
+            )
+
+        # Log files
+        out_file = os.path.join(
+            self.settings['picking_folder'],
+            '{0}.log'.format(file_name)
+            )
+        err_file = os.path.join(
+            self.settings['picking_folder'],
+            '{0}.err'.format(file_name)
+            )
+
+        # Run the command
+        with open(out_file, 'w') as out:
+            out.write(command)
+            with open(err_file, 'w') as err:
+                start_time = ti.time()
+                sp.Popen(command, shell=True, stdout=out, stderr=err).wait()
+                stop_time = ti.time()
+                out.write('\nTime: {0} sec'.format(stop_time - start_time))
+
+        zero_list = [err_file]
+        non_zero_list = [out_file]
+        non_zero_list.extend(check_files)
+
+        root_path = os.path.join(os.path.dirname(root_name), file_name)
+        log_files, copied_log_files = tup.find_logfiles(
+            root_path=root_path,
+            file_name=file_name,
+            settings=self.settings,
+            queue_com=self.queue_com,
+            name=self.name
+            )
+
+        try:
+            log_files.remove(err_file)
+            copied_log_files.remove(err_file)
+        except ValueError:
+            pass
+
+        tus.check_outputs(
+            zero_list=zero_list,
+            non_zero_list=non_zero_list+log_files,
+            folder=self.settings['picking_folder'],
+            command=command
+            )
+
+        for old_file, new_file in zip(log_files, copied_log_files):
+            if os.path.realpath(old_file) != os.path.realpath(new_file):
+                tu.copy(old_file, new_file)
+            else:
+                pass
+
+        tus.check_outputs(
+            zero_list=[],
+            non_zero_list=copied_log_files,
+            folder=self.settings['picking_folder'],
+            command=command
+            )
+
+        for old_file, new_file in zip(log_files, copied_log_files):
+            if os.path.realpath(old_file) != os.path.realpath(new_file):
+                os.remove(old_file)
+            else:
+                pass
+
+        copied_log_files.extend(non_zero_list)
+        copied_log_files.extend(zero_list)
+        copied_log_files = list(set(copied_log_files))
 
         # Add to queue
         for aim in self.content_settings['aim']:

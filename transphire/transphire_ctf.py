@@ -202,6 +202,7 @@ def create_gctf_v1_06_command(
 
     return ' '.join(command)
 
+
 def create_cter_1_0_command(
         ctf_name, file_input, output_dir, settings
         ):

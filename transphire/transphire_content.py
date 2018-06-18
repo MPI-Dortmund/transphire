@@ -19,6 +19,24 @@
 from transphire import transphire_utils as tu
 
 
+def default_cryolo_v1_0_0():
+    """
+    Content of crYOLO version 1.0.0
+
+    Arguments:
+    None
+
+    Return:
+    Content items as list
+    """
+    items = [
+        ['-c', '', str, '', 'FILE'],
+        ['-w', '', str, '', 'FILE'],
+        ['-g', '0', int, '', 'PLAIN'],
+        ]
+    return items
+
+
 def default_cter_v1_0():
     """
     Content of CTER SPHIRE version 1.0.
@@ -336,6 +354,7 @@ def default_pipeline():
             'Sum to work:Copy to work:Copy_work,' +
             'Sum to HDD:Copy to HDD:Copy_hdd,' +
             'Sum to backup:Copy to backup:Copy_backup,' +
+            'Picking:Picking,' +
             'CTF_frames:CTF,' +
             'CTF_sum:CTF,' +
             '!CTF_frames:Compress data:Compress,' +
@@ -356,6 +375,16 @@ def default_pipeline():
             'CTF_frames:!Compress data:Frames to work:Copy to work:Copy_work,' +
             'CTF_frames:!Compress data:Frames to HDD:Copy to HDD:Copy_hdd,' +
             'CTF_frames:!Compress data:Frames to backup:Copy to backup:Copy_backup',
+            'PLAIN'
+            ],
+        [
+            'Picking',
+            '2',
+            int,
+            'Picking;' +
+            'Picking to work:Copy to work:Copy_work,' +
+            'Picking to HDD:Copy to HDD:Copy_hdd,' +
+            'Picking to backup:Copy to backup:Copy_backup,',
             'PLAIN'
             ],
         [
@@ -646,7 +675,7 @@ def default_copy(settings_folder):
         settings_folder=settings_folder,
         name='Mount'
         )
-    programs_motion, programs_ctf = tu.reduce_programs()
+    programs_motion, programs_ctf, programs_picking = tu.reduce_programs()
 
     copy_work = sorted(mount_dict['Copy_work'])
     copy_backup = sorted(mount_dict['Copy_backup'])
@@ -657,6 +686,7 @@ def default_copy(settings_folder):
     copy_hdd.extend(extend_list)
     programs_motion.extend(extend_list)
     programs_ctf.extend(extend_list)
+    programs_picking.extend(extend_list)
 
     items = [
         ['Session to work', ['False', 'True'], bool, '', 'COMBO'],
@@ -674,11 +704,15 @@ def default_copy(settings_folder):
         ['CTF to work', ['False', 'True'], bool, '', 'COMBO'],
         ['CTF to HDD', ['False', 'True'], bool, '', 'COMBO'],
         ['CTF to backup', ['False', 'True'], bool, '', 'COMBO'],
+        ['Picking to work', ['False', 'True'], bool, '', 'COMBO'],
+        ['Picking to HDD', ['False', 'True'], bool, '', 'COMBO'],
+        ['Picking to backup', ['False', 'True'], bool, '', 'COMBO'],
         ['Copy to work', copy_work, bool, '', 'COMBO'],
         ['Copy to backup', copy_backup, bool, '', 'COMBO'],
         ['Copy to HDD', copy_hdd, bool, '', 'COMBO'],
         ['Motion', programs_motion, bool, '', 'COMBO'],
         ['CTF', programs_ctf, bool, '', 'COMBO'],
+        ['Picking', programs_picking, bool, '', 'COMBO'],
         ['Compress data', ['True', 'Later', 'False'], bool, '', 'COMBO'],
         ['Delete stack after compression?', ['True', 'False'], bool, '', 'COMBO'],
         ]

@@ -111,13 +111,17 @@ class ProcessWorker(QObject):
             self.settings['motion_folder'],
             self.settings['Copy']['Motion'].replace(' ', '_')
             )
+        self.settings['scratch_motion_folder'] = os.path.join(
+            self.settings['scratch_folder'],
+            self.settings['Copy']['Motion'].replace(' ', '_')
+            )
         self.settings['ctf_folder'] = os.path.join(
             self.settings['ctf_folder'],
             self.settings['Copy']['CTF'].replace(' ', '_')
             )
-        self.settings['scratch_motion_folder'] = os.path.join(
-            self.settings['scratch_folder'],
-            self.settings['Copy']['Motion'].replace(' ', '_')
+        self.settings['picking_folder'] = os.path.join(
+            self.settings['picking_folder'],
+            self.settings['Copy']['Picking'].replace(' ', '_')
             )
         self.settings['compress_folder'] = os.path.join(
             self.settings['compress_folder'], 'Compress'
@@ -300,6 +304,13 @@ class ProcessWorker(QObject):
         if self.settings['Copy']['Motion'] != 'False':
             folder_list.append('motion_folder')
             use_threads_list.append('Motion')
+        else:
+            pass
+
+        # Set Picking settings
+        if self.settings['Copy']['Picking'] != 'False':
+            folder_list.append('picking_folder')
+            use_threads_list.append('Picking')
         else:
             pass
 
@@ -520,6 +531,7 @@ class ProcessWorker(QObject):
         check_files = []
         check_files.append(self.settings['Copy']['Motion'])
         check_files.append(self.settings['Copy']['CTF'])
+        check_files.append(self.settings['Copy']['Picking'])
         check_files.append('IMOD header')
         if len(self.settings['motion_frames']) > 1:
             check_files.append('SumMovie v1.0.2')

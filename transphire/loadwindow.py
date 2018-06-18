@@ -61,7 +61,8 @@ class DefaultSettings(QDialog):
                     'CTFFIND4',
                     'Gctf',
                     'CTER',
-                    'MotionCor2'
+                    'MotionCor2',
+                    'crYOLO'
                     ],
                 QTabWidget(self)
                 ],

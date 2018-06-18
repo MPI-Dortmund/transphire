@@ -137,6 +137,14 @@ def get_function_dict():
             'typ': 'motion',
             'allow_empty': ['-Dark', '-DefectFile', '-Gain'],
             },
+        'crYOLO v1.0.0': {
+            'plot': None,
+            'plot_data': None,
+            'content': tc.default_cryolo_v1_0_0,
+            'executable': True,
+            'typ': 'picking',
+            'allow_empty': [],
+            },
         'Mount': {
             'plot': None,
             'plot_data': None,
@@ -332,6 +340,7 @@ def reduce_programs(exclude_set=None):
         exclude_set = exclude_set
     content_motion = []
     content_ctf = []
+    content_picking = []
     function_dict = get_function_dict()
 
     for key in function_dict:
@@ -342,6 +351,8 @@ def reduce_programs(exclude_set=None):
                 content_motion.append(key)
             elif function_dict[key]['typ'] == 'ctf':
                 content_ctf.append(key)
+            elif function_dict[key]['typ'] == 'picking':
+                content_picking.append(key)
             elif function_dict[key]['typ'] is None:
                 print(key, 'is executable, but does not have a typ! Exit here!')
                 sys.exit(1)
@@ -351,7 +362,7 @@ def reduce_programs(exclude_set=None):
         else:
             pass
 
-    return sorted(content_motion), sorted(content_ctf)
+    return sorted(content_motion), sorted(content_ctf), sorted(content_picking)
 
 
 def reduce_copy_entries(exclude_set, content):
@@ -371,6 +382,8 @@ def reduce_copy_entries(exclude_set, content):
                 name = 'Motion'
             elif 'CTF' in sub_item:
                 name = 'CTF'
+            elif 'Picking' in sub_item:
+                name = 'Picking'
             else:
                 continue
 
@@ -450,7 +463,7 @@ def get_content_gui(content):
     Content as list
     """
 
-    content_motion, content_ctf = reduce_programs()
+    content_motion, content_ctf, content_picking = reduce_programs()
 
     gui_content = [
         {
@@ -511,6 +524,11 @@ def get_content_gui(content):
             },
         {
             'name': 'CTF',
+            'widget': TabDocker,
+            'layout': 'TAB1',
+            },
+        {
+            'name': 'Picking',
             'widget': TabDocker,
             'layout': 'TAB1',
             },
@@ -595,6 +613,15 @@ def get_content_gui(content):
             'widget': PlotContainer,
             'content': 'histogram',
             'layout': 'Plot {0}'.format(ctf_content),
+            })
+
+    for picking_content in content_picking:
+        gui_content.append({
+            'name': picking_content,
+            'widget': SettingsContainer,
+            'content': content[picking_content],
+            'layout': 'Picking',
+            'max_widgets': 12
             })
 
     return gui_content

@@ -9,7 +9,7 @@ with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setuptools.setup(
     name='transphire',
-    version='1.1.1',
+    version='1.2.0',
     description='Automated post data aquisition processing tool',
     long_description=long_description,
     url='https://github.com/mstabrin/transphire',
