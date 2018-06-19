@@ -34,6 +34,7 @@ from transphire import transphire_utils as tu
 from transphire import transphire_software as tus
 from transphire import transphire_motion as tum
 from transphire import transphire_ctf as tuc
+from transphire import transphire_picking as tup
 
 
 class ProcessThread(QThread):
@@ -1805,7 +1806,13 @@ class ProcessThread(QThread):
                     sum_files = queue_dict[motion_idx]['sum']
                     log_files = queue_dict[motion_idx]['log']
                     sum_dw_files = queue_dict[motion_idx]['sum_dw']
-                    if '!Compress data' in compare:
+                    if 'Picking' in compare:
+                        if motion_idx == 0:
+                            for file_name in sum_dw_files:
+                                self.add_to_queue(aim=aim_name, root_name=file_name)
+                        else:
+                            pass
+                    elif '!Compress data' in compare:
                         if motion_idx == 0:
                             self.add_to_queue(aim=aim_name, root_name=file_input)
                         else:
@@ -2018,16 +2025,12 @@ class ProcessThread(QThread):
         """
 
         # New name
-        file_name = os.path.basename(root_name.splitext()[0])
-        new_name = os.path.join(
-            self.settings['picking_folder'],
-            '{0}.txt'.format(file_name)
-            )
+        file_name = os.path.basename(os.path.splitext(root_name)[0])
 
         # Create the command
         command, check_files = tup.get_picking_command(
-            file_input=file_input,
-            new_name=new_name,
+            file_input=root_name,
+            new_name=self.settings['picking_folder'],
             settings=self.settings,
             queue_com=self.queue_com,
             name=self.name
@@ -2048,7 +2051,7 @@ class ProcessThread(QThread):
             out.write(command)
             with open(err_file, 'w') as err:
                 start_time = ti.time()
-                sp.Popen(command, shell=True, stdout=out, stderr=err).wait()
+                sp.Popen(command, shell=True, stdout=out, stderr=out).wait()
                 stop_time = ti.time()
                 out.write('\nTime: {0} sec'.format(stop_time - start_time))
 
@@ -2065,41 +2068,14 @@ class ProcessThread(QThread):
             name=self.name
             )
 
-        try:
-            log_files.remove(err_file)
-            copied_log_files.remove(err_file)
-        except ValueError:
-            pass
-
         tus.check_outputs(
             zero_list=zero_list,
             non_zero_list=non_zero_list+log_files,
             folder=self.settings['picking_folder'],
             command=command
             )
-
-        for old_file, new_file in zip(log_files, copied_log_files):
-            if os.path.realpath(old_file) != os.path.realpath(new_file):
-                tu.copy(old_file, new_file)
-            else:
-                pass
-
-        tus.check_outputs(
-            zero_list=[],
-            non_zero_list=copied_log_files,
-            folder=self.settings['picking_folder'],
-            command=command
-            )
-
-        for old_file, new_file in zip(log_files, copied_log_files):
-            if os.path.realpath(old_file) != os.path.realpath(new_file):
-                os.remove(old_file)
-            else:
-                pass
-
-        copied_log_files.extend(non_zero_list)
-        copied_log_files.extend(zero_list)
-        copied_log_files = list(set(copied_log_files))
+        log_files.extend(non_zero_list)
+        log_files.extend(zero_list)
 
         # Add to queue
         for aim in self.content_settings['aim']:
@@ -2120,11 +2096,8 @@ class ProcessThread(QThread):
                         var = False
                         break
             if var:
-                if '!Compress data' in compare or 'Compress data' in compare:
-                    self.add_to_queue(aim=aim_name, root_name=file_input)
-                else:
-                    for log_file in copied_log_files:
-                        self.add_to_queue(aim=aim_name, root_name=log_file)
+                for log_file in log_files:
+                    self.add_to_queue(aim=aim_name, root_name=log_file)
             else:
                 pass
 

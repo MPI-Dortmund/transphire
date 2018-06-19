@@ -16,6 +16,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import os
+import glob
+
 
 def get_picking_command(file_input, new_name, settings, queue_com, name):
     """
@@ -34,7 +37,7 @@ def get_picking_command(file_input, new_name, settings, queue_com, name):
     picking_name = settings['Copy']['Picking']
     if picking_name == 'crYOLO v1.0.0':
         command = create_cryolo_v1_0_0_command(
-            picking_name = picking_name,
+            picking_name=picking_name,
             file_input=file_input,
             file_output=new_name,
             settings=settings
@@ -71,9 +74,8 @@ def find_logfiles(root_path, file_name, settings, queue_com, name):
     log_files = None
     copied_log_files = None
     picking_root_path = os.path.join(settings['picking_folder'], file_name)
-    if picking_name == 'crYOLO v1.0.0':
-        copied_log_files = []
-        recursive_file_search(directory=picking_root_path, files=copied_log_files)
+    if settings['Copy']['Picking'] == 'crYOLO v1.0.0':
+        copied_log_files = ['{0}.box'.format(picking_root_path)]
         log_files = copied_log_files
 
     else:
@@ -91,17 +93,6 @@ def find_logfiles(root_path, file_name, settings, queue_com, name):
     assert copied_log_files is not None
     return log_files, copied_log_files
 
-def recursive_file_search(directory, files):
-    """
-    Recursive file search function.
-    """
-    file_names = glob.glob('{0}*'.format(directory))
-    for name in file_names:
-        if os.path.isdir(name):
-            recursive_file_search('{0}/'.format(name), files)
-        else:
-            files.append(name)
-
 
 def create_cryolo_v1_0_0_command(
         picking_name, file_input, file_output, settings
@@ -117,10 +108,10 @@ def create_cryolo_v1_0_0_command(
     command.append('-o')
     command.append('{0}'.format(file_output))
 
-    for key in settings[ctf_name]:
+    for key in settings[picking_name]:
         command.append(key)
         command.append(
-            '{0}'.format(settings[ctf_name][key])
+            '{0}'.format(settings[picking_name][key])
             )
 
     return ' '.join(command)

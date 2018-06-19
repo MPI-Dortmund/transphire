@@ -384,7 +384,7 @@ def default_pipeline():
             'Picking;' +
             'Picking to work:Copy to work:Copy_work,' +
             'Picking to HDD:Copy to HDD:Copy_hdd,' +
-            'Picking to backup:Copy to backup:Copy_backup,',
+            'Picking to backup:Copy to backup:Copy_backup',
             'PLAIN'
             ],
         [
