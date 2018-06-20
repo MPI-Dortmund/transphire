@@ -39,6 +39,9 @@ def get_ctf_command(file_input, new_name, settings, queue_com, name):
     File to check vor validation if the process was successful
     """
     ctf_name = settings['Copy']['CTF']
+    command = None
+    block_gpu = None
+    gpu_list = None
     if ctf_name == 'CTFFIND4 v4.1.8' or \
             ctf_name == 'CTFFIND4 v4.1.10':
         command = create_ctffind_4_v4_1_8_command(
@@ -48,6 +51,8 @@ def get_ctf_command(file_input, new_name, settings, queue_com, name):
             settings=settings
             )
         check_files = []
+        block_gpu = False
+        gpu_list = []
 
     elif ctf_name == 'Gctf v1.06' or \
             ctf_name == 'Gctf v1.18':
@@ -58,6 +63,13 @@ def get_ctf_command(file_input, new_name, settings, queue_com, name):
             settings=settings
             )
         check_files = ['{0}_gctf.star'.format(new_name)]
+        if ctf_name == 'Gctf v1.06':
+            block_gpu = False
+        elif ctf_name == 'Gctf v1.18':
+            block_gpu = True
+        else:
+            assert False
+        gpu_list = settings[ctf_name]['--gid'].split()
 
     elif ctf_name == 'CTER v1.0':
         output_dir, _ = os.path.splitext(new_name)
@@ -68,6 +80,8 @@ def get_ctf_command(file_input, new_name, settings, queue_com, name):
             settings=settings
             )
         check_files = ['{0}/partres.txt'.format(output_dir)]
+        block_gpu = False
+        gpu_list = []
 
     else:
         message = '\n'.join([
@@ -80,7 +94,11 @@ def get_ctf_command(file_input, new_name, settings, queue_com, name):
             )
         IOError(message)
 
-    return command, check_files
+    assert command is not None, 'command not specified: {0}'.format(ctf_name)
+    assert block_gpu is not None, 'block_gpu not specified: {0}'.format(ctf_name)
+    assert gpu_list is not None, 'gpu_list not specified: {0}'.format(ctf_name)
+
+    return command, check_files, block_gpu, gpu_list
 
 
 def find_logfiles(root_path, file_name, settings, queue_com, name):
