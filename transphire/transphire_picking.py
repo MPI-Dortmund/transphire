@@ -35,6 +35,9 @@ def get_picking_command(file_input, new_name, settings, queue_com, name):
     File to check vor validation if the process was successful
     """
     picking_name = settings['Copy']['Picking']
+    command = None
+    block_gpu = None
+    gpu_list = None
     if picking_name == 'crYOLO v1.0.0':
         command = create_cryolo_v1_0_0_command(
             picking_name=picking_name,
@@ -43,6 +46,8 @@ def get_picking_command(file_input, new_name, settings, queue_com, name):
             settings=settings
             )
         check_files = []
+        block_gpu = True
+        gpu_list = settings[picking_name]['--gpu'].split()
 
     else:
         message = '\n'.join([
@@ -55,7 +60,11 @@ def get_picking_command(file_input, new_name, settings, queue_com, name):
             )
         IOError(message)
 
-    return command, check_files
+    assert command is not None, 'command not specified: {0}'.format(picking_name)
+    assert block_gpu is not None, 'block_gpu not specified: {0}'.format(picking_name)
+    assert gpu_list is not None, 'gpu_list not specified: {0}'.format(picking_name)
+
+    return command, check_files, block_gpu, gpu_list
 
 
 def find_logfiles(root_path, file_name, settings, queue_com, name):
