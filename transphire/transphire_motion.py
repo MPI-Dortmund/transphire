@@ -109,11 +109,14 @@ def get_motion_command(file_input, file_output_scratch, file_log_scratch, settin
     Motion command
     """
     motion_name = settings['Copy']['Motion']
+    command = None
+    block_gpu = None
+    gpu_list = None
     if motion_name == 'MotionCor2 v1.0.0' or \
             motion_name == 'MotionCor2 v1.0.5' or \
             motion_name == 'MotionCor2 v1.1.0':
-        return create_motion_cor_2_v1_0_0_command(
-            motion_name=settings['Copy']['Motion'],
+        command = create_motion_cor_2_v1_0_0_command(
+            motion_name=motion_name,
             file_input=file_input,
             file_output=file_output_scratch,
             file_log=file_log_scratch,
@@ -121,6 +124,17 @@ def get_motion_command(file_input, file_output_scratch, file_log_scratch, settin
             queue_com=queue_com,
             name=name
             )
+        gpu_list = settings[motion_name]['-Gpu'].split()
+
+        if motion_name == 'MotionCor2 v1.0.0':
+            block_gpu = False
+        elif motion_name == 'MotionCor2 v1.0.5':
+            block_gpu = True
+        elif motion_name == 'MotionCor2 v1.1.0':
+            if settings[motion_name]['-GpuMemUsage'] == '0':
+                block_gpu = False
+            else:
+                block_gpu = True
 
     else:
         message = '\n'.join([
@@ -132,6 +146,12 @@ def get_motion_command(file_input, file_output_scratch, file_log_scratch, settin
             name
             )
         raise IOError(message)
+
+    assert command is not None, 'command not specified: {0}'.format(motion_name)
+    assert block_gpu is not None, 'block_gpu not specified: {0}'.format(motion_name)
+    assert gpu_list is not None, 'gpu_list not specified: {0}'.format(motion_name)
+
+    return command, block_gpu, gpu_list
 
 
 def create_motion_cor_2_v1_0_0_command(motion_name, file_input, file_output, file_log, settings, queue_com, name):
@@ -219,7 +239,9 @@ def create_sum_movie_command(
         queue_com=queue_com,
         name=name
         )
-    return command
+    block_gpu = False
+    gpu_list = []
+    return command, block_gpu, gpu_list
 
 
 def create_sum_movie_v1_0_2_command(
