@@ -396,6 +396,8 @@ class ProcessWorker(QObject):
                                 ['{0}_{1}'.format(key, idx+1), process[key]]
                                 )
 
+        gpu_mutex_dict = dict([(str(idx), [QMutex(), 0]) for idx in range(99)])
+
         # Shared dictionary
         shared_dict = {
             'share': share_dict,
@@ -405,7 +407,8 @@ class ProcessWorker(QObject):
             'ctf_star_lock': QMutex(),
             'ctf_partres_lock': QMutex(),
             'global_lock': QMutex(),
-            'typ': typ_dict
+            'gpu_lock': gpu_mutex_dict,
+            'typ': typ_dict,
             }
 
         # Fill process queues
