@@ -270,7 +270,6 @@ def default_others():
     """
     items = [
         ['Image', '', str, '', 'FILE'],
-        ['Mount/umount needs sudo password?', ['True', 'False'], bool, '', 'COMBO'],
         ['Project name pattern', '', str, '', 'PLAIN'],
         ['Project name pattern example', '', str, '', 'PLAIN'],
         ]
@@ -490,6 +489,7 @@ def default_mount(hdd=None):
         ['Default user', '', str, '', 'PLAIN'],
         ['Is df giving the right quota?', ['True', 'False'], bool, '', 'COMBO'],
         ['Target UID exists here and on target?', ['True', 'False'], bool, '', 'COMBO'],
+        ['Need sudo for mount?', ['False', 'True'], bool, '', 'COMBO'],
         ['Need sudo for copy?', ['False', 'True'], bool, '', 'COMBO'],
         ['SSH address', '', str, '', 'PLAIN'],
         ['Quota command', '', str, '', 'PLAIN'],

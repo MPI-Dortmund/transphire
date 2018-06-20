@@ -92,22 +92,16 @@ class MainWindow(QMainWindow):
         self.password = ''
         need_sudo_password = False
         for content in content_gui:
-            if content['name'] == 'Status':
-                for entry in content['content']:
-                    for widget in entry:
-                        for key in widget:
-                            if key == 'Mount/umount needs sudo password?':
-                                if widget[key][0] == 'True':
-                                    need_sudo_password = True
-                                else:
-                                    pass
-                            else:
-                                pass
-            elif content['name'] == 'Mount':
+            if content['name'] == 'Mount':
                 for entry in content['content_mount']:
                     for widget in entry:
                         for key in widget:
                             if key == 'Need sudo for copy?':
+                                if widget[key][0] == 'True':
+                                    need_sudo_password = True
+                                else:
+                                    pass
+                            elif key == 'Need sudo for mount?':
                                 if widget[key][0] == 'True':
                                     need_sudo_password = True
                                 else:
