@@ -22,8 +22,8 @@ import shutil as sh
 import traceback as tb
 import glob
 import copy
-import subprocess as sp
 import tarfile
+import subprocess as sp
 import numpy as np
 import pexpect as pe
 try:
@@ -1195,34 +1195,31 @@ class ProcessThread(QThread):
             self.settings['General']['Output extension']
             )
 
-        command = tus.get_copy_command_for_frames(
+        command_raw = tus.get_copy_command_for_frames(
             settings=self.settings,
             queue_com=self.queue_com,
             name=self.name
             )
 
-        newstack_command = '{0} {1} {2}'.format(
-            command,
+        command = '{0} {1} {2}'.format(
+            command_raw,
             ' '.join(frames),
             new_stack
             )
 
-        # Create the stack
-        file_stdout = '{0}.log'.format(new_name_stack)
-        file_stderr = '{0}.err'.format(new_name_stack)
-        with open(file_stdout, 'w') as out:
-            out.write(newstack_command)
-            with open(file_stderr, 'w') as err:
-                start_time = ti.time()
-                sp.Popen(newstack_command.split(), stdout=out, stderr=err).wait()
-                stop_time = ti.time()
-                out.write('\nTime: {0} sec'.format(stop_time - start_time))
+        log_file, err_file = self.run_command(
+            command=command,
+            log_prefix=new_name_stack,
+            block_gpu=False,
+            gpu_list=[],
+            shell=False
+            )
 
         tus.check_outputs(
-            zero_list=[file_stderr],
-            non_zero_list=[file_stdout, new_stack],
+            zero_list=[err_file],
+            non_zero_list=[log_file, new_stack],
             folder=self.settings['stack_folder'],
-            command=newstack_command
+            command=command
             )
 
         all_files = tus.find_all_files(
@@ -1264,7 +1261,7 @@ class ProcessThread(QThread):
             command='copy'
             )
 
-        log_files.extend([file_stdout, file_stderr])
+        log_files.extend([log_file, err_file])
         for file_entry in all_files:
             try:
                 os.remove(file_entry)
@@ -1608,18 +1605,6 @@ class ProcessThread(QThread):
                 output_transfer_log_scratch,
                 '{0}.mrc'.format(file_name)
                 )
-            file_stdout_scratch = '{0}-output.log'.format(
-                file_log_scratch
-                )
-            file_stderr_scratch = '{0}-error.log'.format(
-                file_log_scratch
-                )
-
-            non_zero_list_scratch = [
-                file_output_scratch,
-                file_stdout_scratch
-                ]
-            zero_list_scratch = [file_stderr_scratch]
 
             # Project output
             file_output = os.path.join(
@@ -1630,21 +1615,14 @@ class ProcessThread(QThread):
                 output_transfer_log,
                 '{0}.mrc'.format(file_name)
                 )
-            file_stdout = '{0}-output.log'.format(
-                file_log
-                )
-            file_stderr = '{0}-error.log'.format(
-                file_log
-                )
-            file_frc = '{0}-frc.log'.format(
+            file_frc = '{0}_frc.log'.format(
                 file_log
                 )
 
-            non_zero_list = [
-                file_output,
-                file_stdout
-                ]
-            zero_list = [file_stderr]
+            non_zero_list_scratch = []
+            zero_list_scratch = []
+            non_zero_list = []
+            zero_list = []
 
             # Create the commands
             if motion_idx == 0:
@@ -1673,7 +1651,7 @@ class ProcessThread(QThread):
                     queue_com=self.queue_com,
                     name=self.name
                     )
-                command = tum.get_motion_command(
+                command, block_gpu, gpu_list = tum.get_motion_command(
                     file_input=file_input,
                     file_output_scratch=file_output_scratch,
                     file_log_scratch=file_log_scratch,
@@ -1682,13 +1660,21 @@ class ProcessThread(QThread):
                     settings=self.settings,
                     )
 
-                with open(file_stdout_scratch, 'w') as out:
-                    out.write(command)
-                    with open(file_stderr_scratch, 'w') as err:
-                        start_time = ti.time()
-                        sp.Popen(command.split(), stdout=out, stderr=err).wait()
-                        stop_time = ti.time()
-                        out.write('\nTime: {0} sec'.format(stop_time - start_time))
+                file_stdout_scratch, file_stderr_scratch = self.run_command(
+                    command=command,
+                    log_prefix=file_log_scratch,
+                    block_gpu=block_gpu,
+                    gpu_list=gpu_list,
+                    shell=False
+                    )
+                file_stdout = file_stdout_scratch.replace(
+                    output_transfer_log_scratch,
+                    output_transfer_log
+                    )
+                file_stderr = file_stderr_scratch.replace(
+                    output_transfer_log_scratch,
+                    output_transfer_log
+                    )
 
                 # Move DW file
                 if do_dw:
@@ -1698,7 +1684,7 @@ class ProcessThread(QThread):
                     pass
 
             else:
-                command = tum.create_sum_movie_command(
+                command, block_gpu, gpu_list = tum.create_sum_movie_command(
                     motion_frames=motion_frames,
                     file_input=file_stack,
                     file_output=file_output_scratch,
@@ -1708,13 +1694,22 @@ class ProcessThread(QThread):
                     queue_com=self.queue_com,
                     name=self.name
                     )
-                with open(file_stdout_scratch, 'w') as out:
-                    out.write(command)
-                    with open(file_stderr_scratch, 'w') as err:
-                        start_time = ti.time()
-                        sp.Popen(command, shell=True, stdout=out, stderr=err).wait()
-                        stop_time = ti.time()
-                        out.write('\nTime: {0} sec'.format(stop_time - start_time))
+
+                file_stdout_scratch, file_stderr_scratch = self.run_command(
+                    command=command,
+                    log_prefix=file_log_scratch,
+                    block_gpu=block_gpu,
+                    gpu_list=gpu_list,
+                    shell=True
+                    )
+                file_stdout = file_stdout_scratch.replace(
+                    output_transfer_log_scratch,
+                    output_transfer_log
+                    )
+                file_stderr = file_stderr_scratch.replace(
+                    output_transfer_log_scratch,
+                    output_transfer_log
+                    )
 
                 non_zero_list.append(file_frc)
                 self.queue_lock.lock()
@@ -1725,6 +1720,13 @@ class ProcessThread(QThread):
                     raise
                 finally:
                     self.queue_lock.unlock()
+
+            non_zero_list_scratch.append(file_output_scratch)
+            non_zero_list_scratch.append(file_stdout_scratch)
+            zero_list_scratch.append(file_stderr_scratch)
+            non_zero_list.append(file_output)
+            non_zero_list.append(file_stdout)
+            zero_list.append(file_stderr)
 
             # Sanity check
             log_files_scratch = glob.glob('{0}0*'.format(file_log_scratch))
@@ -1881,7 +1883,7 @@ class ProcessThread(QThread):
             )
 
         # Create the command
-        command, check_files = tuc.get_ctf_command(
+        command, check_files, block_gpu, gpu_list = tuc.get_ctf_command(
             file_input=file_input,
             new_name=new_name,
             settings=self.settings,
@@ -1890,26 +1892,21 @@ class ProcessThread(QThread):
             )
 
         # Log files
-        out_file = os.path.join(
-            self.settings['ctf_folder'],
-            '{0}.log'.format(file_name)
-            )
-        err_file = os.path.join(
-            self.settings['ctf_folder'],
-            '{0}.err'.format(file_name)
-            )
+        log_prefix = os.path.join(
+                self.settings['ctf_folder'],
+                file_name
+                )
 
-        # Run the command
-        with open(out_file, 'w') as out:
-            out.write(command)
-            with open(err_file, 'w') as err:
-                start_time = ti.time()
-                sp.Popen(command, shell=True, stdout=out, stderr=err).wait()
-                stop_time = ti.time()
-                out.write('\nTime: {0} sec'.format(stop_time - start_time))
+        log_file, err_file = self.run_command(
+            command=command,
+            log_prefix=log_prefix,
+            block_gpu=block_gpu,
+            gpu_list=gpu_list,
+            shell=False
+            )
 
         zero_list = [err_file]
-        non_zero_list = [out_file]
+        non_zero_list = [log_file]
         non_zero_list.extend(check_files)
 
         root_path = os.path.join(os.path.dirname(root_name), file_name)
@@ -2028,7 +2025,7 @@ class ProcessThread(QThread):
         file_name = os.path.basename(os.path.splitext(root_name)[0])
 
         # Create the command
-        command, check_files = tup.get_picking_command(
+        command, check_files, block_gpu, gpu_list = tup.get_picking_command(
             file_input=root_name,
             new_name=self.settings['picking_folder'],
             settings=self.settings,
@@ -2037,26 +2034,21 @@ class ProcessThread(QThread):
             )
 
         # Log files
-        out_file = os.path.join(
-            self.settings['picking_folder'],
-            '{0}.log'.format(file_name)
-            )
-        err_file = os.path.join(
-            self.settings['picking_folder'],
-            '{0}.err'.format(file_name)
+        log_prefix = os.path.join(
+                self.settings['picking_folder'],
+                file_name
+                )
+
+        log_file, err_file = self.run_command(
+            command=command,
+            log_prefix=log_prefix,
+            block_gpu=block_gpu,
+            gpu_list=gpu_list,
+            shell=False
             )
 
-        # Run the command
-        with open(out_file, 'w') as out:
-            out.write(command)
-            with open(err_file, 'w') as err:
-                start_time = ti.time()
-                sp.Popen(command, shell=True, stdout=out, stderr=out).wait()
-                stop_time = ti.time()
-                out.write('\nTime: {0} sec'.format(stop_time - start_time))
-
-        zero_list = [err_file]
-        non_zero_list = [out_file]
+        zero_list = []
+        non_zero_list = [err_file, log_file]
         non_zero_list.extend(check_files)
 
         root_path = os.path.join(os.path.dirname(root_name), file_name)
@@ -2153,23 +2145,18 @@ class ProcessThread(QThread):
                 raise IOError(message)
 
             # Log files
-            err_file = os.path.join(
+            log_prefix = os.path.join(
                     self.settings['compress_folder'],
-                    '{0}.err'.format(new_root_name)
-                    )
-            log_file = os.path.join(
-                    self.settings['compress_folder'],
-                    '{0}.log'.format(new_root_name)
+                    new_root_name
                     )
 
-            # Run the command
-            with open(log_file, 'w') as out:
-                out.write(command)
-                with open(err_file, 'w') as err:
-                    start_time = ti.time()
-                    sp.Popen(command.split(), stdout=out, stderr=err).wait()
-                    stop_time = ti.time()
-                    out.write('\nTime: {0} sec'.format(stop_time - start_time))
+            log_file, err_file = self.run_command(
+                command=command,
+                log_prefix=log_prefix,
+                block_gpu=False,
+                gpu_list=[],
+                shell=False
+                )
 
             tus.check_outputs(
                 zero_list=[err_file],
@@ -2372,3 +2359,70 @@ class ProcessThread(QThread):
         else:
             pass
 
+    def run_command(self, command, log_prefix, block_gpu, gpu_list, shell):
+        """
+        Run the command with respect to the gpu list.
+
+        command - Command to run
+        block_gpu - Block the GPU
+        gpu_list - List of GPUs to use
+        settings - Transphire settings
+
+        Return:
+        log_file name, err_file name
+        """
+        log_file = '{0}_transphire.log'.format(log_prefix)
+        err_file = '{0}_transphire.err'.format(log_prefix)
+
+        mutex_idx = 0
+        count_idx = 1
+
+        if gpu_list:
+            if block_gpu:
+                for entry in gpu_list:
+                    self.shared_dict['gpu_lock'][entry][mutex_idx].lock()
+                for entry in gpu_list:
+                    while self.shared_dict['gpu_lock'][entry][count_idx] != 0:
+                        QThread.msleep(1000)
+            else:
+                while True:
+                    locked = 0
+                    for entry in gpu_list:
+                        locked += bool(not self.shared_dict['gpu_lock'][entry][mutex_idx].tryLock())
+
+                    if locked == 0:
+                        break
+                    else:
+                        for entry in gpu_list:
+                            self.shared_dict['gpu_lock'][entry][mutex_idx].unlock()
+
+                for entry in gpu_list:
+                    self.shared_dict['gpu_lock'][entry][count_idx] += 1
+                    self.shared_dict['gpu_lock'][entry][mutex_idx].unlock()
+                QThread.msleep(1000)
+        else:
+            pass
+
+        # Run the command
+        with open(log_file, 'w') as out:
+            out.write(command)
+            with open(err_file, 'w') as err:
+                start_time = ti.time()
+                if shell:
+                    sp.Popen(command, shell=True, stdout=out, stderr=err).wait()
+                else:
+                    sp.Popen(command.split(), stdout=out, stderr=err).wait()
+                stop_time = ti.time()
+                out.write('\nTime: {0} sec'.format(stop_time - start_time)) 
+
+        if gpu_list:
+            if block_gpu:
+                for entry in gpu_list:
+                    self.shared_dict['gpu_lock'][entry][mutex_idx].unlock()
+            else:
+                for entry in gpu_list:
+                    self.shared_dict['gpu_lock'][entry][count_idx] -= 1
+        else:
+            pass
+
+        return log_file, err_file
