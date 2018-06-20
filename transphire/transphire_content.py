@@ -30,9 +30,11 @@ def default_cryolo_v1_0_0():
     Content items as list
     """
     items = [
-        ['-c', '', str, '', 'FILE'],
-        ['-w', '', str, '', 'FILE'],
-        ['-g', '0', int, '', 'PLAIN'],
+        ['--conf', '', str, '', 'FILE'],
+        ['--weights', '', str, '', 'FILE'],
+        ['--gpu', '0', int, '', 'PLAIN'],
+        ['--patch', '2', int, '', 'PLAIN'],
+        ['--threshold', '0.3', float, '', 'PLAIN'],
         ]
     return items
 
@@ -126,7 +128,7 @@ def default_gctf_v1_06():
         ['--ctfout_resL', '100.0', float, '', 'PLAIN'],
         ['--ctfout_resH', '2.8', float, '', 'PLAIN'],
         ['--ctfout_bfac', '50', float, '', 'PLAIN'],
-        ['--gid', '0', [int]*9, '', 'PLAIN']
+        ['--gid', '0', int, '', 'PLAIN']
         ]
     return items
 
@@ -195,7 +197,7 @@ def default_gctf_v1_18():
         ['--ctfout_resL', '100.0', float, '', 'PLAIN'],
         ['--ctfout_resH', '2.78', float, '', 'PLAIN'],
         ['--ctfout_bfac', '50', float, '', 'PLAIN'],
-        ['--gid', '0', [int]*9, '', 'PLAIN']
+        ['--gid', '0', int, '', 'PLAIN']
         ]
     return items
 
@@ -533,7 +535,7 @@ def default_motion_cor_2_v1_0_0():
         ['-Mag', '1 1 0', [float, float, float], '', 'PLAIN'],
         ['-InFmMotion', '0', int, '', 'PLAIN'],
         ['-Crop', '0 0', [int, int], '', 'PLAIN'],
-        ['-Gpu', '0', [int]*9, '', 'PLAIN'],
+        ['-Gpu', '0', [int]*99, '', 'PLAIN'],
         ]
     return items
 
@@ -575,7 +577,7 @@ def default_motion_cor_2_v1_0_5():
         ['-Mag', '1 1 0', [float, float, float], '', 'PLAIN'],
         ['-InFmMotion', '0', int, '', 'PLAIN'],
         ['-Crop', '0 0', [int, int], '', 'PLAIN'],
-        ['-Gpu', '0', [int]*9, '', 'PLAIN'],
+        ['-Gpu', '0', [int]*99, '', 'PLAIN'],
         ]
     return items
 
@@ -617,7 +619,7 @@ def default_motion_cor_2_v1_1_0():
         ['-Mag', '1 1 0', [float, float, float], '', 'PLAIN'],
         ['-InFmMotion', '0', int, '', 'PLAIN'],
         ['-Crop', '0 0', [int, int], '', 'PLAIN'],
-        ['-Gpu', '0', [int]*9, '', 'PLAIN'],
+        ['-Gpu', '0', [int]*99, '', 'PLAIN'],
         ['-GpuMemUsage', '0.5', float, '', 'PLAIN'],
         ]
     return items
