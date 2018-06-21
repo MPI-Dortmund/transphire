@@ -15,7 +15,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import time
 try:
     from PyQt4.QtCore import pyqtSignal, QObject, pyqtSlot
 except ImportError:
@@ -35,8 +34,6 @@ class PlotWorker(QObject):
     sig_notification - Emitted, if phase plate limit is reached. (text|str)
     """
     sig_data = pyqtSignal(str, object, str, object)
-    sig_notification = pyqtSignal(str)
-    sig_message = pyqtSignal(str)
 
     def __init__(self, parent=None):
         """
@@ -49,8 +46,6 @@ class PlotWorker(QObject):
         None
         """
         super(PlotWorker, self).__init__(parent)
-        self.notified = False
-        self.time_last_error = 0
 
     @pyqtSlot(str, object, object)
     def calculate_array_ctf(self, ctf_name, directory_name, settings):
@@ -75,27 +70,6 @@ class PlotWorker(QObject):
         else:
             pass
 
-        last_phase_shift = data['phase_shift'][-1]
-        phase_shift_warning = float(settings['General']['Phase shift warning (deg)'])
-        if last_phase_shift > phase_shift_warning:
-            if self.notified:
-                if last_phase_shift < 90:
-                    self.notified = False
-                else:
-                    pass
-            else:
-                msg = '\n'.join([
-                    '{0}:'.format(ctf_name),
-                    'Phase shift is higher than {0}!'.format(phase_shift_warning),
-                    'You might want to change the phase plate position.'
-                    ])
-                self.sig_notification.emit(msg)
-                self.notified = True
-                if time.time() - self.time_last_error > 1800:
-                    self.sig_message.emit(msg)
-                    self.time_last_error = time.time()
-                else:
-                    pass
         self.sig_data.emit(ctf_name, data, directory_name, settings)
 
     @pyqtSlot(str, object, object)

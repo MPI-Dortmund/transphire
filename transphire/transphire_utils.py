@@ -177,6 +177,14 @@ def get_function_dict():
             'typ': None,
             'allow_empty': [],
             },
+        'Notification_widget': {
+            'plot': None,
+            'plot_data': None,
+            'content': tc.default_notification_widget,
+            'executable': False,
+            'typ': None,
+            'allow_empty': [],
+            },
         'Others': {
             'plot': None,
             'plot_data': None,
@@ -477,9 +485,9 @@ def get_content_gui(content):
             'layout': 'h2'
             },
         {
-            'name': 'Notification',
+            'name': 'Notification_widget',
             'widget': NotificationContainer,
-            'content': content['Notification'],
+            'content': content['Notification_widget'],
             'layout': 'h2',
             },
         {
@@ -500,6 +508,13 @@ def get_content_gui(content):
             'name': 'General',
             'widget': SettingsContainer,
             'content': content['General'],
+            'layout': 'TAB1',
+            'max_widgets': 12
+            },
+        {
+            'name': 'Notification',
+            'widget': SettingsContainer,
+            'content': content['Notification'],
             'layout': 'TAB1',
             'max_widgets': 12
             },

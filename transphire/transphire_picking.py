@@ -17,7 +17,6 @@
 """
 
 import os
-import glob
 
 
 def get_picking_command(file_input, new_name, settings, queue_com, name):

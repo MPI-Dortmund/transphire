@@ -138,8 +138,8 @@ class MountWorker(QObject):
         else:
             self.project_directory = '.'
 
-        if settings['General']['Project quota warning (%)']:
-            self.project_quota_limit = min(float(settings['General']['Project quota warning (%)']), 100)
+        if settings['Notification']['Project quota warning (%)']:
+            self.project_quota_limit = min(float(settings['Notification']['Project quota warning (%)']), 100)
         else:
             self.project_quota_limit = 95
 
@@ -148,8 +148,8 @@ class MountWorker(QObject):
         else:
             self.scratch_directory = '.'
 
-        if settings['General']['Scratch quota warning (%)']:
-            self.scratch_quota_limit = min(float(settings['General']['Scratch quota warning (%)']), 100)
+        if settings['Notification']['Scratch quota warning (%)']:
+            self.scratch_quota_limit = min(float(settings['Notification']['Scratch quota warning (%)']), 100)
         else:
             self.scratch_quota_limit = 95
 

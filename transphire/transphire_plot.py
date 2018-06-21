@@ -36,14 +36,14 @@ def get_mic_number(array, settings):
         suffix = settings['General']['Rename suffix']
         for entry in array:
             if suffix == '':
-                first_part = entry.split('.'.encode('utf-8'))[0]
+                first_part = entry.split('.')[0]
             else:
-                first_part_split = entry.split(suffix.encode('utf-8'))
-                first_part = suffix.encode('utf-8').join(first_part_split[:-1])
+                first_part_split = entry.split(suffix)
+                first_part = suffix.join(first_part_split[:-1])
             if prefix == '':
                 number = first_part
             else:
-                number = first_part.split(prefix.encode('utf-8'))[-1]
+                number = first_part.split(prefix)[-1]
             try:
                 number_list.append(int(number))
             except ValueError:

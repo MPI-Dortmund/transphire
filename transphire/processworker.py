@@ -443,7 +443,7 @@ class ProcessWorker(QObject):
                     'Copy',
                     new_name
                     ) + \
-                    'Check Startnumber!'
+                    'Check Startnumber! Last one used: {0}'.format(shared_dict['typ']['Copy']['file_number'])
                 queue_com['error'].put(message)
                 queue_com['notification'].put(message)
             else:

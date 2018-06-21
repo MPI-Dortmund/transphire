@@ -100,6 +100,7 @@ class SettingsWidget(QWidget):
         self.label = QLabel(self.name, self)
         self.label.setObjectName('setting')
         self.edit.setObjectName('setting')
+        self.edit.setToolTip(self.name)
         try:
             self.edit.textEdited.connect(
                 lambda: self.edit.setStyleSheet(tu.get_style(typ='unchanged'))

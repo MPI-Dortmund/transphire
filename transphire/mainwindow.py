@@ -313,7 +313,6 @@ class MainWindow(QMainWindow):
         self.process_worker.sig_finished.connect(self._finished)
         self.process_worker.sig_plot_ctf.connect(self.plot_worker.calculate_array_ctf)
         self.process_worker.sig_plot_motion.connect(self.plot_worker.calculate_array_motion)
-        self.plot_worker.sig_message.connect(lambda msg: tu.message(msg))
 
         self.mount_thread_list = {}
         for key in self.content['Mount'].content:
@@ -479,7 +478,7 @@ class MainWindow(QMainWindow):
             else:
                 pass
 
-            if key == 'Notification':
+            if key == 'Notification_widget':
                 self.content[key].update_telegram()
                 self.content[key].update_email()
                 self.content[key].update()
@@ -618,7 +617,7 @@ class MainWindow(QMainWindow):
                     setting[settings[idx][0]] = settings[idx][1]
                 settings_dict[key].append(setting)
             else:
-                if key == 'Notification':
+                if key == 'Notification_widget':
                     settings_dict[key].update({settings[idx][0]: [
                         settings[idx][1],
                         settings[idx][2]
@@ -738,7 +737,7 @@ class MainWindow(QMainWindow):
         error_list = []
         skip_list = [
             'Mount',
-            'Notification',
+            'Notification_widget',
             'Path',
             'Frames'
             ]

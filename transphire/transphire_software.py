@@ -19,8 +19,10 @@
 import glob
 import os
 import re
+import numpy as np
 import traceback as tb
 import pexpect as pe
+from transphire import transphire_import as ti
 
 
 def extract_time_and_grid_information(root_name, settings, queue_com, name):
@@ -851,3 +853,52 @@ def check_outputs(zero_list, non_zero_list, folder, command):
                     )
             else:
                 continue
+
+
+def check_for_outlier(dict_name, data, file_name, settings):
+    dtype_dict = ti.get_dtype_dict()
+    lower_median = -int(settings['Notification']['Nr. of values used for median'])
+    warning_list = []
+    skip_list = []
+
+    file_name = os.path.basename(os.path.splitext(file_name)[0])
+    match_file = re.compile(file_name)
+    vmatch = np.vectorize(lambda x:bool(match_file.search(x)))
+    mask = vmatch(data['file_name'])
+
+    for key in dtype_dict[dict_name]:
+        key = key[0]
+        if key == 'file_name':
+            continue
+        elif key == 'mic_number':
+            continue
+        else:
+            pass
+
+        last_values_median = np.median(data[key][lower_median:])
+        warning_low, warning_high = settings['Notification']['{0} warning'.format(key)].split()
+        skip_low, skip_high = settings['Notification']['{0} skip'.format(key)].split()
+
+        if float(warning_low) <= last_values_median and last_values_median <= float(warning_high):
+            pass
+        else:
+            warning_list.append([
+                key,
+                last_values_median,
+                warning_low,
+                warning_high
+                ])
+
+        assert data[mask].shape[0] == 1
+
+        if float(skip_low) <= data[key][mask][0] and data[key][mask][0] <= float(skip_high):
+            pass
+        else:
+            skip_list.append([
+                key,
+                data[key][mask],
+                skip_low,
+                skip_high
+                ])
+
+    return warning_list, skip_list

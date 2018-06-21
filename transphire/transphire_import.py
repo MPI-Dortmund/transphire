@@ -41,7 +41,7 @@ def get_header(input_file):
             name = name.replace('_rlnFinalResolution', '_rlnCtfMaxResolution')
             if name == '_rlnMicrographName' or \
                     name == '_rlnCtfImage':
-                header.append((name, '|S200'))
+                header.append((name, '|U200'))
             else:
                 header.append((name, '<f8'))
         elif line == '' or line == 'data_' or line == 'loop_':
@@ -74,7 +74,7 @@ def get_dtype_dict():
         ('phase_shift', '<f8'),
         ('cross_corr', '<f8'),
         ('limit', '<f8'),
-        ('file_name', '|S200')
+        ('file_name', '|U200')
         ]
     dtype['Gctf v1.06'] = [
         ('defocus_1', '<f8'),
@@ -83,7 +83,7 @@ def get_dtype_dict():
         ('phase_shift', '<f8'),
         ('cross_corr', '<f8'),
         ('limit', '<f8'),
-        ('file_name', '|S200')
+        ('file_name', '|U200')
         ]
     dtype['Gctf v1.18'] = [
         ('defocus_1', '<f8'),
@@ -92,7 +92,7 @@ def get_dtype_dict():
         ('phase_shift', '<f8'),
         ('cross_corr', '<f8'),
         ('limit', '<f8'),
-        ('file_name', '|S200')
+        ('file_name', '|U200')
         ]
     dtype['CTER v1.0'] = [
         ('defocus_1', '<f8'),
@@ -101,7 +101,7 @@ def get_dtype_dict():
         ('phase_shift', '<f8'),
         ('cross_corr', '<f8'),
         ('limit', '<f8'),
-        ('file_name', '|S200')
+        ('file_name', '|U200')
         ]
     dtype['CTFFIND4 v4.1.10'] = [
         ('mic_number', '<f8'),
@@ -111,7 +111,7 @@ def get_dtype_dict():
         ('phase_shift', '<f8'),
         ('cross_corr', '<f8'),
         ('limit', '<f8'),
-        ('file_name', '|S200')
+        ('file_name', '|U200')
         ]
     dtype['CTFFIND4 v4.1.8'] = [
         ('mic_number', '<f8'),
@@ -121,14 +121,14 @@ def get_dtype_dict():
         ('phase_shift', '<f8'),
         ('cross_corr', '<f8'),
         ('limit', '<f8'),
-        ('file_name', '|S200')
+        ('file_name', '|U200')
         ]
     dtype['motion'] = [
         ('overall drift', '<f8'),
         ('average drift per frame', '<f8'),
         ('first frame drift', '<f8'),
         ('average drift per frame without first', '<f8'),
-        ('file_name', '|S200')
+        ('file_name', '|U200')
         ]
     return dtype
 
@@ -214,7 +214,7 @@ def get_dtype_import_dict():
         ('reserved_spot', '<f8'),
         ('const_amplitude_contrast', '<f8'),
         ('phase_shift', '<f8'),
-        ('file_name', '|S200'),
+        ('file_name', '|U200'),
         ]
     dtype_import['Gctf v1.06'] = [
         ('defocus_1', '<f8'),
@@ -306,7 +306,8 @@ def import_ctffind_v4_1_8(ctf_name, directory_name):
         try:
             array = np.genfromtxt(
                 name,
-                dtype=get_dtype_import_dict()[ctf_name]
+                dtype=get_dtype_import_dict()[ctf_name],
+                encoding='utf-8'
                 )
         except ValueError:
             continue
@@ -333,7 +334,8 @@ def import_ctffind_v4_1_8(ctf_name, directory_name):
 
         data_name = np.genfromtxt(
             name,
-            dtype=get_dtype_import_dict()[ctf_name]
+            dtype=get_dtype_import_dict()[ctf_name],
+            encoding='utf-8'
             )
         data[idx]['file_name'] = name
         input_name = None
@@ -341,7 +343,7 @@ def import_ctffind_v4_1_8(ctf_name, directory_name):
             for line in read.readlines():
                 match_re = re.match('# Input file: (.*?) ; Number of micrographs: 1', line)
                 if match_re is not None:
-                    input_name = match_re.group(1).encode()
+                    input_name = match_re.group(1)
                 else:
                     pass
         if input_name is None:
@@ -414,7 +416,8 @@ def import_gctf_v1_06(ctf_name, directory_name):
             data_name = np.genfromtxt(
                 file_name,
                 dtype=dtype,
-                skip_header=max_header
+                skip_header=max_header,
+                encoding='utf-8'
                 )
         except ValueError:
             continue
@@ -448,7 +451,8 @@ def import_gctf_v1_06(ctf_name, directory_name):
         data_name = np.genfromtxt(
             file_name,
             dtype=dtype,
-            skip_header=max_header
+            skip_header=max_header,
+            encoding='utf-8'
             )
         for name in data_name.dtype.names:
             try:
@@ -508,7 +512,8 @@ def import_cter_v1_0(ctf_name, directory_name):
         try:
             data_name = np.genfromtxt(
                 file_name,
-                dtype=get_dtype_import_dict()[ctf_name]
+                dtype=get_dtype_import_dict()[ctf_name],
+                encoding='utf-8'
                 )
         except ValueError:
             continue
@@ -534,7 +539,8 @@ def import_cter_v1_0(ctf_name, directory_name):
     for idx, name in sorted(enumerate(useable_files)):
         data_name = np.genfromtxt(
             name,
-            dtype=get_dtype_import_dict()[ctf_name]
+            dtype=get_dtype_import_dict()[ctf_name],
+            encoding='utf-8'
             )
         for entry in data_name.dtype.names:
             data_original[idx][entry] = data_name[entry]
@@ -588,7 +594,8 @@ def import_motion_cor_2_v1_0_0(motion_name, directory_names):
         try:
             array = np.genfromtxt(
                 name,
-                dtype=get_dtype_import_dict()[motion_name]
+                dtype=get_dtype_import_dict()[motion_name],
+                encoding='utf-8'
                 )
         except ValueError:
             continue
@@ -606,7 +613,8 @@ def import_motion_cor_2_v1_0_0(motion_name, directory_names):
     for idx, name in enumerate(useable_files):
         data_name = np.genfromtxt(
             name,
-            dtype=get_dtype_import_dict()[motion_name]
+            dtype=get_dtype_import_dict()[motion_name],
+            encoding='utf-8'
             )
         data[idx]['file_name'] = name
         shift_x = np.array([

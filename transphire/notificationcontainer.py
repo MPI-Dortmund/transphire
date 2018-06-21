@@ -45,7 +45,7 @@ class NotificationContainer(QWidget):
     sig_stop = pyqtSignal()
 
     def __init__(
-            self, content, mount_worker, process_worker, plot_worker,
+            self, content, mount_worker, process_worker,
             settings_folder, parent=None, **kwargs
             ):
         """
@@ -55,7 +55,6 @@ class NotificationContainer(QWidget):
         content - TranSPHIRE content
         mount_worker - Mount worker object
         process_worker - Process worker object
-        plot_worker - Plot worker object
         settings_folder - Folder to load/save settings from/to
         parent - Parent widget (default None)
 
@@ -141,7 +140,6 @@ class NotificationContainer(QWidget):
         self.button_test.clicked.connect(lambda: self.send_notification('Test successful'))
         mount_worker.sig_notification.connect(self.send_notification)
         process_worker.sig_notification.connect(self.send_notification)
-        plot_worker.sig_notification.connect(self.send_notification)
 
         self.enable_telegram = True
         self.enable_email = True

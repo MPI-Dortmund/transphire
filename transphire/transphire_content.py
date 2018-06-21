@@ -17,6 +17,7 @@
 """
 
 from transphire import transphire_utils as tu
+from transphire import transphire_import as ti
 
 
 def default_cryolo_v1_0_0():
@@ -279,6 +280,42 @@ def default_others():
 def default_notification():
     """
     Content of notification tab.
+
+    Arguments:
+    None
+
+    Return:
+    Content items as list
+    """
+    items = [
+        ['Project quota warning (%)', '80', float, '', 'PLAIN'],
+        ['Project quota stop (%)', '90', float, '', 'PLAIN'],
+        ['Scratch quota warning (%)', '80', float, '', 'PLAIN'],
+        ['Scratch quota stop (%)', '90', float, '', 'PLAIN'],
+        ['Time until notification', '25', float, '', 'PLAIN'],
+        ['Nr. of values used for median', '5', int, '', 'PLAIN'],
+        ]
+    dtype_dict = ti.get_dtype_dict()
+    for name in ['ctf', 'motion']:
+        for key in dtype_dict[name]:
+            key = key[0]
+            if key == 'file_name':
+                continue
+            elif key == 'mic_number':
+                continue
+            else:
+                items.append(
+                    ['{0} warning'.format(key), '-10000 10000', [float, float], '', 'PLAIN']
+                    )
+                items.append(
+                    ['{0} skip'.format(key), '-10000 10000', [float, float], '', 'PLAIN']
+                    )
+    return items
+
+
+def default_notification_widget():
+    """
+    Content of notification widget.
 
     Arguments:
     None
@@ -651,13 +688,7 @@ def default_general():
         ['Start number', '0', int, 'Rename micrographs:True', 'PLAIN'],
         ['Estimated mic number', '5000', int, 'Rename micrographs:True', 'PLAIN'],
         ['Project directory', '', str, '', 'DIR'],
-        ['Project quota warning (%)', '80', float, '', 'PLAIN'],
-        ['Project quota stop (%)', '90', float, '', 'PLAIN'],
         ['Scratch directory', '', str, '', 'DIR'],
-        ['Scratch quota warning (%)', '80', float, '', 'PLAIN'],
-        ['Scratch quota stop (%)', '90', float, '', 'PLAIN'],
-        ['Time until notification', '25', float, '', 'PLAIN'],
-        ['Phase shift warning (deg)', '110', float, '', 'PLAIN'],
         ]
     return items
 

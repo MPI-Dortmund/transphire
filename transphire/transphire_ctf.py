@@ -20,7 +20,6 @@ import glob
 import os
 import shutil
 import numpy as np
-from transphire import transphire_utils as tu
 from transphire import transphire_import as ti
 
 
@@ -374,6 +373,8 @@ def create_ctffind_4_v4_1_8_command(ctf_name, file_input, file_output, settings)
 
 
 def combine_ctf_outputs(
+        data,
+        data_orig,
         root_path,
         file_name,
         settings,
@@ -400,8 +401,6 @@ def combine_ctf_outputs(
     ctf_settings = settings[ctf_name]
     ctf_folder = settings['ctf_folder']
     project_folder = '{0}/'.format(settings['project_folder'])
-
-    data, data_orig = tu.import_ctf(ctf_name, ctf_folder)
 
     if ctf_name.lower().startswith('cter'):
         data_star = data
@@ -471,7 +470,7 @@ def to_star_file(data, ctf_name, ctf_settings, project_folder, ctf_folder, sum_f
     """
     export_dtype = data.dtype.descr
     extension_dtype = [
-        ('_rlnCtfImage', '|S200'),
+        ('_rlnCtfImage', '|U200'),
         ('_rlnVoltage', '<f8'),
         ('_rlnSphericalAberration', '<f8'),
         ('_rlnAmplitudeContrast', '<f8'),
@@ -488,7 +487,7 @@ def to_star_file(data, ctf_name, ctf_settings, project_folder, ctf_folder, sum_f
         for name in row.dtype.names:
 
             if name == 'file_name':
-                value = sum_file.replace(project_folder, '').encode()
+                value = sum_file.replace(project_folder, '')
             elif name == 'defocus':
                 value = (1 * row['defocus_diff'] + 2 * row['defocus']) / 2
             elif name == 'defocus_diff':
@@ -538,7 +537,7 @@ def create_export_data(export_data, lines, maximum_string):
                 row_string.append('{0: 14f}'.format(value))
             else:
                 length = maximum_string[name]
-                row_string.append('{0:{1}s}'.format(value.decode('utf-8'), length))
+                row_string.append('{0:{1}s}'.format(value, length))
         lines.append('\t'.join(row_string))
 
 
@@ -607,7 +606,7 @@ def to_partres_file(data, ctf_name, ctf_settings, project_folder, ctf_folder, su
             else:
                 # Is a CTER partres name
                 if name == 'file_name':
-                    value = sum_file.replace(project_folder, '').encode()
+                    value = sum_file.replace(project_folder, '')
                 else:
                     pass
 
@@ -660,22 +659,22 @@ def get_constant_value(key, ctf_settings, row, project_folder, ctf_name, ctf_fol
         if ctf_name.lower().startswith('gctf'):
             file_name = row['file_name'].replace(
                 extension,
-                '.ctf:mrc'.encode()
+                '.ctf:mrc'
                 )
-            file_name = os.path.join(ctf_folder.encode(), os.path.basename(file_name))
+            file_name = os.path.join(ctf_folder, os.path.basename(file_name))
         elif ctf_name.lower().startswith('ctffind'):
             file_name = row['file_name'].replace(
                 extension,
-                '.mrc:mrc'.encode()
+                '.mrc:mrc'
                 )
-            file_name = os.path.join(ctf_folder.encode(), os.path.basename(file_name))
+            file_name = os.path.join(ctf_folder, os.path.basename(file_name))
         elif ctf_name.lower().startswith('cter'):
-            file_name = 'not_available_with_cter_option'.encode()
+            file_name = 'not_available_with_cter_option'
         else:
             raise IOError('Cannot find ctf_name! {0}'.format(
                 ctf_name
                 ))
-        value = file_name.replace(project_folder.encode(), b'')
+        value = file_name.replace(project_folder, '')
     elif key == '_rlnVoltage' or key == 'volt':
         if '--kV' in ctf_settings:
             value = ctf_settings['--kV']

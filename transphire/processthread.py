@@ -15,7 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import time as ti
+import time
 import os
 import re
 import shutil as sh
@@ -100,7 +100,7 @@ class ProcessThread(QThread):
         self.time_last = None
         self.time_last_error = None
         self.notification_send = None
-        self.notification_time = float(self.settings['General']['Time until notification'])
+        self.notification_time = float(self.settings['Notification']['Time until notification'])
 
         self.queue = shared_dict['queue'][self.content_settings['name']]
         self.shared_dict_typ = shared_dict['typ'][self.content_settings['name']]
@@ -128,8 +128,8 @@ class ProcessThread(QThread):
         None
         """
         # Current time
-        self.time_last = ti.time()
-        self.time_last_error = ti.time()
+        self.time_last = time.time()
+        self.time_last_error = time.time()
         self.notification_send = False
 
         # Event loop
@@ -204,7 +204,7 @@ class ProcessThread(QThread):
                 continue
 
             if self.shared_dict_typ['unknown_error']:
-                time_diff = ti.time() - self.time_last
+                time_diff = time.time() - self.time_last
                 if self.typ == 'Find':
                     self.queue_com['status'].put([
                         'Unknown Error {0:.1f}min'.format(time_diff / 60),
@@ -275,8 +275,8 @@ class ProcessThread(QThread):
         Return:
         True, if the computer did not hit the limit, else False
         """
-        scratch_stop = float(self.settings['General']['Scratch quota stop (%)']) / 100
-        project_stop = float(self.settings['General']['Project quota stop (%)']) / 100
+        scratch_stop = float(self.settings['Notification']['Scratch quota stop (%)']) / 100
+        project_stop = float(self.settings['Notification']['Project quota stop (%)']) / 100
         if self.typ in ['Copy_work', 'Copy_backup', 'Copy_hdd']:
             return True
         else:
@@ -340,7 +340,7 @@ class ProcessThread(QThread):
             ]
         for process, folder in processes:
             if self.shared_dict_typ[process]:
-                time_diff = ti.time() - self.time_last
+                time_diff = time.time() - self.time_last
                 if folder == 'Search path frames' or \
                         folder == 'Search path meta':
                     output_folder = self.settings['General'][folder]
@@ -370,11 +370,11 @@ class ProcessThread(QThread):
                                 self.name
                                 )
                             ]))
-                        if ti.time() - self.time_last_error > 1800:
+                        if time.time() - self.time_last_error > 1800:
                             self.queue_com['error'].put(
                                 '{0} is connected again!'.format(self.typ)
                                 )
-                            self.time_last_error = ti.time()
+                            self.time_last_error = time.time()
                         else:
                             pass
                     else:
@@ -476,7 +476,7 @@ class ProcessThread(QThread):
         Return:
         None
         """
-        time_diff = ti.time() - self.time_last
+        time_diff = time.time() - self.time_last
 
         self.queue_com['status'].put([
             'Running {0:.1f}min'.format(time_diff / 60),
@@ -507,16 +507,16 @@ class ProcessThread(QThread):
                     '\n{0}'.format(self.shared_dict_typ['error_file'])
                     ])
                 self.queue_com['notification'].put(message)
-                if ti.time() - self.time_last_error > 1800:
+                if time.time() - self.time_last_error > 1800:
                     self.queue_com['error'].put(message)
-                    self.time_last_error = ti.time()
+                    self.time_last_error = time.time()
                 else:
                     pass
                 self.shared_dict_typ['unknown_error'] = True
             else:
                 pass
         else:
-            time_diff = ti.time() - self.time_last
+            time_diff = time.time() - self.time_last
             if time_diff / 60 > self.notification_time and \
                     not self.notification_send:
                 self.notification_send = True
@@ -639,9 +639,9 @@ class ProcessThread(QThread):
                     '\n{0}'.format(self.shared_dict_typ['error_file'])
                     ])
                 self.queue_com['notification'].put(message)
-                if ti.time() - self.time_last_error > 1800:
+                if time.time() - self.time_last_error > 1800:
                     self.queue_com['error'].put(message)
-                    self.time_last_error = ti.time()
+                    self.time_last_error = time.time()
                 else:
                     pass
                 self.shared_dict_typ['unknown_error'] = True
@@ -665,9 +665,9 @@ class ProcessThread(QThread):
                     '\n{0}'.format(self.shared_dict_typ['error_file'])
                     ])
                 self.queue_com['notification'].put(message)
-                if ti.time() - self.time_last_error > 1800:
+                if time.time() - self.time_last_error > 1800:
                     self.queue_com['error'].put(message)
-                    self.time_last_error = ti.time()
+                    self.time_last_error = time.time()
                 else:
                     pass
                 self.shared_dict_typ['unknown_error'] = True
@@ -705,7 +705,7 @@ class ProcessThread(QThread):
         """
         self.shared_dict_typ['error_lock'].lock()
         try:
-            local = ti.localtime()
+            local = time.localtime()
             print('\n{0}/{1}/{2}-{3}:{4}:{5}\t'.format(*local[0:6]))
             print(root_name)
             print('New error message in error file: {0}'.format(
@@ -818,9 +818,9 @@ class ProcessThread(QThread):
             self.shared_dict_typ['error_file']
             )
         self.queue_com['notification'].put(message)
-        if ti.time() - self.time_last_error > 1800:
+        if time.time() - self.time_last_error > 1800:
             self.queue_com['error'].put(message)
-            self.time_last_error = ti.time()
+            self.time_last_error = time.time()
         else:
             pass
 
@@ -937,7 +937,7 @@ class ProcessThread(QThread):
 
         data = np.empty(
             len(file_list),
-            dtype=[('root', '|S200'), ('date', '<i8'), ('time', '<i8')]
+            dtype=[('root', '|U200'), ('date', '<i8'), ('time', '<i8')]
             )
 
         for idx, root_name in enumerate(file_list):
@@ -975,7 +975,7 @@ class ProcessThread(QThread):
                 if var:
                     self.add_to_queue(
                         aim=aim_name,
-                        root_name=root_name.decode('utf-8')
+                        root_name=root_name
                         )
                 else:
                     pass
@@ -1063,7 +1063,7 @@ class ProcessThread(QThread):
                     if root_name in self.shared_dict['share'][self.content_settings['group']]:
                         continue
                     else:
-                        self.time_last = ti.time()
+                        self.time_last = time.time()
                         self.notification_send = False
                         file_list.append(root_name)
                         self.shared_dict['share'][self.content_settings['group']].append(
@@ -1173,7 +1173,7 @@ class ProcessThread(QThread):
                 self.name,
                 new_name_meta
                 ) + \
-              'Check Startnumber!'
+                'Check Startnumber! Last one used: {0}'.format(self.shared_dict_typ['file_number'])
             self.queue_com['notification'].put(message)
             raise FileNotFoundError(message)
         else:
@@ -1340,12 +1340,55 @@ class ProcessThread(QThread):
         finally:
             self.shared_dict['translate_lock'].unlock()
 
+    def remove_from_translate(self, root_name):
+        """
+        Remove line from the translation file.
+
+        root_name - Root name of the file to remove
+
+        Returns:
+        None
+        """
+        file_name = os.path.join(
+            self.settings['project_folder'],
+            'Translation_file.txt'
+            )
+        self.shared_dict['translate_lock'].lock()
+        try:
+            with open(file_name, 'r') as read:
+                new_lines = []
+                for line in read.readlines():
+                    if root_name in line:
+                        pass
+                    else:
+                        new_lines.append(line)
+
+            with open(file_name, 'w') as write:
+                write.write(''.join(new_lines))
+
+        finally:
+            self.shared_dict['translate_lock'].unlock()
+
+        if not self.settings['Copy']['Copy to work'] == 'False':
+            self.add_to_queue(aim='Copy_work', root_name=file_name)
+        else:
+            pass
+        if not self.settings['Copy']['Copy to HDD'] == 'False':
+            self.add_to_queue(aim='Copy_hdd', root_name=file_name)
+        else:
+            pass
+        if not self.settings['Copy']['Copy to backup'] == 'False':
+            self.add_to_queue(aim='Copy_backup', root_name=file_name)
+        else:
+            pass
+
     def append_to_translate(self, root_name, new_name, xml_file):
         """
         Write to the translation file.
 
         root_name - Root name of the file
         new_name - New name of the file
+        xml_file - XML file that contains meta data information
 
         Returns:
         None
@@ -1786,68 +1829,115 @@ class ProcessThread(QThread):
             else:
                 pass
 
-        for motion_idx in queue_dict:
-            for aim in self.content_settings['aim']:
-                *compare, aim_name = aim.split(':')
-                var = True
-                for typ in compare:
-                    name = typ.split('!')[-1]
-                    if typ.startswith('!'):
-                        if self.settings['Copy'][name] == 'False':
-                            continue
+        data = tu.import_motion(
+            self.settings['Copy']['Motion'],
+            self.settings['Motion_folder'][self.settings['Copy']['Motion']]
+            )
+
+        warnings, skip_list = tus.check_for_outlier(
+            dict_name='motion',
+            data=data,
+            file_name=queue_dict[0]['sum'][0],
+            settings=self.settings
+            )
+
+        if skip_list:
+            self.remove_from_translate(os.path.basename(root_name))
+        else:
+            pass
+
+        for warning in skip_list:
+            message = 'The parameter {0} is {1} for file {2}, which is not in the range: {3} to {4}! If this is not the only message, you might consider changing microscope settings!'.format(
+                warning[0],
+                warning[1],
+                root_name,
+                warning[2],
+                warning[3]
+                )
+            self.queue_com['notification'].put(message)
+            self.write_error(msg=message, root_name=root_name)
+
+        for warning in warnings:
+            message = 'The median of the last {0} values for parameter {1} is {2}, which is not in the range: {3} to {4}! You might consider to adjust microscope settings!'.format(
+                self.settings['Notification']['Nr. of values used for median'],
+                warning[0],
+                warning[1],
+                warning[2],
+                warning[3]
+                )
+            if time.time() - self.time_last_error > 1800:
+                self.queue_com['error'].put(message)
+                self.time_last_error = time.time()
+            else:
+                pass
+            self.queue_com['notification'].put(message)
+            self.write_error(msg=message, root_name=root_name)
+
+        if skip_list:
+            pass
+        else:
+            for motion_idx in queue_dict:
+                for aim in self.content_settings['aim']:
+                    *compare, aim_name = aim.split(':')
+                    var = True
+                    for typ in compare:
+                        name = typ.split('!')[-1]
+                        if typ.startswith('!'):
+                            if self.settings['Copy'][name] == 'False':
+                                continue
+                            else:
+                                var = False
+                                break
                         else:
-                            var = False
-                            break
-                    else:
-                        if not self.settings['Copy'][name] == 'False':
-                            continue
+                            if not self.settings['Copy'][name] == 'False':
+                                continue
+                            else:
+                                var = False
+                                break
+                    if var:
+                        sum_files = queue_dict[motion_idx]['sum']
+                        log_files = queue_dict[motion_idx]['log']
+                        sum_dw_files = queue_dict[motion_idx]['sum_dw']
+                        if 'Picking' in compare:
+                            if motion_idx == 0:
+                                for file_name in sum_dw_files:
+                                    self.add_to_queue(aim=aim_name, root_name=file_name)
+                            else:
+                                pass
+                        elif '!Compress data' in compare:
+                            if motion_idx == 0:
+                                self.add_to_queue(aim=aim_name, root_name=file_input)
+                            else:
+                                pass
+                        elif 'Compress data' in compare:
+                            if motion_idx == 0:
+                                self.add_to_queue(aim=aim_name, root_name=file_input)
+                            else:
+                                pass
+                        elif 'CTF_frames' in compare:
+                            if motion_idx == 0:
+                                for file_name in sum_files:
+                                    self.add_to_queue(
+                                        aim=aim_name,
+                                        root_name='{0};;;{1}'.format(file_name, file_input)
+                                        )
+                            else:
+                                pass
+                        elif 'CTF_sum' in compare:
+                            if motion_idx == 0:
+                                for file_name in sum_files:
+                                    self.add_to_queue(aim=aim_name, root_name=file_name)
+                            else:
+                                pass
                         else:
-                            var = False
-                            break
-                if var:
-                    sum_files = queue_dict[motion_idx]['sum']
-                    log_files = queue_dict[motion_idx]['log']
-                    sum_dw_files = queue_dict[motion_idx]['sum_dw']
-                    if 'Picking' in compare:
-                        if motion_idx == 0:
+                            for file_name in sum_files:
+                                self.add_to_queue(aim=aim_name, root_name=file_name)
+                            for file_name in log_files:
+                                self.add_to_queue(aim=aim_name, root_name=file_name)
                             for file_name in sum_dw_files:
                                 self.add_to_queue(aim=aim_name, root_name=file_name)
-                        else:
-                            pass
-                    elif '!Compress data' in compare:
-                        if motion_idx == 0:
-                            self.add_to_queue(aim=aim_name, root_name=file_input)
-                        else:
-                            pass
-                    elif 'Compress data' in compare:
-                        if motion_idx == 0:
-                            self.add_to_queue(aim=aim_name, root_name=file_input)
-                        else:
-                            pass
-                    elif 'CTF_frames' in compare:
-                        if motion_idx == 0:
-                            for file_name in sum_files:
-                                self.add_to_queue(
-                                    aim=aim_name,
-                                    root_name='{0};;;{1}'.format(file_name, file_input)
-                                    )
-                        else:
-                            pass
-                    elif 'CTF_sum' in compare:
-                        if motion_idx == 0:
-                            for file_name in sum_files:
-                                self.add_to_queue(aim=aim_name, root_name=file_name)
-                        else:
-                            pass
                     else:
-                        for file_name in sum_files:
-                            self.add_to_queue(aim=aim_name, root_name=file_name)
-                        for file_name in log_files:
-                            self.add_to_queue(aim=aim_name, root_name=file_name)
-                        for file_name in sum_dw_files:
-                            self.add_to_queue(aim=aim_name, root_name=file_name)
-                else:
-                    pass
+                        pass
 
         # Plot Motion information
         self.queue_lock.lock()
@@ -1954,8 +2044,59 @@ class ProcessThread(QThread):
         copied_log_files.extend(zero_list)
         copied_log_files = list(set(copied_log_files))
 
+        data, data_orig = tu.import_ctf(
+            self.settings['Copy']['CTF'],
+            self.settings['ctf_folder']
+            )
+
+        warnings, skip_list = tus.check_for_outlier(
+            dict_name='ctf',
+            data=data,
+            file_name=sum_file,
+            settings=self.settings
+            )
+
+        if skip_list:
+            self.shared_dict['bad'][self.typ].append(sum_file)
+            self.remove_from_translate(os.path.basename(root_name))
+        else:
+            pass
+
+        for warning in skip_list:
+            message = 'The parameter {0} is {1} for file {2}, which is not in the range: {3} to {4}! If this is not the only message, you might consider changing microscope settings!'.format(
+                warning[0],
+                warning[1],
+                sum_file,
+                warning[2],
+                warning[3]
+                )
+            self.queue_com['notification'].put(message)
+            self.write_error(msg=message, root_name=sum_file)
+
+        for warning in warnings:
+            message = 'The median of the last {0} values for parameter {1} is {2}, which is not in the range: {3} to {4}! You might consider to adjust microscope settings!'.format(
+                self.settings['Notification']['Nr. of values used for median'],
+                warning[0],
+                warning[1],
+                warning[2],
+                warning[3]
+                )
+            self.queue_com['notification'].put(message)
+            if time.time() - self.time_last_error > 1800:
+                self.queue_com['error'].put(message)
+                self.time_last_error = time.time()
+            else:
+                pass
+            self.write_error(msg=message, root_name=sum_file)
+
+        # Remove all rows that were skipped in the past
+        data = data[~np.in1d(data['file_name'], self.shared_dict['bad'][self.typ])]
+        data_orig = data_orig[~np.in1d(data['file_name'], self.shared_dict['bad'][self.typ])]
+
         # Combine output files
         output_name_partres, output_name_star = tuc.combine_ctf_outputs(
+            data=data,
+            data_orig=data_orig,
             root_path=root_path,
             file_name=file_name,
             settings=self.settings,
@@ -1981,32 +2122,35 @@ class ProcessThread(QThread):
         else:
             pass
 
-        # Add to queue
-        for aim in self.content_settings['aim']:
-            *compare, aim_name = aim.split(':')
-            var = True
-            for typ in compare:
-                name = typ.split('!')[-1]
-                if typ.startswith('!'):
-                    if self.settings['Copy'][name] == 'False':
-                        continue
+        if skip_list:
+            pass
+        else:
+            # Add to queue
+            for aim in self.content_settings['aim']:
+                *compare, aim_name = aim.split(':')
+                var = True
+                for typ in compare:
+                    name = typ.split('!')[-1]
+                    if typ.startswith('!'):
+                        if self.settings['Copy'][name] == 'False':
+                            continue
+                        else:
+                            var = False
+                            break
                     else:
-                        var = False
-                        break
-                else:
-                    if not self.settings['Copy'][name] == 'False':
-                        continue
+                        if not self.settings['Copy'][name] == 'False':
+                            continue
+                        else:
+                            var = False
+                            break
+                if var:
+                    if '!Compress data' in compare or 'Compress data' in compare:
+                        self.add_to_queue(aim=aim_name, root_name=file_input)
                     else:
-                        var = False
-                        break
-            if var:
-                if '!Compress data' in compare or 'Compress data' in compare:
-                    self.add_to_queue(aim=aim_name, root_name=file_input)
+                        for log_file in copied_log_files:
+                            self.add_to_queue(aim=aim_name, root_name=log_file)
                 else:
-                    for log_file in copied_log_files:
-                        self.add_to_queue(aim=aim_name, root_name=log_file)
-            else:
-                pass
+                    pass
 
         # Plot CTF information
         self.queue_com['plot_ctf'].put(True)
@@ -2407,12 +2551,12 @@ class ProcessThread(QThread):
         with open(log_file, 'w') as out:
             out.write(command)
             with open(err_file, 'w') as err:
-                start_time = ti.time()
+                start_time = time.time()
                 if shell:
                     sp.Popen(command, shell=True, stdout=out, stderr=err).wait()
                 else:
                     sp.Popen(command.split(), stdout=out, stderr=err).wait()
-                stop_time = ti.time()
+                stop_time = time.time()
                 out.write('\nTime: {0} sec'.format(stop_time - start_time)) 
 
         if gpu_list:
