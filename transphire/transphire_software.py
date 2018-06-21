@@ -896,7 +896,7 @@ def check_for_outlier(dict_name, data, file_name, settings):
         else:
             skip_list.append([
                 key,
-                data[key][mask],
+                data[key][mask][0],
                 skip_low,
                 skip_high
                 ])

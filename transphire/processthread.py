@@ -1847,7 +1847,7 @@ class ProcessThread(QThread):
             pass
 
         for warning in skip_list:
-            message = 'The parameter {0} is {1} for file {2}, which is not in the range: {3} to {4}! If this is not the only message, you might consider changing microscope settings!'.format(
+            message = 'The parameter {0} is {1} for file {2}, which is not in the range: {3} to {4} and will be skipped! If this is not the only message, you might consider changing microscope settings!'.format(
                 warning[0],
                 warning[1],
                 root_name,
@@ -2057,13 +2057,17 @@ class ProcessThread(QThread):
             )
 
         if skip_list:
-            self.shared_dict['bad'][self.typ].append(sum_file)
+            self.queue_lock.lock()
+            try:
+                self.shared_dict['bad'][self.typ].append(sum_file)
+            finally:
+                self.queue_lock.unlock()
             self.remove_from_translate(os.path.basename(root_name))
         else:
             pass
 
         for warning in skip_list:
-            message = 'The parameter {0} is {1} for file {2}, which is not in the range: {3} to {4}! If this is not the only message, you might consider changing microscope settings!'.format(
+            message = 'The parameter {0} is {1} for file {2}, which is not in the range: {3} to {4} and will be skipped! If this is not the only message, you might consider changing microscope settings!'.format(
                 warning[0],
                 warning[1],
                 sum_file,
@@ -2090,35 +2094,42 @@ class ProcessThread(QThread):
             self.write_error(msg=message, root_name=sum_file)
 
         # Remove all rows that were skipped in the past
-        data = data[~np.in1d(data['file_name'], self.shared_dict['bad'][self.typ])]
-        data_orig = data_orig[~np.in1d(data['file_name'], self.shared_dict['bad'][self.typ])]
+        self.queue_lock.lock()
+        try:
+            data = data[~np.in1d(data['file_name'], self.shared_dict['bad'][self.typ])]
+            data_orig = data_orig[~np.in1d(data['file_name'], self.shared_dict['bad'][self.typ])]
+        finally:
+            self.queue_lock.unlock()
 
         # Combine output files
-        output_name_partres, output_name_star = tuc.combine_ctf_outputs(
-            data=data,
-            data_orig=data_orig,
-            root_path=root_path,
-            file_name=file_name,
-            settings=self.settings,
-            queue_com=self.queue_com,
-            shared_dict=self.shared_dict,
-            name=self.name,
-            sum_file=sum_file
-            )
+        if data.shape[0] != 0:
+            output_name_partres, output_name_star = tuc.combine_ctf_outputs(
+                data=data,
+                data_orig=data_orig,
+                root_path=root_path,
+                file_name=file_name,
+                settings=self.settings,
+                queue_com=self.queue_com,
+                shared_dict=self.shared_dict,
+                name=self.name,
+                sum_file=sum_file
+                )
 
-        if not self.settings['Copy']['Copy to work'] == 'False':
-            self.add_to_queue(aim='Copy_work', root_name=output_name_partres)
-            self.add_to_queue(aim='Copy_work', root_name=output_name_star)
-        else:
-            pass
-        if not self.settings['Copy']['Copy to HDD'] == 'False':
-            self.add_to_queue(aim='Copy_hdd', root_name=output_name_partres)
-            self.add_to_queue(aim='Copy_hdd', root_name=output_name_star)
-        else:
-            pass
-        if not self.settings['Copy']['Copy to backup'] == 'False':
-            self.add_to_queue(aim='Copy_backup', root_name=output_name_partres)
-            self.add_to_queue(aim='Copy_backup', root_name=output_name_star)
+            if not self.settings['Copy']['Copy to work'] == 'False':
+                self.add_to_queue(aim='Copy_work', root_name=output_name_partres)
+                self.add_to_queue(aim='Copy_work', root_name=output_name_star)
+            else:
+                pass
+            if not self.settings['Copy']['Copy to HDD'] == 'False':
+                self.add_to_queue(aim='Copy_hdd', root_name=output_name_partres)
+                self.add_to_queue(aim='Copy_hdd', root_name=output_name_star)
+            else:
+                pass
+            if not self.settings['Copy']['Copy to backup'] == 'False':
+                self.add_to_queue(aim='Copy_backup', root_name=output_name_partres)
+                self.add_to_queue(aim='Copy_backup', root_name=output_name_star)
+            else:
+                pass
         else:
             pass
 
