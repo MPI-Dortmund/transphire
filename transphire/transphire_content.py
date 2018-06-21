@@ -36,6 +36,10 @@ def default_cryolo_v1_0_0():
         ['--gpu', '0', int, '', 'PLAIN'],
         ['--patch', '2', int, '', 'PLAIN'],
         ['--threshold', '0.3', float, '', 'PLAIN'],
+        ['Filter micrographs', ['True', 'False'], bool, '', 'COMBO'],
+        ['Filter value high pass (A)', '9999', float, 'Filter micrographs:True', 'PLAIN'],
+        ['Filter value low pass (A)', '10', float, 'Filter micrographs:True', 'PLAIN'],
+        ['Pixel size (A/px)', '1', float, 'Filter micrographs:True', 'PLAIN'],
         ]
     return items
 
@@ -217,6 +221,7 @@ def default_path():
     items.append(['IMOD newstack', '', str, '', 'FILE/CHOICE'])
     items.append(['IMOD mrc2tif', '', str, '', 'FILE/CHOICE'])
     items.append(['IMOD dm2mrc', '', str, '', 'FILE/CHOICE'])
+    items.append(['e2proc2d.py', '', str, '', 'FILE/CHOICE'])
     items.append(['SumMovie v1.0.2', '', str, '', 'FILE/CHOICE'])
     function_dict = tu.get_function_dict()
     for key in sorted(function_dict.keys()):
@@ -392,13 +397,12 @@ def default_pipeline():
             'Sum to work:Copy to work:Copy_work,' +
             'Sum to HDD:Copy to HDD:Copy_hdd,' +
             'Sum to backup:Copy to backup:Copy_backup,' +
-            'Picking:Picking,' +
             'CTF_frames:CTF,' +
-            'CTF_sum:CTF,' +
-            '!CTF_frames:Compress data:Compress,' +
-            '!CTF_frames:!Compress data:Frames to work:Copy to work:Copy_work,' +
-            '!CTF_frames:!Compress data:Frames to HDD:Copy to HDD:Copy_hdd,' +
-            '!CTF_frames:!Compress data:Frames to backup:Copy to backup:Copy_backup',
+            '!CTF_frames:!CTF_sum:Compress data:Compress,' +
+            '!CTF_frames:!CTF_sum:!Compress data:Frames to work:Copy to work:Copy_work,' +
+            '!CTF_frames:!CTF_sum:!Compress data:Frames to HDD:Copy to HDD:Copy_hdd,' +
+            '!CTF_frames:!CTF_sum:!Compress data:Frames to backup:Copy to backup:Copy_backup,' +
+            'CTF_sum:CTF',
             'PLAIN'
             ],
         [
@@ -406,13 +410,14 @@ def default_pipeline():
             '2',
             int,
             'CTF;' +
+            'Motion:Picking:Picking,' +
             'CTF to work:Copy to work:Copy_work,' +
             'CTF to HDD:Copy to HDD:Copy_hdd,' +
             'CTF to backup:Copy to backup:Copy_backup,' +
-            'CTF_frames:Compress data:Compress,' +
-            'CTF_frames:!Compress data:Frames to work:Copy to work:Copy_work,' +
-            'CTF_frames:!Compress data:Frames to HDD:Copy to HDD:Copy_hdd,' +
-            'CTF_frames:!Compress data:Frames to backup:Copy to backup:Copy_backup',
+            'Compress data:Compress,' +
+            '!Compress data:Frames to work:Copy to work:Copy_work,' +
+            '!Compress data:Frames to HDD:Copy to HDD:Copy_hdd,' +
+            '!Compress data:Frames to backup:Copy to backup:Copy_backup',
             'PLAIN'
             ],
         [
@@ -429,9 +434,9 @@ def default_pipeline():
             'Compress',
             '2',
             int,
-            'Compress;'
-            'Frames to backup:Copy to backup:Copy_backup,'
-            'Frames to HDD:Copy to HDD:Copy_hdd,'
+            'Compress;' +
+            'Frames to backup:Copy to backup:Copy_backup,' +
+            'Frames to HDD:Copy to HDD:Copy_hdd,' +
             'Frames to work:Copy to work:Copy_work',
             'PLAIN'
             ],

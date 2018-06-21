@@ -214,6 +214,7 @@ def check_update():
         pass
     else:
         message = message_template.format(message_insert)
+        print(message)
         while True:
             answer = input('Do you want to quit here to do the update? [y/n]')
             if answer not in ['y', 'n']:

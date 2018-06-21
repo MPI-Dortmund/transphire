@@ -23,7 +23,7 @@ import numpy as np
 from transphire import transphire_import as ti
 
 
-def get_ctf_command(file_input, new_name, settings, queue_com, name):
+def get_ctf_command(file_sum, file_input, new_name, settings, queue_com, name):
     """
     Create the ctf command based on the ctf software.
 
@@ -45,6 +45,7 @@ def get_ctf_command(file_input, new_name, settings, queue_com, name):
             ctf_name == 'CTFFIND4 v4.1.10':
         command = create_ctffind_4_v4_1_8_command(
             ctf_name = ctf_name,
+            file_sum=file_sum,
             file_input=file_input,
             file_output=new_name,
             settings=settings
@@ -57,6 +58,7 @@ def get_ctf_command(file_input, new_name, settings, queue_com, name):
             ctf_name == 'Gctf v1.18':
         command = create_gctf_v1_06_command(
             ctf_name=ctf_name,
+            file_sum=file_sum,
             file_input=file_input,
             file_output=new_name,
             settings=settings
@@ -74,6 +76,7 @@ def get_ctf_command(file_input, new_name, settings, queue_com, name):
         output_dir, _ = os.path.splitext(new_name)
         command = create_cter_1_0_command(
             ctf_name=ctf_name,
+            file_sum=file_sum,
             file_input=file_input,
             output_dir=output_dir,
             settings=settings
@@ -174,7 +177,7 @@ def recursive_file_search(directory, files):
 
 
 def create_gctf_v1_06_command(
-        ctf_name, file_input, file_output, settings
+        ctf_name, file_sum, file_input, file_output, settings
         ):
     """Create the Gctf v1.06 command"""
 
@@ -182,8 +185,9 @@ def create_gctf_v1_06_command(
     # Start the program
     command.append('{0}'.format(settings['Path'][ctf_name]))
     ignore_list = []
+    ignore_list.append('Use movies')
+    ignore_list.append('Phase plate')
     if settings[ctf_name]['Phase plate'] == 'False':
-        ignore_list.append('Phase plate')
         ignore_list.append('--phase_shift_L')
         ignore_list.append('--phase_shift_H')
         ignore_list.append('--phase_shift_S')
@@ -191,15 +195,15 @@ def create_gctf_v1_06_command(
         ignore_list.append('--only_search_ps')
         ignore_list.append('--cosearch_refine_ps')
     else:
-        ignore_list.append('Phase plate')
+        pass
     if settings[ctf_name]['Use movies'] == 'False':
-        ignore_list.append('Use movies')
         ignore_list.append('--do_mdef_refine')
         ignore_list.append('--mdef_ave_type')
         ignore_list.append('--mdef_aveN')
         ignore_list.append('--mdef_fit')
+        file_input = file_sum
     else:
-        ignore_list.append('Use movies')
+        pass
 
     command.append('--ctfstar')
     command.append('{0}_gctf.star'.format(file_output))
@@ -221,7 +225,7 @@ def create_gctf_v1_06_command(
 
 
 def create_cter_1_0_command(
-        ctf_name, file_input, output_dir, settings
+        ctf_name, file_sum, file_input, output_dir, settings
         ):
     """Create the CTER v1.0 command"""
 
@@ -233,7 +237,7 @@ def create_cter_1_0_command(
     command = []
     # Start the program
     command.append('{0}'.format(settings['Path'][ctf_name]))
-    command.append("'{0}*'".format(file_input))
+    command.append("'{0}*'".format(file_sum))
     command.append(output_dir)
     command.append('--selection_list')
     command.append(file_input)
@@ -268,10 +272,14 @@ def create_cter_1_0_command(
 
     return ' '.join(command)
 
-def create_ctffind_4_v4_1_8_command(ctf_name, file_input, file_output, settings):
+def create_ctffind_4_v4_1_8_command(ctf_name, file_sum, file_input, file_output, settings):
     """Create the ctffind command"""
     ctf_settings = settings[ctf_name]
     ctffind_command = []
+    if ctf_settings['Use movies'] == 'True':
+        pass
+    else:
+        file_input = file_sum
     # Input file
     ctffind_command.append('{0}'.format(file_input))
     # Is movie

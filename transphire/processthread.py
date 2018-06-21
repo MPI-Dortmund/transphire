@@ -1914,19 +1914,13 @@ class ProcessThread(QThread):
                                 self.add_to_queue(aim=aim_name, root_name=file_input)
                             else:
                                 pass
-                        elif 'CTF_frames' in compare:
+                        elif 'CTF_frames' in compare or 'CTF_sum' in compare:
                             if motion_idx == 0:
                                 for file_name in sum_files:
                                     self.add_to_queue(
                                         aim=aim_name,
                                         root_name='{0};;;{1}'.format(file_name, file_input)
                                         )
-                            else:
-                                pass
-                        elif 'CTF_sum' in compare:
-                            if motion_idx == 0:
-                                for file_name in sum_files:
-                                    self.add_to_queue(aim=aim_name, root_name=file_name)
                             else:
                                 pass
                         else:
@@ -1958,12 +1952,14 @@ class ProcessThread(QThread):
         Returns:
         None
         """
-        if ';;;' in root_name:
-            sum_file, file_input = root_name.split(';;;')
-        else:
-            sum_file = root_name
-            file_input = root_name
-        root_name, _ = os.path.splitext(file_input)
+        file_sum, file_input = root_name.split(';;;')
+        try:
+            if self.settings[self.settings['Copy']['CTF']]['Use movies'] == 'True':
+                root_name, _ = os.path.splitext(file_input)
+            else:
+                root_name, _ = os.path.splitext(file_sum)
+        except KeyError:
+            root_name, _ = os.path.splitext(file_sum)
 
         # New name
         file_name = os.path.basename(root_name)
@@ -1974,6 +1970,7 @@ class ProcessThread(QThread):
 
         # Create the command
         command, check_files, block_gpu, gpu_list = tuc.get_ctf_command(
+            file_sum=file_sum,
             file_input=file_input,
             new_name=new_name,
             settings=self.settings,
@@ -2052,14 +2049,14 @@ class ProcessThread(QThread):
         warnings, skip_list = tus.check_for_outlier(
             dict_name='ctf',
             data=data,
-            file_name=sum_file,
+            file_name=file_sum,
             settings=self.settings
             )
 
         if skip_list:
             self.queue_lock.lock()
             try:
-                self.shared_dict['bad'][self.typ].append(sum_file)
+                self.shared_dict['bad'][self.typ].append(file_sum)
             finally:
                 self.queue_lock.unlock()
             self.remove_from_translate(os.path.basename(root_name))
@@ -2070,12 +2067,12 @@ class ProcessThread(QThread):
             message = 'The parameter {0} is {1} for file {2}, which is not in the range: {3} to {4} and will be skipped! If this is not the only message, you might consider changing microscope settings!'.format(
                 warning[0],
                 warning[1],
-                sum_file,
+                file_sum,
                 warning[2],
                 warning[3]
                 )
             self.queue_com['notification'].put(message)
-            self.write_error(msg=message, root_name=sum_file)
+            self.write_error(msg=message, root_name=file_sum)
 
         for warning in warnings:
             message = 'The median of the last {0} values for parameter {1} is {2}, which is not in the range: {3} to {4}! You might consider to adjust microscope settings!'.format(
@@ -2091,7 +2088,7 @@ class ProcessThread(QThread):
                 self.time_last_error = time.time()
             else:
                 pass
-            self.write_error(msg=message, root_name=sum_file)
+            self.write_error(msg=message, root_name=file_sum)
 
         # Remove all rows that were skipped in the past
         self.queue_lock.lock()
@@ -2112,7 +2109,7 @@ class ProcessThread(QThread):
                 queue_com=self.queue_com,
                 shared_dict=self.shared_dict,
                 name=self.name,
-                sum_file=sum_file
+                sum_file=file_sum
                 )
 
             if not self.settings['Copy']['Copy to work'] == 'False':
@@ -2157,6 +2154,8 @@ class ProcessThread(QThread):
                 if var:
                     if '!Compress data' in compare or 'Compress data' in compare:
                         self.add_to_queue(aim=aim_name, root_name=file_input)
+                    elif 'Picking' in compare:
+                        self.add_to_queue(aim=aim_name, root_name=file_sum)
                     else:
                         for log_file in copied_log_files:
                             self.add_to_queue(aim=aim_name, root_name=log_file)
@@ -2199,7 +2198,7 @@ class ProcessThread(QThread):
             log_prefix=log_prefix,
             block_gpu=block_gpu,
             gpu_list=gpu_list,
-            shell=False
+            shell=True
             )
 
         zero_list = []

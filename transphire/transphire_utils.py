@@ -167,7 +167,7 @@ def get_function_dict():
             'content': tc.default_general,
             'executable': False,
             'typ': None,
-            'allow_empty': [],
+            'allow_empty': ['Rename suffix'],
             },
         'Notification': {
             'plot': None,

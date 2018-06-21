@@ -536,8 +536,25 @@ class ProcessWorker(QObject):
         check_files.append(self.settings['Copy']['CTF'])
         check_files.append(self.settings['Copy']['Picking'])
         check_files.append('IMOD header')
+
+        if self.settings['Copy']['Picking'] == 'crYOLO v1.0.0':
+            if self.settings[self.settings['Copy']['Picking']]['Filter micrographs'] == 'True':
+                check_files.append('e2proc2d.py')
+            else:
+                pass
+        else:
+            pass
+
+        if self.settings['Copy']['Compress data'] == 'True':
+            check_files.append('IMOD mrc2tif')
+        else:
+            pass
+
         if len(self.settings['motion_frames']) > 1:
             check_files.append('SumMovie v1.0.2')
+        else:
+            pass
+
         for name in check_files:
             if name != 'False' and name != 'Later':
                 if not os.path.isfile(self.settings['Path'][name]):

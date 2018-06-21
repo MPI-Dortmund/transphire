@@ -109,6 +109,33 @@ def create_cryolo_v1_0_0_command(
 
     command = []
     # Start the program
+    ignore_list = []
+    ignore_list.append('Filter micrographs')
+    ignore_list.append('Filter value high pass (A)')
+    ignore_list.append('Filter value low pass (A)')
+    ignore_list.append('Pixel size (A/px)')
+    if settings[picking_name]['Filter micrographs'] == 'True':
+
+        filter_high = float(settings[picking_name]['Filter value high pass (A)'])
+        filter_low = float(settings[picking_name]['Filter value low pass (A)'])
+        pixel_size = float(settings[picking_name]['Pixel size (A/px)'])
+
+        filter_high_abs = pixel_size / filter_high
+        filter_low_abs = pixel_size / filter_low
+
+        file_output_tmp = os.path.join(
+                settings['picking_folder'],
+                os.path.basename(file_input)
+                )
+
+        command.append('{0}'.format(settings['Path']['e2proc2d.py']))
+        command.append('{0}'.format(file_input))
+        command.append('{0}'.format(file_output_tmp))
+        command.append('--process=filter.lowpass.gauss:cutoff_freq={0}'.format(filter_low_abs))
+        command.append('--process=filter.highpass.gauss:cutoff_freq={0}'.format(filter_high_abs))
+        command.append(';')
+        file_input = file_output_tmp
+
     command.append('{0}'.format(settings['Path'][picking_name]))
 
     command.append('-i')
@@ -117,10 +144,18 @@ def create_cryolo_v1_0_0_command(
     command.append('{0}'.format(file_output))
 
     for key in settings[picking_name]:
-        command.append(key)
-        command.append(
-            '{0}'.format(settings[picking_name][key])
-            )
+        if key in ignore_list:
+            continue
+        else:
+            command.append(key)
+            command.append(
+                '{0}'.format(settings[picking_name][key])
+                )
+
+    if settings[picking_name]['Filter micrographs'] == 'True':
+        command.append(';')
+        command.append('rm')
+        command.append('{0}'.format(file_output_tmp))
 
     return ' '.join(command)
 
