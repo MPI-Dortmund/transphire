@@ -136,6 +136,15 @@ def create_cryolo_v1_0_0_command(
         command.append(';')
         file_input = file_output_tmp
 
+    file_output_jpg = os.path.join(
+            settings['picking_folder'],
+            '{0}.jpg'.format(os.path.splitext(os.path.basename(file_input))[0])
+            )
+    command.append('{0}'.format(settings['Path']['e2proc2d.py']))
+    command.append('{0}'.format(file_input))
+    command.append('{0}'.format(file_output_jpg))
+    command.append(';')
+
     command.append('{0}'.format(settings['Path'][picking_name]))
 
     command.append('-i')
