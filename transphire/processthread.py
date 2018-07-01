@@ -2579,9 +2579,7 @@ class ProcessThread(QThread):
 
         if gpu_list:
             for entry in gpu_list:
-                print('lock', entry, command.split()[0])
                 self.shared_dict['gpu_lock'][entry][mutex_idx].lock()
-                print('locked', entry, command.split()[0])
             if block_gpu:
                 for entry in gpu_list:
                     while self.shared_dict['gpu_lock'][entry][count_idx] != 0:
@@ -2591,7 +2589,6 @@ class ProcessThread(QThread):
                     self.shared_dict['gpu_lock'][entry][count_idx] += 1
                     self.shared_dict['gpu_lock'][entry][mutex_idx].unlock()
                 QThread.msleep(1000)
-            print('start', command.split()[0], block_gpu, gpu_list, self.shared_dict['gpu_lock']['0'])
             QThread.msleep(1000)
         else:
             pass
@@ -2609,7 +2606,6 @@ class ProcessThread(QThread):
                 out.write('\nTime: {0} sec'.format(stop_time - start_time)) 
 
         if gpu_list:
-            print('stop', command.split()[0], block_gpu, gpu_list, self.shared_dict['gpu_lock']['0'])
             QThread.msleep(1000)
             if block_gpu:
                 for entry in gpu_list:
@@ -2617,7 +2613,6 @@ class ProcessThread(QThread):
             else:
                 for entry in gpu_list:
                     self.shared_dict['gpu_lock'][entry][count_idx] -= 1
-            print('NEXT!', command.split()[0], '\n')
             QThread.msleep(1000)
         else:
             pass
