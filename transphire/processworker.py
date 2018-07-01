@@ -45,6 +45,7 @@ class ProcessWorker(QObject):
     sig_notification - Emitted to send a notification (text|str)
     sig_plot_ctf - Emitted to plot ctf information (ctf_name|str, ctf_settings|object, settings|object)
     sig_plot_motion - Emitted to plot motion information (motion_name|str, motion_settings|object, settings|object)
+    sig_plot_picking - Emitted to plot picking information (picking_name|str, picking_settings|str, settings|object)
     """
     sig_start = pyqtSignal(object)
     sig_finished = pyqtSignal()
@@ -53,6 +54,7 @@ class ProcessWorker(QObject):
     sig_notification = pyqtSignal(str)
     sig_plot_ctf = pyqtSignal(str, object, object)
     sig_plot_motion = pyqtSignal(str, object, object)
+    sig_plot_picking = pyqtSignal(str, object, object)
 
     def __init__(self, password, content_process, mount_directory, parent=None):
         """
@@ -161,6 +163,19 @@ class ProcessWorker(QObject):
             self.sig_plot_motion.emit(
                 entry,
                 self.settings['Motion_folder'][entry],
+                self.settings
+                )
+
+        # Set Picking settings
+        self.settings['Picking_folder'] = {}
+        for entry in self.settings['Copy']['Picking_entries']:
+            self.settings['Picking_folder'][entry] = os.path.join(
+                self.settings['project_folder'],
+                entry.replace(' ', '_')
+                )
+            self.sig_plot_picking.emit(
+                entry,
+                self.settings['Picking_folder'][entry],
                 self.settings
                 )
 
@@ -332,7 +347,8 @@ class ProcessWorker(QObject):
             'notification': qu.Queue(),
             'error': qu.Queue(),
             'plot_ctf': qu.Queue(),
-            'plot_motion': qu.Queue()
+            'plot_motion': qu.Queue(),
+            'plot_picking': qu.Queue(),
             }
 
         # Fill different dictionarys with process information
@@ -606,6 +622,15 @@ class ProcessWorker(QObject):
                         self.settings['Copy']['Motion'],
                         self.settings['Motion_folder'][
                             self.settings['Copy']['Motion']
+                            ],
+                        self.settings
+                        )
+                elif key == 'plot_picking':
+                    queue_com['plot_picking'].get()
+                    self.sig_plot_motion.emit(
+                        self.settings['Copy']['Picking'],
+                        self.settings['Picking_folder'][
+                            self.settings['Copy']['Picking']
                             ],
                         self.settings
                         )

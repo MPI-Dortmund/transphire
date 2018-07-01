@@ -313,6 +313,7 @@ class MainWindow(QMainWindow):
         self.process_worker.sig_finished.connect(self._finished)
         self.process_worker.sig_plot_ctf.connect(self.plot_worker.calculate_array_ctf)
         self.process_worker.sig_plot_motion.connect(self.plot_worker.calculate_array_motion)
+        self.process_worker.sig_plot_picking.connect(self.plot_worker.calculate_array_picking)
 
         self.mount_thread_list = {}
         for key in self.content['Mount'].content:
