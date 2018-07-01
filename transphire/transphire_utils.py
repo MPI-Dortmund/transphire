@@ -570,6 +570,11 @@ def get_content_gui(content):
             'widget': TabDocker,
             'layout': 'TAB1',
             },
+        {
+            'name': 'Plot Picking',
+            'widget': TabDocker,
+            'layout': 'TAB1',
+            },
         ]
 
     for motion_content in content_motion:
@@ -637,6 +642,17 @@ def get_content_gui(content):
             'content': content[picking_content],
             'layout': 'Picking',
             'max_widgets': 12
+            })
+        gui_content.append({
+            'name': 'Plot {0}'.format(picking_content),
+            'widget': TabDocker,
+            'layout': 'Plot Picking',
+            })
+        gui_content.append({
+            'name': 'Plot images',
+            'widget': PlotContainer,
+            'content': 'file',
+            'layout': 'Plot {0}'.format(picking_content),
             })
 
     return gui_content

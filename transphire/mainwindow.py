@@ -490,7 +490,7 @@ class MainWindow(QMainWindow):
             else:
                 pass
 
-            if key == 'Plot per micrograph' or key == 'Plot histogram':
+            if key == 'Plot per micrograph' or key == 'Plot histogram' or key == 'Plot images':
                 self.plot_worker.sig_data.connect(
                     self.content[key].update_figure
                     )
