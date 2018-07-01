@@ -421,11 +421,11 @@ def combine_ctf_outputs(
         ctf_settings=ctf_settings,
         project_folder=project_folder,
         ctf_folder=ctf_folder,
-        sum_file=sum_file
+        sum_file=sum_file,
         )
     output_name_star = os.path.join(
-        project_folder,
-        '{0}_transphire.star'.format(ctf_name.replace(' ', '_'))
+        ctf_folder,
+        '{0}_transphire.star'.format(os.path.basename(sum_file))
         )
 
     shared_dict['ctf_star_lock'].lock()
@@ -443,11 +443,11 @@ def combine_ctf_outputs(
         ctf_settings=ctf_settings,
         project_folder=project_folder,
         ctf_folder=ctf_folder,
-        sum_file=sum_file
+        sum_file=sum_file,
         )
     output_name_partres = os.path.join(
-        project_folder,
-        '{0}_transphire_partres.txt'.format(ctf_name.replace(' ', '_'))
+        ctf_folder,
+        '{0}_transphire_partres.txt'.format(os.path.basename(sum_file))
         )
 
     shared_dict['ctf_partres_lock'].lock()
@@ -459,7 +459,15 @@ def combine_ctf_outputs(
     finally:
         shared_dict['ctf_partres_lock'].unlock()
 
-    return output_name_partres, output_name_star
+    output_name_partres_combined = os.path.join(
+        project_folder,
+        '{0}_transphire_partres.txt'.format(ctf_name.replace(' ', '_'))
+        )
+    output_name_star_combined = os.path.join(
+        project_folder,
+        '{0}_transphire.star'.format(ctf_name.replace(' ', '_'))
+        )
+    return output_name_partres_combined, output_name_star_combined
 
 
 def to_star_file(data, ctf_name, ctf_settings, project_folder, ctf_folder, sum_file):
@@ -496,6 +504,7 @@ def to_star_file(data, ctf_name, ctf_settings, project_folder, ctf_folder, sum_f
 
             if name == 'file_name':
                 value = sum_file.replace(project_folder, '')
+
             elif name == 'defocus':
                 value = (1 * row['defocus_diff'] + 2 * row['defocus']) / 2
             elif name == 'defocus_diff':
@@ -518,7 +527,7 @@ def to_star_file(data, ctf_name, ctf_settings, project_folder, ctf_folder, sum_f
         lines=lines,
         maximum_string=maximum_string
         )
-    return '\n'.join(lines)
+    return ''.join(lines)
 
 
 def create_export_data(export_data, lines, maximum_string):
@@ -546,7 +555,7 @@ def create_export_data(export_data, lines, maximum_string):
             else:
                 length = maximum_string[name]
                 row_string.append('{0:{1}s}'.format(value, length))
-        lines.append('\t'.join(row_string))
+        lines.append('{0}\n'.format('\t'.join(row_string)))
 
 
 def to_partres_file(data, ctf_name, ctf_settings, project_folder, ctf_folder, sum_file):
@@ -629,7 +638,7 @@ def to_partres_file(data, ctf_name, ctf_settings, project_folder, ctf_folder, su
         lines=lines,
         maximum_string=maximum_string
         )
-    return '\n'.join(lines)
+    return ''.join(lines)
 
 
 def get_relion_header(names):
@@ -658,7 +667,7 @@ def get_relion_header(names):
                 new_name = name
         header.append('{0} #{1}'.format(new_name, index+1))
         index += 1
-    return '\n'.join(header)
+    return '{0}\n'.format('\n'.join(header))
 
 
 def get_constant_value(key, ctf_settings, row, project_folder, ctf_name, ctf_folder):

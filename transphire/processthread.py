@@ -2093,24 +2093,70 @@ class ProcessThread(QThread):
         # Remove all rows that were skipped in the past
         self.queue_lock.lock()
         try:
-            data = data[~np.in1d(data['file_name'], self.shared_dict['bad'][self.typ])]
-            data_orig = data_orig[~np.in1d(data['file_name'], self.shared_dict['bad'][self.typ])]
+            _, extension = os.path.splitext(data['file_name'][0])
+            mask = np.in1d(
+                np.char.replace(
+                    np.char.replace(
+                        data['file_name'], self.settings['project_folder'], ''
+                        ), extension, ''
+                    ),
+                np.char.replace(
+                    np.char.replace(
+                        file_sum, self.settings['project_folder'], ''
+                        ), '.mrc', ''
+                    )
+                )
+            data = data[mask]
+            data_orig = data_orig[mask]
         finally:
             self.queue_lock.unlock()
 
         # Combine output files
         if data.shape[0] != 0:
-            output_name_partres, output_name_star = tuc.combine_ctf_outputs(
-                data=data,
-                data_orig=data_orig,
-                root_path=root_path,
-                file_name=file_name,
-                settings=self.settings,
-                queue_com=self.queue_com,
-                shared_dict=self.shared_dict,
-                name=self.name,
-                sum_file=file_sum
-                )
+            self.queue_lock.lock()
+            try:
+                output_name_partres, output_name_star = tuc.combine_ctf_outputs(
+                    data=data,
+                    data_orig=data_orig,
+                    root_path=root_path,
+                    file_name=file_name,
+                    settings=self.settings,
+                    queue_com=self.queue_com,
+                    shared_dict=self.shared_dict,
+                    name=self.name,
+                    sum_file=file_sum
+                    )
+                partres_files = sorted(glob.glob(
+                    '{0}/*_transphire_partres.txt'.format(
+                        self.settings['ctf_folder']
+                        )
+                    ))
+
+                output_lines = []
+                for file_name in partres_files:
+                    with open(file_name, 'r') as read:
+                        output_lines.append(read.readlines()[-1])
+                with open(output_name_partres, 'w') as write:
+                    write.write(''.join(output_lines))
+
+                star_files = sorted(glob.glob(
+                    '{0}/*_transphire.star'.format(
+                        self.settings['ctf_folder']
+                        )
+                    ))
+
+                header = []
+                with open(star_files[0], 'r') as read:
+                    header.extend(read.readlines()[:-1])
+                output_lines = []
+                for file_name in star_files:
+                    with open(file_name, 'r') as read:
+                        output_lines.append(read.readlines()[-1])
+                with open(output_name_star, 'w') as write:
+                    write.write(''.join(header))
+                    write.write(''.join(output_lines))
+            finally:
+                self.queue_lock.unlock()
 
             if not self.settings['Copy']['Copy to work'] == 'False':
                 self.add_to_queue(aim='Copy_work', root_name=output_name_partres)
@@ -2532,28 +2578,21 @@ class ProcessThread(QThread):
         count_idx = 1
 
         if gpu_list:
+            for entry in gpu_list:
+                print('lock', entry, command.split()[0])
+                self.shared_dict['gpu_lock'][entry][mutex_idx].lock()
+                print('locked', entry, command.split()[0])
             if block_gpu:
-                for entry in gpu_list:
-                    self.shared_dict['gpu_lock'][entry][mutex_idx].lock()
                 for entry in gpu_list:
                     while self.shared_dict['gpu_lock'][entry][count_idx] != 0:
                         QThread.msleep(1000)
             else:
-                while True:
-                    locked = 0
-                    for entry in gpu_list:
-                        locked += bool(not self.shared_dict['gpu_lock'][entry][mutex_idx].tryLock())
-
-                    if locked == 0:
-                        break
-                    else:
-                        for entry in gpu_list:
-                            self.shared_dict['gpu_lock'][entry][mutex_idx].unlock()
-
                 for entry in gpu_list:
                     self.shared_dict['gpu_lock'][entry][count_idx] += 1
                     self.shared_dict['gpu_lock'][entry][mutex_idx].unlock()
                 QThread.msleep(1000)
+            print('start', command.split()[0], block_gpu, gpu_list, self.shared_dict['gpu_lock']['0'])
+            QThread.msleep(1000)
         else:
             pass
 
@@ -2570,12 +2609,16 @@ class ProcessThread(QThread):
                 out.write('\nTime: {0} sec'.format(stop_time - start_time)) 
 
         if gpu_list:
+            print('stop', command.split()[0], block_gpu, gpu_list, self.shared_dict['gpu_lock']['0'])
+            QThread.msleep(1000)
             if block_gpu:
                 for entry in gpu_list:
                     self.shared_dict['gpu_lock'][entry][mutex_idx].unlock()
             else:
                 for entry in gpu_list:
                     self.shared_dict['gpu_lock'][entry][count_idx] -= 1
+            print('NEXT!', command.split()[0], '\n')
+            QThread.msleep(1000)
         else:
             pass
 

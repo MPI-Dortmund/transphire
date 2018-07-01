@@ -408,6 +408,7 @@ class ProcessWorker(QObject):
             'ctf_partres_lock': QMutex(),
             'global_lock': QMutex(),
             'gpu_lock': gpu_mutex_dict,
+            'gpu_lock_lock': QMutex(),
             'typ': typ_dict,
             }
 

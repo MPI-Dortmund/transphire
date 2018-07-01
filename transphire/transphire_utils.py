@@ -954,6 +954,8 @@ def import_ctf(ctf_name, directory_name):
             ctf_name=ctf_name,
             directory_name=directory_name
             )
+        data.sort(order='file_name')
+        data_orig.sort(order='file_name')
 
     return data, data_orig
 
