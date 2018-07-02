@@ -17,7 +17,9 @@
 """
 import glob
 import re
+import imageio
 import numpy as np
+import transphire_utils as tu
 
 
 def get_header(input_file):
@@ -129,6 +131,18 @@ def get_dtype_dict():
         ('first frame drift', '<f8'),
         ('average drift per frame without first', '<f8'),
         ('file_name', '|U200')
+        ]
+    dtype['crYOLO v1.0.0'] = [
+        ('coord_x', '<f8'),
+        ('coord_y', '<f8'),
+        ('box_x', '<f8'),
+        ('box_y', '<f8'),
+        ('file_name', '|U200'),
+        ]
+    dtype['picking'] = [
+        ('image', 'O'),
+        ('particle', '<i8'),
+        ('file_name', '|U200'),
         ]
     return dtype
 
@@ -265,6 +279,12 @@ def get_dtype_import_dict():
         ('shift_x', '<f8'),
         ('shift_y', '<f8')
         ]
+    dtype_import['crYOLO v1.0.0'] = [
+        ('coord_x', '<f8'),
+        ('coord_y', '<f8'),
+        ('box_x', '<f8'),
+        ('box_y', '<f8'),
+        ]
     return dtype_import
 
 
@@ -307,7 +327,6 @@ def import_ctffind_v4_1_8(ctf_name, directory_name):
             array = np.genfromtxt(
                 name,
                 dtype=get_dtype_import_dict()[ctf_name],
-                encoding='utf-8'
                 )
         except ValueError:
             continue
@@ -335,7 +354,6 @@ def import_ctffind_v4_1_8(ctf_name, directory_name):
         data_name = np.genfromtxt(
             name,
             dtype=get_dtype_import_dict()[ctf_name],
-            encoding='utf-8'
             )
         data[idx]['file_name'] = name
         input_name = None
@@ -417,7 +435,6 @@ def import_gctf_v1_06(ctf_name, directory_name):
                 file_name,
                 dtype=dtype,
                 skip_header=max_header,
-                encoding='utf-8'
                 )
         except ValueError:
             continue
@@ -452,7 +469,6 @@ def import_gctf_v1_06(ctf_name, directory_name):
             file_name,
             dtype=dtype,
             skip_header=max_header,
-            encoding='utf-8'
             )
         for name in data_name.dtype.names:
             try:
@@ -513,7 +529,6 @@ def import_cter_v1_0(ctf_name, directory_name):
             data_name = np.genfromtxt(
                 file_name,
                 dtype=get_dtype_import_dict()[ctf_name],
-                encoding='utf-8'
                 )
         except ValueError:
             continue
@@ -540,7 +555,6 @@ def import_cter_v1_0(ctf_name, directory_name):
         data_name = np.genfromtxt(
             name,
             dtype=get_dtype_import_dict()[ctf_name],
-            encoding='utf-8'
             )
         for entry in data_name.dtype.names:
             data_original[idx][entry] = data_name[entry]
@@ -594,8 +608,7 @@ def import_motion_cor_2_v1_0_0(motion_name, directory_names):
         try:
             array = np.genfromtxt(
                 name,
-                dtype=get_dtype_import_dict()[motion_name],
-                encoding='utf-8'
+                dtype=get_dtype_import_dict()[motion_name]
                 )
         except ValueError:
             continue
@@ -613,8 +626,7 @@ def import_motion_cor_2_v1_0_0(motion_name, directory_names):
     for idx, name in enumerate(useable_files):
         data_name = np.genfromtxt(
             name,
-            dtype=get_dtype_import_dict()[motion_name],
-            encoding='utf-8'
+            dtype=get_dtype_import_dict()[motion_name]
             )
         data[idx]['file_name'] = name
         shift_x = np.array([
@@ -668,4 +680,54 @@ def import_motion_cor_2_v1_1_0(motion_name, directory_names):
     Imported data
     """
     data = import_motion_cor_2_v1_0_0(motion_name=motion_name, directory_names=directory_names)
+    return data
+
+
+def import_cryolo_v1_0_0(picking_name, directory_name):
+    """
+    Import picking information for crYOLO v1.0.0.
+
+    Arguments:
+    picking_name - Name of picking program
+    directory_name - Name of the directory to search for files
+
+    Return:
+    Imported data
+    """
+    files = np.array(
+        glob.glob('{0}/*.box'.format(directory_name))
+        )
+    useable_files = []
+    for name in files:
+        try:
+            array = np.genfromtxt(
+                name,
+                dtype=get_dtype_import_dict()[picking_name],
+                )
+        except ValueError:
+            continue
+        else:
+            if array.size > 0:
+                useable_files.append(name)
+            else:
+                continue
+
+    data = np.empty(
+        len(useable_files),
+        dtype=get_dtype_dict()['picking']
+        )
+    data = np.atleast_1d(data)
+    for idx, name in enumerate(useable_files):
+        data_name = np.genfromtxt(
+            name,
+            dtype=get_dtype_import_dict()[motion_name]
+            )
+        jpg_name = os.path.join(
+            directory_name,
+            'jpg',
+            '{0}.jpg'.format(os.path.splitext(os.path.basename(name))[0])
+        data[idx]['file_name'] = name
+        data[idx]['particle'] = data_name.shape[0]
+        data[idx]['image'] = imageio.imread(jpg_name)
+
     return data

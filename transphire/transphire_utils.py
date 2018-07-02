@@ -138,8 +138,8 @@ def get_function_dict():
             'allow_empty': ['-Dark', '-DefectFile', '-Gain'],
             },
         'crYOLO v1.0.0': {
-            'plot': None,
-            'plot_data': None,
+            'plot': tp.import_cryolo_v1_0_0,
+            'plot_data': ti.import_cryolo_v1_0_0,
             'content': tc.default_cryolo_v1_0_0,
             'executable': True,
             'typ': 'picking',
@@ -996,6 +996,31 @@ def import_motion(motion_name, directory_name):
         data = get_function_dict()[motion_name]['plot_data'](
             motion_name=motion_name,
             directory_names=directory_names
+            )
+
+    return data
+
+
+def import_picking(picking_name, directory_name):
+    """
+    Import picking information.
+
+    Arguments:
+    picking_name - Name of picking program
+    directory_name - Name of the directory to search for files
+
+    Return:
+    Imported data
+    """
+    if picking_name == 'False':
+        return None
+    elif picking_name == 'Later':
+        return None
+    else:
+        directory_names = glob.glob('{0}/*_with_DW_log'.format(directory_name))
+        data = get_function_dict()[picking_name]['plot_data'](
+            picking_name=picking_name,
+            directory_name=directory_name
             )
 
     return data

@@ -28,6 +28,7 @@ setuptools.setup(
         'pexpect>=4.6.0,<4.7.0',
         'cython>=0.28.0,<0.29.0',
         'telepot>=12.0,<13.0',
+        'imageio>=2.3.0,<2.4.0',
         ],
     classifiers = (
         'Programming Language :: Python :: 3.6',

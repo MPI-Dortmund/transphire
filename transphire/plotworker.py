@@ -94,3 +94,26 @@ class PlotWorker(QObject):
             return None
         else:
             self.sig_data.emit(motion_name, data, directory_name, settings)
+
+    @pyqtSlot(str, object, object)
+    def calculate_array_picking(self, picking_name, directory_name, settings):
+        """
+        Calculate picking array.
+
+        picking_name - Name of the software that calls the calculation
+        directory_name - Name of the directory that contains the log files
+        settings - TranSPHIRE settings
+
+        Returns:
+        None
+        """
+        data = tu.import_picking(
+            picking_name=picking_name,
+            directory_name=directory_name
+            )
+        if data is None:
+            return None
+        elif data.size == 0:
+            return None
+        else:
+            self.sig_data.emit(picking_name, data, directory_name, settings)
