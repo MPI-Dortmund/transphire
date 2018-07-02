@@ -17,6 +17,9 @@
 """
 
 import os
+import imageio
+import numpy as np
+from transphire import transphire_utils as tu
 
 
 def get_picking_command(file_input, new_name, settings, queue_com, name):
@@ -168,3 +171,74 @@ def create_cryolo_v1_0_0_command(
 
     return ' '.join(command)
 
+
+def create_box_jpg(file_name, settings, queue_com, name):
+    """
+    Create jpg files that are overlayed with the box coordinate
+
+    file_name - Name of the file to overlay.
+    settings - Transphire settings.
+    queue_com - Dictionary for communication.
+    name - Thread name
+
+    Return:
+    It creates a file.
+    """
+    box_file = os.path.join(settings['picking_folder'], '{0}.box'.format(file_name))
+    jpg_file = os.path.join(settings['picking_folder'], '{0}.jpg'.format(file_name))
+    new_jpg_file = os.path.join(settings['picking_folder'], 'jpg', '{0}.jpg'.format(file_name))
+    tu.mkdir_p(os.path.join(settings['picking_folder'], 'jpg'))
+
+    box_dtype = [
+        ('coord_x', '<i8'),
+        ('coord_y', '<i8'),
+        ('box_x', '<i8'),
+        ('box_y', '<i8'),
+        ]
+    box_data = np.genfromtxt(box_file, dtype=box_dtype)
+    jpg_data = imageio.imread(jpg_file, as_gray=False, pilmode='RGB')
+    for x, y, box_x, box_y in box_data:
+        create_circle(
+            jpg_data=jpg_data,
+            x=x,
+            y=y,
+            radius=box_x//10,
+            )
+    imageio.imwrite(new_jpg_file, jpg_data)
+
+
+def create_circle(jpg_data, x, y, radius):
+    """
+    Create a circle in a numpy array
+
+    Arguments:
+    jpg_data - Data that needs to be changed
+    x - x_value of the circle center
+    y - y_value of the circle center
+    radius - Radius of the circle
+
+    Returns:
+    None, jpg_data will be changed in-place
+    """
+    for x_off in range(radius):
+        for y_off in range(radius):
+            if x_off**2 + y_off**2 <= radius**2:
+                liste = []
+                liste.append([x - x_off, y - y_off])
+                liste.append([x + x_off, y - y_off])
+                liste.append([x - x_off, y + y_off])
+                liste.append([x + x_off, y + y_off])
+
+                for x_new, y_new in liste:
+                    if x_new < 0:
+                        continue
+                    elif y_new < 0:
+                        continue
+                    elif x_new >= jpg_data.shape[0]:
+                        continue
+                    elif y_new >= jpg_data.shape[0]:
+                        continue
+                    else:
+                        jpg_data[x_new, y_new, :] = np.array([255, 0, 0])
+            else:
+                continue

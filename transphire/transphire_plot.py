@@ -276,3 +276,10 @@ def update_motion_cor_2_v1_0_5(data, settings, label):
         label=label
         )
     return x_values, y_values, label, title
+
+
+def update_cryolo_v1_0_0(data, settings, label):
+    x_values = get_mic_number(data['file_name'], settings)
+    y_values = data['particles']
+    return x_values, y_values, 'Nr. of Particles', 'Total particles: {0}'.format(np.sum(data['particles']))
+

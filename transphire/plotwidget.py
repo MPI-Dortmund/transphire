@@ -24,9 +24,11 @@ from matplotlib.backends.backend_qt4agg import (
     NavigationToolbar2QT as NavigationToolbar
     )
 try:
-    from PyQt4.QtGui import QWidget, QVBoxLayout
+    from PyQt4.QtGui import QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QPushButton
+    from PyQt4.QtCore import pyqtSlot
 except ImportError:
-    from PyQt5.QtWidgets import QWidget, QVBoxLayout
+    from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QPushButton
+    from PyQt5.QtCore import pyqtSlot
 from transphire import transphire_utils as tu
 warnings.filterwarnings('ignore')
 
@@ -73,10 +75,34 @@ class PlotWidget(QWidget):
         self.toolbar = NavigationToolbar(self.canvas, self)
         self.canvas.draw()
 
-        # Fill layout
         layout_v = QVBoxLayout(self)
+        # Add for image plot typ
+        if self.plot_typ == 'image' and self.label == 'image':
+            self.data = np.array([])
+            self.idx = 0
+            self.default_value = 'latest'
+
+            layout_h = QHBoxLayout()
+            self.combo_box = QComboBox(self)
+            self.combo_box.addItems([self.default_value])
+            self.combo_box.currentIndexChanged.connect(lambda: self.change_idx('combo'))
+            layout_h.addWidget(self.combo_box)
+            self.prev_button = QPushButton('Prev', self)
+            self.prev_button.clicked.connect(lambda: self.change_idx('prev'))
+            layout_h.addWidget(self.prev_button)
+            self.next_button = QPushButton('Next', self)
+            self.next_button.clicked.connect(lambda: self.change_idx('next'))
+            layout_h.addWidget(self.next_button)
+            self.reset_button = QPushButton('Reset', self)
+            self.reset_button.clicked.connect(lambda: self.change_idx('reset'))
+            layout_h.addWidget(self.reset_button)
+            layout_h.addStretch(1)
+            layout_v.addLayout(layout_h)
+
+        # Fill layout
         layout_v.addWidget(self.toolbar)
         layout_v.addWidget(self.canvas)
+
 
     def compute_initial_figure(self):
         """
@@ -113,46 +139,106 @@ class PlotWidget(QWidget):
             return None
         elif name == 'Later':
             return None
-        else:
+        elif self.plot_typ == 'values' or self.plot_typ == 'histogram':
             x_values, y_values, label, title = tu.get_function_dict()[name]['plot'](
                 data=data,
                 settings=settings,
                 label=self.label
                 )
 
+            self.figure.clear()
+            ax1 = self.figure.add_subplot(111)
+
+            if self.plot_typ == 'values':
+                x_label = 'Micrograph ID'
+                y_label = label
+                ax1.plot(x_values, y_values, '.')
+            elif self.plot_typ == 'histogram':
+                x_label = label
+                y_label = 'Nr. of micrographs'
+                if np.max(y_values) - np.min(y_values) < 0.001:
+                    ax1.hist(y_values, 1)
+                    ax1.set_xlim([np.max(y_values)-1, np.min(y_values)+1])
+                else:
+                    ax1.hist(y_values, 100)
+            else:
+                print('Plotwidget - ', self.plot_typ, ' is not known!!!')
+                return None
+
+            ax1.grid()
+            ax1.set_title(title)
+            ax1.set_xlabel(x_label)
+            ax1.set_ylabel(y_label)
+            self.canvas.draw()
+
+            output_name = '{0}/{1}_{2}.png'.format(
+                directory_name,
+                self.label,
+                self.plot_typ
+                )
+            try:
+                self.figure.savefig(output_name.replace(' ', '_'))
+            except RuntimeError:
+                pass
+            except FileNotFoundError:
+                pass
+
+        elif self.plot_typ == 'image':
+            self.data = data[::-1]
+            current_text = self.combo_box.currentText()
+
+            self.combo_box.clear()
+            files = [self.default_value]
+            files.extend(self.data['file_name'].tolist())
+            self.combo_box.addItems(files)
+
+            self.idx = self.combo_box.findText(current_text)
+            self.combo_box.setCurrentIndex(self.idx)
+
+            self.show_image()
+
+        else:
+            print('Plotwidget - ', self.plot_typ, ' is not known!!!')
+            return None
+
+    @pyqtSlot()
+    def show_image(self):
+        if self.data.shape[0] == 0:
+            return None
+        else:
+            pass
         self.figure.clear()
         ax1 = self.figure.add_subplot(111)
 
-        if self.plot_typ == 'values':
-            x_label = 'Micrograph ID'
-            y_label = label
-            ax1.plot(x_values, y_values, '.')
-        elif self.plot_typ == 'histogram':
-            x_label = label
-            y_label = 'Nr. of micrographs'
-            if np.max(y_values) - np.min(y_values) < 0.001:
-                ax1.hist(y_values, 1)
-                ax1.set_xlim([np.max(y_values)-1, np.min(y_values)+1])
-            else:
-                ax1.hist(y_values, 100)
+        if str(self.combo_box.currentText()) == self.default_value:
+            idx = 0
         else:
-            print('Unknown!')
-            sys.exit()
+            idx = self.idx-1
+        ax1.imshow(self.data['image'][idx])
 
-        ax1.grid()
-        ax1.set_title(title)
-        ax1.set_xlabel(x_label)
-        ax1.set_ylabel(y_label)
+        ax1.get_xaxis().set_visible(False)
+        ax1.get_yaxis().set_visible(False)
+        ax1.set_title(self.data['file_name'][idx])
         self.canvas.draw()
 
-        output_name = '{0}/{1}_{2}.png'.format(
-            directory_name,
-            self.label,
-            self.plot_typ
-            )
-        try:
-            self.figure.savefig(output_name.replace(' ', '_'))
-        except RuntimeError:
+    def change_idx(self, typ):
+        if typ == 'next':
+            if self.idx <= 0:
+                pass
+            else:
+                self.idx -= 1
+        elif typ == 'prev':
+            if self.idx >= self.data.shape[0]:
+                pass
+            else:
+                self.idx += 1
+        elif typ == 'combo':
+            self.idx = self.combo_box.currentIndex()
+            if self.idx < 0:
+                self.idx = 0
+        elif typ == 'reset':
+            self.idx = 0
+        else:
             pass
-        except FileNotFoundError:
-            pass
+        self.combo_box.setCurrentIndex(self.idx)
+        self.show_image()

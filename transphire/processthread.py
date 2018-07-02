@@ -2260,6 +2260,13 @@ class ProcessThread(QThread):
             name=self.name
             )
 
+        tup.create_box_jpg(
+            file_name=file_name,
+            settings=self.settings,
+            queue_com=self.queue_com,
+            name=self.name
+            )
+
         tus.check_outputs(
             zero_list=zero_list,
             non_zero_list=non_zero_list+log_files,

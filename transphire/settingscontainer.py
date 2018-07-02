@@ -136,7 +136,7 @@ class SettingsContainer(QWidget):
                 error = True
             else:
                 settings.update(dictionary)
-            if key == 'Motion' or key == 'CTF':
+            if key == 'Motion' or key == 'CTF' or key == 'Picking':
                 new_key = '{0}_entries'.format(key)
                 settings[new_key] = self.content[key].get_combo_entries()
             else:
@@ -164,6 +164,8 @@ class SettingsContainer(QWidget):
                     continue
                 elif key == 'Motion_entries':
                     continue
+                elif key == 'Picking_entries':
+                    continue
                 else:
                     print('Content for {0} is disabled.'.format(key))
                     continue
@@ -174,6 +176,8 @@ class SettingsContainer(QWidget):
                 if key == 'CTF_entries':
                     pass
                 elif key == 'Motion_entries':
+                    pass
+                elif key == 'Picking_entries':
                     pass
                 else:
                     print(

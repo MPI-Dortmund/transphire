@@ -138,7 +138,7 @@ def get_function_dict():
             'allow_empty': ['-Dark', '-DefectFile', '-Gain'],
             },
         'crYOLO v1.0.0': {
-            'plot': tp.import_cryolo_v1_0_0,
+            'plot': tp.update_cryolo_v1_0_0,
             'plot_data': ti.import_cryolo_v1_0_0,
             'content': tc.default_cryolo_v1_0_0,
             'executable': True,
@@ -505,47 +505,57 @@ def get_content_gui(content):
             'layout': 'h3',
             },
         {
+            'name': 'Settings',
+            'widget': TabDocker,
+            'layout': 'TAB1',
+            },
+        {
+            'name': 'Visualisation',
+            'widget': TabDocker,
+            'layout': 'TAB1',
+            },
+        {
             'name': 'General',
             'widget': SettingsContainer,
             'content': content['General'],
-            'layout': 'TAB1',
+            'layout': 'Settings',
             'max_widgets': 12
             },
         {
             'name': 'Notification',
             'widget': SettingsContainer,
             'content': content['Notification'],
-            'layout': 'TAB1',
+            'layout': 'Settings',
             'max_widgets': 12
             },
         {
             'name': 'Copy',
             'widget': SettingsContainer,
             'content': content['Copy'],
-            'layout': 'TAB1',
+            'layout': 'Settings',
             'max_widgets': 12
             },
         {
             'name': 'Path',
             'widget': SettingsContainer,
             'content': content['Path'],
-            'layout': 'TAB1',
+            'layout': 'Settings',
             'max_widgets': 12
             },
         {
             'name': 'Motion',
             'widget': TabDocker,
-            'layout': 'TAB1',
+            'layout': 'Settings',
             },
         {
             'name': 'CTF',
             'widget': TabDocker,
-            'layout': 'TAB1',
+            'layout': 'Settings',
             },
         {
             'name': 'Picking',
             'widget': TabDocker,
-            'layout': 'TAB1',
+            'layout': 'Settings',
             },
         {
             'name': 'Separator',
@@ -563,17 +573,17 @@ def get_content_gui(content):
         {
             'name': 'Plot Motion',
             'widget': TabDocker,
-            'layout': 'TAB1',
+            'layout': 'Visualisation',
             },
         {
             'name': 'Plot CTF',
             'widget': TabDocker,
-            'layout': 'TAB1',
+            'layout': 'Visualisation',
             },
         {
             'name': 'Plot Picking',
             'widget': TabDocker,
-            'layout': 'TAB1',
+            'layout': 'Visualisation',
             },
         ]
 
@@ -649,9 +659,21 @@ def get_content_gui(content):
             'layout': 'Plot Picking',
             })
         gui_content.append({
-            'name': 'Plot images',
+            'name': 'Show images',
             'widget': PlotContainer,
-            'content': 'file',
+            'content': 'image',
+            'layout': 'Plot {0}'.format(picking_content),
+            })
+        gui_content.append({
+            'name': 'Plot per micrograph',
+            'widget': PlotContainer,
+            'content': 'values',
+            'layout': 'Plot {0}'.format(picking_content),
+            })
+        gui_content.append({
+            'name': 'Plot histogram',
+            'widget': PlotContainer,
+            'content': 'histogram',
             'layout': 'Plot {0}'.format(picking_content),
             })
 
@@ -1017,7 +1039,6 @@ def import_picking(picking_name, directory_name):
     elif picking_name == 'Later':
         return None
     else:
-        directory_names = glob.glob('{0}/*_with_DW_log'.format(directory_name))
         data = get_function_dict()[picking_name]['plot_data'](
             picking_name=picking_name,
             directory_name=directory_name

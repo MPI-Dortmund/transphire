@@ -15,11 +15,11 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import os
 import glob
 import re
 import imageio
 import numpy as np
-import transphire_utils as tu
 
 
 def get_header(input_file):
@@ -141,7 +141,7 @@ def get_dtype_dict():
         ]
     dtype['picking'] = [
         ('image', 'O'),
-        ('particle', '<i8'),
+        ('particles', '<i8'),
         ('file_name', '|U200'),
         ]
     return dtype
@@ -694,11 +694,11 @@ def import_cryolo_v1_0_0(picking_name, directory_name):
     Return:
     Imported data
     """
-    files = np.array(
+    files_box = np.array(
         glob.glob('{0}/*.box'.format(directory_name))
         )
-    useable_files = []
-    for name in files:
+    useable_files_box = []
+    for name in files_box:
         try:
             array = np.genfromtxt(
                 name,
@@ -708,9 +708,26 @@ def import_cryolo_v1_0_0(picking_name, directory_name):
             continue
         else:
             if array.size > 0:
-                useable_files.append(name)
+                useable_files_box.append(os.path.splitext(os.path.basename(name))[0])
             else:
                 continue
+
+    files_jpg = np.array(
+        glob.glob('{0}/jpg/*.jpg'.format(directory_name))
+        )
+    useable_files_jpg = []
+    for name in files_jpg:
+        try:
+            imageio.imread(name)
+        except ValueError:
+            continue
+        else:
+            if array.size > 0:
+                useable_files_jpg.append(os.path.splitext(os.path.basename(name))[0])
+            else:
+                continue
+
+    useable_files = [name for name in useable_files_box if name in useable_files_jpg]
 
     data = np.empty(
         len(useable_files),
@@ -718,16 +735,19 @@ def import_cryolo_v1_0_0(picking_name, directory_name):
         )
     data = np.atleast_1d(data)
     for idx, name in enumerate(useable_files):
-        data_name = np.genfromtxt(
-            name,
-            dtype=get_dtype_import_dict()[motion_name]
-            )
         jpg_name = os.path.join(
             directory_name,
             'jpg',
-            '{0}.jpg'.format(os.path.splitext(os.path.basename(name))[0])
+            '{0}.jpg'.format(name)
+            )
+        box_name = os.path.join(directory_name, '{0}.box'.format(name))
+        data_name = np.genfromtxt(
+            box_name,
+            dtype=get_dtype_import_dict()[picking_name]
+            )
         data[idx]['file_name'] = name
-        data[idx]['particle'] = data_name.shape[0]
+        data[idx]['particles'] = data_name.shape[0]
         data[idx]['image'] = imageio.imread(jpg_name)
 
+    data.sort(order='file_name')
     return data

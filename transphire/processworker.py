@@ -627,7 +627,7 @@ class ProcessWorker(QObject):
                         )
                 elif key == 'plot_picking':
                     queue_com['plot_picking'].get()
-                    self.sig_plot_motion.emit(
+                    self.sig_plot_picking.emit(
                         self.settings['Copy']['Picking'],
                         self.settings['Picking_folder'][
                             self.settings['Copy']['Picking']
