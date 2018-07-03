@@ -268,14 +268,14 @@ class MainWindow(QMainWindow):
         elif os.path.exists('{0}.txt'.format(self.temp_save)):
             # Result is True if answer is No
             result = tu.question(
-                head='Restore previous session.',
-                text='Restore previous session?',
+                head='Restore default values.',
+                text='Restore default values?',
                 parent=self
                 )
             if result:
-                pass
-            else:
                 self.load(file_name=self.temp_save)
+            else:
+                pass
         else:
             pass
         self.mount_worker.sig_load_save.emit()
