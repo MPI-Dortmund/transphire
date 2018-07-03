@@ -200,8 +200,8 @@ def create_box_jpg(file_name, settings, queue_com, name):
     for x, y, box_x, box_y in box_data:
         create_circle(
             jpg_data=jpg_data,
-            x=x,
-            y=y,
+            x=int(x-box_x//2),
+            y=int(y-box_y//2),
             radius=box_x//10,
             )
     imageio.imwrite(new_jpg_file, jpg_data)
@@ -236,7 +236,7 @@ def create_circle(jpg_data, x, y, radius):
                         continue
                     elif x_new >= jpg_data.shape[0]:
                         continue
-                    elif y_new >= jpg_data.shape[0]:
+                    elif y_new >= jpg_data.shape[1]:
                         continue
                     else:
                         jpg_data[x_new, y_new, :] = np.array([255, 0, 0])
