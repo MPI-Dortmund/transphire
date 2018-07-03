@@ -310,10 +310,10 @@ def default_notification():
                 continue
             else:
                 items.append(
-                    ['{0} warning'.format(key), '-10000 10000', [float, float], '', 'PLAIN']
+                    ['{0} warning'.format(key), '-1000000 1000000', [float, float], '', 'PLAIN']
                     )
                 items.append(
-                    ['{0} skip'.format(key), '-10000 10000', [float, float], '', 'PLAIN']
+                    ['{0} skip'.format(key), '-1000000 1000000', [float, float], '', 'PLAIN']
                     )
     return items
 
