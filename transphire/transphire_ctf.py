@@ -237,10 +237,9 @@ def create_cter_1_0_command(
     command = []
     # Start the program
     command.append('{0}'.format(settings['Path'][ctf_name]))
-    command.append("'{0}*'".format(file_sum))
+    command.append("{0}*".format(file_sum[:-1]))
     command.append(output_dir)
-    command.append('--selection_list')
-    command.append(file_input)
+    command.append('--selection_list={0}'.format(file_sum))
     ignore_list = []
     ignore_list.append('Phase plate')
     if settings[ctf_name]['Phase plate'] == 'False':
@@ -263,10 +262,7 @@ def create_cter_1_0_command(
         if key in ignore_list:
             continue
         elif settings[ctf_name][key]:
-            command.append(key)
-            command.append(
-                '{0}'.format(settings[ctf_name][key])
-                )
+            command.append('{0}={1}'.format(key, settings[ctf_name][key]))
         else:
             continue
 
