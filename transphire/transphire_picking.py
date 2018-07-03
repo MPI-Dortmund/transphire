@@ -195,7 +195,7 @@ def create_box_jpg(file_name, settings, queue_com, name):
         ('box_x', '<i8'),
         ('box_y', '<i8'),
         ]
-    box_data = np.genfromtxt(box_file, dtype=box_dtype)
+    box_data = np.atleast_1d(np.genfromtxt(box_file, dtype=box_dtype))
     jpg_data = imageio.imread(jpg_file, as_gray=False, pilmode='RGB')
     for x, y, box_x, box_y in box_data:
         create_circle(
