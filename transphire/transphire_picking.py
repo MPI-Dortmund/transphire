@@ -195,50 +195,44 @@ def create_box_jpg(file_name, settings, queue_com, name):
         ('box_x', '<i8'),
         ('box_y', '<i8'),
         ]
+
     box_data = np.atleast_1d(np.genfromtxt(box_file, dtype=box_dtype))
+    box_data[:, 0] += box_data[:, 2]//2
+    box_data[:, 1] += box_data[:, 3]//2
+
     jpg_data = imageio.imread(jpg_file, as_gray=False, pilmode='RGB')
-    for x, y, box_x, box_y in box_data:
-        create_circle(
-            jpg_data=jpg_data,
-            x=int(x-box_x//2),
-            y=int(y-box_y//2),
-            radius=box_x//10,
-            )
+    jpg_data = np.rot90(jpg_data, 3)
+    create_circle(jpg_data=jpg_data, maskcenters=box_data[:,[0,1]], radius=25)
+    jpg_data = np.rot90(jpg_data, 1)
+
     imageio.imwrite(new_jpg_file, jpg_data)
 
 
-def create_circle(jpg_data, x, y, radius):
+def create_circle(jpg_data, maskcenters, radius):
     """
     Create a circle in a numpy array
 
     Arguments:
     jpg_data - Data that needs to be changed
-    x - x_value of the circle center
-    y - y_value of the circle center
+    maskcenters - center of mask
     radius - Radius of the circle
 
     Returns:
     None, jpg_data will be changed in-place
     """
-    for x_off in range(radius):
-        for y_off in range(radius):
-            if x_off**2 + y_off**2 <= radius**2:
-                liste = []
-                liste.append([x - x_off, y - y_off])
-                liste.append([x + x_off, y - y_off])
-                liste.append([x - x_off, y + y_off])
-                liste.append([x + x_off, y + y_off])
 
-                for x_new, y_new in liste:
-                    if x_new < 0:
-                        continue
-                    elif y_new < 0:
-                        continue
-                    elif x_new >= jpg_data.shape[0]:
-                        continue
-                    elif y_new >= jpg_data.shape[1]:
-                        continue
-                    else:
-                        jpg_data[x_new, y_new, :] = np.array([255, 0, 0])
-            else:
-                continue
+    output_shape = (jpg_data.shape[0],jpg_data.shape[1])
+    X,Y = [np.arange(-radius, radius+1)]*2
+    disk_mask = X[:, None]**2 + Y**2 <= radius*radius
+    idx_mask_x, idx_mask_y = np.where(disk_mask)
+
+    out = np.zeros(output_shape, dtype=bool)
+
+    idx_mask_x_abs = maskcenters[:, None, 0] + idx_mask_x - radius
+    idx_mask_y_abs = maskcenters[:, None, 1] + idx_mask_y - radius
+
+    valid_mask = (idx_mask_x_abs >= 0) & (idx_mask_x_abs < output_shape[0]) & \
+             (idx_mask_y_abs >= 0) & (idx_mask_y_abs < output_shape[1])
+
+    out[idx_mask_x_abs[valid_mask], idx_mask_y_abs[valid_mask]] = 1
+    jpg_data[out, :] = np.array([255, 0, 0])
