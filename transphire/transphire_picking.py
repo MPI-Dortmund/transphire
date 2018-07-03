@@ -189,14 +189,7 @@ def create_box_jpg(file_name, settings, queue_com, name):
     new_jpg_file = os.path.join(settings['picking_folder'], 'jpg', '{0}.jpg'.format(file_name))
     tu.mkdir_p(os.path.join(settings['picking_folder'], 'jpg'))
 
-    box_dtype = [
-        ('coord_x', '<i8'),
-        ('coord_y', '<i8'),
-        ('box_x', '<i8'),
-        ('box_y', '<i8'),
-        ]
-
-    box_data = np.atleast_1d(np.genfromtxt(box_file, dtype=box_dtype))
+    box_data = np.atleast_1d(np.genfromtxt(box_file, dtype=int))
     box_data[:, 0] += box_data[:, 2]//2
     box_data[:, 1] += box_data[:, 3]//2
 

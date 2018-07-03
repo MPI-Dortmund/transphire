@@ -2333,6 +2333,12 @@ class ProcessThread(QThread):
                     '{0}.tiff'.format(new_root_name)
                     )
 
+            # Skip files that are already copied but due to an error are still in the queue
+            if not os.path.exists(root_name) and os.path.exists(new_name):
+                print(root_name, ' does not exist anymore, but', new_name, 'does already!')
+                print('Compress - Skip file!')
+                return None
+
             # Create the command
             if extension == '.mrc':
                 command = '{0} -s -c lzw {1} {2}'.format(

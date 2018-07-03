@@ -741,10 +741,10 @@ def import_cryolo_v1_0_0(picking_name, directory_name):
             '{0}.jpg'.format(name)
             )
         box_name = os.path.join(directory_name, '{0}.box'.format(name))
-        data_name = np.genfromtxt(
+        data_name = np.atleast_1d(np.genfromtxt(
             box_name,
             dtype=get_dtype_import_dict()[picking_name]
-            )
+            ))
         data[idx]['file_name'] = name
         data[idx]['particles'] = data_name.shape[0]
         data[idx]['image'] = imageio.imread(jpg_name)
