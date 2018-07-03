@@ -727,7 +727,7 @@ def import_cryolo_v1_0_0(picking_name, directory_name):
             else:
                 continue
 
-    useable_files = [name for name in useable_files_box if name in useable_files_jpg]
+    useable_files = [name for name in sorted(useable_files_box) if name in useable_files_jpg]
 
     data = np.empty(
         len(useable_files),
@@ -749,5 +749,4 @@ def import_cryolo_v1_0_0(picking_name, directory_name):
         data[idx]['particles'] = data_name.shape[0]
         data[idx]['image'] = imageio.imread(jpg_name)
 
-    data.sort(order='file_name')
     return data
