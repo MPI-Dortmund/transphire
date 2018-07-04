@@ -120,4 +120,5 @@ class PlotWorker(QObject):
             data_combined = self.data_picking[0]
             for entry in self.data_picking[1:]:
                 data_combined = np.append(data_combined, entry, axis=0)
+            data_combined.sort(order='file_name')
             self.sig_data.emit(picking_name, data_combined, names[0], settings)
