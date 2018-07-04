@@ -2096,18 +2096,24 @@ class ProcessThread(QThread):
         # Remove all rows that were skipped in the past
         self.queue_lock.lock()
         try:
-            _, extension = os.path.splitext(data['file_name'][0])
             mask = np.in1d(
-                np.char.replace(
-                    np.char.replace(
-                        data['file_name'], self.settings['project_folder'], ''
-                        ), extension, ''
-                    ),
-                np.char.replace(
-                    np.char.replace(
-                        file_sum, self.settings['project_folder'], ''
-                        ), '.mrc', ''
-                    )
+                np.array(
+                    np.char.rsplit(
+                        np.array(
+                            np.char.rsplit(
+                                data['file_name'],
+                                '/',
+                                1
+                                ).tolist()
+                            )[:, -1],
+                        '.'
+                        ).tolist()
+                    )[:,0],
+                np.char.rsplit(np.char.rsplit(
+                    file_sum,
+                    '/',
+                    1
+                    ).tolist()[-1], '.').tolist()[0]
                 )
             data = data[mask]
             data_orig = data_orig[mask]

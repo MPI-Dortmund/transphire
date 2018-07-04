@@ -317,7 +317,7 @@ def import_ctffind_v4_1_8(ctf_name, directory_name):
     files = np.array([
         entry for entry in glob.glob(
             '{0}/*.txt'.format(directory_name)
-            ) if '_avrot.txt' not in entry
+            ) if '_avrot.txt' not in entry and 'transphire' not in entry
         ], dtype=str)
 
     useable_files = []
@@ -365,8 +365,9 @@ def import_ctffind_v4_1_8(ctf_name, directory_name):
                     pass
         if input_name is None:
             raise IOError(
-                'Could not read {0} file name! Please contact the TranSPHIRE authors!'.format(
-                    ctf_name
+                'Could not read {0} file name! Please contact the TranSPHIRE authors! -- {1}'.format(
+                    ctf_name,
+                    name
                     )
                 )
         else:
