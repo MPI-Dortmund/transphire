@@ -374,7 +374,11 @@ def import_ctffind_v4_1_8(ctf_name, directory_name):
             data_original[idx]['file_name'] = input_name
 
         for entry in data_name.dtype.names:
-            data_original[idx][entry] = data_name[entry]
+            if entry == 'phase_shift':
+                data_original[idx][entry] = np.degrees(data_name[entry])
+            else:
+                data_original[idx][entry] = data_name[entry]
+
             if entry == 'defocus_1':
                 data[idx]['defocus'] = (data_name['defocus_1']+data_name['defocus_2'])/2
             elif entry == 'defocus_2':
