@@ -40,6 +40,7 @@ def default_cryolo_v1_0_3():
         ['Filter value high pass (A)', '9999', float, 'Filter micrographs:True', 'PLAIN'],
         ['Filter value low pass (A)', '10', float, 'Filter micrographs:True', 'PLAIN'],
         ['Pixel size (A/px)', '1', float, 'Filter micrographs:True', 'PLAIN'],
+        ['Box size', '200', int, '', 'PLAIN'],
         ]
     return items
 

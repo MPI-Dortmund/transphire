@@ -18,7 +18,6 @@
 import os
 import glob
 import re
-import imageio
 import numpy as np
 
 
@@ -140,7 +139,7 @@ def get_dtype_dict():
         ('file_name', '|U200'),
         ]
     dtype['picking'] = [
-        ('image', 'O'),
+        ('image', '|U200'),
         ('particles', '<i8'),
         ('file_name', '|U200'),
         ]
@@ -683,7 +682,7 @@ def import_motion_cor_2_v1_1_0(motion_name, directory_names):
     return data
 
 
-def import_cryolo_v1_0_3(picking_name, directory_name):
+def import_cryolo_v1_0_3(picking_name, names):
     """
     Import picking information for crYOLO v1.0.3.
 
@@ -694,8 +693,14 @@ def import_cryolo_v1_0_3(picking_name, directory_name):
     Return:
     Imported data
     """
+    directory_name, file_name = names
+    if file_name is None:
+        placeholder = '*'
+    else:
+        placeholder = os.path.splitext(os.path.basename(file_name))[0]
+
     files_box = np.array(
-        glob.glob('{0}/*.box'.format(directory_name))
+        glob.glob('{0}/{1}.box'.format(directory_name, placeholder))
         )
     useable_files_box = []
     for name in files_box:
@@ -712,20 +717,7 @@ def import_cryolo_v1_0_3(picking_name, directory_name):
             else:
                 continue
 
-    files_jpg = np.array(
-        glob.glob('{0}/jpg/*.jpg'.format(directory_name))
-        )
-    useable_files_jpg = []
-    for name in files_jpg:
-        try:
-            imageio.imread(name)
-        except ValueError:
-            continue
-        else:
-            if array.size > 0:
-                useable_files_jpg.append(os.path.splitext(os.path.basename(name))[0])
-            else:
-                continue
+    useable_files_jpg = [os.path.splitext(os.path.basename(entry))[0] for entry in glob.glob('{0}/jpg/{1}.jpg'.format(directory_name, placeholder))]
 
     useable_files = [name for name in sorted(useable_files_box) if name in useable_files_jpg]
 
@@ -747,6 +739,6 @@ def import_cryolo_v1_0_3(picking_name, directory_name):
             ))
         data[idx]['file_name'] = name
         data[idx]['particles'] = data_name.shape[0]
-        data[idx]['image'] = imageio.imread(jpg_name)
+        data[idx]['image'] = jpg_name
 
     return data

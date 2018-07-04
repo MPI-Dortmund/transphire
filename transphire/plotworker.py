@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import numpy as np
 try:
     from PyQt4.QtCore import pyqtSignal, QObject, pyqtSlot
 except ImportError:
@@ -46,6 +47,7 @@ class PlotWorker(QObject):
         None
         """
         super(PlotWorker, self).__init__(parent)
+        self.data_picking = []
 
     @pyqtSlot(str, object, object)
     def calculate_array_ctf(self, ctf_name, directory_name, settings):
@@ -64,13 +66,11 @@ class PlotWorker(QObject):
             directory_name=directory_name
             )
         if data is None:
-            return None
-        elif data.size == 0:
-            return None
-        else:
             pass
-
-        self.sig_data.emit(ctf_name, data, directory_name, settings)
+        elif data.size == 0:
+            pass
+        else:
+            self.sig_data.emit(ctf_name, data, directory_name, settings)
 
     @pyqtSlot(str, object, object)
     def calculate_array_motion(self, motion_name, directory_name, settings):
@@ -89,19 +89,19 @@ class PlotWorker(QObject):
             directory_name=directory_name
             )
         if data is None:
-            return None
+            pass
         elif data.size == 0:
-            return None
+            pass
         else:
             self.sig_data.emit(motion_name, data, directory_name, settings)
 
     @pyqtSlot(str, object, object)
-    def calculate_array_picking(self, picking_name, directory_name, settings):
+    def calculate_array_picking(self, picking_name, names, settings):
         """
         Calculate picking array.
 
         picking_name - Name of the software that calls the calculation
-        directory_name - Name of the directory that contains the log files
+        names - Name of the directory that contains the log files and the file to look for
         settings - TranSPHIRE settings
 
         Returns:
@@ -109,11 +109,15 @@ class PlotWorker(QObject):
         """
         data = tu.import_picking(
             picking_name=picking_name,
-            directory_name=directory_name
+            names=names
             )
         if data is None:
-            return None
+            pass
         elif data.size == 0:
-            return None
+            pass
         else:
-            self.sig_data.emit(picking_name, data, directory_name, settings)
+            self.data_picking.append(data)
+            data_combined = self.data_picking[0]
+            for entry in self.data_picking[1:]:
+                data_combined = np.append(data_combined, entry, axis=0)
+            self.sig_data.emit(picking_name, data_combined, names[0], settings)

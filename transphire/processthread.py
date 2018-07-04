@@ -2225,12 +2225,9 @@ class ProcessThread(QThread):
         file_name = os.path.basename(os.path.splitext(root_name)[0])
 
         # Create the command for filtering
-        command, file_input, check_files, block_gpu, gpu_list = tup.crete_filter_command(
+        command, file_input, check_files, block_gpu, gpu_list = tup.create_filter_command(
             file_input=root_name,
-            new_name=self.settings['picking_folder'],
             settings=self.settings,
-            queue_com=self.queue_com,
-            name=self.name
             )
 
         # Log files
@@ -2335,7 +2332,7 @@ class ProcessThread(QThread):
                 pass
 
         # Plot CTF information
-        self.queue_com['plot_picking'].put(True)
+        self.queue_com['plot_picking'].put(root_name)
 
     def run_compress(self, root_name):
         """

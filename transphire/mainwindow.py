@@ -1029,6 +1029,7 @@ class MainWindow(QMainWindow):
         self.thread_mount.wait()
         self.thread_process.quit()
         self.thread_process.wait()
+        self.thread_plot.stop = True
         self.thread_plot.quit()
         self.thread_plot.wait()
         for key in self.content['Mount'].content:

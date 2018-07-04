@@ -106,8 +106,13 @@ def find_logfiles(root_path, file_name, settings, queue_com, name):
 
 
 def create_filter_command(
-        picking_name, file_input, file_output, settings
+        file_input, settings
         ):
+    picking_name = settings['Copy']['Picking']
+    command = []
+    block_gpu = False
+    gpu_list = []
+
     file_output_tmp = file_input
     if settings[picking_name]['Filter micrographs'] == 'True':
 
@@ -137,9 +142,8 @@ def create_filter_command(
     command.append('{0}'.format(settings['Path']['e2proc2d.py']))
     command.append('{0}'.format(file_output_tmp))
     command.append('{0}'.format(file_output_jpg))
+    command.append('--meanshrink=4')
 
-    gpu_list = []
-    block_gpu = False
     check_files = [file_output_tmp, file_output_jpg]
     return ' '.join(command), file_output_tmp, check_files, block_gpu, gpu_list
 
@@ -156,6 +160,7 @@ def create_cryolo_v1_0_3_command(
     ignore_list.append('Filter value high pass (A)')
     ignore_list.append('Filter value low pass (A)')
     ignore_list.append('Pixel size (A/px)')
+    ignore_list.append('Box size')
 
     command.append('{0}'.format(settings['Path'][picking_name]))
 
@@ -163,7 +168,7 @@ def create_cryolo_v1_0_3_command(
     command.append('{0}'.format(file_input))
     command.append('-o')
     command.append('{0}'.format(file_output))
-    command.append('--write_empty')
+    command.append('--write_empty=1')
 
     for key in settings[picking_name]:
         if key in ignore_list:
@@ -189,6 +194,7 @@ def create_box_jpg(file_name, settings, queue_com, name):
     Return:
     It creates a file.
     """
+    picking_name = settings['Copy']['Picking']
     box_file = os.path.join(settings['picking_folder'], '{0}.box'.format(file_name))
     jpg_file = os.path.join(settings['picking_folder'], '{0}.jpg'.format(file_name))
     new_jpg_file = os.path.join(settings['picking_folder'], 'jpg', '{0}.jpg'.format(file_name))
@@ -197,13 +203,38 @@ def create_box_jpg(file_name, settings, queue_com, name):
     box_data = np.atleast_2d(np.genfromtxt(box_file, dtype=int))
     box_data[:, 0] += box_data[:, 2]//2
     box_data[:, 1] += box_data[:, 3]//2
+    box_data[:, 0] = box_data[:, 0]//4
+    box_data[:, 1] = box_data[:, 1]//4
 
     jpg_data = imageio.imread(jpg_file, as_gray=False, pilmode='RGB')
     jpg_data = np.rot90(jpg_data, 3)
-    create_circle(jpg_data=jpg_data, maskcenters=box_data[:,[0,1]], radius=25)
+    create_box(jpg_data=jpg_data, maskcenters=box_data[:,[0,1]], box_size=int(settings[picking_name]['Box size'])//4)
+    create_circle(jpg_data=jpg_data, maskcenters=box_data[:,[0,1]], radius=2)
     jpg_data = np.rot90(jpg_data, 1)
 
     imageio.imwrite(new_jpg_file, jpg_data)
+
+
+def create_box(jpg_data, maskcenters, box_size):
+    output_shape = (jpg_data.shape[0],jpg_data.shape[1])
+    rect_mask = np.zeros((box_size, box_size))
+    for i in range(2):
+        rect_mask[:, i] = 1
+        rect_mask[:, -i-1] = 1
+        rect_mask[i, :] = 1
+        rect_mask[-i-1, :] = 1
+
+    idx_mask_x, idx_mask_y = np.where(rect_mask)
+    out = np.zeros(output_shape, dtype=bool)
+
+    idx_mask_x_abs = maskcenters[:, None, 0] + idx_mask_x - box_size//2
+    idx_mask_y_abs = maskcenters[:, None, 1] + idx_mask_y - box_size//2
+
+    valid_mask = (idx_mask_x_abs >= 0) & (idx_mask_x_abs < output_shape[0]) & \
+             (idx_mask_y_abs >= 0) & (idx_mask_y_abs < output_shape[1])
+
+    out[idx_mask_x_abs[valid_mask], idx_mask_y_abs[valid_mask]] = 1
+    jpg_data[out, :] = np.array([255, 0, 0])
 
 
 def create_circle(jpg_data, maskcenters, radius):

@@ -16,6 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import warnings
+import imageio
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt4agg import (
@@ -92,7 +93,7 @@ class PlotWidget(QWidget):
             self.next_button = QPushButton('Next', self)
             self.next_button.clicked.connect(lambda: self.change_idx('next'))
             layout_h.addWidget(self.next_button)
-            self.reset_button = QPushButton('Reset', self)
+            self.reset_button = QPushButton(self.default_value, self)
             self.reset_button.clicked.connect(lambda: self.change_idx('reset'))
             layout_h.addWidget(self.reset_button)
             layout_h.addStretch(1)
@@ -101,6 +102,28 @@ class PlotWidget(QWidget):
         # Fill layout
         layout_v.addWidget(self.toolbar)
         layout_v.addWidget(self.canvas)
+
+
+    def compute_corrupted_figure(self, title):
+        """
+        Compute the corrupted figure shown on startup.
+
+        Arguments:
+        None
+
+        Return:
+        None
+        """
+        self.figure.clear()
+        ax1 = self.figure.add_subplot(111)
+        ax1.plot([0.5, 0, 0, 0.5], [1, 1, 0, 0], 'b')
+        ax1.plot([1, 1.5, 1.5, 1, 1], [0, 0, 1, 1, 0], 'b')
+        ax1.plot([2, 2, 2.5, 2.5, 2, 2.5], [0, 1, 1, 0.5, 0.5, 0], 'b')
+        ax1.plot([3, 3, 3.5, 3.5, 3, 3.5], [0, 1, 1, 0.5, 0.5, 0], 'b')
+        ax1.plot([4, 4, 4.5, 4.5], [1, 0, 0, 1], 'b')
+        ax1.plot([5, 5, 5.5, 5.5, 5], [0, 1, 1, 0.5, 0.5], 'b')
+        ax1.plot([6, 6.5, 6.25, 6.25], [1, 1, 1, 0], 'b')
+        ax1.set_title(title)
 
 
     def compute_initial_figure(self):
@@ -120,6 +143,7 @@ class PlotWidget(QWidget):
         ax1.plot([2, 2, 2.5], [1, 0, 0], 'b')
         ax1.plot([3, 3, 3.5], [1, 0, 0], 'b')
         ax1.plot([4, 4.15, 4.35, 4.5, 4.5, 4.35, 4.15, 4, 4], [0.3, 0, 0, 0.3, 0.6, 1, 1, 0.6, 0.3], 'b')
+
 
     def update_figure(self, name, data, directory_name, settings):
         """
@@ -206,19 +230,27 @@ class PlotWidget(QWidget):
             return None
         else:
             pass
-        self.figure.clear()
-        ax1 = self.figure.add_subplot(111)
 
         if str(self.combo_box.currentText()) == self.default_value:
             idx = 0
         else:
             idx = self.idx-1
-        ax1.imshow(self.data['image'][idx])
 
-        ax1.get_xaxis().set_visible(False)
-        ax1.get_yaxis().set_visible(False)
-        ax1.set_title(self.data['file_name'][idx])
-        self.canvas.draw()
+        try:
+            jpg_data = imageio.imread(self.data['image'][idx])
+        except Exception as e:
+            print('Error loading image: {0} -- Message: {1}'.format(self.data['image'][idx], str(e)))
+            self.compute_corrupted_figure(title=self.data['file_name'][idx])
+        else:
+            self.figure.clear()
+            ax1 = self.figure.add_subplot(111)
+            ax1.imshow(jpg_data)
+
+
+            ax1.get_xaxis().set_visible(False)
+            ax1.get_yaxis().set_visible(False)
+            ax1.set_title(self.data['file_name'][idx])
+            self.canvas.draw()
 
     def change_idx(self, typ):
         if typ == 'next':

@@ -1023,7 +1023,7 @@ def import_motion(motion_name, directory_name):
     return data
 
 
-def import_picking(picking_name, directory_name):
+def import_picking(picking_name, names):
     """
     Import picking information.
 
@@ -1041,7 +1041,7 @@ def import_picking(picking_name, directory_name):
     else:
         data = get_function_dict()[picking_name]['plot_data'](
             picking_name=picking_name,
-            directory_name=directory_name
+            names=names
             )
 
     return data
