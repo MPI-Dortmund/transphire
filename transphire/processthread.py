@@ -1463,7 +1463,7 @@ class ProcessThread(QThread):
                             value_y = re.match('.*<Y>(.*)</Y>.*', lines).group(1)
                             value_z = re.match('.*<Z>(.*)</Z>.*', lines).group(1)
                             defocus = re.match('.*<Defocus>(.*)</Defocus>.*', lines).group(1)
-                            applied_defocus = re.match('.*<a:Key>AppliedDefocus</a:Key><a:Value .*>(.*)</a:Value>.*', lines).group(1)
+                            applied_defocus = re.match('.*<a:Key>AppliedDefocus</a:Key><a:Value .*?>(.*?)</a:Value>.*', lines).group(1)
                         except AttributeError:
                             pass
                         else:
