@@ -1969,7 +1969,7 @@ class ProcessThread(QThread):
             )
 
         # Create the command
-        command, check_files, block_gpu, gpu_list = tuc.get_ctf_command(
+        command, check_files, block_gpu, gpu_list, shell = tuc.get_ctf_command(
             file_sum=file_sum,
             file_input=file_input,
             new_name=new_name,
@@ -1989,7 +1989,7 @@ class ProcessThread(QThread):
             log_prefix=log_prefix,
             block_gpu=block_gpu,
             gpu_list=gpu_list,
-            shell=False
+            shell=shell
             )
 
         zero_list = [err_file]
@@ -2046,12 +2046,15 @@ class ProcessThread(QThread):
             self.settings['ctf_folder']
             )
 
-        warnings, skip_list = tus.check_for_outlier(
-            dict_name='ctf',
-            data=data,
-            file_name=file_sum,
-            settings=self.settings
-            )
+        try:
+            warnings, skip_list = tus.check_for_outlier(
+                dict_name='ctf',
+                data=data,
+                file_name=file_sum,
+                settings=self.settings
+                )
+        except ValueError:
+            raise IOError('{0} - Please check, if {0} can be executed outside of TranSPHIRE'.format(self.settings['Copy']['CTF']))
 
         if skip_list:
             self.queue_lock.lock()

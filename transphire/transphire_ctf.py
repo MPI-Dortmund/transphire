@@ -41,6 +41,7 @@ def get_ctf_command(file_sum, file_input, new_name, settings, queue_com, name):
     command = None
     block_gpu = None
     gpu_list = None
+    shell = None
     if ctf_name == 'CTFFIND4 v4.1.8' or \
             ctf_name == 'CTFFIND4 v4.1.10':
         command = create_ctffind_4_v4_1_8_command(
@@ -53,6 +54,7 @@ def get_ctf_command(file_sum, file_input, new_name, settings, queue_com, name):
         check_files = []
         block_gpu = False
         gpu_list = []
+        shell = True
 
     elif ctf_name == 'Gctf v1.06' or \
             ctf_name == 'Gctf v1.18':
@@ -71,6 +73,7 @@ def get_ctf_command(file_sum, file_input, new_name, settings, queue_com, name):
         else:
             assert False
         gpu_list = settings[ctf_name]['--gid'].split()
+        shell = False
 
     elif ctf_name == 'CTER v1.0':
         output_dir, _ = os.path.splitext(new_name)
@@ -84,6 +87,7 @@ def get_ctf_command(file_sum, file_input, new_name, settings, queue_com, name):
         check_files = ['{0}/partres.txt'.format(output_dir)]
         block_gpu = False
         gpu_list = []
+        shell = False
 
     else:
         message = '\n'.join([
@@ -99,8 +103,9 @@ def get_ctf_command(file_sum, file_input, new_name, settings, queue_com, name):
     assert command is not None, 'command not specified: {0}'.format(ctf_name)
     assert block_gpu is not None, 'block_gpu not specified: {0}'.format(ctf_name)
     assert gpu_list is not None, 'gpu_list not specified: {0}'.format(ctf_name)
+    assert shell is not None, 'shell not specified: {0}'.format(ctf_name)
 
-    return command, check_files, block_gpu, gpu_list
+    return command, check_files, block_gpu, gpu_list, shell
 
 
 def find_logfiles(root_path, file_name, settings, queue_com, name):
