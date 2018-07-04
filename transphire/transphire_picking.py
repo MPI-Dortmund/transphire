@@ -40,8 +40,8 @@ def get_picking_command(file_input, new_name, settings, queue_com, name):
     command = None
     block_gpu = None
     gpu_list = None
-    if picking_name == 'crYOLO v1.0.0':
-        command = create_cryolo_v1_0_0_command(
+    if picking_name == 'crYOLO v1.0.3':
+        command = create_cryolo_v1_0_3_command(
             picking_name=picking_name,
             file_input=file_input,
             file_output=new_name,
@@ -85,7 +85,7 @@ def find_logfiles(root_path, file_name, settings, queue_com, name):
     log_files = None
     copied_log_files = None
     picking_root_path = os.path.join(settings['picking_folder'], file_name)
-    if settings['Copy']['Picking'] == 'crYOLO v1.0.0':
+    if settings['Copy']['Picking'] == 'crYOLO v1.0.3':
         copied_log_files = ['{0}.box'.format(picking_root_path)]
         log_files = copied_log_files
 
@@ -105,18 +105,10 @@ def find_logfiles(root_path, file_name, settings, queue_com, name):
     return log_files, copied_log_files
 
 
-def create_cryolo_v1_0_0_command(
+def create_filter_command(
         picking_name, file_input, file_output, settings
         ):
-    """Create the Gctf v1.06 command"""
-
-    command = []
-    # Start the program
-    ignore_list = []
-    ignore_list.append('Filter micrographs')
-    ignore_list.append('Filter value high pass (A)')
-    ignore_list.append('Filter value low pass (A)')
-    ignore_list.append('Pixel size (A/px)')
+    file_output_tmp = file_input
     if settings[picking_name]['Filter micrographs'] == 'True':
 
         filter_high = float(settings[picking_name]['Filter value high pass (A)'])
@@ -137,16 +129,33 @@ def create_cryolo_v1_0_0_command(
         command.append('--process=filter.lowpass.gauss:cutoff_freq={0}'.format(filter_low_abs))
         command.append('--process=filter.highpass.gauss:cutoff_freq={0}'.format(filter_high_abs))
         command.append(';')
-        file_input = file_output_tmp
 
     file_output_jpg = os.path.join(
             settings['picking_folder'],
             '{0}.jpg'.format(os.path.splitext(os.path.basename(file_input))[0])
             )
     command.append('{0}'.format(settings['Path']['e2proc2d.py']))
-    command.append('{0}'.format(file_input))
+    command.append('{0}'.format(file_output_tmp))
     command.append('{0}'.format(file_output_jpg))
-    command.append(';')
+
+    gpu_list = []
+    block_gpu = False
+    check_files = [file_output_tmp, file_output_jpg]
+    return ' '.join(command), file_output_tmp, check_files, block_gpu, gpu_list
+
+
+def create_cryolo_v1_0_3_command(
+        picking_name, file_input, file_output, settings
+        ):
+    """Create the crYOLO v1.0.3 command"""
+
+    command = []
+    # Start the program
+    ignore_list = []
+    ignore_list.append('Filter micrographs')
+    ignore_list.append('Filter value high pass (A)')
+    ignore_list.append('Filter value low pass (A)')
+    ignore_list.append('Pixel size (A/px)')
 
     command.append('{0}'.format(settings['Path'][picking_name]))
 
@@ -154,6 +163,7 @@ def create_cryolo_v1_0_0_command(
     command.append('{0}'.format(file_input))
     command.append('-o')
     command.append('{0}'.format(file_output))
+    command.append('--write_empty')
 
     for key in settings[picking_name]:
         if key in ignore_list:
@@ -163,11 +173,6 @@ def create_cryolo_v1_0_0_command(
             command.append(
                 '{0}'.format(settings[picking_name][key])
                 )
-
-    if settings[picking_name]['Filter micrographs'] == 'True':
-        command.append(';')
-        command.append('rm')
-        command.append('{0}'.format(file_output_tmp))
 
     return ' '.join(command)
 

@@ -2224,9 +2224,43 @@ class ProcessThread(QThread):
         # New name
         file_name = os.path.basename(os.path.splitext(root_name)[0])
 
-        # Create the command
-        command, check_files, block_gpu, gpu_list = tup.get_picking_command(
+        # Create the command for filtering
+        command, file_input, check_files, block_gpu, gpu_list = tup.crete_filter_command(
             file_input=root_name,
+            new_name=self.settings['picking_folder'],
+            settings=self.settings,
+            queue_com=self.queue_com,
+            name=self.name
+            )
+
+        # Log files
+        log_prefix = os.path.join(
+                self.settings['picking_folder'],
+                '{0}_filter'.format(file_name)
+                )
+
+        log_file, err_file = self.run_command(
+            command=command,
+            log_prefix=log_prefix,
+            block_gpu=block_gpu,
+            gpu_list=gpu_list,
+            shell=True
+            )
+
+        zero_list = [err_file]
+        non_zero_list = [log_file]
+        non_zero_list.extend(check_files)
+
+        tus.check_outputs(
+            zero_list=zero_list,
+            non_zero_list=non_zero_list,
+            folder=self.settings['picking_folder'],
+            command=command
+            )
+
+        # Create the command for picking
+        command, check_files, block_gpu, gpu_list = tup.get_picking_command(
+            file_input=file_input,
             new_name=self.settings['picking_folder'],
             settings=self.settings,
             queue_com=self.queue_com,
@@ -2244,7 +2278,7 @@ class ProcessThread(QThread):
             log_prefix=log_prefix,
             block_gpu=block_gpu,
             gpu_list=gpu_list,
-            shell=True
+            shell=False
             )
 
         zero_list = []

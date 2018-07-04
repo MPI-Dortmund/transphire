@@ -137,10 +137,10 @@ def get_function_dict():
             'typ': 'motion',
             'allow_empty': ['-Dark', '-DefectFile', '-Gain'],
             },
-        'crYOLO v1.0.0': {
-            'plot': tp.update_cryolo_v1_0_0,
-            'plot_data': ti.import_cryolo_v1_0_0,
-            'content': tc.default_cryolo_v1_0_0,
+        'crYOLO v1.0.3': {
+            'plot': tp.update_cryolo_v1_0_3,
+            'plot_data': ti.import_cryolo_v1_0_3,
+            'content': tc.default_cryolo_v1_0_3,
             'executable': True,
             'typ': 'picking',
             'allow_empty': [],

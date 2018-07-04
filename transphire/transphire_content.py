@@ -20,9 +20,9 @@ from transphire import transphire_utils as tu
 from transphire import transphire_import as ti
 
 
-def default_cryolo_v1_0_0():
+def default_cryolo_v1_0_3():
     """
-    Content of crYOLO version 1.0.0
+    Content of crYOLO version 1.0.3
 
     Arguments:
     None

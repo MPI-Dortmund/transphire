@@ -132,7 +132,7 @@ def get_dtype_dict():
         ('average drift per frame without first', '<f8'),
         ('file_name', '|U200')
         ]
-    dtype['crYOLO v1.0.0'] = [
+    dtype['crYOLO v1.0.3'] = [
         ('coord_x', '<f8'),
         ('coord_y', '<f8'),
         ('box_x', '<f8'),
@@ -279,7 +279,7 @@ def get_dtype_import_dict():
         ('shift_x', '<f8'),
         ('shift_y', '<f8')
         ]
-    dtype_import['crYOLO v1.0.0'] = [
+    dtype_import['crYOLO v1.0.3'] = [
         ('coord_x', '<f8'),
         ('coord_y', '<f8'),
         ('box_x', '<f8'),
@@ -683,9 +683,9 @@ def import_motion_cor_2_v1_1_0(motion_name, directory_names):
     return data
 
 
-def import_cryolo_v1_0_0(picking_name, directory_name):
+def import_cryolo_v1_0_3(picking_name, directory_name):
     """
-    Import picking information for crYOLO v1.0.0.
+    Import picking information for crYOLO v1.0.3.
 
     Arguments:
     picking_name - Name of picking program
