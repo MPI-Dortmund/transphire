@@ -16,10 +16,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 try:
-    from PyQt4.QtGui import QWidget, QHBoxLayout, QVBoxLayout
+    from PyQt4.QtGui import QWidget, QHBoxLayout, QVBoxLayout, QLabel
     from PyQt4.QtCore import pyqtSlot
 except ImportError:
-    from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout
+    from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel
     from PyQt5.QtCore import pyqtSlot
 from transphire.settingswidget import SettingsWidget
 from transphire.separator import Separator
@@ -48,8 +48,15 @@ class SettingsContainer(QWidget):
         super(SettingsContainer, self).__init__(parent)
 
         # Layout
-        layout_v_global = QVBoxLayout(self)
-        layout_v_global.setContentsMargins(0, 0, 0, 0)
+        layout_tmp = QVBoxLayout(self)
+        widget = QWidget(self)
+        widget.setObjectName('central')
+        layout_tmp.addWidget(widget)
+        layout_tmp.setContentsMargins(0, 0, 0, 0)
+
+        layout_v_global = QVBoxLayout(widget)
+        layout_v_global.setContentsMargins(3, 3, 3, 3)
+        layout_v_global.addWidget(QLabel(self))
         self.layout = QHBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout_v = None

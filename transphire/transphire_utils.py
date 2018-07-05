@@ -778,24 +778,31 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
 
     # Style sheet
     style_widgets = """
-    QWidget#central {{
-        background-color: qradialgradient(
-            cx:0,
-            cy:0,
-            fx:0,
-            fy:0,
-            radius:1.2,
-            stop:0 lightgrey,
-            stop:0.8 lightgrey,
-            stop:0.94 white,
-            stop:1 white
-            )
+    QWidget#central_raw {{
+        background-image: url("{1}");
         }}
-    QWidget#tab {{ background-color: {0}}}
-    QWidget {{ background-color: {0}}}
-    QTabBar {{ background-color: {0}}}
+    QWidget#central {{
+        background-color: {2};
+        }}
+    QWidget#tab {{
+        background-color: {3};
+        }}
+    QTabWidget::tab-bar {{
+        alignment: center;
+        }}
+    QTabWidget::pane {{
+        border-top: 2px solid #C2C7CB;
+        position: absolute;
+        top: -0.5em;
+        }}
     QTabBar::tab {{ min-width: 120px }}
-    """.format('lightgrey')
+    """.format(
+        'lightgrey',
+        '{0}/images/sxgui_background.png'.format(os.path.dirname(__file__)),
+        'rgba(229, 229, 229, 192)',
+        'rgba(229, 229, 229, 120)',
+        'rgba(0, 0, 0, 255)',
+        )
 
     button_style = """
     QPushButton {{ min-height: {5}}}
@@ -840,7 +847,7 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
         frame_button_width,
         mount_button_width,
         notification_button_width,
-        widget_height
+        widget_height,
         )
 
     label_style = """

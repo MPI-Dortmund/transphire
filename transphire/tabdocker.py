@@ -19,6 +19,7 @@ try:
     from PyQt4.QtGui import QWidget, QVBoxLayout, QTabWidget
 except ImportError:
     from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTabWidget
+    from PyQt5.Qt import QPalette, QColor, QBrush
 
 
 class TabDocker(QWidget):
@@ -29,7 +30,7 @@ class TabDocker(QWidget):
     QWidget
     """
 
-    def __init__(self, parent=None, **kwargs):
+    def __init__(self, transparent=False, parent=None, **kwargs):
         """
         Initialise layout for TabDocker
 
@@ -40,10 +41,13 @@ class TabDocker(QWidget):
         None
         """
         super(TabDocker, self).__init__(parent)
+        layout_tmp = QVBoxLayout(self)
+        self.widget = QWidget(self)
+        layout_tmp.addWidget(self.widget)
+        layout_tmp.setContentsMargins(0, 0, 0, 0)
 
-        layout = QVBoxLayout(self)
+        layout = QVBoxLayout(self.widget)
         self.tab_widget = QTabWidget(self)
-        self.tab_widget.setObjectName('tab')
         layout.addWidget(self.tab_widget)
 
     def add_tab(self, widget, name):
@@ -57,4 +61,8 @@ class TabDocker(QWidget):
         Return:
         None
         """
+        if isinstance(widget, TabDocker):
+            widget.widget.setObjectName('tab')
+        else:
+            pass
         self.tab_widget.addTab(widget, name)

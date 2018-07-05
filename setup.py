@@ -16,6 +16,7 @@ setuptools.setup(
     author_email='markus.stabrin@tu-dortmund.de',
     license='GPLv3',
     packages=setuptools.find_packages(exclude=[]),
+    include_package_data=True,
     entry_points={
         'console_scripts': [
             'transphire = transphire.__main__:run_package'

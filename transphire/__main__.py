@@ -48,8 +48,8 @@ def main(font, root_directory, settings_directory, mount_directory, adjust_width
     # Start the GUI from the users home directory.
     os.chdir(root_directory)
 
+    QApplication.setStyle('fusion')
     app = QApplication([])
-    app.setStyle('cleanlooks')
 
     # Create default folders
     tu.mkdir_p(settings_directory)

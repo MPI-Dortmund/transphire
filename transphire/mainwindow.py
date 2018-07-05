@@ -136,6 +136,7 @@ class MainWindow(QMainWindow):
             )
 
         # Initiate contents
+        self.central_widget_raw = None
         self.central_widget = None
         self.content = None
         self.layout = None
@@ -364,14 +365,22 @@ class MainWindow(QMainWindow):
         Return:
         None
         """
+        if self.central_widget_raw is not None:
+            self.central_widget_raw.setParent(None)
+        else:
+            pass
         if self.central_widget is not None:
             self.central_widget.setParent(None)
         else:
             pass
 
-        self.central_widget = QWidget(self)
+        self.central_widget_raw = QWidget(self)
+        self.central_widget_raw.setObjectName('central_raw')
+        self.setCentralWidget(self.central_widget_raw)
+        layout = QVBoxLayout(self.central_widget_raw)
+        self.central_widget = QWidget(self.central_widget_raw)
         self.central_widget.setObjectName('central')
-        self.setCentralWidget(self.central_widget)
+        layout.addWidget(self.central_widget)
 
     def set_layout_structure(self):
         """
@@ -465,6 +474,7 @@ class MainWindow(QMainWindow):
 
             if layout in tab_list:
                 self.content[layout].add_tab(self.content[key], key)
+                self.content[key].setObjectName('tabbed')
             else:
                 self.layout[layout].addWidget(
                     self.content[key]
