@@ -710,17 +710,11 @@ def import_cryolo_v1_0_3(picking_name, names):
     useable_files_box = []
     for name in files_box:
         try:
-            array = np.genfromtxt(
-                name,
-                dtype=get_dtype_import_dict()[picking_name],
-                )
+            array = np.genfromtxt(name)
         except ValueError:
             continue
         else:
-            if array.size > 0:
-                useable_files_box.append(os.path.splitext(os.path.basename(name))[0])
-            else:
-                continue
+            useable_files_box.append(os.path.splitext(os.path.basename(name))[0])
 
     useable_files_jpg = [os.path.splitext(os.path.basename(entry))[0] for entry in glob.glob('{0}/jpg/{1}.jpg'.format(directory_name, placeholder))]
 
@@ -738,12 +732,17 @@ def import_cryolo_v1_0_3(picking_name, names):
             '{0}.jpg'.format(name)
             )
         box_name = os.path.join(directory_name, '{0}.box'.format(name))
-        data_name = np.atleast_1d(np.genfromtxt(
-            box_name,
-            dtype=get_dtype_import_dict()[picking_name]
-            ))
+        try:
+            data_name = np.atleast_1d(np.genfromtxt(
+                box_name,
+                dtype=get_dtype_import_dict()[picking_name]
+                ))
+        except ValueError:
+            size = 0
+        else:
+            size = data_name.shape[0]
         data[idx]['file_name'] = name
-        data[idx]['particles'] = data_name.shape[0]
+        data[idx]['particles'] = size
         data[idx]['image'] = jpg_name
 
     return data

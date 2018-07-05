@@ -902,7 +902,7 @@ class MainWindow(QMainWindow):
         # Start or stop procedure
         if result:
             self.content['Button'].start_button.setText('Stop')
-            self.plot_worker.settings = settings
+            self.plot_worker.data_picking = []
             self.process_worker.sig_start.emit(settings)
             self.mount_worker.set_settings(settings=settings)
             self.save(

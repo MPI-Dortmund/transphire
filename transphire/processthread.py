@@ -1222,6 +1222,7 @@ class ProcessThread(QThread):
         tus.check_outputs(
             zero_list=[err_file],
             non_zero_list=[log_file, new_stack],
+            exists_list=[],
             folder=self.settings['stack_folder'],
             command=command
             )
@@ -1261,6 +1262,7 @@ class ProcessThread(QThread):
         tus.check_outputs(
             zero_list=[],
             non_zero_list=log_files,
+            exists_list=[],
             folder=self.settings['meta_folder'],
             command='copy'
             )
@@ -1781,6 +1783,7 @@ class ProcessThread(QThread):
             tus.check_outputs(
                 zero_list=zero_list_scratch,
                 non_zero_list=non_zero_list_scratch,
+                exists_list=[],
                 folder=output_transfer_log_scratch,
                 command=command
                 )
@@ -1813,6 +1816,7 @@ class ProcessThread(QThread):
             tus.check_outputs(
                 zero_list=zero_list,
                 non_zero_list=non_zero_list,
+                exists_list=[],
                 folder=self.settings['motion_folder'],
                 command='copy'
                 )
@@ -2018,6 +2022,7 @@ class ProcessThread(QThread):
         tus.check_outputs(
             zero_list=zero_list,
             non_zero_list=non_zero_list+log_files,
+            exists_list=[],
             folder=self.settings['ctf_folder'],
             command=command
             )
@@ -2031,6 +2036,7 @@ class ProcessThread(QThread):
         tus.check_outputs(
             zero_list=[],
             non_zero_list=copied_log_files,
+            exists_list=[],
             folder=self.settings['ctf_folder'],
             command=command
             )
@@ -2264,6 +2270,7 @@ class ProcessThread(QThread):
         tus.check_outputs(
             zero_list=zero_list,
             non_zero_list=non_zero_list,
+            exists_list=[],
             folder=self.settings['picking_folder'],
             command=command
             )
@@ -2313,7 +2320,8 @@ class ProcessThread(QThread):
 
         tus.check_outputs(
             zero_list=zero_list,
-            non_zero_list=non_zero_list+log_files,
+            non_zero_list=non_zero_list,
+            exists_list=log_files,
             folder=self.settings['picking_folder'],
             command=command
             )
@@ -2364,6 +2372,7 @@ class ProcessThread(QThread):
             tus.check_outputs(
                 zero_list=[err_file],
                 non_zero_list=[log_file, new_name],
+                exists_list=[],
                 folder=self.settings['compress_folder'],
                 command='just check'
                 )
@@ -2418,6 +2427,7 @@ class ProcessThread(QThread):
             tus.check_outputs(
                 zero_list=[err_file],
                 non_zero_list=[log_file, new_name],
+                exists_list=[],
                 folder=self.settings['compress_folder'],
                 command=command
                 )

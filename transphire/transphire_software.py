@@ -798,7 +798,7 @@ def find_all_files(root_name, compare_name_frames, compare_name_meta, settings, 
     raise IOError(message)
 
 
-def check_outputs(zero_list, non_zero_list, folder, command):
+def check_outputs(zero_list, non_zero_list, exists_list, folder, command):
     """
     Check, if the output files are present and have the proper size.
 
@@ -853,6 +853,18 @@ def check_outputs(zero_list, non_zero_list, folder, command):
                     )
             else:
                 continue
+
+    for file_path in exists_list:
+        if not os.path.exists(file_path):
+            raise Exception(
+                'Command failed: {0} for {1}. Please check the logfiles in {2}!'.format(
+                    command,
+                    file_path,
+                    folder
+                    )
+                )
+        else:
+            continue
 
 
 def check_for_outlier(dict_name, data, file_name, settings):
