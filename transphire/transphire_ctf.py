@@ -58,12 +58,13 @@ def get_ctf_command(file_sum, file_input, new_name, settings, queue_com, name):
 
     elif ctf_name == 'Gctf v1.06' or \
             ctf_name == 'Gctf v1.18':
-        command = create_gctf_v1_06_command(
+        command, gpu = create_gctf_v1_06_command(
             ctf_name=ctf_name,
             file_sum=file_sum,
             file_input=file_input,
             file_output=new_name,
-            settings=settings
+            settings=settings,
+            name=name
             )
         check_files = ['{0}_gctf.star'.format(new_name)]
         if ctf_name == 'Gctf v1.06':
@@ -72,7 +73,7 @@ def get_ctf_command(file_sum, file_input, new_name, settings, queue_com, name):
             block_gpu = True
         else:
             assert False
-        gpu_list = settings[ctf_name]['--gid'].split()
+        gpu_list = gpu.split()
         shell = False
 
     elif ctf_name == 'CTER v1.0':
@@ -182,16 +183,16 @@ def recursive_file_search(directory, files):
 
 
 def create_gctf_v1_06_command(
-        ctf_name, file_sum, file_input, file_output, settings
+        ctf_name, file_sum, file_input, file_output, settings, name
         ):
     """Create the Gctf v1.06 command"""
 
-    command = []
-    # Start the program
-    command.append('{0}'.format(settings['Path'][ctf_name]))
     ignore_list = []
     ignore_list.append('Use movies')
     ignore_list.append('Phase plate')
+    command = []
+    # Start the program
+    command.append('{0}'.format(settings['Path'][ctf_name]))
     if settings[ctf_name]['Phase plate'] == 'False':
         ignore_list.append('--phase_shift_L')
         ignore_list.append('--phase_shift_H')
@@ -210,6 +211,23 @@ def create_gctf_v1_06_command(
     else:
         pass
 
+    ignore_list.append('Split Gpu?')
+    ignore_list.append('--gpu')
+    if settings[ctf_name]['Split Gpu?'] == 'True':
+        try:
+            gpu_id = int(name.split('_')[-1])-1
+        except ValueError:
+            gpu_id = 0
+        try:
+            gpu = settings[ctf_name]['--gpu'].split()[gpu_id]
+        except IndexError:
+            raise UserWarning('There are less gpus provided than threads available! Please restart with the same number of pipeline processors as GPUs provided and restart! Stopping this thread!')
+    else:
+        gpu = settings[ctf_name]['--gpu']
+
+    command.append('--gpu')
+    command.append('{0}'.format(gpu))
+
     command.append('--ctfstar')
     command.append('{0}_gctf.star'.format(file_output))
 
@@ -226,7 +244,7 @@ def create_gctf_v1_06_command(
 
     command.append('{0}'.format(file_input))
 
-    return ' '.join(command)
+    return ' '.join(command), gpu
 
 
 def create_cter_1_0_command(

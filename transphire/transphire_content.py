@@ -33,7 +33,7 @@ def default_cryolo_v1_0_3():
     items = [
         ['--conf', '', str, '', 'FILE'],
         ['--weights', '', str, '', 'FILE'],
-        ['--gpu', '0', int, '', 'PLAIN'],
+        ['--gpu', '0', [int]*99, '', 'PLAIN'],
         ['--patch', '2', int, '', 'PLAIN'],
         ['--threshold', '0.3', float, '', 'PLAIN'],
         ['Filter micrographs', ['True', 'False'], bool, '', 'COMBO'],
@@ -41,6 +41,7 @@ def default_cryolo_v1_0_3():
         ['Filter value low pass (A)', '10', float, 'Filter micrographs:True', 'PLAIN'],
         ['Pixel size (A/px)', '1', float, 'Filter micrographs:True', 'PLAIN'],
         ['Box size', '200', int, '', 'PLAIN'],
+        ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO'],
         ]
     return items
 
@@ -134,7 +135,8 @@ def default_gctf_v1_06():
         ['--ctfout_resL', '100.0', float, '', 'PLAIN'],
         ['--ctfout_resH', '2.8', float, '', 'PLAIN'],
         ['--ctfout_bfac', '50', float, '', 'PLAIN'],
-        ['--gid', '0', int, '', 'PLAIN']
+        ['--gid', '0', [int]*99, '', 'PLAIN'],
+        ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO'],
         ]
     return items
 
@@ -203,7 +205,8 @@ def default_gctf_v1_18():
         ['--ctfout_resL', '100.0', float, '', 'PLAIN'],
         ['--ctfout_resH', '2.78', float, '', 'PLAIN'],
         ['--ctfout_bfac', '50', float, '', 'PLAIN'],
-        ['--gid', '0', int, '', 'PLAIN']
+        ['--gid', '0', [int]*99, '', 'PLAIN'],
+        ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO'],
         ]
     return items
 
@@ -579,6 +582,7 @@ def default_motion_cor_2_v1_0_0():
         ['-InFmMotion', '0', int, '', 'PLAIN'],
         ['-Crop', '0 0', [int, int], '', 'PLAIN'],
         ['-Gpu', '0', [int]*99, '', 'PLAIN'],
+        ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO'],
         ]
     return items
 
@@ -621,6 +625,7 @@ def default_motion_cor_2_v1_0_5():
         ['-InFmMotion', '0', int, '', 'PLAIN'],
         ['-Crop', '0 0', [int, int], '', 'PLAIN'],
         ['-Gpu', '0', [int]*99, '', 'PLAIN'],
+        ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO'],
         ]
     return items
 
@@ -664,6 +669,7 @@ def default_motion_cor_2_v1_1_0():
         ['-Crop', '0 0', [int, int], '', 'PLAIN'],
         ['-Gpu', '0', [int]*99, '', 'PLAIN'],
         ['-GpuMemUsage', '0.5', float, '', 'PLAIN'],
+        ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO'],
         ]
     return items
 

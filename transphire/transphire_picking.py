@@ -41,15 +41,16 @@ def get_picking_command(file_input, new_name, settings, queue_com, name):
     block_gpu = None
     gpu_list = None
     if picking_name == 'crYOLO v1.0.3':
-        command = create_cryolo_v1_0_3_command(
+        command, gpu = create_cryolo_v1_0_3_command(
             picking_name=picking_name,
             file_input=file_input,
             file_output=new_name,
-            settings=settings
+            settings=settings,
+            name=name,
             )
         check_files = []
         block_gpu = True
-        gpu_list = settings[picking_name]['--gpu'].split()
+        gpu_list = gpu.split()
 
     else:
         message = '\n'.join([
@@ -149,7 +150,7 @@ def create_filter_command(
 
 
 def create_cryolo_v1_0_3_command(
-        picking_name, file_input, file_output, settings
+        picking_name, file_input, file_output, settings, name
         ):
     """Create the crYOLO v1.0.3 command"""
 
@@ -161,6 +162,8 @@ def create_cryolo_v1_0_3_command(
     ignore_list.append('Filter value low pass (A)')
     ignore_list.append('Pixel size (A/px)')
     ignore_list.append('Box size')
+    ignore_list.append('Split Gpu?')
+    ignore_list.append('--gpu')
 
     command.append('{0}'.format(settings['Path'][picking_name]))
 
@@ -169,6 +172,21 @@ def create_cryolo_v1_0_3_command(
     command.append('-o')
     command.append('{0}'.format(file_output))
     command.append('--write_empty=1')
+
+    if settings[picking_name]['Split Gpu?'] == 'True':
+        try:
+            gpu_id = int(name.split('_')[-1])-1
+        except ValueError:
+            gpu_id = 0
+        try:
+            gpu = settings[picking_name]['--gpu'].split()[gpu_id]
+        except IndexError:
+            raise UserWarning('There are less gpus provided than threads available! Please restart with the same number of pipeline processors as GPUs provided and restart! Stopping this thread!')
+    else:
+        gpu = settings[picking_name]['--gpu']
+
+    command.append('--gpu')
+    command.append('{0}'.format(gpu))
 
     for key in settings[picking_name]:
         if key in ignore_list:
@@ -179,7 +197,7 @@ def create_cryolo_v1_0_3_command(
                 '{0}'.format(settings[picking_name][key])
                 )
 
-    return ' '.join(command)
+    return ' '.join(command), gpu
 
 
 def create_box_jpg(file_name, settings, queue_com, name):

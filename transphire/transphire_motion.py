@@ -115,7 +115,7 @@ def get_motion_command(file_input, file_output_scratch, file_log_scratch, settin
     if motion_name == 'MotionCor2 v1.0.0' or \
             motion_name == 'MotionCor2 v1.0.5' or \
             motion_name == 'MotionCor2 v1.1.0':
-        command = create_motion_cor_2_v1_0_0_command(
+        command, gpu = create_motion_cor_2_v1_0_0_command(
             motion_name=motion_name,
             file_input=file_input,
             file_output=file_output_scratch,
@@ -124,7 +124,7 @@ def get_motion_command(file_input, file_output_scratch, file_log_scratch, settin
             queue_com=queue_com,
             name=name
             )
-        gpu_list = settings[motion_name]['-Gpu'].split()
+        gpu_list = gpu.split()
 
         if motion_name == 'MotionCor2 v1.0.0':
             block_gpu = False
@@ -169,6 +169,9 @@ def create_motion_cor_2_v1_0_0_command(motion_name, file_input, file_output, fil
     Command for MotionCor2 v1.0.0
     """
 
+    ignore_list = []
+    ignore_list.append('Split Gpu?')
+    ignore_list.append('-Gpu')
     command = []
     # Start the program
     command.append('{0}'.format(settings['Path'][motion_name]))
@@ -198,8 +201,25 @@ def create_motion_cor_2_v1_0_0_command(motion_name, file_input, file_output, fil
     command.append('-LogFile')
     command.append('{0}'.format(file_log))
 
+    if settings[motion_name]['Split Gpu?'] == 'True':
+        try:
+            gpu_id = int(name.split('_')[-1])-1
+        except ValueError:
+            gpu_id = 0
+        try:
+            gpu = settings[motion_name]['-Gpu'].split()[gpu_id]
+        except IndexError:
+            raise UserWarning('There are less gpus provided than threads available! Please restart with the same number of pipeline processors as GPUs provided and restart! Stopping this thread!')
+    else:
+        gpu = settings[motion_name]['-Gpu']
+
+    command.append('-Gpu')
+    command.append('{0}'.format(gpu))
+
     for key in settings[motion_name]:
-        if settings[motion_name][key]:
+        if key in ignore_list:
+            continue
+        elif settings[motion_name][key]:
             command.append(key)
             command.append(
                 '{0}'.format(settings[motion_name][key])
@@ -207,7 +227,7 @@ def create_motion_cor_2_v1_0_0_command(motion_name, file_input, file_output, fil
         else:
             continue
 
-    return ' '.join(command)
+    return ' '.join(command), gpu
 
 
 def create_sum_movie_command(

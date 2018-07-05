@@ -653,6 +653,10 @@ class ProcessThread(QThread):
             self.lost_connection(
                 typ=method_dict[self.typ]['lost_connect']
                 )
+        except UserWarning:
+            self.add_to_queue(aim=self.typ, root_name=root_name)
+            self.write_error(msg=tb.format_exc(), root_name=root_name)
+            self.stop = True
         except Exception:
             self.add_to_queue(aim=self.typ, root_name=root_name)
             print('!!! UNKNOWN !!! \n')
