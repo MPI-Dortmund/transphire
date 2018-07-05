@@ -519,28 +519,28 @@ def get_content_gui(content):
             'widget': SettingsContainer,
             'content': content['General'],
             'layout': 'Settings',
-            'max_widgets': 12
+            'max_widgets': 11
             },
         {
             'name': 'Notification',
             'widget': SettingsContainer,
             'content': content['Notification'],
             'layout': 'Settings',
-            'max_widgets': 12
+            'max_widgets': 11
             },
         {
             'name': 'Copy',
             'widget': SettingsContainer,
             'content': content['Copy'],
             'layout': 'Settings',
-            'max_widgets': 12
+            'max_widgets': 11
             },
         {
             'name': 'Path',
             'widget': SettingsContainer,
             'content': content['Path'],
             'layout': 'Settings',
-            'max_widgets': 12
+            'max_widgets': 11
             },
         {
             'name': 'Motion',
@@ -593,7 +593,7 @@ def get_content_gui(content):
             'widget': SettingsContainer,
             'content': content[motion_content],
             'layout': 'Motion',
-            'max_widgets': 12
+            'max_widgets': 11
             })
         gui_content.append({
             'name': 'Plot {0}'.format(motion_content),
@@ -616,7 +616,7 @@ def get_content_gui(content):
         'name': 'Frames',
         'widget': FrameContainer,
         'layout': 'Motion',
-        'max_widgets': 12
+        'max_widgets': 11
         })
 
     for ctf_content in content_ctf:
@@ -625,7 +625,7 @@ def get_content_gui(content):
             'widget': SettingsContainer,
             'content': content[ctf_content],
             'layout': 'CTF',
-            'max_widgets': 12
+            'max_widgets': 11
             })
         gui_content.append({
             'name': 'Plot {0}'.format(ctf_content),
@@ -651,7 +651,7 @@ def get_content_gui(content):
             'widget': SettingsContainer,
             'content': content[picking_content],
             'layout': 'Picking',
-            'max_widgets': 12
+            'max_widgets': 11
             })
         gui_content.append({
             'name': 'Plot {0}'.format(picking_content),

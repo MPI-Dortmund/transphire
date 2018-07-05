@@ -72,7 +72,7 @@ class PlotContainer(QMainWindow):
             dock_widget.installEventFilter(self)
             dock_widget.setFeatures(QDockWidget.DockWidgetFloatable | QDockWidget.DockWidgetMovable)
             dock_widgets.append(dock_widget)
-            self.addDockWidget(Qt.TopDockWidgetArea, dock_widget, Qt.Horizontal)
+            self.addDockWidget(Qt.BottomDockWidgetArea, dock_widget, Qt.Horizontal)
 
         for idx in range(1, len(dock_widgets)):
             self.tabifyDockWidget(dock_widgets[0], dock_widgets[idx])
