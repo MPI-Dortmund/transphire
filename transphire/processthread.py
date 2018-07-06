@@ -101,6 +101,7 @@ class ProcessThread(QThread):
         self.time_last_error = None
         self.notification_send = None
         self.notification_time = float(self.settings['Notification']['Time until notification'])
+        self.is_running = False
 
         self.queue = shared_dict['queue'][self.content_settings['name']]
         self.shared_dict_typ = shared_dict['typ'][self.content_settings['name']]
@@ -234,12 +235,14 @@ class ProcessThread(QThread):
                 pass
 
             # Start processes
+            self.is_running = True
             if self.typ == 'Find':
                 self.start_queue_find()
             elif self.typ == 'Meta':
                 self.start_queue_meta()
             else:
                 self.start_queue()
+            self.is_running = False
 
         # Print, if stopped
         self.queue_com['status'].put(['STOPPED', self.name, 'red'])
@@ -1836,7 +1839,7 @@ class ProcessThread(QThread):
             else:
                 pass
 
-        data = tu.import_motion(
+        data, data_orig = tu.get_function_dict()[self.settings['Copy']['Motion']]['plot_data'](
             self.settings['Copy']['Motion'],
             self.settings['Motion_folder'][self.settings['Copy']['Motion']]
             )
@@ -1940,9 +1943,7 @@ class ProcessThread(QThread):
                     else:
                         pass
 
-        # Plot Motion information
         self.queue_lock.lock()
-        self.queue_com['plot_motion'].put(True)
         try:
             os.remove(file_stack)
         except Exception:
@@ -2050,7 +2051,7 @@ class ProcessThread(QThread):
         copied_log_files.extend(zero_list)
         copied_log_files = list(set(copied_log_files))
 
-        data, data_orig = tu.import_ctf(
+        data, data_orig = tu.get_function_dict()[self.settings['Copy']['CTF']]['plot_data'](
             self.settings['Copy']['CTF'],
             self.settings['ctf_folder']
             )
@@ -2226,9 +2227,6 @@ class ProcessThread(QThread):
                 else:
                     pass
 
-        # Plot CTF information
-        self.queue_com['plot_ctf'].put(True)
-
     def run_picking(self, root_name):
         """
         Run picking particles.
@@ -2350,9 +2348,6 @@ class ProcessThread(QThread):
                     self.add_to_queue(aim=aim_name, root_name=log_file)
             else:
                 pass
-
-        # Plot CTF information
-        self.queue_com['plot_picking'].put(True)
 
     def run_compress(self, root_name):
         """
@@ -2644,18 +2639,20 @@ class ProcessThread(QThread):
         count_idx = 1
 
         if gpu_list:
-            for entry in gpu_list:
+            for entry in sorted(gpu_list):
                 self.shared_dict['gpu_lock'][entry][mutex_idx].lock()
+
             if block_gpu:
-                for entry in gpu_list:
+                for entry in sorted(gpu_list):
+                    lock_var = self.shared_dict['gpu_lock'][entry][mutex_idx].tryLock()
+                    assert bool(not lock_var)
                     while self.shared_dict['gpu_lock'][entry][count_idx] != 0:
                         QThread.msleep(1000)
+
             else:
-                for entry in gpu_list:
+                for entry in sorted(gpu_list):
                     self.shared_dict['gpu_lock'][entry][count_idx] += 1
                     self.shared_dict['gpu_lock'][entry][mutex_idx].unlock()
-                QThread.msleep(1000)
-            QThread.msleep(1000)
         else:
             pass
 
@@ -2672,14 +2669,15 @@ class ProcessThread(QThread):
                 out.write('\nTime: {0} sec'.format(stop_time - start_time)) 
 
         if gpu_list:
-            QThread.msleep(1000)
             if block_gpu:
                 for entry in gpu_list:
+                    lock_var = self.shared_dict['gpu_lock'][entry][mutex_idx].tryLock()
+                    assert bool(not lock_var)
                     self.shared_dict['gpu_lock'][entry][mutex_idx].unlock()
+
             else:
                 for entry in gpu_list:
                     self.shared_dict['gpu_lock'][entry][count_idx] -= 1
-            QThread.msleep(1000)
         else:
             pass
 

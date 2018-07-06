@@ -346,9 +346,6 @@ class ProcessWorker(QObject):
             'status': qu.Queue(),
             'notification': qu.Queue(),
             'error': qu.Queue(),
-            'plot_ctf': qu.Queue(),
-            'plot_motion': qu.Queue(),
-            'plot_picking': qu.Queue(),
             }
 
         # Fill different dictionarys with process information
@@ -522,6 +519,8 @@ class ProcessWorker(QObject):
         # Wait for all threads to finish
         for thread, name, setting in thread_list:
             typ = setting['name']
+            while thread.is_running:
+                QThread.msleep(1000)
             thread.quit()
             thread.wait()
             self.check_queue(queue_com=queue_com)
@@ -597,7 +596,6 @@ class ProcessWorker(QObject):
         None
         """
         for key in queue_com:
-            multiple = False
             while not queue_com[key].empty():
                 if key == 'status':
                     status, device, color = queue_com['status'].get()
@@ -608,45 +606,6 @@ class ProcessWorker(QObject):
                 elif key == 'error':
                     error = queue_com['error'].get()
                     self.sig_error.emit(error)
-                elif key == 'plot_ctf':
-                    queue_com['plot_ctf'].get()
-                    if not multiple:
-                        self.sig_plot_ctf.emit(
-                            self.settings['Copy']['CTF'],
-                            self.settings['CTF_folder'][
-                                self.settings['Copy']['CTF']
-                                ],
-                            self.settings
-                            )
-                        mutliple = True
-                    else:
-                        pass
-                elif key == 'plot_motion':
-                    queue_com['plot_motion'].get()
-                    if not multiple:
-                        self.sig_plot_motion.emit(
-                            self.settings['Copy']['Motion'],
-                            self.settings['Motion_folder'][
-                                self.settings['Copy']['Motion']
-                                ],
-                            self.settings
-                            )
-                        mutliple = True
-                    else:
-                        pass
-                elif key == 'plot_picking':
-                    queue_com['plot_picking'].get()
-                    if not multiple:
-                        self.sig_plot_picking.emit(
-                            self.settings['Copy']['Picking'],
-                            self.settings['Picking_folder'][
-                                self.settings['Copy']['Picking']
-                            ],
-                            self.settings
-                            )
-                        mutliple = True
-                    else:
-                        pass
                 else:
                     print(
                         'Processworker - check_queue:',

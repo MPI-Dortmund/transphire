@@ -15,7 +15,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import numpy as np
 try:
     from PyQt4.QtCore import pyqtSignal, QObject, pyqtSlot
 except ImportError:
@@ -47,72 +46,44 @@ class PlotWorker(QObject):
         None
         """
         super(PlotWorker, self).__init__(parent)
+        self.settings = []
+
+    def reset_list(self):
+        self.settings = []
 
     @pyqtSlot(str, object, object)
-    def calculate_array_ctf(self, ctf_name, directory_name, settings):
+    def set_settings(self, name, directory_name, settings):
+        """
+        Set settings for the calculation of the arrays.
+
+        name - Name of the software that calls the calculation
+        directory_name - Name of the directory that contains the log files
+        settings - TranSPHIRE settings
+
+        Returns:
+        None
+        """
+        self.settings.append([name, directory_name, settings])
+
+    @pyqtSlot()
+    def calculate_array(self):
         """
         Calculate ctf array.
 
-        ctf_name - Name of the software that calls the calculation
-        directory_name - Name of the directory that contains the log files
-        settings - TranSPHIRE settings
-
         Returns:
         None
         """
-        data, _ = tu.import_ctf(
-            ctf_name=ctf_name,
-            directory_name=directory_name
-            )
-        if data is None:
-            pass
-        elif data.size == 0:
-            pass
-        else:
-            self.sig_data.emit(ctf_name, data, directory_name, settings)
-
-    @pyqtSlot(str, object, object)
-    def calculate_array_motion(self, motion_name, directory_name, settings):
-        """
-        Calculate motion array.
-
-        motion_name - Name of the software that calls the calculation
-        directory_name - Name of the directory that contains the log files
-        settings - TranSPHIRE settings
-
-        Returns:
-        None
-        """
-        data = tu.import_motion(
-            motion_name=motion_name,
-            directory_name=directory_name
-            )
-        if data is None:
-            pass
-        elif data.size == 0:
-            pass
-        else:
-            self.sig_data.emit(motion_name, data, directory_name, settings)
-
-    @pyqtSlot(str, object, object)
-    def calculate_array_picking(self, picking_name, directory_name, settings):
-        """
-        Calculate picking array.
-
-        picking_name - Name of the software that calls the calculation
-        names - Name of the directory that contains the log files and the file to look for
-        settings - TranSPHIRE settings
-
-        Returns:
-        None
-        """
-        data = tu.import_picking(
-            picking_name=picking_name,
-            directory_name=directory_name
-            )
-        if data is None:
-            pass
-        elif data.size == 0:
-            pass
-        else:
-            self.sig_data.emit(picking_name, data, directory_name, settings)
+        for name, directory_name, settings in self.settings:
+            if name == 'Later' or name == 'False':
+                data = None
+            else:
+                data, _ = tu.get_function_dict()[name]['plot_data'](
+                    name=name,
+                    directory_name=directory_name
+                    )
+            if data is None:
+                pass
+            elif data.size == 0:
+                pass
+            else:
+                self.sig_data.emit(name, data, directory_name, settings)

@@ -215,6 +215,7 @@ class PlotWidget(QWidget):
             self.data = data[::-1]
             current_text = self.combo_box.currentText()
 
+            self.combo_box.blockSignals(True)
             self.combo_box.clear()
             files = [self.default_value]
             files.extend(self.data['file_name'].tolist())
@@ -222,6 +223,7 @@ class PlotWidget(QWidget):
 
             self.idx = max(0, self.combo_box.findText(current_text))
             self.combo_box.setCurrentIndex(self.idx)
+            self.combo_box.blockSignals(False)
 
             if str(current_text) == self.default_value:
                 self.show_image()
@@ -244,20 +246,21 @@ class PlotWidget(QWidget):
         else:
             idx = self.idx-1
 
-        try:
-            jpg_data = imageio.imread(self.data['image'][idx])
-        except Exception as e:
-            print('Error loading image: {0} -- Message: {1}'.format(self.data['image'][idx], str(e)))
-            self.compute_corrupted_figure(title=self.data['file_name'][idx])
+        self.figure.clear()
+        ax1 = self.figure.add_subplot(111)
+        if self.data['object'][idx] is None:
+            try:
+                jpg_data = imageio.imread(self.data['image'][idx])
+            except Exception as e:
+                print('Error loading image: {0} -- Message: {1}'.format(self.data['image'][idx], str(e)))
+                self.compute_corrupted_figure(title=self.data['file_name'][idx])
+            else:
+                ax1.imshow(jpg_data)
         else:
-            self.figure.clear()
-            ax1 = self.figure.add_subplot(111)
-            ax1.imshow(jpg_data)
-
-
-            ax1.get_xaxis().set_visible(False)
-            ax1.get_yaxis().set_visible(False)
-            ax1.set_title(self.data['file_name'][idx])
+                ax1.imshow(self.data['object'][idx])
+        ax1.get_xaxis().set_visible(False)
+        ax1.get_yaxis().set_visible(False)
+        ax1.set_title(self.data['file_name'][idx])
         self.canvas.draw()
 
     def change_idx(self, typ):
