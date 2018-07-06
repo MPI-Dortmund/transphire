@@ -687,7 +687,7 @@ def import_motion_cor_2_v1_1_0(motion_name, directory_names):
     return data
 
 
-def import_cryolo_v1_0_3(picking_name, names):
+def import_cryolo_v1_0_3(picking_name, directory_name):
     """
     Import picking information for crYOLO v1.0.3.
 
@@ -698,25 +698,21 @@ def import_cryolo_v1_0_3(picking_name, names):
     Return:
     Imported data
     """
-    directory_name, file_name = names
-    if file_name is None:
-        placeholder = '*'
-    else:
-        placeholder = os.path.splitext(os.path.basename(file_name))[0]
+    placeholder = '*'
 
     files_box = np.array(
-        glob.glob('{0}/{1}.box'.format(directory_name, placeholder))
+        glob.glob(os.path.join(directory_name, '{0}.box'.format(placeholder)))
         )
     useable_files_box = []
     for name in files_box:
         try:
-            array = np.genfromtxt(name)
+            np.genfromtxt(name)
         except ValueError:
             continue
         else:
             useable_files_box.append(os.path.splitext(os.path.basename(name))[0])
 
-    useable_files_jpg = [os.path.splitext(os.path.basename(entry))[0] for entry in glob.glob('{0}/jpg/{1}.jpg'.format(directory_name, placeholder))]
+    useable_files_jpg = [os.path.splitext(os.path.basename(entry))[0] for entry in glob.glob(os.path.join(directory_name, 'jpg', '{0}.jpg'.format(placeholder)))]
 
     useable_files = [name for name in sorted(useable_files_box) if name in useable_files_jpg]
 
@@ -745,4 +741,5 @@ def import_cryolo_v1_0_3(picking_name, names):
         data[idx]['particles'] = size
         data[idx]['image'] = jpg_name
 
+    data.sort(order='file_name')
     return data

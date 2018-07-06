@@ -148,7 +148,9 @@ class MainWindow(QMainWindow):
         # Threads
         self.mount_worker = None
         self.process_worker = None
-        self.plot_worker = None
+        self.plot_worker_ctf = None
+        self.plot_worker_motion = None
+        self.plot_worker_picking = None
         self.mount_calculation_ssh = None
         self.mount_calculation_get = None
         self.mount_calculation_df = None
@@ -177,8 +179,12 @@ class MainWindow(QMainWindow):
             self.mount_worker.setParent(None)
         if self.process_worker is not None:
             self.process_worker.setParent(None)
-        if self.plot_worker is not None:
-            self.plot_worker.setParent(None)
+        if self.plot_worker_ctf is not None:
+            self.plot_worker_ctf.setParent(None)
+        if self.plot_worker_motion is not None:
+            self.plot_worker_motion.setParent(None)
+        if self.plot_worker_picking is not None:
+            self.plot_worker_picking.setParent(None)
         if self.thread_mount is not None:
             self.thread_mount.quit()
             self.thread_mount.wait()
@@ -211,22 +217,30 @@ class MainWindow(QMainWindow):
             content_process=content_pipeline,
             mount_directory=self.mount_directory
             )
-        self.plot_worker = PlotWorker()
+        self.plot_worker_ctf = PlotWorker()
+        self.plot_worker_motion = PlotWorker()
+        self.plot_worker_picking = PlotWorker()
 
         # Create threads
         self.thread_mount = QThread(self)
         self.thread_process = QThread(self)
-        self.thread_plot = QThread(self)
+        self.thread_plot_ctf = QThread(self)
+        self.thread_plot_motion = QThread(self)
+        self.thread_plot_picking = QThread(self)
 
         # Start threads
         self.thread_mount.start()
         self.thread_process.start()
-        self.thread_plot.start()
+        self.thread_plot_ctf.start()
+        self.thread_plot_motion.start()
+        self.thread_plot_picking.start()
 
         # Start objects in threads
         self.mount_worker.moveToThread(self.thread_mount)
         self.process_worker.moveToThread(self.thread_process)
-        self.plot_worker.moveToThread(self.thread_plot)
+        self.plot_worker_ctf.moveToThread(self.thread_plot_ctf)
+        self.plot_worker_motion.moveToThread(self.thread_plot_motion)
+        self.plot_worker_picking.moveToThread(self.thread_plot_picking)
 
     def reset_gui(self, content_gui, content_pipeline, load_file=None):
         """
@@ -311,9 +325,9 @@ class MainWindow(QMainWindow):
             tu.message(entry)
 
         self.process_worker.sig_finished.connect(self._finished)
-        self.process_worker.sig_plot_ctf.connect(self.plot_worker.calculate_array_ctf)
-        self.process_worker.sig_plot_motion.connect(self.plot_worker.calculate_array_motion)
-        self.process_worker.sig_plot_picking.connect(self.plot_worker.calculate_array_picking)
+        self.process_worker.sig_plot_ctf.connect(self.plot_worker_ctf.calculate_array_ctf)
+        self.process_worker.sig_plot_motion.connect(self.plot_worker_motion.calculate_array_motion)
+        self.process_worker.sig_plot_picking.connect(self.plot_worker_picking.calculate_array_picking)
 
         self.mount_thread_list = {}
         for key in self.content['Mount'].content:
@@ -450,7 +464,9 @@ class MainWindow(QMainWindow):
             self.content[key] = entry['widget'](
                 mount_worker=self.mount_worker,
                 process_worker=self.process_worker,
-                plot_worker=self.plot_worker,
+                plot_worker_ctf=self.plot_worker_ctf,
+                plot_worker_motion=self.plot_worker_motion,
+                plot_worker_picking=self.plot_worker_picking,
                 settings_folder=self.settings_folder,
                 plot_labels=plot_labels,
                 plot_name=plot_name,
@@ -494,7 +510,7 @@ class MainWindow(QMainWindow):
             if key == 'Plot per micrograph' or \
                     key == 'Plot histogram' or \
                     key == 'Show images':
-                self.plot_worker.sig_data.connect(
+                self.content[key].worker.sig_data.connect(
                     self.content[key].update_figure
                     )
             else:
@@ -902,7 +918,6 @@ class MainWindow(QMainWindow):
         # Start or stop procedure
         if result:
             self.content['Button'].start_button.setText('Stop')
-            self.plot_worker.data_picking = []
             self.process_worker.sig_start.emit(settings)
             self.mount_worker.set_settings(settings=settings)
             self.save(
@@ -1029,9 +1044,15 @@ class MainWindow(QMainWindow):
         self.thread_mount.wait()
         self.thread_process.quit()
         self.thread_process.wait()
-        self.thread_plot.stop = True
-        self.thread_plot.quit()
-        self.thread_plot.wait()
+        self.thread_plot_ctf.stop = True
+        self.thread_plot_ctf.quit()
+        self.thread_plot_ctf.wait()
+        self.thread_plot_motion.stop = True
+        self.thread_plot_motion.quit()
+        self.thread_plot_motion.wait()
+        self.thread_plot_picking.stop = True
+        self.thread_plot_picking.quit()
+        self.thread_plot_picking.wait()
         for key in self.content['Mount'].content:
             thread = self.mount_thread_list[key]['thread']
             calculator = self.mount_thread_list[key]['object']

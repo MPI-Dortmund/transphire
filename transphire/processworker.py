@@ -175,7 +175,7 @@ class ProcessWorker(QObject):
                 )
             self.sig_plot_picking.emit(
                 entry,
-                [self.settings['Picking_folder'][entry], None],
+                self.settings['Picking_folder'][entry],
                 self.settings
                 )
 
@@ -626,10 +626,12 @@ class ProcessWorker(QObject):
                         self.settings
                         )
                 elif key == 'plot_picking':
-                    file_name = queue_com['plot_picking'].get()
+                    queue_com['plot_picking'].get()
                     self.sig_plot_picking.emit(
                         self.settings['Copy']['Picking'],
-                        [self.settings['Picking_folder'][self.settings['Copy']['Picking']], file_name],
+                        self.settings['Picking_folder'][
+                            self.settings['Copy']['Picking']
+                        ],
                         self.settings
                         )
                 else:

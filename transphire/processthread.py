@@ -2352,7 +2352,7 @@ class ProcessThread(QThread):
                 pass
 
         # Plot CTF information
-        self.queue_com['plot_picking'].put(root_name)
+        self.queue_com['plot_picking'].put(True)
 
     def run_compress(self, root_name):
         """

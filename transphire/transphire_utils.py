@@ -604,12 +604,14 @@ def get_content_gui(content):
             'name': 'Plot per micrograph',
             'widget': PlotContainer,
             'content': 'values',
+            'plot_type': 'motion',
             'layout': 'Plot {0}'.format(motion_content),
             })
         gui_content.append({
             'name': 'Plot histogram',
             'widget': PlotContainer,
             'content': 'histogram',
+            'plot_type': 'motion',
             'layout': 'Plot {0}'.format(motion_content),
             })
     gui_content.append({
@@ -636,12 +638,14 @@ def get_content_gui(content):
             'name': 'Plot per micrograph',
             'widget': PlotContainer,
             'content': 'values',
+            'plot_type': 'ctf',
             'layout': 'Plot {0}'.format(ctf_content),
             })
         gui_content.append({
             'name': 'Plot histogram',
             'widget': PlotContainer,
             'content': 'histogram',
+            'plot_type': 'ctf',
             'layout': 'Plot {0}'.format(ctf_content),
             })
 
@@ -662,18 +666,21 @@ def get_content_gui(content):
             'name': 'Show images',
             'widget': PlotContainer,
             'content': 'image',
+            'plot_type': 'picking',
             'layout': 'Plot {0}'.format(picking_content),
             })
         gui_content.append({
             'name': 'Plot per micrograph',
             'widget': PlotContainer,
             'content': 'values',
+            'plot_type': 'picking',
             'layout': 'Plot {0}'.format(picking_content),
             })
         gui_content.append({
             'name': 'Plot histogram',
             'widget': PlotContainer,
             'content': 'histogram',
+            'plot_type': 'picking',
             'layout': 'Plot {0}'.format(picking_content),
             })
 
@@ -1023,7 +1030,7 @@ def import_motion(motion_name, directory_name):
     return data
 
 
-def import_picking(picking_name, names):
+def import_picking(picking_name, directory_name):
     """
     Import picking information.
 
@@ -1041,7 +1048,7 @@ def import_picking(picking_name, names):
     else:
         data = get_function_dict()[picking_name]['plot_data'](
             picking_name=picking_name,
-            names=names
+            directory_name=directory_name
             )
 
     return data

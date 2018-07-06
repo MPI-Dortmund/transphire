@@ -47,7 +47,6 @@ class PlotWorker(QObject):
         None
         """
         super(PlotWorker, self).__init__(parent)
-        self.data_picking = []
 
     @pyqtSlot(str, object, object)
     def calculate_array_ctf(self, ctf_name, directory_name, settings):
@@ -96,7 +95,7 @@ class PlotWorker(QObject):
             self.sig_data.emit(motion_name, data, directory_name, settings)
 
     @pyqtSlot(str, object, object)
-    def calculate_array_picking(self, picking_name, names, settings):
+    def calculate_array_picking(self, picking_name, directory_name, settings):
         """
         Calculate picking array.
 
@@ -109,16 +108,11 @@ class PlotWorker(QObject):
         """
         data = tu.import_picking(
             picking_name=picking_name,
-            names=names
+            directory_name=directory_name
             )
         if data is None:
             pass
         elif data.size == 0:
             pass
         else:
-            self.data_picking.append(data)
-            data_combined = self.data_picking[0]
-            for entry in self.data_picking[1:]:
-                data_combined = np.append(data_combined, entry, axis=0)
-            data_combined.sort(order='file_name')
-            self.sig_data.emit(picking_name, data_combined, names[0], settings)
+            self.sig_data.emit(picking_name, data, directory_name, settings)
