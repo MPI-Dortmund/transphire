@@ -143,7 +143,7 @@ def create_filter_command(
     command.append('{0}'.format(settings['Path']['e2proc2d.py']))
     command.append('{0}'.format(file_output_tmp))
     command.append('{0}'.format(file_output_jpg))
-    command.append('--meanshrink=8')
+    command.append('--meanshrink=4')
 
     check_files = [file_output_tmp, file_output_jpg]
     return ' '.join(command), file_output_tmp, check_files, block_gpu, gpu_list
@@ -221,7 +221,7 @@ def create_box_jpg(file_name, settings, queue_com, name):
     box_data = np.atleast_2d(np.genfromtxt(box_file, dtype=int))
     jpg_data = imageio.imread(jpg_file, as_gray=False, pilmode='RGB')
 
-    bin_value = 8
+    bin_value = 4
     if box_data.size > 0:
         box_data[:, 0] += box_data[:, 2]//2
         box_data[:, 1] += box_data[:, 3]//2
