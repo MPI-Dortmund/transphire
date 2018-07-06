@@ -1107,6 +1107,33 @@ class ProcessThread(QThread):
         for frame in frames:
             overall_file_size += os.path.getsize(frame)
 
+        if frames:
+            check_name = root_name.split('/')[-1]
+            if self.already_in_translation_file(root_name=check_name):
+                message = \
+                    '{0}: In queue, but already copied! Skip!'.format(self.name)
+                self.write_error(msg=message, root_name=root_name)
+                return None
+            else:
+                pass
+        else:
+            message = '{0}: No frames found! If this appears very often, please restart TranSPHIRE.'.format(self.name)
+            self.queue_com['error'].put(message, self.name)
+            self.queue_com['notification'].put(message)
+            self.write_error(msg=message, root_name=root_name)
+            raise Exception(message)
+
+        if overall_file_size > \
+                sh.disk_usage(self.settings['project_folder']).free:
+            self.stop = True
+            message = '{0}: Not enough space in project folder'.format(
+                self.name
+                )
+            self.queue_com['notification'].put(message)
+            raise IOError(message)
+        else:
+            pass
+
         self.shared_dict_typ['count_lock'].lock()
         try:
             self.shared_dict_typ['file_number'] += 1
@@ -1141,23 +1168,6 @@ class ProcessThread(QThread):
         finally:
             self.shared_dict_typ['count_lock'].unlock()
 
-        if frames:
-            check_name = root_name.split('/')[-1]
-            if self.already_in_translation_file(root_name=check_name):
-                message = \
-                    '{0}: In queue, but already copied! Skip!'.format(self.name)
-                self.write_error(msg=message, root_name=root_name)
-                return None
-            else:
-                pass
-        else:
-            self.stop = True
-            message = '{0}: No frames found!'.format(self.name)
-            self.queue_com['error'].put(message, self.name)
-            self.queue_com['notification'].put(message)
-            self.write_error(msg=message, root_name=root_name)
-            raise IOError(message)
-
         if os.path.exists('{0}.jpg'.format(new_name_meta)):
             self.stop = True
             if os.path.exists(self.shared_dict_typ['done_file']):
@@ -1180,17 +1190,6 @@ class ProcessThread(QThread):
                 'Check Startnumber! Last one used: {0}'.format(self.shared_dict_typ['file_number'])
             self.queue_com['notification'].put(message)
             raise FileNotFoundError(message)
-        else:
-            pass
-
-        if overall_file_size > \
-                sh.disk_usage(self.settings['project_folder']).free:
-            self.stop = True
-            message = '{0}: Not enough space in project folder'.format(
-                self.name
-                )
-            self.queue_com['notification'].put(message)
-            raise IOError(message)
         else:
             pass
 
@@ -1284,7 +1283,7 @@ class ProcessThread(QThread):
         self.shared_dict['typ'][self.content_settings['group']]['share_lock'].lock()
         try:
             self.shared_dict['share'][self.content_settings['group']].remove(root_name)
-        except Exception:
+        except IOError:
             raise
         finally:
             self.shared_dict['typ'][self.content_settings['group']]['share_lock'].unlock()
@@ -2311,13 +2310,6 @@ class ProcessThread(QThread):
             name=self.name
             )
 
-        tup.create_box_jpg(
-            file_name=file_name,
-            settings=self.settings,
-            queue_com=self.queue_com,
-            name=self.name
-            )
-
         tus.check_outputs(
             zero_list=zero_list,
             non_zero_list=non_zero_list,
@@ -2327,6 +2319,13 @@ class ProcessThread(QThread):
             )
         log_files.extend(non_zero_list)
         log_files.extend(zero_list)
+
+        tup.create_box_jpg(
+            file_name=file_name,
+            settings=self.settings,
+            queue_com=self.queue_com,
+            name=self.name
+            )
 
         # Add to queue
         for aim in self.content_settings['aim']:
