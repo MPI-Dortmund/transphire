@@ -695,7 +695,7 @@ def look_and_feel_small(app, font=None):
         font = 15.0
     else:
         font = float(font)
-    app.setFont(QFont('Verdana', font))
+    app.setFont(QFont('Helvetica', font))
     style_widgets = """
     QWidget { background-color: lightgrey }
     QTabWidget { background-color: lightgrey }
