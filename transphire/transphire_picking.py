@@ -221,14 +221,15 @@ def create_box_jpg(file_name, settings, queue_com, name):
     box_data = np.atleast_2d(np.genfromtxt(box_file, dtype=int))
     jpg_data = imageio.imread(jpg_file, as_gray=False, pilmode='RGB')
 
+    bin_value = 4
     if box_data.size > 0:
         box_data[:, 0] += box_data[:, 2]//2
         box_data[:, 1] += box_data[:, 3]//2
-        box_data[:, 0] = box_data[:, 0]//4
-        box_data[:, 1] = box_data[:, 1]//4
+        box_data[:, 0] = box_data[:, 0]//bin_value
+        box_data[:, 1] = box_data[:, 1]//bin_value
 
         jpg_data = np.rot90(jpg_data, 3)
-        create_box(jpg_data=jpg_data, maskcenters=box_data[:,[0,1]], box_size=int(settings[picking_name]['Box size'])//4)
+        create_box(jpg_data=jpg_data, maskcenters=box_data[:,[0,1]], box_size=int(settings[picking_name]['Box size'])//bin_value)
         create_circle(jpg_data=jpg_data, maskcenters=box_data[:,[0,1]], radius=2)
         jpg_data = np.rot90(jpg_data, 1)
     else:

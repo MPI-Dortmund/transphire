@@ -17,7 +17,6 @@
 """
 import os
 import errno
-import glob
 import json
 import sys
 import shutil
@@ -586,12 +585,14 @@ def get_content_gui(content):
             'name': 'Plot per micrograph',
             'widget': PlotContainer,
             'content': 'values',
+            'plot_type': 'motion',
             'layout': 'Plot {0}'.format(motion_content),
             })
         gui_content.append({
             'name': 'Plot histogram',
             'widget': PlotContainer,
             'content': 'histogram',
+            'plot_type': 'motion',
             'layout': 'Plot {0}'.format(motion_content),
             })
     gui_content.append({
@@ -618,12 +619,14 @@ def get_content_gui(content):
             'name': 'Plot per micrograph',
             'widget': PlotContainer,
             'content': 'values',
+            'plot_type': 'ctf',
             'layout': 'Plot {0}'.format(ctf_content),
             })
         gui_content.append({
             'name': 'Plot histogram',
             'widget': PlotContainer,
             'content': 'histogram',
+            'plot_type': 'ctf',
             'layout': 'Plot {0}'.format(ctf_content),
             })
 
@@ -644,18 +647,21 @@ def get_content_gui(content):
             'name': 'Show images',
             'widget': PlotContainer,
             'content': 'image',
+            'plot_type': 'picking',
             'layout': 'Plot {0}'.format(picking_content),
             })
         gui_content.append({
             'name': 'Plot per micrograph',
             'widget': PlotContainer,
             'content': 'values',
+            'plot_type': 'picking',
             'layout': 'Plot {0}'.format(picking_content),
             })
         gui_content.append({
             'name': 'Plot histogram',
             'widget': PlotContainer,
             'content': 'histogram',
+            'plot_type': 'picking',
             'layout': 'Plot {0}'.format(picking_content),
             })
 
@@ -1043,78 +1049,3 @@ def get_style(typ):
         color = 'black'
 
     return 'color: {0}'.format(color)
-
-
-def import_ctf(ctf_name, directory_name):
-    """
-    Import ctf information.
-
-    Arguments:
-    motion_name - Name of motion program
-    directory_name - Name of the directory to search for files
-
-    Return:
-    Imported data
-    """
-    if ctf_name == 'False':
-        data, data_orig = None, None
-    elif ctf_name == 'Later':
-        data, data_orig = None, None
-    else:
-        data, data_orig = get_function_dict()[ctf_name]['plot_data'](
-            ctf_name=ctf_name,
-            directory_name=directory_name
-            )
-        data.sort(order='file_name')
-        data_orig.sort(order='file_name')
-
-    return data, data_orig
-
-
-def import_motion(motion_name, directory_name):
-    """
-    Import motion information.
-
-    Arguments:
-    motion_name - Name of motion program
-    directory_name - Name of the directory to search for files
-
-    Return:
-    Imported data
-    """
-    if motion_name == 'False':
-        return None
-    elif motion_name == 'Later':
-        return None
-    else:
-        directory_names = glob.glob('{0}/*_with_DW_log'.format(directory_name))
-        data = get_function_dict()[motion_name]['plot_data'](
-            motion_name=motion_name,
-            directory_names=directory_names
-            )
-
-    return data
-
-
-def import_picking(picking_name, names):
-    """
-    Import picking information.
-
-    Arguments:
-    picking_name - Name of picking program
-    directory_name - Name of the directory to search for files
-
-    Return:
-    Imported data
-    """
-    if picking_name == 'False':
-        return None
-    elif picking_name == 'Later':
-        return None
-    else:
-        data = get_function_dict()[picking_name]['plot_data'](
-            picking_name=picking_name,
-            names=names
-            )
-
-    return data

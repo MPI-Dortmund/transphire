@@ -101,6 +101,7 @@ class ProcessThread(QThread):
         self.time_last_error = None
         self.notification_send = None
         self.notification_time = float(self.settings['Notification']['Time until notification'])
+        self.is_running = False
 
         self.queue = shared_dict['queue'][self.content_settings['name']]
         self.shared_dict_typ = shared_dict['typ'][self.content_settings['name']]
@@ -234,12 +235,14 @@ class ProcessThread(QThread):
                 pass
 
             # Start processes
+            self.is_running = True
             if self.typ == 'Find':
                 self.start_queue_find()
             elif self.typ == 'Meta':
                 self.start_queue_meta()
             else:
                 self.start_queue()
+            self.is_running = False
 
         # Print, if stopped
         self.queue_com['status'].put(['STOPPED', self.name, 'red'])
@@ -1107,6 +1110,33 @@ class ProcessThread(QThread):
         for frame in frames:
             overall_file_size += os.path.getsize(frame)
 
+        if frames:
+            check_name = root_name.split('/')[-1]
+            if self.already_in_translation_file(root_name=check_name):
+                message = \
+                    '{0}: In queue, but already copied! Skip!'.format(self.name)
+                self.write_error(msg=message, root_name=root_name)
+                return None
+            else:
+                pass
+        else:
+            message = '{0}: No frames found! If this appears very often, please restart TranSPHIRE.'.format(self.name)
+            self.queue_com['error'].put(message, self.name)
+            self.queue_com['notification'].put(message)
+            self.write_error(msg=message, root_name=root_name)
+            raise Exception(message)
+
+        if overall_file_size > \
+                sh.disk_usage(self.settings['project_folder']).free:
+            self.stop = True
+            message = '{0}: Not enough space in project folder'.format(
+                self.name
+                )
+            self.queue_com['notification'].put(message)
+            raise IOError(message)
+        else:
+            pass
+
         self.shared_dict_typ['count_lock'].lock()
         try:
             self.shared_dict_typ['file_number'] += 1
@@ -1141,23 +1171,6 @@ class ProcessThread(QThread):
         finally:
             self.shared_dict_typ['count_lock'].unlock()
 
-        if frames:
-            check_name = root_name.split('/')[-1]
-            if self.already_in_translation_file(root_name=check_name):
-                message = \
-                    '{0}: In queue, but already copied! Skip!'.format(self.name)
-                self.write_error(msg=message, root_name=root_name)
-                return None
-            else:
-                pass
-        else:
-            self.stop = True
-            message = '{0}: No frames found!'.format(self.name)
-            self.queue_com['error'].put(message, self.name)
-            self.queue_com['notification'].put(message)
-            self.write_error(msg=message, root_name=root_name)
-            raise IOError(message)
-
         if os.path.exists('{0}.jpg'.format(new_name_meta)):
             self.stop = True
             if os.path.exists(self.shared_dict_typ['done_file']):
@@ -1180,17 +1193,6 @@ class ProcessThread(QThread):
                 'Check Startnumber! Last one used: {0}'.format(self.shared_dict_typ['file_number'])
             self.queue_com['notification'].put(message)
             raise FileNotFoundError(message)
-        else:
-            pass
-
-        if overall_file_size > \
-                sh.disk_usage(self.settings['project_folder']).free:
-            self.stop = True
-            message = '{0}: Not enough space in project folder'.format(
-                self.name
-                )
-            self.queue_com['notification'].put(message)
-            raise IOError(message)
         else:
             pass
 
@@ -1284,7 +1286,7 @@ class ProcessThread(QThread):
         self.shared_dict['typ'][self.content_settings['group']]['share_lock'].lock()
         try:
             self.shared_dict['share'][self.content_settings['group']].remove(root_name)
-        except Exception:
+        except IOError:
             raise
         finally:
             self.shared_dict['typ'][self.content_settings['group']]['share_lock'].unlock()
@@ -1837,7 +1839,7 @@ class ProcessThread(QThread):
             else:
                 pass
 
-        data = tu.import_motion(
+        data, data_orig = tu.get_function_dict()[self.settings['Copy']['Motion']]['plot_data'](
             self.settings['Copy']['Motion'],
             self.settings['Motion_folder'][self.settings['Copy']['Motion']]
             )
@@ -1941,9 +1943,7 @@ class ProcessThread(QThread):
                     else:
                         pass
 
-        # Plot Motion information
         self.queue_lock.lock()
-        self.queue_com['plot_motion'].put(True)
         try:
             os.remove(file_stack)
         except Exception:
@@ -2051,7 +2051,7 @@ class ProcessThread(QThread):
         copied_log_files.extend(zero_list)
         copied_log_files = list(set(copied_log_files))
 
-        data, data_orig = tu.import_ctf(
+        data, data_orig = tu.get_function_dict()[self.settings['Copy']['CTF']]['plot_data'](
             self.settings['Copy']['CTF'],
             self.settings['ctf_folder']
             )
@@ -2227,9 +2227,6 @@ class ProcessThread(QThread):
                 else:
                     pass
 
-        # Plot CTF information
-        self.queue_com['plot_ctf'].put(True)
-
     def run_picking(self, root_name):
         """
         Run picking particles.
@@ -2311,13 +2308,6 @@ class ProcessThread(QThread):
             name=self.name
             )
 
-        tup.create_box_jpg(
-            file_name=file_name,
-            settings=self.settings,
-            queue_com=self.queue_com,
-            name=self.name
-            )
-
         tus.check_outputs(
             zero_list=zero_list,
             non_zero_list=non_zero_list,
@@ -2327,6 +2317,13 @@ class ProcessThread(QThread):
             )
         log_files.extend(non_zero_list)
         log_files.extend(zero_list)
+
+        tup.create_box_jpg(
+            file_name=file_name,
+            settings=self.settings,
+            queue_com=self.queue_com,
+            name=self.name
+            )
 
         # Add to queue
         for aim in self.content_settings['aim']:
@@ -2351,9 +2348,6 @@ class ProcessThread(QThread):
                     self.add_to_queue(aim=aim_name, root_name=log_file)
             else:
                 pass
-
-        # Plot CTF information
-        self.queue_com['plot_picking'].put(root_name)
 
     def run_compress(self, root_name):
         """
@@ -2645,18 +2639,20 @@ class ProcessThread(QThread):
         count_idx = 1
 
         if gpu_list:
-            for entry in gpu_list:
+            for entry in sorted(gpu_list):
                 self.shared_dict['gpu_lock'][entry][mutex_idx].lock()
+
             if block_gpu:
-                for entry in gpu_list:
+                for entry in sorted(gpu_list):
+                    lock_var = self.shared_dict['gpu_lock'][entry][mutex_idx].tryLock()
+                    assert bool(not lock_var)
                     while self.shared_dict['gpu_lock'][entry][count_idx] != 0:
                         QThread.msleep(1000)
+
             else:
-                for entry in gpu_list:
+                for entry in sorted(gpu_list):
                     self.shared_dict['gpu_lock'][entry][count_idx] += 1
                     self.shared_dict['gpu_lock'][entry][mutex_idx].unlock()
-                QThread.msleep(1000)
-            QThread.msleep(1000)
         else:
             pass
 
@@ -2673,14 +2669,15 @@ class ProcessThread(QThread):
                 out.write('\nTime: {0} sec'.format(stop_time - start_time)) 
 
         if gpu_list:
-            QThread.msleep(1000)
             if block_gpu:
                 for entry in gpu_list:
+                    lock_var = self.shared_dict['gpu_lock'][entry][mutex_idx].tryLock()
+                    assert bool(not lock_var)
                     self.shared_dict['gpu_lock'][entry][mutex_idx].unlock()
+
             else:
                 for entry in gpu_list:
                     self.shared_dict['gpu_lock'][entry][count_idx] -= 1
-            QThread.msleep(1000)
         else:
             pass
 

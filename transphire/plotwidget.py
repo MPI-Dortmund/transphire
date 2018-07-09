@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import os
 import warnings
 import imageio
 import numpy as np
@@ -89,9 +90,11 @@ class PlotWidget(QWidget):
             layout_h.addWidget(self.combo_box)
             self.prev_button = QPushButton('Prev', self)
             self.prev_button.clicked.connect(lambda: self.change_idx('prev'))
+            self.prev_button.setEnabled(False)
             layout_h.addWidget(self.prev_button)
             self.next_button = QPushButton('Next', self)
             self.next_button.clicked.connect(lambda: self.change_idx('next'))
+            self.next_button.setEnabled(False)
             layout_h.addWidget(self.next_button)
             self.reset_button = QPushButton(self.default_value, self)
             self.reset_button.clicked.connect(lambda: self.change_idx('reset'))
@@ -194,10 +197,12 @@ class PlotWidget(QWidget):
             ax1.set_ylabel(y_label)
             self.canvas.draw()
 
-            output_name = '{0}/{1}_{2}.png'.format(
+            output_name = os.path.join(
                 directory_name,
-                self.label,
-                self.plot_typ
+                '{0}_{1}.png'.format(
+                    self.label,
+                    self.plot_typ
+                    )
                 )
             try:
                 self.figure.savefig(output_name.replace(' ', '_'))
@@ -210,15 +215,20 @@ class PlotWidget(QWidget):
             self.data = data[::-1]
             current_text = self.combo_box.currentText()
 
+            self.combo_box.blockSignals(True)
             self.combo_box.clear()
             files = [self.default_value]
             files.extend(self.data['file_name'].tolist())
             self.combo_box.addItems(files)
 
-            self.idx = self.combo_box.findText(current_text)
+            self.idx = max(0, self.combo_box.findText(current_text))
             self.combo_box.setCurrentIndex(self.idx)
+            self.combo_box.blockSignals(False)
 
-            self.show_image()
+            if str(current_text) == self.default_value:
+                self.show_image()
+            else:
+                pass
 
         else:
             print('Plotwidget - ', self.plot_typ, ' is not known!!!')
@@ -236,39 +246,73 @@ class PlotWidget(QWidget):
         else:
             idx = self.idx-1
 
-        try:
-            jpg_data = imageio.imread(self.data['image'][idx])
-        except Exception as e:
-            print('Error loading image: {0} -- Message: {1}'.format(self.data['image'][idx], str(e)))
-            self.compute_corrupted_figure(title=self.data['file_name'][idx])
+        self.figure.clear()
+        ax1 = self.figure.add_subplot(111)
+        if self.data['object'][idx] is None:
+            try:
+                jpg_data = imageio.imread(self.data['image'][idx])
+            except Exception as e:
+                print('Error loading image: {0} -- Message: {1}'.format(self.data['image'][idx], str(e)))
+                self.compute_corrupted_figure(title=self.data['file_name'][idx])
+            else:
+                ax1.imshow(jpg_data)
         else:
-            self.figure.clear()
-            ax1 = self.figure.add_subplot(111)
-            ax1.imshow(jpg_data)
-
-
-            ax1.get_xaxis().set_visible(False)
-            ax1.get_yaxis().set_visible(False)
-            ax1.set_title(self.data['file_name'][idx])
-            self.canvas.draw()
+                ax1.imshow(self.data['object'][idx])
+        ax1.get_xaxis().set_visible(False)
+        ax1.get_yaxis().set_visible(False)
+        ax1.set_title(self.data['file_name'][idx])
+        self.canvas.draw()
 
     def change_idx(self, typ):
         if typ == 'next':
-            if self.idx <= 0:
-                pass
+            if self.idx <= 0 and self.idx >= self.data.shape[0]:
+                self.prev_button.setEnabled(False)
+                self.next_button.setEnabled(False)
+            elif self.idx <= 0:
+                self.next_button.setEnabled(False)
             else:
+                self.prev_button.setEnabled(True)
                 self.idx -= 1
         elif typ == 'prev':
-            if self.idx >= self.data.shape[0]:
-                pass
+            if self.idx <= 0 and self.idx >= self.data.shape[0]:
+                self.prev_button.setEnabled(False)
+                self.next_button.setEnabled(False)
+            elif self.idx >= self.data.shape[0]:
+                self.prev_button.setEnabled(False)
             else:
+                self.next_button.setEnabled(True)
                 self.idx += 1
         elif typ == 'combo':
             self.idx = self.combo_box.currentIndex()
-            if self.idx < 0:
+            if self.idx <= 0 and self.idx >= self.data.shape[0]:
                 self.idx = 0
+                self.prev_button.setEnabled(False)
+                self.next_button.setEnabled(False)
+            elif self.idx <= 0:
+                self.idx = 0
+                self.next_button.setEnabled(False)
+                self.prev_button.setEnabled(True)
+            elif self.idx >= self.data.shape[0]:
+                self.next_button.setEnabled(True)
+                self.prev_button.setEnabled(False)
+            else:
+                self.next_button.setEnabled(True)
+                self.next_button.setEnabled(True)
+
         elif typ == 'reset':
             self.idx = 0
+            if self.idx <= 0 and self.idx >= self.data.shape[0]:
+                self.prev_button.setEnabled(False)
+                self.next_button.setEnabled(False)
+            elif self.idx <= 0:
+                self.next_button.setEnabled(False)
+                self.prev_button.setEnabled(True)
+            elif self.idx >= self.data.shape[0]:
+                self.next_button.setEnabled(True)
+                self.prev_button.setEnabled(False)
+            else:
+                self.next_button.setEnabled(True)
+                self.next_button.setEnabled(True)
         else:
             pass
         self.combo_box.setCurrentIndex(self.idx)

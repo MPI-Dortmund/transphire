@@ -18,6 +18,7 @@
 import os
 import glob
 import re
+import imageio
 import numpy as np
 
 
@@ -139,6 +140,7 @@ def get_dtype_dict():
         ('file_name', '|U200'),
         ]
     dtype['picking'] = [
+        ('object', 'O'),
         ('image', '|U200'),
         ('particles', '<i8'),
         ('file_name', '|U200'),
@@ -287,28 +289,28 @@ def get_dtype_import_dict():
     return dtype_import
 
 
-def import_ctffind_v4_1_10(ctf_name, directory_name):
+def import_ctffind_v4_1_10(name, directory_name):
     """
     Import ctf information for CTFFIND v4.1.10.
     Defocus in angstrom, phase shift in degree.
 
     Arguments:
-    ctf_name - Name of ctf program
+    name - Name of ctf program
     directory_name - Name of the directory to search for files
 
     Return:
     Imported data
     """
-    return import_ctffind_v4_1_8(ctf_name, directory_name)
+    return import_ctffind_v4_1_8(name, directory_name)
 
 
-def import_ctffind_v4_1_8(ctf_name, directory_name):
+def import_ctffind_v4_1_8(name, directory_name):
     """
     Import ctf information for CTFFIND v4.1.8.
     Defocus in angstrom, phase shift in degree.
 
     Arguments:
-    ctf_name - Name of ctf program
+    name - Name of ctf program
     directory_name - Name of the directory to search for files
 
     Return:
@@ -321,17 +323,17 @@ def import_ctffind_v4_1_8(ctf_name, directory_name):
         ], dtype=str)
 
     useable_files = []
-    for name in files:
+    for file_name in files:
         try:
             array = np.genfromtxt(
-                name,
-                dtype=get_dtype_import_dict()[ctf_name],
+                file_name,
+                dtype=get_dtype_import_dict()[name],
                 )
         except ValueError:
             continue
         else:
             if array.size > 0:
-                useable_files.append(name)
+                useable_files.append(file_name)
             else:
                 continue
 
@@ -341,22 +343,22 @@ def import_ctffind_v4_1_8(ctf_name, directory_name):
         )
     data_original = np.empty(
         len(useable_files),
-        dtype=get_dtype_dict()[ctf_name]
+        dtype=get_dtype_dict()[name]
         )
     data = np.atleast_1d(data)
     data_original = np.atleast_1d(data_original)
     data.fill(0)
     data_original.fill(0)
 
-    for idx, name in sorted(enumerate(useable_files)):
+    for idx, file_name in sorted(enumerate(useable_files)):
 
         data_name = np.genfromtxt(
-            name,
-            dtype=get_dtype_import_dict()[ctf_name],
+            file_name,
+            dtype=get_dtype_import_dict()[name],
             )
-        data[idx]['file_name'] = name
+        data[idx]['file_name'] = file_name
         input_name = None
-        with open(name, 'r') as read:
+        with open(file_name, 'r') as read:
             for line in read.readlines():
                 match_re = re.match('# Input file: (.*?) ; Number of micrographs: 1', line)
                 if match_re is not None:
@@ -366,8 +368,8 @@ def import_ctffind_v4_1_8(ctf_name, directory_name):
         if input_name is None:
             raise IOError(
                 'Could not read {0} file name! Please contact the TranSPHIRE authors! -- {1}'.format(
-                    ctf_name,
-                    name
+                    name,
+                    file_name
                     )
                 )
         else:
@@ -394,29 +396,29 @@ def import_ctffind_v4_1_8(ctf_name, directory_name):
     return data, data_original
 
 
-def import_gctf_v1_18(ctf_name, directory_name):
+def import_gctf_v1_18(name, directory_name):
     """
     Import ctf information for Gctf v1.18.
     Defocus in angstrom, phase shift in degree.
 
     Arguments:
-    ctf_name - Name of ctf program
+    name - Name of ctf program
     directory_name - Name of the directory to search for files
 
     Return:
     Imported data
     """
-    data, data_original = import_gctf_v1_06(ctf_name=ctf_name, directory_name=directory_name)
+    data, data_original = import_gctf_v1_06(name=name, directory_name=directory_name)
     return data, data_original
 
 
-def import_gctf_v1_06(ctf_name, directory_name):
+def import_gctf_v1_06(name, directory_name):
     """
     Import ctf information for Gctf v1.06.
     Defocus in angstrom, phase shift in degree.
 
     Arguments:
-    ctf_name - Name of ctf program
+    name - Name of ctf program
     directory_name - Name of the directory to search for files
 
     Return:
@@ -454,7 +456,7 @@ def import_gctf_v1_06(ctf_name, directory_name):
         )
     data_original = np.empty(
         len(useable_files),
-        dtype=get_dtype_dict()[ctf_name]
+        dtype=get_dtype_dict()[name]
         )
     data = np.atleast_1d(data)
     data_original = np.atleast_1d(data_original)
@@ -474,14 +476,14 @@ def import_gctf_v1_06(ctf_name, directory_name):
             dtype=dtype,
             skip_header=max_header,
             )
-        for name in data_name.dtype.names:
+        for dtype_name in data_name.dtype.names:
             try:
-                transphire_name = relion_dict[name]
+                transphire_name = relion_dict[dtype_name]
             except KeyError:
                 continue
 
             try:
-                data_original[idx][transphire_name] = np.nan_to_num(data_name[name])
+                data_original[idx][transphire_name] = np.nan_to_num(data_name[dtype_name])
             except ValueError:
                 data_original[idx][transphire_name] = 0
 
@@ -501,20 +503,20 @@ def import_gctf_v1_06(ctf_name, directory_name):
                     data[idx][transphire_name] = 0
             else:
                 try:
-                    data[idx][transphire_name] = np.nan_to_num(data_name[name])
+                    data[idx][transphire_name] = np.nan_to_num(data_name[dtype_name])
                 except ValueError:
                     data[idx][transphire_name] = 0
 
     return data, data_original
 
 
-def import_cter_v1_0(ctf_name, directory_name):
+def import_cter_v1_0(name, directory_name):
     """
     Import ctf information for CTER v1.0.
     Defocus in angstrom, phase shift in degree.
 
     Arguments:
-    ctf_name - Name of ctf program
+    name - Name of ctf program
     directory_name - Name of the directory to search for files
 
     Return:
@@ -532,7 +534,7 @@ def import_cter_v1_0(ctf_name, directory_name):
         try:
             data_name = np.genfromtxt(
                 file_name,
-                dtype=get_dtype_import_dict()[ctf_name],
+                dtype=get_dtype_import_dict()[name],
                 )
         except ValueError:
             continue
@@ -548,17 +550,17 @@ def import_cter_v1_0(ctf_name, directory_name):
         )
     data_original = np.empty(
         len(useable_files),
-        dtype=get_dtype_import_dict()[ctf_name]
+        dtype=get_dtype_import_dict()[name]
         )
     data = np.atleast_1d(data)
     data_original = np.atleast_1d(data_original)
     data.fill(0)
     data_original.fill(0)
 
-    for idx, name in sorted(enumerate(useable_files)):
+    for idx, file_name in sorted(enumerate(useable_files)):
         data_name = np.genfromtxt(
-            name,
-            dtype=get_dtype_import_dict()[ctf_name],
+            file_name,
+            dtype=get_dtype_import_dict()[name],
             )
         for entry in data_name.dtype.names:
             data_original[idx][entry] = data_name[entry]
@@ -587,17 +589,18 @@ def import_cter_v1_0(ctf_name, directory_name):
     return data, data_original
 
 
-def import_motion_cor_2_v1_0_0(motion_name, directory_names):
+def import_motion_cor_2_v1_0_0(name, directory_name):
     """
     Import motion information for MotionCor2 v1.0.0.
 
     Arguments:
-    motion_name - Name of motion program
+    name - Name of motion program
     directory_name - Name of the directory to search for files
 
     Return:
     Imported data
     """
+    directory_names = glob.glob('{0}/*_with_DW_log'.format(directory_name))
     files = np.array(
         [
             entry
@@ -608,17 +611,17 @@ def import_motion_cor_2_v1_0_0(motion_name, directory_names):
         )
 
     useable_files = []
-    for name in files:
+    for file_name in files:
         try:
             array = np.genfromtxt(
-                name,
-                dtype=get_dtype_import_dict()[motion_name]
+                file_name,
+                dtype=get_dtype_import_dict()[name]
                 )
         except ValueError:
             continue
         else:
             if array.size > 0:
-                useable_files.append(name)
+                useable_files.append(file_name)
             else:
                 continue
 
@@ -627,12 +630,12 @@ def import_motion_cor_2_v1_0_0(motion_name, directory_names):
         dtype=get_dtype_dict()['motion']
         )
     data = np.atleast_1d(data)
-    for idx, name in enumerate(useable_files):
+    for idx, file_name in enumerate(useable_files):
         data_name = np.genfromtxt(
-            name,
-            dtype=get_dtype_import_dict()[motion_name]
+            file_name,
+            dtype=get_dtype_import_dict()[name]
             )
-        data[idx]['file_name'] = name
+        data[idx]['file_name'] = file_name
         shift_x = np.array([
             data_name['shift_x'][i+1] - data_name['shift_x'][i] \
             for i in range(0, int(data_name['frame_number'][-1]-1))
@@ -654,95 +657,101 @@ def import_motion_cor_2_v1_0_0(motion_name, directory_names):
                 pass
 
     data = np.sort(data, order='file_name')
-    return data
+    data_original = None
+    return data, data_original
 
 
-def import_motion_cor_2_v1_0_5(motion_name, directory_names):
+def import_motion_cor_2_v1_0_5(name, directory_name):
     """
     Import motion information for MotionCor2 v1.0.5.
 
     Arguments:
-    ctf_name - Name of ctf program
+    name - Name of ctf program
     directory_name - Name of the directory to search for files
 
     Return:
     Imported data
     """
-    data = import_motion_cor_2_v1_0_0(motion_name=motion_name, directory_names=directory_names)
-    return data
+    data, data_original = import_motion_cor_2_v1_0_0(name=name, directory_name=directory_name)
+    return data, data_original
 
 
-def import_motion_cor_2_v1_1_0(motion_name, directory_names):
+def import_motion_cor_2_v1_1_0(name, directory_name):
     """
     Import motion information for MotionCor2 v1.1.0.
 
     Arguments:
-    ctf_name - Name of ctf program
+    name - Name of ctf program
     directory_name - Name of the directory to search for files
 
     Return:
     Imported data
     """
-    data = import_motion_cor_2_v1_0_0(motion_name=motion_name, directory_names=directory_names)
-    return data
+    data, data_original = import_motion_cor_2_v1_0_0(name=name, directory_name=directory_name)
+    return data, data_original
 
 
-def import_cryolo_v1_0_3(picking_name, names):
+def import_cryolo_v1_0_3(name, directory_name):
     """
     Import picking information for crYOLO v1.0.3.
 
     Arguments:
-    picking_name - Name of picking program
+    name - Name of picking program
     directory_name - Name of the directory to search for files
 
     Return:
     Imported data
     """
-    directory_name, file_name = names
-    if file_name is None:
-        placeholder = '*'
-    else:
-        placeholder = os.path.splitext(os.path.basename(file_name))[0]
+    placeholder = '*'
 
     files_box = np.array(
-        glob.glob('{0}/{1}.box'.format(directory_name, placeholder))
+        glob.glob(os.path.join(directory_name, '{0}.box'.format(placeholder)))
         )
     useable_files_box = []
-    for name in files_box:
+    for file_name in files_box:
         try:
-            array = np.genfromtxt(name)
+            np.genfromtxt(file_name)
         except ValueError:
             continue
         else:
-            useable_files_box.append(os.path.splitext(os.path.basename(name))[0])
+            useable_files_box.append(os.path.splitext(os.path.basename(file_name))[0])
 
-    useable_files_jpg = [os.path.splitext(os.path.basename(entry))[0] for entry in glob.glob('{0}/jpg/{1}.jpg'.format(directory_name, placeholder))]
+    useable_files_jpg = [os.path.splitext(os.path.basename(entry))[0] for entry in glob.glob(os.path.join(directory_name, 'jpg', '{0}.jpg'.format(placeholder)))]
 
-    useable_files = [name for name in sorted(useable_files_box) if name in useable_files_jpg]
+    useable_files = [file_name for file_name in sorted(useable_files_box) if file_name in useable_files_jpg]
 
     data = np.empty(
         len(useable_files),
         dtype=get_dtype_dict()['picking']
         )
     data = np.atleast_1d(data)
-    for idx, name in enumerate(useable_files):
+    for idx, file_name in enumerate(useable_files):
         jpg_name = os.path.join(
             directory_name,
             'jpg',
-            '{0}.jpg'.format(name)
+            '{0}.jpg'.format(file_name)
             )
-        box_name = os.path.join(directory_name, '{0}.box'.format(name))
+        box_name = os.path.join(directory_name, '{0}.box'.format(file_name))
         try:
             data_name = np.atleast_1d(np.genfromtxt(
                 box_name,
-                dtype=get_dtype_import_dict()[picking_name]
+                dtype=get_dtype_import_dict()[name]
                 ))
         except ValueError:
             size = 0
         else:
             size = data_name.shape[0]
-        data[idx]['file_name'] = name
+        data[idx]['file_name'] = file_name
         data[idx]['particles'] = size
         data[idx]['image'] = jpg_name
+        data[idx]['object'] = None
 
-    return data
+    data.sort(order='file_name')
+    for i in range(1, 10):
+        try:
+            jpg_data = imageio.imread(jpg_name)
+        except:
+            jpg_data = None
+        data[-i]['object'] = jpg_data
+    data_original = None
+    return data, data_original

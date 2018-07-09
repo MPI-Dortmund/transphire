@@ -32,7 +32,7 @@ class PlotContainer(QMainWindow):
     QMainWindow
     """
 
-    def __init__(self, content, plot_labels, plot_name, *args, parent=None, **kwargs):
+    def __init__(self, content, plot_labels, plot_name, plot_worker_ctf, plot_worker_motion, plot_worker_picking, plot_type, *args, parent=None, **kwargs):
         """
         Initialisation of the PlotContainer widget.
 
@@ -48,6 +48,14 @@ class PlotContainer(QMainWindow):
         self.setCentralWidget(None)
         self.setTabPosition(Qt.TopDockWidgetArea, QTabWidget.North)
         self.plot_name = plot_name
+        if plot_type == 'ctf':
+            self.worker = plot_worker_ctf
+        elif plot_type == 'motion':
+            self.worker = plot_worker_motion
+        elif plot_type == 'picking':
+            self.worker = plot_worker_picking
+        else:
+            raise Exception('PlotContainer - {0} not known!'.format(plot_type))
 
         self.content = []
         dock_widgets = []
