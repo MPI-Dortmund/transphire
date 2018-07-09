@@ -51,18 +51,18 @@ class MountContainer(QWidget):
         """
         super(MountContainer, self).__init__(parent)
 
+        # Global layout
+        central_layout = QVBoxLayout(self)
+        central_layout.setContentsMargins(0, 0, 0, 0)
+        central_widget = QWidget(self)
+        central_widget.setObjectName('central')
+        central_layout.addWidget(central_widget)
+
         # Global content
         self.content = {}
 
         # Layout
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-
-        layout_label = QHBoxLayout()
-        layout_label.addWidget(QLabel('Mount', self))
-        layout_label.addWidget(QLabel('Umount', self))
-        layout_label.setContentsMargins(0, 0, 0, 0)
-        layout.addLayout(layout_label)
+        layout = QVBoxLayout(central_widget)
 
         # Temp content
         self.content_temp = []

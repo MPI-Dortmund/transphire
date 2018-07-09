@@ -43,14 +43,16 @@ class StatusWidget(QWidget):
         # Global content
         self.info_name = QLabel(default_name, self)
         self.info_name.setObjectName('status_info')
-        self.info_name.setStyleSheet('color: purple')
+        self.info_name.setStyleSheet('color: white')
+
         self.info_quota = QLabel(default_quota, self)
         self.info_quota.setObjectName('status_quota')
-        self.info_quota.setStyleSheet('color: purple')
+        self.info_quota.setStyleSheet('color: white')
 
         # Content
         name = QLabel('{0}: '.format(name), self)
         name.setObjectName('status_name')
+        name.setStyleSheet('color: #68a3c3')
 
         # Layout
         layout = QHBoxLayout(self)

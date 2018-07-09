@@ -18,12 +18,13 @@
 import os
 import json
 try:
-    from PyQt4.QtGui import QDialog, QVBoxLayout, QPushButton, QTabWidget
+    from PyQt4.QtGui import QDialog, QVBoxLayout, QPushButton, QWidget, QComboBox, QLineEdit
 except ImportError:
-    from PyQt5.QtWidgets import QDialog, QVBoxLayout, QPushButton, QTabWidget
+    from PyQt5.QtWidgets import QDialog, QVBoxLayout, QPushButton, QWidget, QComboBox, QLineEdit
 
 from transphire.loadcontentcontainer import LoadContentContainer
 from transphire.separator import Separator
+from transphire.tabdocker import TabDocker
 from transphire import transphire_utils as tu
 
 
@@ -50,8 +51,20 @@ class DefaultSettings(QDialog):
         super(DefaultSettings, self).__init__(parent)
 
         # Add new tab widget for the settings to layout
-        layout = QVBoxLayout(self)
-        self.tab_widget = QTabWidget(self)
+        central_raw_layout = QVBoxLayout(self)
+        central_raw_layout.setContentsMargins(0, 0, 0, 0)
+        central_widget_raw = QWidget(self)
+        central_widget_raw.setObjectName('central_raw')
+        central_raw_layout.addWidget(central_widget_raw)
+
+        central_layout = QVBoxLayout(central_widget_raw)
+        central_widget = QWidget(self)
+        central_widget.setObjectName('central')
+        central_layout.addWidget(central_widget)
+
+        layout = QVBoxLayout(central_widget)
+
+        self.tab_widget = TabDocker(self)
         layout.addWidget(self.tab_widget)
         self.tab_widget.setObjectName('tab')
 
@@ -64,7 +77,7 @@ class DefaultSettings(QDialog):
                     'MotionCor2',
                     'crYOLO'
                     ],
-                QTabWidget(self)
+                TabDocker(self)
                 ],
             'TranSPHIRE settings': [
                 [
@@ -77,27 +90,29 @@ class DefaultSettings(QDialog):
                     'Copy',
                     'Path'
                     ],
-                QTabWidget(self)
+                TabDocker(self)
                 ]
             }
         for tab_name in self.default_tabs:
             self.default_tabs[tab_name][1].setObjectName('tab')
-            self.tab_widget.addTab(self.default_tabs[tab_name][1], tab_name)
+            self.tab_widget.add_tab(self.default_tabs[tab_name][1], tab_name)
 
         # Variables
         self.apply = False
         self.overwrite = True
 
         # Add buttons
-        done_button = QPushButton('Done', self)
-        done_button.clicked.connect(lambda: self.check_modified_widgets(done=True))
+        done_button = QPushButton('Quit dialog and start TranSPHIRE.', self)
         layout.addWidget(Separator(typ='horizontal', color='blue'))
         layout.addWidget(done_button)
+        done_button.clicked.connect(lambda: self.check_modified_widgets(done=True))
         if apply:
+            done_button.setText('Quit dialog without applying changes.')
             layout.addWidget(Separator(typ='horizontal', color='blue'))
-            apply_button = QPushButton('Apply', self)
+            apply_button = QPushButton('Quit dialog and apply changes.', self)
             apply_button.clicked.connect(lambda: self.check_modified_widgets(done=False))
             layout.addWidget(apply_button)
+
 
     def check_modified_widgets(self, done):
         """
@@ -127,22 +142,34 @@ class DefaultSettings(QDialog):
         if text_modified:
             result = tu.question(
                 head='Unsaved changes',
-                text='You do have unsaved changes!\nDo you really want to continue?.',
+                text='You do have unsaved changes!\nDo you really want to continue?.\nThose changes will not be saved or applied.',
                 parent=self
                 )
         else:
-            result = False
+            result = True
 
-        # Result is True if answer is No
-        if result:
+        # Result is True if answer is Yes
+        if not result:
             return False
         elif done:
             for info in wrongly_mod_list:
-                info['widget'].setText(info['settings']['values'])
+                if isinstance(info['widget'], QLineEdit):
+                    info['widget'].setText(info['settings']['values'])
+                elif isinstance(info['widget'], QComboBox):
+                    idx = info['widget'].findText(info['settings']['values'][0])
+                    info['widget'].setCurrentIndex(idx)
+                else:
+                    raise Exception('Instance not known! Please contact the TranSPHIRE authors!')
             self.accept()
         else:
             for info in wrongly_mod_list:
-                info['widget'].setText(info['settings']['values'])
+                if isinstance(info['widget'], QLineEdit):
+                    info['widget'].setText(info['settings']['values'])
+                elif isinstance(info['widget'], QComboBox):
+                    idx = info['widget'].findText(info['settings']['values'][0])
+                    info['widget'].setCurrentIndex(idx)
+                else:
+                    raise Exception('Instance not known! Please contact the TranSPHIRE authors!')
             self.accept_apply()
 
         return True
@@ -193,7 +220,7 @@ class DefaultSettings(QDialog):
             for tab_name in compare:
                 if name.startswith(tab_name):
                     is_inside = True
-                    tab_widget.addTab(widget, name)
+                    tab_widget.add_tab(widget, name)
                 else:
                     pass
         if not is_inside:

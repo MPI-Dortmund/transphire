@@ -22,7 +22,8 @@ try:
         QVBoxLayout,
         QLabel,
         QPushButton,
-        QLineEdit
+        QLineEdit,
+        QWidget
         )
 except ImportError:
     from PyQt5.QtWidgets import (
@@ -31,7 +32,8 @@ except ImportError:
         QVBoxLayout,
         QLabel,
         QPushButton,
-        QLineEdit
+        QLineEdit,
+        QWidget
         )
 
 
@@ -64,7 +66,18 @@ class EmailDialog(QDialog):
         super(EmailDialog, self).__init__(parent)
 
         # Setup layout
-        layout = QVBoxLayout(self)
+        central_raw_layout = QVBoxLayout(self)
+        central_raw_layout.setContentsMargins(0, 0, 0, 0)
+        central_widget_raw = QWidget(self)
+        central_widget_raw.setObjectName('central_raw')
+        central_raw_layout.addWidget(central_widget_raw)
+
+        central_layout = QVBoxLayout(central_widget_raw)
+        central_widget = QWidget(self)
+        central_widget.setObjectName('central')
+        central_layout.addWidget(central_widget)
+
+        layout = QVBoxLayout(central_widget)
 
         # Name textedit
         layout.addWidget(QLabel('Name:', self))

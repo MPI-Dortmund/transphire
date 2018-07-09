@@ -42,11 +42,11 @@ class TabDocker(QWidget):
         """
         super(TabDocker, self).__init__(parent)
         layout_tmp = QVBoxLayout(self)
-        self.widget = QWidget(self)
-        layout_tmp.addWidget(self.widget)
+        self.parent_widget = QWidget(self)
+        layout_tmp.addWidget(self.parent_widget)
         layout_tmp.setContentsMargins(0, 0, 0, 0)
 
-        layout = QVBoxLayout(self.widget)
+        layout = QVBoxLayout(self.parent_widget)
         self.tab_widget = QTabWidget(self)
         layout.addWidget(self.tab_widget)
 
@@ -62,7 +62,56 @@ class TabDocker(QWidget):
         None
         """
         if isinstance(widget, TabDocker):
-            widget.widget.setObjectName('tab')
+            widget.parent_widget.setObjectName('tab')
         else:
             pass
         self.tab_widget.addTab(widget, name)
+
+    def count(self):
+        """
+        Return the number of tabs.
+
+        Arguments:
+        None
+
+        Returns:
+        Number of tabs
+        """
+        return self.tab_widget.count()
+
+    def widget(self, idx):
+        """
+        Return the widget that belongs to the idx of tabs.
+
+        Arguments:
+        idx - Tab index
+
+        Returns:
+        Widget
+        """
+        return self.tab_widget.widget(idx)
+
+    def setMovable(self, status):
+        """
+        Set the movable status for the tab widgets
+
+        Arguments:
+        status - Boolean variable for the status
+
+        Returns:
+        None
+        """
+        return self.tab_widget.setMovable(status)
+
+    def setTabText(self, idx, text):
+        """
+        Set the text for the tab at idx
+
+        Arguments:
+        idx - Index of the tab
+        text - Text of the tab
+
+        Returns:
+        None
+        """
+        return self.tab_widget.setTabText(idx, text)

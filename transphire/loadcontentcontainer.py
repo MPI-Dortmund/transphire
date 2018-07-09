@@ -19,12 +19,13 @@
 import json
 import copy
 try:
-    from PyQt4.QtGui import QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QTabWidget
+    from PyQt4.QtGui import QWidget, QPushButton, QVBoxLayout, QHBoxLayout
     from PyQt4.QtCore import pyqtSlot
 except ImportError:
-    from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QTabWidget
+    from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout
     from PyQt5.QtCore import pyqtSlot
 
+from transphire.tabdocker import TabDocker
 from transphire.loadcontent import LoadContent
 from transphire.separator import Separator
 from transphire import transphire_utils as tu
@@ -73,7 +74,7 @@ class LoadContentContainer(QWidget):
 
         # Typ based settings
         if self.typ == 'Mount':
-            self.tab_widget = QTabWidget(self)
+            self.tab_widget = TabDocker(self)
             self.tab_widget.setMovable(True)
             self.layout.addWidget(self.tab_widget)
             add_button = QPushButton(self)
@@ -127,12 +128,12 @@ class LoadContentContainer(QWidget):
         # If tab_widget exists, add to tab_widget, else to layout
         if self.tab_widget is not None:
             if name is None:
-                self.tab_widget.addTab(
+                self.tab_widget.add_tab(
                     widget,
                     'Mount {0}'.format(self.tab_widget.count() + 1)
                     )
             else:
-                self.tab_widget.addTab(widget, name)
+                self.tab_widget.add_tab(widget, name)
         else:
             self.layout.addWidget(separator_1)
             self.layout.addWidget(widget)

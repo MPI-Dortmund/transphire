@@ -223,7 +223,7 @@ class MountWorker(QObject):
             # Continue if the file is empty
             if not lines:
                 self.refresh_count[key] = 0
-                self.sig_quota.emit('-- / --', key, 'purple')
+                self.sig_quota.emit('-- / --', key, 'white')
                 continue
             else:
                 pass
@@ -712,7 +712,7 @@ class MountWorker(QObject):
                         )
                 return
             device = device.split('/')[-1]
-            self.sig_success.emit('Not connected', device, 'purple')
+            self.sig_success.emit('Not connected', device, 'white')
             with open(self.save_files[device], 'w') as write:
                 write.write('')
 

@@ -24,12 +24,12 @@ import shutil
 
 try:
     QT_VERSION = 4
-    from PyQt4.QtGui import QMessageBox, QFont
+    from PyQt4.QtGui import QFont
 except ImportError:
     QT_VERSION = 5
-    from PyQt5.QtWidgets import QMessageBox
     from PyQt5.QtGui import QFont
 
+from transphire.messagebox import MessageBox
 from transphire.separator import Separator
 from transphire.mountcontainer import MountContainer
 from transphire.statuscontainer import StatusContainer
@@ -250,8 +250,8 @@ def message(text):
     Return:
     None
     """
-    dialog = QMessageBox()
-    dialog.setText(text)
+    dialog = MessageBox(is_question=False)
+    dialog.setText(None, text)
     dialog.exec_()
 
 
@@ -267,23 +267,13 @@ def question(head, text, parent):
     True if No, False if Yes
     """
     if QT_VERSION == 4:
-        result = QMessageBox.question(
-            parent,
-            head,
-            text,
-            'Yes',
-            'No'
-            )
+        message_box = MessageBox(is_question=True)
+        message_box.setText(head, text)
+        result = message_box.exec_()
     elif QT_VERSION == 5:
-        result = QMessageBox.question(
-            parent,
-            head,
-            text
-            )
-        if result == 16384:
-            result = False
-        else:
-            result = True
+        message_box = MessageBox(is_question=True)
+        message_box.setText(head, text)
+        result = message_box.exec_()
     else:
         raise ImportError('QT version unknown! Please contact the transphire authors!')
     return result
@@ -475,34 +465,26 @@ def get_content_gui(content):
 
     gui_content = [
         {
-            'name': 'Mount',
-            'widget': MountContainer,
-            'content_mount': content['Mount'],
-            'layout': 'h2',
-            },
-        {
-            'name': 'Stretch',
-            'layout': 'h2'
-            },
-        {
             'name': 'Notification_widget',
             'widget': NotificationContainer,
             'content': content['Notification_widget'],
             'layout': 'h2',
             },
         {
-            'name': 'Stretch',
-            'layout': 'h2'
-            },
-        {
             'name': 'Button',
             'widget': ButtonContainer,
-            'layout': 'h2',
+            'layout': 'h3',
             },
         {
             'name': 'TAB1',
             'widget': TabDocker,
-            'layout': 'h3',
+            'layout': 'h4',
+            },
+        {
+            'name': 'Mount',
+            'widget': MountContainer,
+            'content_mount': content['Mount'],
+            'layout': 'TAB1',
             },
         {
             'name': 'Settings',
@@ -695,28 +677,61 @@ def look_and_feel_small(app, font=None):
         font = 15.0
     else:
         font = float(font)
-    app.setFont(QFont('Helvetica', font))
+    app.setFont(QFont('Helvetica', font, 63))
     style_widgets = """
-    QWidget { background-color: lightgrey }
-    QTabWidget { background-color: lightgrey }
-    QTabBar { background-color: lightgrey }
-    QLineEdit { background-color: white }
-    QComboBox { background-color: white }
-    QPushButton {
-        background-color: qradialgradient(cx:0.5, cy:0.5, fx:0.5, fy:0.5, radius:1, stop:0 white, stop:1 pink);
+    QWidget#central_raw {{
+        background-image: url("{1}");
+        }}
+    QWidget#central {{
+        background-color: {2};
+        border-radius: 15px;
+        }}
+    QWidget#settings {{
+        background-color: {3};
+        border-radius: 15px
+        }}
+    QWidget#tab {{
+        background-color: {3};
+        border-radius: 15px
+        }}
+    QTabWidget::pane {{
+        border-top: 2px solid #C2C7CB;
+        }}
+    QTabWidget::tab {{
+        min-width: 120px;
+        }}
+    QTabBar {{
+        background-color: #C2C7CB
+        }}
+    QTabBar::pane {{
+        border-top: 2px solid #C2C7CB;
+        }}
+    QTabBar::tab {{
+        min-width: 120px;
+        }}
+
+    QLineEdit {{ background-color: white }}
+    QComboBox {{ background-color: white }}
+    QPushButton {{
+        background-color: qradialgradient(cx:0.5, cy:0.5, fx:0.5, fy:0.5, radius:1, stop:0 white, stop:1 #ff5c33);
         border-width: 1px;
         border-style:inset;
         padding: 1px;
         border-radius: 5px
-        }
-    QPushButton:pressed {
+        }}
+    QPushButton:pressed {{
         background-color: qradialgradient(cx:0.5, cy:0.5, fx:0.5, fy:0.5, radius:1, stop:0 white, stop:1 pink);
         border-width: 1px;
         border-style:outset;
         padding: 1px;
         border-radius: 5px
-        }
-    """
+        }}
+    """.format(
+        'lightgrey',
+        '{0}/images/sxgui_background.png'.format(os.path.dirname(__file__)),
+        'rgba(229, 229, 229, 192)',
+        'rgba(229, 229, 229, 120)',
+        )
     return style_widgets
 
 
@@ -761,7 +776,7 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
     status_quota_width = float(default[0][14]['Status quota'][0])
     widget_height = float(default[0][15]['Widget height'][0])
 
-    app.setFont(QFont('Verdana', font))
+    app.setFont(QFont('Helvetica', font, 63))
     start_button_width = '{0}px'.format(font * start_button_width * adjust_width)
     notification_edit_width = '{0}px'.format(font * notification_edit_width * adjust_width)
     notification_check_width = '{0}px'.format(font * notification_check_width * adjust_width)
@@ -783,25 +798,53 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
         }}
     QWidget#central {{
         background-color: {2};
+        border-radius: 15px;
+        }}
+    QWidget#central_black {{
+        background-color: {4};
+        border-radius: 15px;
+        }}
+    QWidget#settings {{
+        background-color: {3};
+        border-radius: 15px
         }}
     QWidget#tab {{
         background-color: {3};
+        border-radius: 15px
         }}
     QTabWidget::tab-bar {{
         alignment: center;
         }}
     QTabWidget::pane {{
         border-top: 2px solid #C2C7CB;
-        position: absolute;
-        top: -0.5em;
         }}
-    QTabBar::tab {{ min-width: 120px }}
+    QTabWidget::tab {{
+        min-width: 120px;
+        }}
+    QTabBar {{
+        alignment: center;
+        background-color: #C2C7CB
+        }}
+    QTabBar::pane {{
+        border-top: 2px solid #C2C7CB;
+        }}
+    QTabBar::tab {{
+        min-width: 120px;
+        }}
+    QMessageBox {{
+        background-image: url("{1}");
+        color: white;
+        }}
+    QFileDialog {{
+        background-color: {2}
+        }}
+
     """.format(
         'lightgrey',
         '{0}/images/sxgui_background.png'.format(os.path.dirname(__file__)),
         'rgba(229, 229, 229, 192)',
         'rgba(229, 229, 229, 120)',
-        'rgba(0, 0, 0, 255)',
+        'rgba(0, 0, 0, 153)',
         )
 
     button_style = """
@@ -814,7 +857,7 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
             fy:0.5,
             radius:1,
             stop:0 white,
-            stop:1 pink
+            stop:1 #ff5c33
             );
         border-width: 1px;
         border-style: inset;
@@ -835,6 +878,30 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
         border-style: outset;
         padding: 1px;
         border-radius: 5px
+        }}
+    QPushButton#start {{
+        background-color: qradialgradient(
+            cx:0.5,
+            cy:0.5,
+            fx:0.5,
+            fy:0.5,
+            radius:1,
+            stop:0 white,
+            stop:1 green
+            );
+        min-width: {0}; max-width: {0}
+        }}
+    QPushButton#stop {{
+        background-color: qradialgradient(
+            cx:0.5,
+            cy:0.5,
+            fx:0.5,
+            fy:0.5,
+            radius:1,
+            stop:0 white,
+            stop:1 red
+            );
+        min-width: {0}; max-width: {0}
         }}
     QPushButton#button {{ min-width: {0}; max-width: {0} }}
     QPushButton#frame {{ max-width: {1}; min-width: {1} }}
@@ -887,11 +954,10 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
         notification_edit_width,
         frame_label_width,
         frame_entry_width,
-        'rgba(102,205,170,20)',
-        'rgba(205,102,170,20)',
+        'rgba(102,205,170)',
+        'rgba(150,150,150)',
         widget_height
         )
-        #'rgba(102,205,170,100)',
 
     check_style = """
     QCheckBox {{ min-height: {1}; max-height: {1}; background-color: white }}
@@ -909,7 +975,7 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
     """.format(
         'rgba(102,205,170,20)',
         notification_edit_width,
-        'rgba(195,152,180,20)',
+        'rgba(150,150,150,200)',
         widget_height,
         setting_widget_width
         )
@@ -967,9 +1033,9 @@ def get_style(typ):
     elif typ == 'changed':
         color = 'purple'
     elif typ == 'True':
-        color = 'blue'
+        color = '#68a3c3'
     elif typ == 'False':
-        color = 'darkgray'
+        color = '#c3a368'
     else:
         msg = 'Style not known! Go for black!'
         print(msg)

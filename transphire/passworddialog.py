@@ -18,10 +18,10 @@
 import os
 import pexpect as pe
 try:
-    from PyQt4.QtGui import QDialog, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QLineEdit
+    from PyQt4.QtGui import QDialog, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QLineEdit, QWidget
     from PyQt4.QtCore import pyqtSlot
 except ImportError:
-    from PyQt5.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QLineEdit
+    from PyQt5.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QLineEdit, QWidget
     from PyQt5.QtCore import pyqtSlot
 from transphire import transphire_utils as tu
 
@@ -80,7 +80,18 @@ class PasswordDialog(QDialog):
         layout_button.addWidget(button_reject)
 
         # Layout
-        layout = QVBoxLayout(self)
+        central_raw_layout = QVBoxLayout(self)
+        central_raw_layout.setContentsMargins(0, 0, 0, 0)
+        central_widget_raw = QWidget(self)
+        central_widget_raw.setObjectName('central_raw')
+        central_raw_layout.addWidget(central_widget_raw)
+
+        central_layout = QVBoxLayout(central_widget_raw)
+        central_widget = QWidget(self)
+        central_widget.setObjectName('central')
+        central_layout.addWidget(central_widget)
+
+        layout = QVBoxLayout(central_widget)
         layout.addWidget(QLabel('Username', self))
         layout.addWidget(self.user_le)
         layout.addWidget(QLabel('Password', self))

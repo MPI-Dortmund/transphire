@@ -56,8 +56,13 @@ class StatusContainer(QWidget):
         super(StatusContainer, self).__init__(parent)
 
         # Layout
-        layout_v1 = QVBoxLayout(self)
-        layout_v1.setContentsMargins(0, 0, 0, 0)
+        central_layout = QVBoxLayout(self)
+        central_layout.setContentsMargins(0, 0, 0, 0)
+        central_widget = QWidget(self)
+        central_widget.setObjectName('central_black')
+        central_layout.addWidget(central_widget)
+
+        layout_v1 = QVBoxLayout(central_widget)
 
         for entry in content:
             for widget in entry:

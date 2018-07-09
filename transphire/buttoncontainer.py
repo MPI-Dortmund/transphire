@@ -16,10 +16,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 try:
-    from PyQt4.QtGui import QVBoxLayout, QWidget, QPushButton, QApplication
+    from PyQt4.QtGui import QHBoxLayout, QWidget, QPushButton, QApplication, QVBoxLayout
     from PyQt4.QtCore import pyqtSlot, pyqtSignal
 except ImportError:
-    from PyQt5.QtWidgets import QVBoxLayout, QWidget, QPushButton, QApplication
+    from PyQt5.QtWidgets import QHBoxLayout, QWidget, QPushButton, QApplication, QVBoxLayout
     from PyQt5.QtCore import pyqtSlot, pyqtSignal
 from transphire.loadwindow import DefaultSettings
 from transphire import transphire_utils as tu
@@ -71,7 +71,7 @@ class ButtonContainer(QWidget):
         self.parent = parent
 
         # Setup layout
-        layout = QVBoxLayout(self)
+        layout = QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
 
         # About button
@@ -93,7 +93,7 @@ class ButtonContainer(QWidget):
         layout.addWidget(self.save_button)
 
         # Default settings button
-        self.default_settings = QPushButton('Default\nsettings', self)
+        self.default_settings = QPushButton('Default settings', self)
         self.default_settings.clicked.connect(self._modify_settings)
         self.default_settings.setObjectName('button')
         layout.addWidget(self.default_settings)
@@ -107,8 +107,17 @@ class ButtonContainer(QWidget):
         # Start/Stop button
         self.start_button = QPushButton('Start', self)
         self.start_button.clicked.connect(self._start_stop)
-        self.start_button.setObjectName('button')
+        self.start_button.setObjectName('start')
+        self.start_button.setVisible(True)
+        self.start_button.setEnabled(True)
         layout.addWidget(self.start_button)
+
+        self.stop_button = QPushButton('Stop', self)
+        self.stop_button.clicked.connect(self._start_stop)
+        self.stop_button.setObjectName('stop')
+        self.stop_button.setVisible(False)
+        self.stop_button.setEnabled(False)
+        layout.addWidget(self.stop_button)
 
         # Final stretch
         layout.addStretch(1)

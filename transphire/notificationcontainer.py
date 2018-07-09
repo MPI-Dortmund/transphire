@@ -22,10 +22,10 @@ import smtplib
 from email.mime.text import MIMEText
 import telepot
 try:
-    from PyQt4.QtGui import QWidget, QVBoxLayout, QPushButton
+    from PyQt4.QtGui import QWidget, QVBoxLayout, QPushButton, QHBoxLayout
     from PyQt4.QtCore import pyqtSlot, pyqtSignal
 except ImportError:
-    from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton
+    from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QHBoxLayout
     from PyQt5.QtCore import pyqtSlot, pyqtSignal
 from transphire.notificationwidget import NotificationWidget
 from transphire.emaildialog import EmailDialog
@@ -87,24 +87,40 @@ class NotificationContainer(QWidget):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
 
+        max_per_col = 3
+
         # Add to layout
         if noti_content['Default names telegram']:
-            for entry in noti_content['Default names telegram'].split(';'):
+            for idx, entry in enumerate(noti_content['Default names telegram'].split(';')):
+                if idx % max_per_col == 0:
+                    if idx != 0:
+                        layout_default_T.addStretch(1)
+                    layout_default_T = QHBoxLayout()
+                    layout.addLayout(layout_default_T)
                 name, default = entry.split(':')
                 name = 'T {0}'.format(name)
                 widget = NotificationWidget(name=name, default=name, parent=self)
-                layout.addWidget(widget)
+                layout_default_T.addWidget(widget)
                 self.content[name] = widget
+            if noti_content['Default names telegram'].split(';'):
+                layout_default_T.addStretch(1)
         else:
             pass
 
         if noti_content['Default names email']:
-            for entry in noti_content['Default names email'].split(';'):
+            for idx, entry in enumerate(noti_content['Default names email'].split(';')):
+                if idx % max_per_col == 0:
+                    if idx != 0:
+                        layout_default_E.addStretch(1)
+                    layout_default_E = QHBoxLayout()
+                    layout.addLayout(layout_default_E)
                 name, default = entry.split(':')
                 name = '@ {0}'.format(name)
                 widget = NotificationWidget(name=name, default=name, parent=self)
-                layout.addWidget(widget)
+                layout_default_E.addWidget(widget)
                 self.content[name] = widget
+            if noti_content['Default names email'].split(';'):
+                layout_default_E.addStretch(1)
         else:
             pass
 
@@ -113,25 +129,38 @@ class NotificationContainer(QWidget):
             exception_list.append(key)
 
         # Chooseable users
+        layout_user = QHBoxLayout()
+        layout.addLayout(layout_user)
         for idx in range(int(noti_content['Number of users'])):
+            if idx % max_per_col == 0:
+                if idx != 0:
+                    layout_default_user.addStretch(1)
+                layout_default_user = QHBoxLayout()
+                layout.addLayout(layout_default_user)
             name = 'User {0}'.format(idx)
             default = 'choose'
             widget = NotificationWidget(name=name, default=default, parent=self)
             for entry in exception_list:
                 widget.add_exceptions(name=entry)
-            layout.addWidget(widget)
+            layout_user.addWidget(widget)
             self.content[name] = widget
+        if int(noti_content['Number of users']) != 0:
+            layout_user.addStretch(1)
 
         # Test button
+        layout_button = QHBoxLayout()
+        layout.addLayout(layout_button)
         self.button_telegram = QPushButton('Update Telegram', self)
         self.button_email = QPushButton('Add E-Mail', self)
         self.button_test = QPushButton('Test', self)
         self.button_telegram.setObjectName('notification')
         self.button_test.setObjectName('notification')
         self.button_email.setObjectName('notification')
-        layout.addWidget(self.button_telegram)
-        layout.addWidget(self.button_email)
-        layout.addWidget(self.button_test)
+        layout_button.addWidget(self.button_telegram)
+        layout_button.addWidget(self.button_email)
+        layout_button.addWidget(self.button_test)
+        layout_button.addStretch(1)
+
         layout.addStretch(1)
 
         # Events

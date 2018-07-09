@@ -18,6 +18,7 @@
 import sys
 import os
 import re
+import pexpect as pe
 try:
     QT_VERSION = 4
     from PyQt4.QtGui import (
@@ -44,7 +45,7 @@ except ImportError:
 # Objects
 from transphire.mountworker import MountWorker
 from transphire.processworker import ProcessWorker
-from transphire.sudopassworddialog import SudoPasswordDialog
+from transphire.inputbox import InputBox
 from transphire.plotworker import PlotWorker
 from transphire.separator import Separator
 from transphire.tabdocker import TabDocker
@@ -112,13 +113,35 @@ class MainWindow(QMainWindow):
                 pass
 
         if need_sudo_password:
-            dialog = SudoPasswordDialog(self)
-            dialog.exec_()
-            if not dialog.result():
-                QCoreApplication.instance().quit()
-                sys.exit()
-            else:
-                self.password = dialog.password
+            while True:
+                dialog = InputBox(is_password=True, parent=self)
+                dialog.setText('Sudo password', 'Please provide the sudo password for mount/copy!')
+                dialog.exec_()
+                if not dialog.result():
+                    QCoreApplication.instance().quit()
+                    sys.exit()
+                else:
+                    self.password = dialog.edit.text()
+                    child = pe.spawnu('sudo -S -k ls')
+                    child.sendline(self.password)
+                    try:
+                        idx = child.expect(
+                            [
+                                pe.EOF,
+                                'sudo: 1 incorrect password attempt',
+                                'Sorry, try again'
+                                ],
+                            timeout=10
+                            )
+                    except pe.exceptions.TIMEOUT:
+                        print('Wrong sudo password!')
+                        tu.message('Wrong sudo password!')
+                    else:
+                        if idx == 0:
+                            break
+                        else:
+                            print('Wrong sudo password!')
+                            tu.message('Wrong sudo password!')
         else:
             pass
 
@@ -267,13 +290,13 @@ class MainWindow(QMainWindow):
             self.load(file_name=load_file)
             os.remove('{0}.txt'.format(load_file))
         elif os.path.exists('{0}.txt'.format(self.temp_save)):
-            # Result is True if answer is No
+            # Result is True if answer is Yes
             result = tu.question(
                 head='Restore default values.',
                 text='Restore default values?',
                 parent=self
                 )
-            if result:
+            if not result:
                 self.load(file_name=self.temp_save)
             else:
                 pass
@@ -397,6 +420,7 @@ class MainWindow(QMainWindow):
         self.layout['h1'] = QHBoxLayout(self.central_widget)
         self.layout['h2'] = QHBoxLayout()
         self.layout['h3'] = QHBoxLayout()
+        self.layout['h4'] = QHBoxLayout()
         self.layout['v'] = QVBoxLayout()
 
         # Layout architecture
@@ -405,7 +429,11 @@ class MainWindow(QMainWindow):
         self.layout['v'].addWidget(
             Separator(typ='horizontal', color='grey'), stretch=0
             )
-        self.layout['v'].addLayout(self.layout['h3'], stretch=1)
+        self.layout['v'].addLayout(self.layout['h3'], stretch=0)
+        self.layout['v'].addWidget(
+            Separator(typ='horizontal', color='grey'), stretch=0
+            )
+        self.layout['v'].addLayout(self.layout['h4'], stretch=1)
 
     def fill_content(self, content_gui):
         """
@@ -522,8 +550,12 @@ class MainWindow(QMainWindow):
         Return:
         None
         """
-        global_settings = self.content['General'].get_settings()
-        global_settings = {'General': global_settings[0]}
+        general_settings = self.content['General'].get_settings()
+        notification_settings = self.content['Notification'].get_settings()
+        global_settings = {
+            'General': general_settings[0],
+            'Notification': notification_settings[0]
+            }
         self.mount_worker.sig_set_settings.emit(global_settings)
 
     def load(self, file_name=None):
@@ -911,7 +943,10 @@ class MainWindow(QMainWindow):
 
         # Start or stop procedure
         if result:
-            self.content['Button'].start_button.setText('Stop')
+            self.content['Button'].start_button.setVisible(False)
+            self.content['Button'].start_button.setEnabled(False)
+            self.content['Button'].stop_button.setVisible(True)
+            self.content['Button'].stop_button.setEnabled(True)
             self.plot_worker.data_picking = []
             self.process_worker.sig_start.emit(settings)
             self.mount_worker.set_settings(settings=settings)
@@ -937,9 +972,12 @@ class MainWindow(QMainWindow):
         Return:
         True, if the input is YES!
         """
-        dialog = QInputDialog(self)
-        result = dialog.getText(self, text1, text2)
-        return bool(result[0] == 'YES!')
+        dialog = InputBox(is_password=False, parent=self)
+        dialog.setText(text1, text2)
+        dialog.exec_()
+
+        result = dialog.getText()
+        return bool(result == 'YES!')
 
     @pyqtSlot()
     def stop_dialog(self):
@@ -974,6 +1012,7 @@ class MainWindow(QMainWindow):
         """
         self.process_worker.stop = True
         self.content['Button'].start_button.setEnabled(False)
+        self.content['Button'].stop_button.setEnabled(False)
 
     @pyqtSlot()
     def _finished(self):
@@ -987,8 +1026,10 @@ class MainWindow(QMainWindow):
         None
         """
         self.enable(True)
-        self.content['Button'].start_button.setText('Start')
+        self.content['Button'].stop_button.setVisible(False)
+        self.content['Button'].start_button.setVisible(True)
         self.content['Button'].start_button.setEnabled(True)
+        self.content['Button'].stop_button.setEnabled(False)
 
     @pyqtSlot(bool)
     def enable(self, var, use_all=False):
@@ -1026,8 +1067,8 @@ class MainWindow(QMainWindow):
                 head='Error saving file!',
                 text='Wrong setting detected! Quit without saving?',
                 )
-            # Result is true if the answer is No
-            if not result:
+            # Result is true if the answer is Yes
+            if result:
                 pass
             else:
                 event.ignore()

@@ -50,7 +50,7 @@ class SettingsContainer(QWidget):
         # Layout
         layout_tmp = QVBoxLayout(self)
         widget = QWidget(self)
-        widget.setObjectName('central')
+        widget.setObjectName('settings')
         layout_tmp.addWidget(widget)
         layout_tmp.setContentsMargins(0, 0, 0, 0)
 

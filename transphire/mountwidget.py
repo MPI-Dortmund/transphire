@@ -24,6 +24,7 @@ except ImportError:
     from PyQt5.QtCore import pyqtSlot
 from transphire.passworddialog import PasswordDialog
 from transphire import transphire_utils as tu
+from transphire.separator import Separator
 
 
 class MountWidget(QWidget):
@@ -78,16 +79,18 @@ class MountWidget(QWidget):
         self.thread_object = None
 
         # Content
-        self.mount_button = QPushButton('{0}'.format(self.name), self)
+        self.mount_button = QPushButton('Mount {0}'.format(self.name), self)
         self.mount_button.setObjectName('mount')
-        self.umount_button = QPushButton('{0}'.format(self.name), self)
+        self.umount_button = QPushButton('Unmount {0}'.format(self.name), self)
         self.umount_button.setObjectName('mount')
 
         # Layout
         layout = QHBoxLayout(self)
         layout.addWidget(self.mount_button)
+        layout.addWidget(Separator(typ='vertical', color='lightgrey'))
         layout.addWidget(self.umount_button)
         layout.setContentsMargins(0, 0, 0, 0)
+        layout.addStretch(1)
 
         # events
         self.mount_button.clicked.connect(self.mount)
