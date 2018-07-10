@@ -238,14 +238,13 @@ class LoadContent(QWidget):
 
             if isinstance(widget_2, QComboBox):
                 settings['widget_2'] = widget_2.currentText()
-                widget_2.setStyleSheet(tu.get_style(typ='pass'))
             else:
                 assert widget_2 is None
                 settings['widget_2'] = widget_2
 
             if value:
                 if tu.check_instance(value=value, typ=dtype):
-                    widget.setStyleSheet(tu.get_style(typ='pass'))
+                    pass
                 else:
                     widget.setStyleSheet(tu.get_style(typ='error'))
                     message = '{0}: {1} needs to be {2}'.format(

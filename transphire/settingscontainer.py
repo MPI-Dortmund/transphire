@@ -33,7 +33,7 @@ class SettingsContainer(QWidget):
     QWidget
     """
 
-    def __init__(self, content, max_widgets, parent=None, **kwargs):
+    def __init__(self, content, max_widgets, name, parent=None, **kwargs):
         """
         Initialise layout of the widget.
 
@@ -63,6 +63,7 @@ class SettingsContainer(QWidget):
         layout_v_global.setContentsMargins(3, 3, 3, 3)
         layout_v_global.addWidget(QLabel(self))
         self.layout = QHBoxLayout()
+        self.layout.addStretch(1)
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout_v = None
         self.idx = 0
@@ -87,14 +88,14 @@ class SettingsContainer(QWidget):
                         self.layout_v = QVBoxLayout()
                         self.layout_v.setContentsMargins(0, 0, 0, 0)
                         self.layout.addLayout(self.layout_v)
-                    name = widget[key][1]['name']
+                    widget_name = widget[key][1]['name']
                     group = widget[key][1]['group']
-                    widget = SettingsWidget(content=widget[key], parent=self)
+                    widget = SettingsWidget(content=widget[key], name=name, parent=self)
                     if group:
                         group, state = group.split(':')
                         self.group.setdefault(group, [])
-                        self.group[group].append([widget, state, name])
-                    self.content[name] = widget
+                        self.group[group].append([widget, state, widget_name])
+                    self.content[widget_name] = widget
                     self.layout_v.addWidget(widget)
                     self.idx += 1
 

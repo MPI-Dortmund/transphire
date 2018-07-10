@@ -89,14 +89,17 @@ class PlotWidget(QWidget):
             self.combo_box.currentIndexChanged.connect(lambda: self.change_idx('combo'))
             layout_h.addWidget(self.combo_box)
             self.prev_button = QPushButton('Prev', self)
+            self.prev_button.setObjectName('frame')
             self.prev_button.clicked.connect(lambda: self.change_idx('prev'))
             self.prev_button.setEnabled(False)
             layout_h.addWidget(self.prev_button)
             self.next_button = QPushButton('Next', self)
+            self.next_button.setObjectName('frame')
             self.next_button.clicked.connect(lambda: self.change_idx('next'))
             self.next_button.setEnabled(False)
             layout_h.addWidget(self.next_button)
             self.reset_button = QPushButton(self.default_value, self)
+            self.reset_button.setObjectName('frame')
             self.reset_button.clicked.connect(lambda: self.change_idx('reset'))
             layout_h.addWidget(self.reset_button)
             layout_h.addStretch(1)
@@ -119,13 +122,13 @@ class PlotWidget(QWidget):
         """
         self.figure.clear()
         ax1 = self.figure.add_subplot(111)
-        ax1.plot([0.5, 0, 0, 0.5], [1, 1, 0, 0], 'b')
-        ax1.plot([1, 1.5, 1.5, 1, 1], [0, 0, 1, 1, 0], 'b')
-        ax1.plot([2, 2, 2.5, 2.5, 2, 2.5], [0, 1, 1, 0.5, 0.5, 0], 'b')
-        ax1.plot([3, 3, 3.5, 3.5, 3, 3.5], [0, 1, 1, 0.5, 0.5, 0], 'b')
-        ax1.plot([4, 4, 4.5, 4.5], [1, 0, 0, 1], 'b')
-        ax1.plot([5, 5, 5.5, 5.5, 5], [0, 1, 1, 0.5, 0.5], 'b')
-        ax1.plot([6, 6.5, 6.25, 6.25], [1, 1, 1, 0], 'b')
+        ax1.plot([0.5, 0, 0, 0.5], [1, 1, 0, 0], '#68a3c3')
+        ax1.plot([1, 1.5, 1.5, 1, 1], [0, 0, 1, 1, 0], '#68a3c3')
+        ax1.plot([2, 2, 2.5, 2.5, 2, 2.5], [0, 1, 1, 0.5, 0.5, 0], '#68a3c3')
+        ax1.plot([3, 3, 3.5, 3.5, 3, 3.5], [0, 1, 1, 0.5, 0.5, 0], '#68a3c3')
+        ax1.plot([4, 4, 4.5, 4.5], [1, 0, 0, 1], '#68a3c3')
+        ax1.plot([5, 5, 5.5, 5.5, 5], [0, 1, 1, 0.5, 0.5], '#68a3c3')
+        ax1.plot([6, 6.5, 6.25, 6.25], [1, 1, 1, 0], '#68a3c3')
         ax1.set_title(title)
 
 
@@ -141,11 +144,11 @@ class PlotWidget(QWidget):
         """
         self.figure.clear()
         ax1 = self.figure.add_subplot(111)
-        ax1.plot([0, 0, 0, 0.5, 0.5, 0.5], [0, 1, 0.5, 0.5, 0, 1], 'b')
-        ax1.plot([1.5, 1, 1, 1.5, 1, 1, 1.5], [0, 0, 0.5, 0.5, 0.5, 1, 1], 'b')
-        ax1.plot([2, 2, 2.5], [1, 0, 0], 'b')
-        ax1.plot([3, 3, 3.5], [1, 0, 0], 'b')
-        ax1.plot([4, 4.15, 4.35, 4.5, 4.5, 4.35, 4.15, 4, 4], [0.3, 0, 0, 0.3, 0.6, 1, 1, 0.6, 0.3], 'b')
+        ax1.plot([0, 0, 0, 0.5, 0.5, 0.5], [0, 1, 0.5, 0.5, 0, 1], '#68a3c3')
+        ax1.plot([1.5, 1, 1, 1.5, 1, 1, 1.5], [0, 0, 0.5, 0.5, 0.5, 1, 1], '#68a3c3')
+        ax1.plot([2, 2, 2.5], [1, 0, 0], '#68a3c3')
+        ax1.plot([3, 3, 3.5], [1, 0, 0], '#68a3c3')
+        ax1.plot([4, 4.15, 4.35, 4.5, 4.5, 4.35, 4.15, 4, 4], [0.3, 0, 0, 0.3, 0.6, 1, 1, 0.6, 0.3], '#68a3c3')
 
 
     def update_figure(self, name, data, directory_name, settings):
@@ -169,7 +172,7 @@ class PlotWidget(QWidget):
             x_values, y_values, label, title = tu.get_function_dict()[name]['plot'](
                 data=data,
                 settings=settings,
-                label=self.label
+                label=self.label,
                 )
 
             self.figure.clear()
@@ -178,7 +181,7 @@ class PlotWidget(QWidget):
             if self.plot_typ == 'values':
                 x_label = 'Micrograph ID'
                 y_label = label
-                ax1.plot(x_values, y_values, '.')
+                ax1.plot(x_values, y_values, '.#68a3c3')
             elif self.plot_typ == 'histogram':
                 x_label = label
                 y_label = 'Nr. of micrographs'
@@ -186,7 +189,7 @@ class PlotWidget(QWidget):
                     ax1.hist(y_values, 1)
                     ax1.set_xlim([np.max(y_values)-1, np.min(y_values)+1])
                 else:
-                    ax1.hist(y_values, 100)
+                    ax1.hist(y_values, 100, '#68a3c3')
             else:
                 print('Plotwidget - ', self.plot_typ, ' is not known!!!')
                 return None

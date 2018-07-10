@@ -69,6 +69,8 @@ class PlotContainer(QMainWindow):
                 continue
             elif label != 'image' and content == 'image':
                 continue
+            elif label == 'object':
+                continue
             else:
                 pass
 

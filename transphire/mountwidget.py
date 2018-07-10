@@ -17,10 +17,10 @@
 """
 import os
 try:
-    from PyQt4.QtGui import QWidget, QHBoxLayout, QPushButton, QInputDialog, QLineEdit
+    from PyQt4.QtGui import QWidget, QHBoxLayout, QPushButton, QInputDialog, QLineEdit, QLabel
     from PyQt4.QtCore import pyqtSlot
 except ImportError:
-    from PyQt5.QtWidgets import QWidget, QHBoxLayout, QPushButton, QInputDialog, QLineEdit
+    from PyQt5.QtWidgets import QWidget, QHBoxLayout, QPushButton, QInputDialog, QLineEdit, QLabel
     from PyQt5.QtCore import pyqtSlot
 from transphire.passworddialog import PasswordDialog
 from transphire import transphire_utils as tu
@@ -86,8 +86,13 @@ class MountWidget(QWidget):
 
         # Layout
         layout = QHBoxLayout(self)
+        layout.addStretch(1)
         layout.addWidget(self.mount_button)
+        layout.addWidget(QLabel(self))
+        layout.addWidget(QLabel(self))
         layout.addWidget(Separator(typ='vertical', color='lightgrey'))
+        layout.addWidget(QLabel(self))
+        layout.addWidget(QLabel(self))
         layout.addWidget(self.umount_button)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addStretch(1)

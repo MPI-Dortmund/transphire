@@ -40,7 +40,7 @@ class SettingsWidget(QWidget):
     """
     sig_index_changed = pyqtSignal(str)
 
-    def __init__(self, content, parent=None):
+    def __init__(self, name, content, parent=None):
         """
         Initialise the layout.
 
@@ -98,8 +98,13 @@ class SettingsWidget(QWidget):
             sys.exit()
 
         self.label = QLabel(self.name, self)
-        self.label.setObjectName('setting')
-        self.edit.setObjectName('setting')
+        large_list = ['Path']
+        if name in large_list:
+            self.label.setObjectName('setting_large')
+            self.edit.setObjectName('setting_large')
+        else:
+            self.label.setObjectName('setting')
+            self.edit.setObjectName('setting')
         self.edit.setToolTip(self.name)
         try:
             self.edit.textEdited.connect(
@@ -204,7 +209,7 @@ class SettingsWidget(QWidget):
         if value:
 
             if tu.check_instance(value=value, typ=self.dtype):
-                self.edit.setStyleSheet(tu.get_style(typ='pass'))
+                pass
 
             else:
                 self.edit.setStyleSheet(tu.get_style(typ='error'))

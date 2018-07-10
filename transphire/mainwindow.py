@@ -1111,7 +1111,7 @@ class MainWindow(QMainWindow):
         Return:
         None
         """
-        if self.content['Button'].start_button.text() == 'Stop':
+        if self.content['Button'].stop_button.isVisible():
             event.ignore()
             tu.message('First stop the program before closing')
             return None

@@ -500,21 +500,21 @@ def get_content_gui(content):
             'widget': SettingsContainer,
             'content': content['General'],
             'layout': 'Settings',
-            'max_widgets': 11
+            'max_widgets': 8
             },
         {
             'name': 'Notification',
             'widget': SettingsContainer,
             'content': content['Notification'],
             'layout': 'Settings',
-            'max_widgets': 11
+            'max_widgets': 9
             },
         {
             'name': 'Copy',
             'widget': SettingsContainer,
             'content': content['Copy'],
             'layout': 'Settings',
-            'max_widgets': 11
+            'max_widgets': 9
             },
         {
             'name': 'Path',
@@ -574,7 +574,7 @@ def get_content_gui(content):
             'widget': SettingsContainer,
             'content': content[motion_content],
             'layout': 'Motion',
-            'max_widgets': 11
+            'max_widgets': 10
             })
         gui_content.append({
             'name': 'Plot {0}'.format(motion_content),
@@ -608,7 +608,7 @@ def get_content_gui(content):
             'widget': SettingsContainer,
             'content': content[ctf_content],
             'layout': 'CTF',
-            'max_widgets': 11
+            'max_widgets': 10
             })
         gui_content.append({
             'name': 'Plot {0}'.format(ctf_content),
@@ -779,10 +779,11 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
     frame_button_width = float(default[0][9]['Frame button'][0])
     frame_label_width = float(default[0][10]['Frame label'][0])
     setting_widget_width = float(default[0][11]['Setting widget'][0])
-    status_name_width = float(default[0][12]['Status name'][0])
-    status_info_width = float(default[0][13]['Status info'][0])
-    status_quota_width = float(default[0][14]['Status quota'][0])
-    widget_height = float(default[0][15]['Widget height'][0])
+    setting_widget_width_large = float(default[0][12]['Setting widget large'][0])
+    status_name_width = float(default[0][13]['Status name'][0])
+    status_info_width = float(default[0][14]['Status info'][0])
+    status_quota_width = float(default[0][15]['Status quota'][0])
+    widget_height = float(default[0][16]['Widget height'][0])
 
     font_type = QFont('Verdana', font, 63)
     font_type.setStyleStrategy(QFont.PreferAntialias)
@@ -795,6 +796,7 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
     frame_entry_width = '{0}px'.format(font * frame_entry_width * adjust_width)
     frame_button_width = '{0}px'.format(font * frame_button_width * adjust_width)
     frame_label_width = '{0}px'.format(font * frame_label_width * adjust_width)
+    setting_widget_width_large = '{0}px'.format(font * setting_widget_width_large * adjust_width)
     setting_widget_width = '{0}px'.format(font * setting_widget_width * adjust_width)
     status_name_width = '{0}px'.format(font * status_name_width * adjust_width)
     status_info_width = '{0}px'.format(font * status_info_width * adjust_width)
@@ -868,7 +870,7 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
             fy:0.5,
             radius:1,
             stop:0 white,
-            stop:1 #ff5c33
+            stop:1 #f9eeb4
             );
         border-width: 1px;
         border-style: inset;
@@ -915,9 +917,45 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
         min-width: {0}; max-width: {0}
         }}
     QPushButton#button {{ min-width: {0}; max-width: {0} }}
-    QPushButton#frame {{ max-width: {1}; min-width: {1} }}
-    QPushButton#button_entry {{ max-width: {2}; min-width: {2} }}
-    QPushButton#mount {{ max-width: {3}; min-width: {3} }}
+    QPushButton#frame {{
+        background-color: qradialgradient(
+            cx:0.5,
+            cy:0.5,
+            fx:0.5,
+            fy:0.5,
+            radius:1,
+            stop:0 white,
+            stop:1 #68a3c3
+            );
+        max-width: {1};
+        min-width: {1}
+        }}
+    QPushButton#button_entry {{
+        background-color: qradialgradient(
+            cx:0.5,
+            cy:0.5,
+            fx:0.5,
+            fy:0.5,
+            radius:1,
+            stop:0 white,
+            stop:1 #68a3c3
+            );
+        max-width: {2};
+        min-width: {2}
+        }}
+    QPushButton#mount {{
+        background-color: qradialgradient(
+            cx:0.5,
+            cy:0.5,
+            fx:0.5,
+            fy:0.5,
+            radius:1,
+            stop:0 white,
+            stop:1 #68a3c3
+            );
+        max-width: {3};
+        min-width: {3}
+        }}
     QPushButton#notification {{ max-width: {4}; min-width: {4} }}
     """.format(
         start_button_width,
@@ -934,13 +972,15 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
     QLabel#status_info {{ max-width: {3}; min-width: {2}; background-color: {0}; min-height: {5}; max-height: {5} }}
     QLabel#status_quota {{ max-width: {3}; min-width: {3}; background-color: {0}; min-height: {5}; max-height: {5} }}
     QLabel#setting {{ max-width: {4}; min-width: {4}; background-color: {0}; min-height: {5}; max-height: {5} }}
+    QLabel#setting_large {{ max-width: {6}; min-width: {6}; background-color: {0}; min-height: {5}; max-height: {5} }}
     """.format(
         'transparent',
         status_name_width,
         status_info_width,
         status_quota_width,
         setting_widget_width,
-        widget_height
+        widget_height,
+        setting_widget_width_large,
         )
 
     edit_style = """
@@ -949,6 +989,9 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
     QLineEdit:disabled {{ background-color: {6} }}
     QLineEdit#setting:enabled {{
         max-width: {1}; min-width: {1}; background-color: {0}; min-height: {7}; max-height: {7}
+        }}
+    QLineEdit#setting_large:enabled {{
+        max-width: {8}; min-width: {8}; background-color: {0}; min-height: {7}; max-height: {7}
         }}
     QLineEdit#noti_edit:enabled {{
         max-width: {2}; min-width: {2}; background-color: {5}; min-height: {7}; max-height: {7}
@@ -965,9 +1008,10 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
         notification_edit_width,
         frame_label_width,
         frame_entry_width,
-        'rgba(102,205,170)',
+        '#5d995d',
         'rgba(150,150,150)',
-        widget_height
+        widget_height,
+        setting_widget_width_large,
         )
 
     check_style = """
@@ -984,7 +1028,7 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
     QComboBox:disabled {{ background-color: {2} }}
     QComboBox#noti_edit:enabled {{ max-width: {1}; min-width: {1}; background-color: {0} }}
     """.format(
-        'rgba(102,205,170,20)',
+        '#5d995d',
         notification_edit_width,
         'rgba(150,150,150,200)',
         widget_height,
@@ -1039,8 +1083,6 @@ def get_style(typ):
         color = 'red'
     elif typ == 'unchanged':
         color = 'black'
-    elif typ == 'pass':
-        color = 'green'
     elif typ == 'changed':
         color = 'purple'
     elif typ == 'True':

@@ -116,7 +116,7 @@ class ProcessThread(QThread):
         except KeyError:
             self.user = None
 
-        self.queue_com['status'].put(['Starting', name, 'yellow'])
+        self.queue_com['status'].put(['Starting', name, '#fff266'])
 
     def run(self):
         """
@@ -140,7 +140,7 @@ class ProcessThread(QThread):
                     self.queue_com['status'].put([
                         'Finished',
                         self.name,
-                        'black'
+                        '#d9d9d9'
                         ])
                     QThread.sleep(10)
                 continue
@@ -152,7 +152,7 @@ class ProcessThread(QThread):
                     self.queue_com['status'].put([
                         'Skipped {0}'.format(self.queue.qsize()),
                         self.name,
-                        'black'
+                        '#d9d9d9'
                         ])
                     QThread.sleep(10)
                 continue
@@ -164,7 +164,7 @@ class ProcessThread(QThread):
                     self.queue_com['status'].put([
                         'Later {0}'.format(self.queue.qsize()),
                         self.name,
-                        'black'
+                        '#d9d9d9'
                         ])
                     QThread.sleep(10)
                 continue
@@ -177,7 +177,7 @@ class ProcessThread(QThread):
                 self.queue_com['status'].put([
                     'Quota Error {0}'.format(self.queue.qsize()),
                     self.name,
-                    'red'
+                    '#ff5c33'
                     ])
                 QThread.sleep(10)
                 continue
@@ -188,7 +188,7 @@ class ProcessThread(QThread):
                 self.queue_com['status'].put([
                     'Connection Error {0}'.format(self.queue.qsize()),
                     self.name,
-                    'red'
+                    '#ff5c33'
                     ])
                 QThread.sleep(10)
                 continue
@@ -199,7 +199,7 @@ class ProcessThread(QThread):
                 self.queue_com['status'].put([
                     'No space Error {0}'.format(self.queue.qsize()),
                     self.name,
-                    'red'
+                    '#ff5c33'
                     ])
                 QThread.sleep(10)
                 continue
@@ -210,7 +210,7 @@ class ProcessThread(QThread):
                     self.queue_com['status'].put([
                         'Unknown Error {0:.1f}min'.format(time_diff / 60),
                         self.name,
-                        'red'
+                        '#ff5c33'
                         ])
                 else:
                     self.queue_com['status'].put([
@@ -220,7 +220,7 @@ class ProcessThread(QThread):
                             time_diff / 60
                             ),
                         self.name,
-                        'red'
+                        '#ff5c33'
                         ])
                 i = 0
                 while i < 6:
@@ -245,7 +245,7 @@ class ProcessThread(QThread):
             self.is_running = False
 
         # Print, if stopped
-        self.queue_com['status'].put(['STOPPED', self.name, 'red'])
+        self.queue_com['status'].put(['STOPPED', self.name, '#ff5c33'])
         print(self.name, ': Stopped')
 
     def check_full(self):
@@ -356,7 +356,7 @@ class ProcessThread(QThread):
                         time_diff / 60
                         ),
                     self.name,
-                    'red'
+                    '#ff5c33'
                     ])
                 if self.typ == 'Motion' or \
                         self.typ == 'CTF' or \
@@ -549,7 +549,7 @@ class ProcessThread(QThread):
                         self.shared_dict_typ['file_number']
                         ),
                     self.name,
-                    'orange'
+                    '#ffc14d'
                     ])
                 QThread.sleep(5)
                 return None

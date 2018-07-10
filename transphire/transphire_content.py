@@ -260,6 +260,7 @@ def default_font():
         ['Frame button', '8', float, '', 'PLAIN'],
         ['Frame label', '8', float, '', 'PLAIN'],
         ['Setting widget', '22', float, '', 'PLAIN'],
+        ['Setting widget large', '44', float, '', 'PLAIN'],
         ['Status name', '12', float, '', 'PLAIN'],
         ['Status info', '12', float, '', 'PLAIN'],
         ['Status quota', '12', float, '', 'PLAIN'],
