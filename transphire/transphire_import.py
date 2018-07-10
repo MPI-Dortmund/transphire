@@ -752,6 +752,9 @@ def import_cryolo_v1_0_3(name, directory_name):
             jpg_data = imageio.imread(jpg_name)
         except:
             jpg_data = None
-        data[-i]['object'] = jpg_data
+        try:
+            data[-i]['object'] = jpg_data
+        except:
+            continue
     data_original = None
     return data, data_original

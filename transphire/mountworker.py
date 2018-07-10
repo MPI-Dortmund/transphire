@@ -201,7 +201,7 @@ class MountWorker(QObject):
                 continue
             else:
                 entry = line.split('\t')
-                self.sig_success.emit(entry[0], key, 'green')
+                self.sig_success.emit(entry[0], key, 'lightgreen')
         self.refresh_quota()
 
     @pyqtSlot()
@@ -234,7 +234,7 @@ class MountWorker(QObject):
 
                 # Only refresh quota after some time
                 if self.refresh_count[key] == 0:
-                    self.sig_quota.emit('Calculating...', key, 'green')
+                    self.sig_quota.emit('Calculating...', key, 'lightgreen')
                     self.refresh_count[key] += 1
                     if ssh_address:
                         self.sig_calculate_ssh_quota.emit(
@@ -298,8 +298,8 @@ class MountWorker(QObject):
         total_quota = shutil.disk_usage(directory).total / 1e12
         used_quota = shutil.disk_usage(directory).used / 1e12
         free_quota = shutil.disk_usage(directory).free / 1e12
-        self.sig_quota.emit('{0:.1f}TB / {1:.1f}TB'.format(used_quota, total_quota), name, 'green')
-        self.sig_success.emit('Connected', name, 'green')
+        self.sig_quota.emit('{0:.1f}TB / {1:.1f}TB'.format(used_quota, total_quota), name, 'lightgreen')
+        self.sig_success.emit('Connected', name, 'lightgreen')
 
         # Decide if there is a quota warning
         limit = total_quota * (100 - quota_limit) / 100
@@ -631,7 +631,7 @@ class MountWorker(QObject):
         Return:
         None
         """
-        self.sig_success.emit(text, device, 'green')
+        self.sig_success.emit(text, device, 'lightgreen')
         with open(self.save_files[device], 'w') as write:
             write.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}'.format(
                 user,

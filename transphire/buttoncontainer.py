@@ -97,6 +97,7 @@ class ButtonContainer(QWidget):
         self.default_settings.clicked.connect(self._modify_settings)
         self.default_settings.setObjectName('button')
         layout.addWidget(self.default_settings)
+        layout.addStretch(1)
 
         # Check quota button
         self.check_quota = QPushButton('Check quota', self)
@@ -120,7 +121,6 @@ class ButtonContainer(QWidget):
         layout.addWidget(self.stop_button)
 
         # Final stretch
-        layout.addStretch(1)
 
     @pyqtSlot()
     def _modify_settings(self):
@@ -188,15 +188,15 @@ class ButtonContainer(QWidget):
         Return:
         None
         """
-        if self.start_button.text() == 'Start':
+        if self.sender().text() == 'Start':
             self.sig_start.emit()
-        elif self.start_button.text() == 'Stop':
+        elif self.sender().text() == 'Stop':
             self.sig_stop.emit()
         else:
             print(
                 'Button text not known!',
                 'Stopping now, but please contact the TranSPHIRE Authors',
-                self.start_button.text()
+                self.sender().text()
                 )
             self.sig_stop.emit()
 

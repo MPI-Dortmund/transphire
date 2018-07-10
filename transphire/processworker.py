@@ -531,7 +531,7 @@ class ProcessWorker(QObject):
                     shared_dict['typ'][typ]['file_number']
                     ),
                 name,
-                'black'
+                'white'
                 )
 
         self.sig_finished.emit()

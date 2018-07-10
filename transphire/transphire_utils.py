@@ -848,6 +848,7 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
     QFileDialog {{
         background-color: {2}
         }}
+    QScrollArea {{ background-color: transparent }}
 
     """.format(
         'lightgrey',

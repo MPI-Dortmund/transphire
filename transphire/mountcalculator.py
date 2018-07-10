@@ -108,7 +108,7 @@ class MountCalculator(QObject):
                 self.sig_finished.emit(
                     '{0:.1f}TB / {1:.1f}TB'.format(used_quota, total_quota),
                     key,
-                    'green'
+                    'lightgreen'
                     )
         self.running = False
 
@@ -158,7 +158,7 @@ class MountCalculator(QObject):
         self.sig_finished.emit(
             '{0:.1f}TB / {1:.1f}TB'.format(used_quota, total_quota),
             device,
-            'green'
+            'lightgreen'
             )
         self.running = False
 
@@ -208,7 +208,7 @@ class MountCalculator(QObject):
             self.sig_finished.emit(
                 '{0:.1f}TB / {1:.1f}TB'.format(used_quota, total_quota),
                 key,
-                'green'
+                'lightgreen'
                 )
         self.running = False
 

@@ -507,6 +507,7 @@ class NotificationContainer(QWidget):
             if use_all:
                 self.content[key].setEnabled(var)
                 self.button_email.setEnabled(var)
+                self.button_telegram.setEnabled(var)
                 self.button_test.setEnabled(var)
             else:
                 pass

@@ -402,7 +402,7 @@ class ProcessThread(QThread):
         """
         folder_names = directory.split('/')
         # Return, if the process is not running.
-        if folder_names[-1] == 'False':
+        if folder_names[-1] == 'False' or folder_names[-1] == 'Later':
             return False
         else:
             pass
@@ -447,7 +447,7 @@ class ProcessThread(QThread):
             self.queue_com['status'].put([
                 'Copy Metadata',
                 self.name,
-                'green'
+                'lightgreen'
                 ])
             try:
                 self.run_software_meta(directory=folder)
@@ -484,7 +484,7 @@ class ProcessThread(QThread):
         self.queue_com['status'].put([
             'Running {0:.1f}min'.format(time_diff / 60),
             self.name,
-            'green'
+            'lightgreen'
             ])
         try:
             self.run_find()
@@ -569,7 +569,7 @@ class ProcessThread(QThread):
                     self.shared_dict_typ['file_number']
                     ),
                 self.name,
-                'green'
+                'lightgreen'
                 ])
             root_name = self.remove_from_queue()
             QThread.sleep(1)
