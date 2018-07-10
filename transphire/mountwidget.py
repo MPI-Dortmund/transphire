@@ -17,11 +17,12 @@
 """
 import os
 try:
-    from PyQt4.QtGui import QWidget, QHBoxLayout, QPushButton, QInputDialog, QLineEdit, QLabel
+    from PyQt4.QtGui import QWidget, QHBoxLayout, QPushButton, QLabel
     from PyQt4.QtCore import pyqtSlot
 except ImportError:
-    from PyQt5.QtWidgets import QWidget, QHBoxLayout, QPushButton, QInputDialog, QLineEdit, QLabel
+    from PyQt5.QtWidgets import QWidget, QHBoxLayout, QPushButton, QLabel
     from PyQt5.QtCore import pyqtSlot
+from transphire.inputbox import InputBox
 from transphire.passworddialog import PasswordDialog
 from transphire import transphire_utils as tu
 from transphire.separator import Separator
@@ -253,15 +254,14 @@ class MountWidget(QWidget):
         Return:
         HDD text
         """
-        text, result = QInputDialog().getText(
-            self,
+        dialog = InputBox(is_password=False, parent=self)
+        dialog.setText(
             'Specify hdd',
-            'choose hdd to unmount,\n"all" will unmount all mounted hdd\'s',
-            QLineEdit.Normal,
-            'all'
+            'choose hdd to unmount,\n"all" will unmount all mounted hdd\'s'
             )
-        if result:
-            text = text.lower()
+        dialog.exec_()
+        if dialog.result():
+            text = dialog.getText().lower()
             if text.startswith('hdd_'):
                 return text
             elif text.startswith('hdd '):

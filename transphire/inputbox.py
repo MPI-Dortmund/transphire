@@ -65,7 +65,9 @@ class InputBox(QDialog):
 
         button_box = QDialogButtonBox(self)
         accept_button = QPushButton('Ok')
+        accept_button.setObjectName('start')
         reject_button = QPushButton('Cancel')
+        reject_button.setObjectName('stop')
 
         button_box.addButton(accept_button, QDialogButtonBox.AcceptRole)
         button_box.addButton(reject_button, QDialogButtonBox.RejectRole)

@@ -73,7 +73,9 @@ class PasswordDialog(QDialog):
 
         # Buttons
         button_accept = QPushButton('OK', self)
+        button_accept.setObjectName('start')
         button_reject = QPushButton('Cancel', self)
+        button_reject.setObjectName('stop')
         layout_button = QHBoxLayout()
         layout_button.setContentsMargins(0, 0, 0, 0)
         layout_button.addWidget(button_accept)

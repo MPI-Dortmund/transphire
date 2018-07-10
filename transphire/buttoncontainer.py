@@ -16,10 +16,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 try:
-    from PyQt4.QtGui import QHBoxLayout, QWidget, QPushButton, QApplication, QVBoxLayout
+    from PyQt4.QtGui import QHBoxLayout, QWidget, QPushButton, QApplication
     from PyQt4.QtCore import pyqtSlot, pyqtSignal
 except ImportError:
-    from PyQt5.QtWidgets import QHBoxLayout, QWidget, QPushButton, QApplication, QVBoxLayout
+    from PyQt5.QtWidgets import QHBoxLayout, QWidget, QPushButton, QApplication
     from PyQt5.QtCore import pyqtSlot, pyqtSignal
 from transphire.loadwindow import DefaultSettings
 from transphire import transphire_utils as tu

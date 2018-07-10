@@ -17,10 +17,8 @@
 """
 try:
     from PyQt4.QtGui import QDialog, QVBoxLayout, QLabel, QPushButton, QDialogButtonBox, QWidget
-    from PyQt4.Qt import Qt
 except ImportError:
     from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QDialogButtonBox, QWidget
-    from PyQt5.Qt import Qt
 
 
 class MessageBox(QDialog):
@@ -66,7 +64,9 @@ class MessageBox(QDialog):
         button_box = QDialogButtonBox(self)
         if is_question:
             accept_button = QPushButton('Yes')
+            accept_button.setObjectName('start')
             reject_button = QPushButton('No')
+            reject_button.setObjectName('stop')
 
             button_box.addButton(accept_button, QDialogButtonBox.AcceptRole)
             button_box.addButton(reject_button, QDialogButtonBox.RejectRole)
@@ -76,6 +76,7 @@ class MessageBox(QDialog):
 
         else:
             accept_button = QPushButton('Ok')
+            accept_button.setObjectName('start')
 
             button_box.addButton(accept_button, QDialogButtonBox.AcceptRole)
 

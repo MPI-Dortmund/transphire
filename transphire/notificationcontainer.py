@@ -90,37 +90,39 @@ class NotificationContainer(QWidget):
         max_per_col = 3
 
         # Add to layout
+        layout_default_telegram = QHBoxLayout()
+        layout.addLayout(layout_default_telegram)
         if noti_content['Default names telegram']:
             for idx, entry in enumerate(noti_content['Default names telegram'].split(';')):
-                if idx % max_per_col == 0:
-                    if idx != 0:
-                        layout_default_T.addStretch(1)
-                    layout_default_T = QHBoxLayout()
-                    layout.addLayout(layout_default_T)
+                if idx % max_per_col == 0 and idx != 0:
+                    layout_default_telegram.addStretch(1)
+                    layout_default_telegram = QHBoxLayout()
+                    layout.addLayout(layout_default_telegram)
                 name, default = entry.split(':')
                 name = 'T {0}'.format(name)
                 widget = NotificationWidget(name=name, default=name, parent=self)
-                layout_default_T.addWidget(widget)
+                layout_default_telegram.addWidget(widget)
                 self.content[name] = widget
             if noti_content['Default names telegram'].split(';'):
-                layout_default_T.addStretch(1)
+                layout_default_telegram.addStretch(1)
         else:
             pass
 
+        layout_default_email = QHBoxLayout()
+        layout.addLayout(layout_default_email)
         if noti_content['Default names email']:
             for idx, entry in enumerate(noti_content['Default names email'].split(';')):
-                if idx % max_per_col == 0:
-                    if idx != 0:
-                        layout_default_E.addStretch(1)
-                    layout_default_E = QHBoxLayout()
-                    layout.addLayout(layout_default_E)
+                if idx % max_per_col == 0 and idx != 0:
+                    layout_default_email.addStretch(1)
+                    layout_default_email = QHBoxLayout()
+                    layout.addLayout(layout_default_email)
                 name, default = entry.split(':')
                 name = '@ {0}'.format(name)
                 widget = NotificationWidget(name=name, default=name, parent=self)
-                layout_default_E.addWidget(widget)
+                layout_default_email.addWidget(widget)
                 self.content[name] = widget
             if noti_content['Default names email'].split(';'):
-                layout_default_E.addStretch(1)
+                layout_default_email.addStretch(1)
         else:
             pass
 
@@ -129,12 +131,11 @@ class NotificationContainer(QWidget):
             exception_list.append(key)
 
         # Chooseable users
-        layout_user = QHBoxLayout()
-        layout.addLayout(layout_user)
+        layout_default_user = QHBoxLayout()
+        layout.addLayout(layout_default_user)
         for idx in range(int(noti_content['Number of users'])):
-            if idx % max_per_col == 0:
-                if idx != 0:
-                    layout_default_user.addStretch(1)
+            if idx % max_per_col == 0 and idx != 0:
+                layout_default_user.addStretch(1)
                 layout_default_user = QHBoxLayout()
                 layout.addLayout(layout_default_user)
             name = 'User {0}'.format(idx)
@@ -142,10 +143,10 @@ class NotificationContainer(QWidget):
             widget = NotificationWidget(name=name, default=default, parent=self)
             for entry in exception_list:
                 widget.add_exceptions(name=entry)
-            layout_user.addWidget(widget)
+            layout_default_user.addWidget(widget)
             self.content[name] = widget
         if int(noti_content['Number of users']) != 0:
-            layout_user.addStretch(1)
+            layout_default_user.addStretch(1)
 
         # Test button
         layout_button = QHBoxLayout()

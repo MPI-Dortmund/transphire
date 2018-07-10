@@ -16,9 +16,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 try:
-    from PyQt4.QtGui import QWidget, QVBoxLayout, QHBoxLayout, QLabel
+    from PyQt4.QtGui import QWidget, QVBoxLayout
 except ImportError:
-    from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel
+    from PyQt5.QtWidgets import QWidget, QVBoxLayout
 from transphire.mountwidget import MountWidget
 
 

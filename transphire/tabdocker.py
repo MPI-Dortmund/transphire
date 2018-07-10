@@ -16,12 +16,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 try:
-    from PyQt4.QtGui import QWidget, QVBoxLayout, QTabWidget, QLabel, QScrollArea
+    from PyQt4.QtGui import QWidget, QVBoxLayout, QTabWidget
 except ImportError:
-    from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QLabel, QScrollArea
-    from PyQt5.Qt import QPalette, QColor, QBrush
-
-from transphire.plotcontainer import PlotContainer
+    from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTabWidget
 
 
 class TabDocker(QWidget):

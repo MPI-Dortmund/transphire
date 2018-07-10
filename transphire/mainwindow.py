@@ -27,7 +27,6 @@ try:
         QVBoxLayout,
         QWidget,
         QFileDialog,
-        QInputDialog,
         )
     from PyQt4.QtCore import QThread, pyqtSlot, QCoreApplication, QTimer
 except ImportError:
@@ -38,7 +37,6 @@ except ImportError:
         QVBoxLayout,
         QWidget,
         QFileDialog,
-        QInputDialog,
         )
     from PyQt5.QtCore import QThread, pyqtSlot, QCoreApplication, QTimer
 
@@ -121,7 +119,7 @@ class MainWindow(QMainWindow):
                     QCoreApplication.instance().quit()
                     sys.exit()
                 else:
-                    self.password = dialog.edit.text()
+                    self.password = dialog.getText()
                     child = pe.spawnu('sudo -S -k ls')
                     child.sendline(self.password)
                     try:

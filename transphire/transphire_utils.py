@@ -919,7 +919,9 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
             stop:0 white,
             stop:1 green
             );
-        min-width: {0}; max-width: {0}
+        min-width: {0};
+        max-width: {0};
+        max-height: {5}
         }}
     QPushButton#stop {{
         background-color: qradialgradient(
@@ -931,7 +933,9 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
             stop:0 white,
             stop:1 red
             );
-        min-width: {0}; max-width: {0}
+        min-width: {0};
+        max-width: {0};
+        max-height: {5}
         }}
     QPushButton#button {{ min-width: {0}; max-width: {0} }}
     QPushButton#frame {{
