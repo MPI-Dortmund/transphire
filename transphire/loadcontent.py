@@ -121,7 +121,7 @@ class LoadContent(QWidget):
         self.layout.addLayout(layout_h)
         layout_v = None
         for idx, entry in enumerate(items):
-            if idx % 10 == 0:
+            if idx % 11 == 0:
                 if layout_v is not None:
                     layout_v.addStretch(1)
                 else:

@@ -103,12 +103,12 @@ class DefaultSettings(QDialog):
 
         # Add buttons
         done_button = QPushButton('Quit dialog and start TranSPHIRE.', self)
-        layout.addWidget(Separator(typ='horizontal', color='blue'))
+        layout.addWidget(Separator(typ='horizontal', color='#68a3c3'))
         layout.addWidget(done_button)
         done_button.clicked.connect(lambda: self.check_modified_widgets(done=True))
         if apply:
             done_button.setText('Quit dialog without applying changes.')
-            layout.addWidget(Separator(typ='horizontal', color='blue'))
+            layout.addWidget(Separator(typ='horizontal', color='#68a3c3'))
             apply_button = QPushButton('Quit dialog and apply changes.', self)
             apply_button.clicked.connect(lambda: self.check_modified_widgets(done=False))
             layout.addWidget(apply_button)

@@ -721,7 +721,7 @@ def look_and_feel_small(app, font=None):
     QLineEdit {{ background-color: white }}
     QComboBox {{ background-color: white }}
     QPushButton {{
-        background-color: qradialgradient(cx:0.5, cy:0.5, fx:0.5, fy:0.5, radius:1, stop:0 white, stop:1 #ff5c33);
+        background-color: qradialgradient(cx:0.5, cy:0.5, fx:0.5, fy:0.5, radius:1, stop:0 white, stop:1 #f9eeb4);
         border-width: 1px;
         border-style:inset;
         padding: 1px;
@@ -757,33 +757,50 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
     Return:
     Style sheet
     """
+    idx = 0
     if font is not None:
         font = float(font)
     else:
-        font = float(default[0][0]['Font'][0])
+        font = float(default[0][idx]['Font'][0])
+    idx += 1
     if adjust_width is not None:
         adjust_width = float(adjust_width)
     else:
-        adjust_width = float(default[0][1]['Width adjustment'][0])
+        adjust_width = float(default[0][idx]['Width adjustment'][0])
+    idx += 1
     if adjust_height is not None:
         adjust_height = float(adjust_height)
     else:
-        adjust_height = float(default[0][2]['Height adjustment'][0])
+        adjust_height = float(default[0][idx]['Height adjustment'][0])
 
-    start_button_width = float(default[0][3]['Start button'][0])
-    notification_edit_width = float(default[0][4]['Notification edit'][0])
-    notification_check_width = float(default[0][5]['Notification check'][0])
-    notification_button_width = float(default[0][6]['Notification button'][0])
-    mount_button_width = float(default[0][7]['Mount button'][0])
-    frame_entry_width = float(default[0][8]['Frame entry'][0])
-    frame_button_width = float(default[0][9]['Frame button'][0])
-    frame_label_width = float(default[0][10]['Frame label'][0])
-    setting_widget_width = float(default[0][11]['Setting widget'][0])
-    setting_widget_width_large = float(default[0][12]['Setting widget large'][0])
-    status_name_width = float(default[0][13]['Status name'][0])
-    status_info_width = float(default[0][14]['Status info'][0])
-    status_quota_width = float(default[0][15]['Status quota'][0])
-    widget_height = float(default[0][16]['Widget height'][0])
+    idx += 1
+    start_button_width = float(default[0][idx]['Start button'][0])
+    idx += 1
+    notification_edit_width = float(default[0][idx]['Notification edit'][0])
+    idx += 1
+    notification_check_width = float(default[0][idx]['Notification check'][0])
+    idx += 1
+    notification_button_width = float(default[0][idx]['Notification button'][0])
+    idx += 1
+    mount_button_width = float(default[0][idx]['Mount button'][0])
+    idx += 1
+    frame_entry_width = float(default[0][idx]['Frame entry'][0])
+    idx += 1
+    frame_button_width = float(default[0][idx]['Frame button'][0])
+    idx += 1
+    frame_label_width = float(default[0][idx]['Frame label'][0])
+    idx += 1
+    setting_widget_width = float(default[0][idx]['Setting widget'][0])
+    idx += 1
+    setting_widget_width_large = float(default[0][idx]['Setting widget large'][0])
+    idx += 1
+    status_name_width = float(default[0][idx]['Status name'][0])
+    idx += 1
+    status_info_width = float(default[0][idx]['Status info'][0])
+    idx += 1
+    status_quota_width = float(default[0][idx]['Status quota'][0])
+    idx += 1
+    widget_height = float(default[0][idx]['Widget height'][0])
 
     font_type = QFont('Verdana', font, 63)
     font_type.setStyleStrategy(QFont.PreferAntialias)
