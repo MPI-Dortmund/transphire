@@ -196,10 +196,13 @@ class LoadContentContainer(QWidget):
                 for key in widget:
                     widget[key][1].pop('dtype')
 
-        with open(self.file, 'w') as file_w:
-            json.dump(settings, file_w)
-
-        tu.message('{0} saved!'.format(self.name))
+        try:
+            with open(self.file, 'w') as file_w:
+                json.dump(settings, file_w)
+        except PermissionError:
+            tu.message('{0} - Permission denied!\nYou are not allowed to change TranSHPIRE wide settings!\nPlease contact your system administrator'.format(self.file))
+        else:
+            tu.message('{0} saved!'.format(self.name))
 
     def get_settings_tab(self):
         """
