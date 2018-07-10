@@ -683,7 +683,9 @@ def look_and_feel_small(app, font=None):
         font = 15.0
     else:
         font = float(font)
-    app.setFont(QFont('Helvetica', font, 63))
+    font_type = QFont('Verdana', font, 63)
+    font_type.setStyleStrategy(QFont.PreferAntialias)
+    app.setFont(font_type)
     style_widgets = """
     QWidget#central_raw {{
         background-image: url("{1}");
@@ -782,7 +784,9 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
     status_quota_width = float(default[0][14]['Status quota'][0])
     widget_height = float(default[0][15]['Widget height'][0])
 
-    app.setFont(QFont('Helvetica', font, 63))
+    font_type = QFont('Verdana', font, 63)
+    font_type.setStyleStrategy(QFont.PreferAntialias)
+    app.setFont(font_type)
     start_button_width = '{0}px'.format(font * start_button_width * adjust_width)
     notification_edit_width = '{0}px'.format(font * notification_edit_width * adjust_width)
     notification_check_width = '{0}px'.format(font * notification_check_width * adjust_width)
