@@ -171,7 +171,7 @@ def create_cryolo_v1_0_3_command(
     command.append('{0}'.format(file_input))
     command.append('-o')
     command.append('{0}'.format(file_output))
-    command.append('--write_empty=1')
+    command.append('--write_empty')
 
     if settings[picking_name]['Split Gpu?'] == 'True':
         try:
