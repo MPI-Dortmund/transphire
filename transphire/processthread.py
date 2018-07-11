@@ -116,7 +116,7 @@ class ProcessThread(QThread):
         except KeyError:
             self.user = None
 
-        self.queue_com['status'].put(['Starting', name, '#fff266'])
+        self.queue_com['status'].put(['Starting', [], name, '#fff266'])
 
     def run(self):
         """
@@ -139,6 +139,7 @@ class ProcessThread(QThread):
                 while not self.stop:
                     self.queue_com['status'].put([
                         'Finished',
+                        [],
                         self.name,
                         '#d9d9d9'
                         ])
@@ -150,7 +151,8 @@ class ProcessThread(QThread):
             if not self.run_this_thread:
                 while not self.stop:
                     self.queue_com['status'].put([
-                        'Skipped {0}'.format(self.queue.qsize()),
+                        'Skipped',
+                        [self.queue.qsize()],
                         self.name,
                         '#d9d9d9'
                         ])
@@ -162,7 +164,8 @@ class ProcessThread(QThread):
             if self.later:
                 while not self.stop:
                     self.queue_com['status'].put([
-                        'Later {0}'.format(self.queue.qsize()),
+                        'Later',
+                        [self.queue.qsize()],
                         self.name,
                         '#d9d9d9'
                         ])
@@ -175,7 +178,8 @@ class ProcessThread(QThread):
                 pass
             else:
                 self.queue_com['status'].put([
-                    'Quota Error {0}'.format(self.queue.qsize()),
+                    'Quota Error',
+                    [self.queue.qsize()],
                     self.name,
                     '#ff5c33'
                     ])
@@ -186,7 +190,8 @@ class ProcessThread(QThread):
                 pass
             else:
                 self.queue_com['status'].put([
-                    'Connection Error {0}'.format(self.queue.qsize()),
+                    'Connection Error',
+                    [self.queue.qsize()],
                     self.name,
                     '#ff5c33'
                     ])
@@ -197,7 +202,8 @@ class ProcessThread(QThread):
                 pass
             else:
                 self.queue_com['status'].put([
-                    'No space Error {0}'.format(self.queue.qsize()),
+                    'No space Error',
+                    [self.queue.qsize()],
                     self.name,
                     '#ff5c33'
                     ])
@@ -208,17 +214,19 @@ class ProcessThread(QThread):
                 time_diff = time.time() - self.time_last
                 if self.typ == 'Find':
                     self.queue_com['status'].put([
-                        'Unknown Error {0:.1f}min'.format(time_diff / 60),
+                        'Unknown Error',
+                        [time_diff / 60],
                         self.name,
                         '#ff5c33'
                         ])
                 else:
                     self.queue_com['status'].put([
-                        'Unknown Error {0} {1} {2:.1f}min'.format(
+                        'Unknown Error',
+                        [
                             self.queue.qsize(),
                             self.shared_dict_typ['file_number'],
                             time_diff / 60
-                            ),
+                            ],
                         self.name,
                         '#ff5c33'
                         ])
@@ -245,7 +253,7 @@ class ProcessThread(QThread):
             self.is_running = False
 
         # Print, if stopped
-        self.queue_com['status'].put(['STOPPED', self.name, '#ff5c33'])
+        self.queue_com['status'].put(['STOPPED', [self.queue.qsize()], self.name, '#ff5c33'])
         print(self.name, ': Stopped')
 
     def check_full(self):
@@ -351,10 +359,8 @@ class ProcessThread(QThread):
                     output_folder = self.settings[folder]
 
                 self.queue_com['status'].put([
-                    '{0}: Lost connection {1:.1f}min'.format(
-                        self.typ,
-                        time_diff / 60
-                        ),
+                    'Lost connection',
+                    [time_diff / 60],
                     self.name,
                     '#ff5c33'
                     ])
@@ -446,6 +452,7 @@ class ProcessThread(QThread):
         if folder:
             self.queue_com['status'].put([
                 'Copy Metadata',
+                [],
                 self.name,
                 'lightgreen'
                 ])
@@ -482,7 +489,8 @@ class ProcessThread(QThread):
         time_diff = time.time() - self.time_last
 
         self.queue_com['status'].put([
-            'Running {0:.1f}min'.format(time_diff / 60),
+            'Running',
+            [time_diff / 60],
             self.name,
             'lightgreen'
             ])
@@ -544,10 +552,11 @@ class ProcessThread(QThread):
         try:
             if self.queue.empty():
                 self.queue_com['status'].put([
-                    'Waiting {0} {1}'.format(
+                    'Waiting',
+                    [
                         self.queue.qsize(),
                         self.shared_dict_typ['file_number']
-                        ),
+                        ],
                     self.name,
                     '#ffc14d'
                     ])
@@ -564,10 +573,11 @@ class ProcessThread(QThread):
         self.queue_lock.lock()
         try:
             self.queue_com['status'].put([
-                'Running {0} {1}'.format(
+                'Running',
+                [
                     self.queue.qsize(),
                     self.shared_dict_typ['file_number']
-                    ),
+                    ],
                 self.name,
                 'lightgreen'
                 ])

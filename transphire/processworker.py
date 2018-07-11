@@ -50,7 +50,7 @@ class ProcessWorker(QObject):
     sig_start = pyqtSignal(object)
     sig_finished = pyqtSignal()
     sig_error = pyqtSignal(str)
-    sig_status = pyqtSignal(str, str, str)
+    sig_status = pyqtSignal(str, object, str, str)
     sig_notification = pyqtSignal(str)
     sig_plot_ctf = pyqtSignal(str, object, object)
     sig_plot_motion = pyqtSignal(str, object, object)
@@ -504,10 +504,8 @@ class ProcessWorker(QObject):
             typ = settings_content[idx_values]['name']
             size = shared_dict['queue'][typ].qsize()
             self.sig_status.emit(
-                'Stopping {0} {1}'.format(
-                    size,
-                    shared_dict['typ'][typ]['file_number']
-                    ),
+                'Stopping',
+                [size, shared_dict['typ'][typ]['file_number']],
                 key,
                 'red'
                 )
@@ -526,10 +524,8 @@ class ProcessWorker(QObject):
             self.check_queue(queue_com=queue_com)
             size = shared_dict['queue'][typ].qsize()
             self.sig_status.emit(
-                'Not running {0} {1}'.format(
-                    size,
-                    shared_dict['typ'][typ]['file_number']
-                    ),
+                'Not running',
+                [size, shared_dict['typ'][typ]['file_number']],
                 name,
                 'white'
                 )
@@ -598,8 +594,8 @@ class ProcessWorker(QObject):
         for key in queue_com:
             while not queue_com[key].empty():
                 if key == 'status':
-                    status, device, color = queue_com['status'].get()
-                    self.sig_status.emit(status, device, color)
+                    status, numbers, device, color = queue_com['status'].get()
+                    self.sig_status.emit(status, numbers, device, color)
                 elif key == 'notification':
                     notification = queue_com['notification'].get()
                     self.sig_notification.emit(notification)

@@ -227,8 +227,8 @@ class StatusContainer(QWidget):
         """
         tu.message(text)
 
-    @pyqtSlot(str, str, str)
-    def _process_success(self, text, device, color):
+    @pyqtSlot(str, object, str, str)
+    def _process_success(self, text, numbers, device, color):
         """
         Success in a process
 
@@ -240,9 +240,11 @@ class StatusContainer(QWidget):
         Returns:
         None
         """
-        name, *status = text.split()
-        self.content[device].sig_change_info_name.emit(name, color)
-        self.content[device].sig_change_info_quota.emit(' | '.join(status), color)
+        text = text.split()
+        numbers = ['{0:.0f}'.format(entry) for entry in numbers]
+
+        self.content[device].sig_change_info_name.emit(' '.join(text), color)
+        self.content[device].sig_change_info_quota.emit(' | '.join(numbers), color)
         self.sig_refresh_quota.emit()
 
     @pyqtSlot(str)

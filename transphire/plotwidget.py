@@ -181,7 +181,7 @@ class PlotWidget(QWidget):
             if self.plot_typ == 'values':
                 x_label = 'Micrograph ID'
                 y_label = label
-                ax1.plot(x_values, y_values, '.#68a3c3')
+                ax1.plot(x_values, y_values, '.', color='#68a3c3')
             elif self.plot_typ == 'histogram':
                 x_label = label
                 y_label = 'Nr. of micrographs'
