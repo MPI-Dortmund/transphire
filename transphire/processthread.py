@@ -215,7 +215,7 @@ class ProcessThread(QThread):
                 if self.typ == 'Find':
                     self.queue_com['status'].put([
                         'Unknown Error',
-                        [time_diff / 60],
+                        ['{0:.1f} min'.format(time_diff / 60)],
                         self.name,
                         '#ff5c33'
                         ])
@@ -225,7 +225,7 @@ class ProcessThread(QThread):
                         [
                             self.queue.qsize(),
                             self.shared_dict_typ['file_number'],
-                            time_diff / 60
+                            '{0:.1f} min'.format(time_diff / 60)
                             ],
                         self.name,
                         '#ff5c33'
@@ -253,7 +253,7 @@ class ProcessThread(QThread):
             self.is_running = False
 
         # Print, if stopped
-        self.queue_com['status'].put(['STOPPED', [self.queue.qsize()], self.name, '#ff5c33'])
+        self.queue_com['status'].put(['STOPPED', [], self.name, '#ff5c33'])
         print(self.name, ': Stopped')
 
     def check_full(self):
@@ -360,7 +360,7 @@ class ProcessThread(QThread):
 
                 self.queue_com['status'].put([
                     'Lost connection',
-                    [time_diff / 60],
+                    ['{0:.1f} min'.format(time_diff / 60)],
                     self.name,
                     '#ff5c33'
                     ])
@@ -490,7 +490,7 @@ class ProcessThread(QThread):
 
         self.queue_com['status'].put([
             'Running',
-            [time_diff / 60],
+            ['{0:.1f} min'.format(time_diff / 60)],
             self.name,
             'lightgreen'
             ])

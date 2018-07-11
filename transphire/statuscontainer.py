@@ -241,10 +241,16 @@ class StatusContainer(QWidget):
         None
         """
         text = text.split()
-        numbers = ['{0:.0f}'.format(entry) for entry in numbers]
+        quota_list = []
+        for entry in numbers:
+            try:
+                entry = '{0:.0f}'.format(entry)
+            except:
+                entry = entry
+            quota_list.append(entry)
 
         self.content[device].sig_change_info_name.emit(' '.join(text), color)
-        self.content[device].sig_change_info_quota.emit(' | '.join(numbers), color)
+        self.content[device].sig_change_info_quota.emit(' | '.join(quota_list), color)
         self.sig_refresh_quota.emit()
 
     @pyqtSlot(str)
