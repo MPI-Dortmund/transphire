@@ -524,10 +524,10 @@ def to_star_file(data, ctf_name, ctf_settings, project_folder, ctf_folder, sum_f
             if name == 'file_name':
                 value = sum_file.replace(project_folder, '')
 
-            elif name == 'defocus':
-                value = (1 * row['defocus_diff'] + 2 * row['defocus']) / 2
-            elif name == 'defocus_diff':
-                value = 2 * row['defocus'] - export_data[idx]['defocus']
+            elif name == 'defocus [A]':
+                value = (1 * row['defocus_diff [A]'] + 2 * row['defocus [A]']) / 2
+            elif name == 'defocus_diff [A]':
+                value = 2 * row['defocus [A]'] - export_data[idx]['defocus [A]']
             else:
                 value = row[name]
             export_data[idx][name] = value
@@ -609,7 +609,7 @@ def to_partres_file(data, ctf_name, ctf_settings, project_folder, ctf_folder, su
                 value = row[name] 
             except ValueError:
                 # Is not a CTER partres name
-                assert name != 'phase_shift'
+                assert name != 'phase_shift [deg]'
                 assert name != 'file_name'
                 if name in constant_settings:
                     value = get_constant_value(name, ctf_settings, row, project_folder, ctf_name, ctf_folder)
@@ -619,23 +619,23 @@ def to_partres_file(data, ctf_name, ctf_settings, project_folder, ctf_folder, su
                         pass
                 elif name == 'reserved_spot':
                     value = row['cross_corr']
-                elif name == 'defocus':
+                elif name == 'defocus [A]':
                     value = (row['defocus_1'] + row['defocus_2']) / 20000
                 elif name == 'astigmatism_amplitude':
                     value = np.abs(row['defocus_1'] - row['defocus_2']) / 10000
                 elif name == 'astigmatism_angle':
-                    value = 45 - row['astigmatism']
+                    value = 45 - row['astigmatism angle [deg]']
                 elif name == 'limit_defocus_and_astigmatism':
-                    if row['limit'] == 0:
+                    if row['limit [A]'] == 0:
                         value = -1
                     else:
-                        value = 1 / row['limit']
+                        value = 1 / row['limit [A]']
                 elif name == 'limit_pixel_error':
                     value = 1 / (get_constant_value('apix', ctf_settings, row, project_folder, ctf_name, ctf_folder) * 2)
                 elif name == 'amplitude_contrast':
                     contrast = get_constant_value('const_amplitude_contrast', ctf_settings, row, project_folder, ctf_name, ctf_folder) * 100
                     contrast = contrast_to_shift(contrast)
-                    phase_shift = row['phase_shift']
+                    phase_shift = row['phase_shift [deg]']
                     value = shift_to_contrast(contrast + phase_shift)
                 else:
                     value = 0

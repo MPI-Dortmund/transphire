@@ -152,27 +152,27 @@ def update_ctffind_4_v4_1_8(data, settings, label):
     Return:
     x values, y values, label, title
     """
-    if label == 'defocus':
+    if label == 'defocus [A]':
         x_values = get_mic_number(data['file_name'], settings)
-        y_values = data['defocus']/10000
+        y_values = data['defocus [A]']/10000
         label = 'Defocus / mum'
         title = 'Mean defocus'
 
-    elif label == 'defocus_diff':
+    elif label == 'defocus_diff [A]':
         x_values = get_mic_number(data['file_name'], settings)
-        y_values = data['defocus_diff'] / 10000
+        y_values = data['defocus_diff [A]'] / 10000
         label = 'Defocus diff / mum'
         title = 'Defocus diff'
 
-    elif label == 'astigmatism':
+    elif label == 'astigmatism angle [deg]':
         x_values = get_mic_number(data['file_name'], settings)
-        y_values = data['astigmatism']
+        y_values = data['astigmatism angle [deg]']
         label = 'Angle / degree'
         title = 'Azimuth of astigmatism'
 
-    elif label == 'phase_shift':
+    elif label == 'phase_shift [deg]':
         x_values = get_mic_number(data['file_name'], settings)
-        y_values = data['phase_shift']
+        y_values = data['phase_shift [deg]']
         label = 'Phase shift / degree'
         title = 'Additional phase shift'
 
@@ -182,9 +182,9 @@ def update_ctffind_4_v4_1_8(data, settings, label):
         label = 'Cross correlation'
         title = 'Cross correlation'
 
-    elif label == 'limit':
+    elif label == 'limit [A]':
         x_values = get_mic_number(data['file_name'], settings)
-        y_values = data['limit']
+        y_values = data['limit [A]']
         y_values[y_values == np.inf] = 0
         label = 'Resolution limit / A'
         title = 'Resolution limit'
@@ -207,28 +207,28 @@ def update_motion_cor_2_v1_0_0(data, settings, label):
     Return:
     x values, y values, label, title
     """
-    if label == 'overall drift':
+    if label == 'overall drift [px]':
         x_values = get_mic_number(data['file_name'], settings)
-        y_values = data['overall drift']
-        label = 'Drift / A'
+        y_values = data['overall drift [px]']
+        label = 'Drift / px'
         title = 'Overall drift'
 
-    elif label == 'average drift per frame':
+    elif label == 'average drift per frame [px]':
         x_values = get_mic_number(data['file_name'], settings)
-        y_values = data['average drift per frame']
-        label = 'Drift / A'
+        y_values = data['average drift per frame [px]']
+        label = 'Drift / px'
         title = 'Average drift per frame'
 
-    elif label == 'first frame drift':
+    elif label == 'first frame drift [px]':
         x_values = get_mic_number(data['file_name'], settings)
-        y_values = data['first frame drift']
-        label = 'Drift / A'
+        y_values = data['first frame drift [px]']
+        label = 'Drift / px'
         title = 'First frame drift'
 
-    elif label == 'average drift per frame without first':
+    elif label == 'average drift per frame without first [px]':
         x_values = get_mic_number(data['file_name'], settings)
-        y_values = data['average drift per frame without first']
-        label = 'Drift / A'
+        y_values = data['average drift per frame without first [px]']
+        label = 'Drift / px'
         title = 'Average drift per frame without first'
 
     else:

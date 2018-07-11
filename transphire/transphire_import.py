@@ -70,66 +70,66 @@ def get_dtype_dict():
     dtype = {}
     dtype['ctf'] = [
         ('mic_number', '<f8'),
-        ('defocus', '<f8'),
-        ('defocus_diff', '<f8'),
-        ('astigmatism', '<f8'),
-        ('phase_shift', '<f8'),
+        ('defocus [A]', '<f8'),
+        ('defocus_diff [A]', '<f8'),
+        ('astigmatism angle [deg]', '<f8'),
+        ('phase_shift [deg]', '<f8'),
         ('cross_corr', '<f8'),
-        ('limit', '<f8'),
+        ('limit [A]', '<f8'),
         ('file_name', '|U200')
         ]
     dtype['Gctf v1.06'] = [
         ('defocus_1', '<f8'),
         ('defocus_2', '<f8'),
-        ('astigmatism', '<f8'),
-        ('phase_shift', '<f8'),
+        ('astigmatism angle [deg]', '<f8'),
+        ('phase_shift [deg]', '<f8'),
         ('cross_corr', '<f8'),
-        ('limit', '<f8'),
+        ('limit [A]', '<f8'),
         ('file_name', '|U200')
         ]
     dtype['Gctf v1.18'] = [
         ('defocus_1', '<f8'),
         ('defocus_2', '<f8'),
-        ('astigmatism', '<f8'),
-        ('phase_shift', '<f8'),
+        ('astigmatism angle [deg]', '<f8'),
+        ('phase_shift [deg]', '<f8'),
         ('cross_corr', '<f8'),
-        ('limit', '<f8'),
+        ('limit [A]', '<f8'),
         ('file_name', '|U200')
         ]
     dtype['CTER v1.0'] = [
         ('defocus_1', '<f8'),
         ('defocus_2', '<f8'),
-        ('astigmatism', '<f8'),
-        ('phase_shift', '<f8'),
+        ('astigmatism angle [deg]', '<f8'),
+        ('phase_shift [deg]', '<f8'),
         ('cross_corr', '<f8'),
-        ('limit', '<f8'),
+        ('limit [A]', '<f8'),
         ('file_name', '|U200')
         ]
     dtype['CTFFIND4 v4.1.10'] = [
         ('mic_number', '<f8'),
         ('defocus_1', '<f8'),
         ('defocus_2', '<f8'),
-        ('astigmatism', '<f8'),
-        ('phase_shift', '<f8'),
+        ('astigmatism angle [deg]', '<f8'),
+        ('phase_shift [deg]', '<f8'),
         ('cross_corr', '<f8'),
-        ('limit', '<f8'),
+        ('limit [A]', '<f8'),
         ('file_name', '|U200')
         ]
     dtype['CTFFIND4 v4.1.8'] = [
         ('mic_number', '<f8'),
         ('defocus_1', '<f8'),
         ('defocus_2', '<f8'),
-        ('astigmatism', '<f8'),
-        ('phase_shift', '<f8'),
+        ('astigmatism angle [deg]', '<f8'),
+        ('phase_shift [deg]', '<f8'),
         ('cross_corr', '<f8'),
-        ('limit', '<f8'),
+        ('limit [A]', '<f8'),
         ('file_name', '|U200')
         ]
     dtype['motion'] = [
-        ('overall drift', '<f8'),
-        ('average drift per frame', '<f8'),
-        ('first frame drift', '<f8'),
-        ('average drift per frame without first', '<f8'),
+        ('overall drift [px]', '<f8'),
+        ('average drift per frame [px]', '<f8'),
+        ('first frame drift [px]', '<f8'),
+        ('average drift per frame without first [px]', '<f8'),
         ('file_name', '|U200')
         ]
     dtype['crYOLO v1.0.3'] = [
@@ -162,12 +162,12 @@ def get_transphire_dict():
     transphire_dict = {
         'defocus_1': '_rlnDefocusU',
         'defocus_2': '_rlnDefocusV',
-        'defocus': '_rlnDefocusU',
-        'defocus_diff': '_rlnDefocusV',
-        'astigmatism': '_rlnDefocusAngle',
-        'phase_shift': '_rlnPhaseShift',
+        'defocus [A]': '_rlnDefocusU',
+        'defocus_diff [A]': '_rlnDefocusV',
+        'astigmatism angle [deg]': '_rlnDefocusAngle',
+        'phase_shift [deg]': '_rlnPhaseShift',
         'cross_corr': '_rlnCtfFigureOfMerit',
-        'limit': '_rlnCtfMaxResolution',
+        'limit [A]': '_rlnCtfMaxResolution',
         'file_name': '_rlnMicrographName',
         }
     return transphire_dict
@@ -187,10 +187,10 @@ def get_relion_dict():
     relion_dict = {
         '_rlnDefocusU': 'defocus_1',
         '_rlnDefocusV': 'defocus_2',
-        '_rlnDefocusAngle': 'astigmatism',
-        '_rlnPhaseShift': 'phase_shift',
+        '_rlnDefocusAngle': 'astigmatism angle [deg]',
+        '_rlnPhaseShift': 'phase_shift [deg]',
         '_rlnCtfFigureOfMerit': 'cross_corr',
-        '_rlnCtfMaxResolution': 'limit',
+        '_rlnCtfMaxResolution': 'limit [A]',
         '_rlnMicrographName': 'file_name',
         }
     return relion_dict
@@ -208,7 +208,7 @@ def get_dtype_import_dict():
     """
     dtype_import = {}
     dtype_import['CTER v1.0'] = [
-        ('defocus', '<f8'),
+        ('defocus [A]', '<f8'),
         ('cs', '<f8'),
         ('volt', '<f8'),
         ('apix', '<f8'),
@@ -228,42 +228,42 @@ def get_dtype_import_dict():
         ('limit_maximum', '<f8'),
         ('reserved_spot', '<f8'),
         ('const_amplitude_contrast', '<f8'),
-        ('phase_shift', '<f8'),
+        ('phase_shift [deg]', '<f8'),
         ('file_name', '|U200'),
         ]
     dtype_import['Gctf v1.06'] = [
         ('defocus_1', '<f8'),
         ('defocus_2', '<f8'),
-        ('astigmatism', '<f8'),
-        ('phase_shift', '<f8'),
+        ('astigmatism angle [deg]', '<f8'),
+        ('phase_shift [deg]', '<f8'),
         ('cross_corr', '<f8'),
-        ('limit', '<f8')
+        ('limit [A]', '<f8')
         ]
     dtype_import['Gctf v1.18'] = [
         ('defocus_1', '<f8'),
         ('defocus_2', '<f8'),
-        ('astigmatism', '<f8'),
-        ('phase_shift', '<f8'),
+        ('astigmatism angle [deg]', '<f8'),
+        ('phase_shift [deg]', '<f8'),
         ('cross_corr', '<f8'),
-        ('limit', '<f8')
+        ('limit [A]', '<f8')
         ]
     dtype_import['CTFFIND4 v4.1.10'] = [
         ('mic_number', '<f8'),
         ('defocus_1', '<f8'),
         ('defocus_2', '<f8'),
-        ('astigmatism', '<f8'),
-        ('phase_shift', '<f8'),
+        ('astigmatism angle [deg]', '<f8'),
+        ('phase_shift [deg]', '<f8'),
         ('cross_corr', '<f8'),
-        ('limit', '<f8')
+        ('limit [A]', '<f8')
         ]
     dtype_import['CTFFIND4 v4.1.8'] = [
         ('mic_number', '<f8'),
         ('defocus_1', '<f8'),
         ('defocus_2', '<f8'),
-        ('astigmatism', '<f8'),
-        ('phase_shift', '<f8'),
+        ('astigmatism angle [deg]', '<f8'),
+        ('phase_shift [deg]', '<f8'),
         ('cross_corr', '<f8'),
-        ('limit', '<f8')
+        ('limit [A]', '<f8')
         ]
     dtype_import['MotionCor2 v1.0.0'] = [
         ('frame_number', '<f8'),
@@ -376,18 +376,18 @@ def import_ctffind_v4_1_8(name, directory_name):
             data_original[idx]['file_name'] = input_name
 
         for entry in data_name.dtype.names:
-            if entry == 'phase_shift':
+            if entry == 'phase_shift [deg]':
                 data_original[idx][entry] = np.degrees(data_name[entry])
             else:
                 data_original[idx][entry] = data_name[entry]
 
             if entry == 'defocus_1':
-                data[idx]['defocus'] = (data_name['defocus_1']+data_name['defocus_2'])/2
+                data[idx]['defocus [A]'] = (data_name['defocus_1']+data_name['defocus_2'])/2
             elif entry == 'defocus_2':
-                data[idx]['defocus_diff'] = np.abs(
+                data[idx]['defocus_diff [A]'] = np.abs(
                     data_name['defocus_1']-data_name['defocus_2']
                     )
-            elif entry == 'phase_shift':
+            elif entry == 'phase_shift [deg]':
                 data[idx][entry] = np.degrees(data_name[entry])
             else:
                 data[idx][entry] = data_name[entry]
@@ -489,14 +489,14 @@ def import_gctf_v1_06(name, directory_name):
 
             if transphire_name == 'defocus_1':
                 try:
-                    data[idx]['defocus'] = (
+                    data[idx]['defocus [A]'] = (
                         data_name['_rlnDefocusU']+data_name['_rlnDefocusV']
                         ) / 2
                 except ValueError:
                     data[idx][transphire_name] = 0
             elif transphire_name == 'defocus_2':
                 try:
-                    data[idx]['defocus_diff'] = np.abs(
+                    data[idx]['defocus_diff [A]'] = np.abs(
                         data_name['_rlnDefocusU']-data_name['_rlnDefocusV']
                         )
                 except ValueError:
@@ -564,14 +564,14 @@ def import_cter_v1_0(name, directory_name):
             )
         for entry in data_name.dtype.names:
             data_original[idx][entry] = data_name[entry]
-            if entry == 'defocus':
+            if entry == 'defocus [A]':
                 data[idx][entry] = data_name[entry] * 10000
             elif entry == 'astigmatism_amplitude':
-                data[idx]['defocus_diff'] = data_name[entry] * 10000
+                data[idx]['defocus_diff [A]'] = data_name[entry] * 10000
             elif entry == 'astigmatism_angle':
-                data[idx]['astigmatism'] = 45 - data_name[entry]
-            elif entry == 'phase_shift':
-                data[idx]['phase_shift'] = data_name[entry]
+                data[idx]['astigmatism angle [deg]'] = 45 - data_name[entry]
+            elif entry == 'phase_shift [deg]':
+                data[idx]['phase_shift [deg]'] = data_name[entry]
             elif entry == 'file_name':
                 data[idx]['file_name'] = data_name[entry]
             elif entry == 'standard_deviation_defocus':
@@ -582,7 +582,7 @@ def import_cter_v1_0(name, directory_name):
                 else:
                     value = data_name[entry]
 
-                data[idx]['limit'] = 1 / value
+                data[idx]['limit [A]'] = 1 / value
             else:
                 continue
 
@@ -645,13 +645,13 @@ def import_motion_cor_2_v1_0_0(name, directory_name):
             for i in range(0, int(data_name['frame_number'][-1]-1))
             ])
         for entry in data.dtype.names:
-            if entry == 'overall drift':
+            if entry == 'overall drift [px]':
                 data[idx][entry] = np.sum(np.sqrt(shift_x**2 + shift_y**2))
-            elif entry == 'average drift per frame':
+            elif entry == 'average drift per frame [px]':
                 data[idx][entry] = np.sum(np.sqrt(shift_x**2 + shift_y**2))/len(shift_x)
-            elif entry == 'first frame drift':
+            elif entry == 'first frame drift [px]':
                 data[idx][entry] = np.sqrt(shift_x[0]**2 + shift_y[0]**2)
-            elif entry == 'average drift per frame without first':
+            elif entry == 'average drift per frame without first [px]':
                 data[idx][entry] = np.sum(np.sqrt(shift_x[1:]**2 + shift_y[1:]**2))/len(shift_x)
             else:
                 pass

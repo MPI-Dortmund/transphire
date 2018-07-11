@@ -507,7 +507,7 @@ class ProcessWorker(QObject):
                 'Stopping',
                 [size, shared_dict['typ'][typ]['file_number']],
                 key,
-                'red'
+                '#ff5c33'
                 )
 
         # Send the stop signals to all threads
@@ -517,9 +517,11 @@ class ProcessWorker(QObject):
         # Wait for all threads to finish
         for thread, name, setting in thread_list:
             typ = setting['name']
+            print('Waiting for', name, 'to finish!')
             while thread.is_running:
                 QThread.msleep(1000)
             thread.quit()
+            print('Waiting for', name, 'thread to quit!')
             thread.wait()
             self.check_queue(queue_com=queue_com)
             size = shared_dict['queue'][typ].qsize()

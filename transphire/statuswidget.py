@@ -58,9 +58,8 @@ class StatusWidget(QWidget):
         layout = QHBoxLayout(self)
         layout.addWidget(name)
         layout.addWidget(self.info_name)
-        layout.addWidget(self.info_quota)
+        layout.addWidget(self.info_quota, stretch=1)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.addStretch(1)
 
         # events
         self.sig_change_info_name.connect(self.change_info_name)
