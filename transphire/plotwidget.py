@@ -189,7 +189,7 @@ class PlotWidget(QWidget):
                     ax1.hist(y_values, 1)
                     ax1.set_xlim([np.max(y_values)-1, np.min(y_values)+1])
                 else:
-                    ax1.hist(y_values, 100, '#68a3c3')
+                    ax1.hist(y_values, 100, color='#68a3c3')
             else:
                 print('Plotwidget - ', self.plot_typ, ' is not known!!!')
                 return None
