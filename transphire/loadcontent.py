@@ -244,7 +244,7 @@ class LoadContent(QWidget):
 
             if value:
                 if tu.check_instance(value=value, typ=dtype):
-                    pass
+                    widget.setStyleSheet(tu.get_style(typ='unchanged'))
                 else:
                     widget.setStyleSheet(tu.get_style(typ='error'))
                     message = '{0}: {1} needs to be {2}'.format(
