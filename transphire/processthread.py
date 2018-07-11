@@ -2678,6 +2678,7 @@ class ProcessThread(QThread):
                 stop_time = time.time()
                 out.write('\nTime: {0} sec'.format(stop_time - start_time)) 
 
+        QThread.msleep(1000)
         if gpu_list:
             if block_gpu:
                 for entry in gpu_list:
