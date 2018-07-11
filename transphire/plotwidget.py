@@ -151,6 +151,7 @@ class PlotWidget(QWidget):
         ax1.plot([4, 4.15, 4.35, 4.5, 4.5, 4.35, 4.15, 4, 4], [0.3, 0, 0, 0.3, 0.6, 1, 1, 0.6, 0.3], '#68a3c3')
 
 
+    @pyqtSlot(str, object, str, object)
     def update_figure(self, name, data, directory_name, settings):
         """
         Update the figure with data plot.
@@ -227,6 +228,19 @@ class PlotWidget(QWidget):
             self.idx = max(0, self.combo_box.findText(current_text))
             self.combo_box.setCurrentIndex(self.idx)
             self.combo_box.blockSignals(False)
+
+            if self.idx <= 0 and self.idx >= self.data.shape[0]:
+                self.prev_button.setEnabled(False)
+                self.next_button.setEnabled(False)
+            elif self.idx <= 0:
+                self.next_button.setEnabled(False)
+                self.prev_button.setEnabled(True)
+            elif self.idx >= self.data.shape[0]:
+                self.next_button.setEnabled(True)
+                self.prev_button.setEnabled(False)
+            else:
+                self.next_button.setEnabled(True)
+                self.prev_button.setEnabled(True)
 
             if str(current_text) == self.default_value:
                 self.show_image()

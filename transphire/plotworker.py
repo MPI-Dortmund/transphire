@@ -70,7 +70,7 @@ class PlotWorker(QObject):
     @pyqtSlot()
     def calculate_array(self):
         """
-        Calculate ctf array.
+        Calculate array.
 
         Returns:
         None
