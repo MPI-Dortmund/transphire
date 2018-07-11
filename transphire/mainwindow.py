@@ -373,18 +373,16 @@ class MainWindow(QMainWindow):
 
         self.timer_ctf = QTimer(self)
         self.timer_ctf.setInterval(20000)
-        self.timer_ctf.timeout.connect(self.plot_worker_ctf.calculate_array)
+        self.timer_ctf.timeout.connect(self.plot_worker_ctf.sig_calculate.emit)
         self.timer_ctf.start()
 
         self.timer_motion = QTimer(self)
         self.timer_motion.setInterval(20000)
-        self.timer_motion.timeout.connect(self.plot_worker_motion.calculate_array)
-        QTimer.singleShot(5000, lambda: self.timer_motion.start())
+        self.timer_motion.timeout.connect(self.plot_worker_motion.sig_calculate.emit)
 
         self.timer_picking = QTimer(self)
         self.timer_picking.setInterval(20000)
-        self.timer_picking.timeout.connect(self.plot_worker_picking.calculate_array)
-        QTimer.singleShot(10000, lambda: self.timer_picking.start())
+        self.timer_picking.timeout.connect(self.plot_worker_picking.sig_calculate.emit)
 
         self.mount_thread_list = {}
         for key in self.content['Mount'].content:
