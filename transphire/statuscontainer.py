@@ -16,10 +16,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 try:
-    from PyQt4.QtGui import QHBoxLayout, QVBoxLayout, QWidget, QLabel
+    from PyQt4.QtGui import QHBoxLayout, QVBoxLayout, QWidget, QLabel, QImage
     from PyQt4.QtCore import pyqtSlot, pyqtSignal
 except ImportError:
     from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QWidget, QLabel
+    from PyQt5.QtGui import QImage
     from PyQt5.QtCore import pyqtSlot, pyqtSignal
 from transphire.statuswidget import StatusWidget
 from transphire.separator import Separator
@@ -38,7 +39,7 @@ class StatusContainer(QWidget):
     """
     sig_refresh_quota = pyqtSignal()
 
-    def __init__(self, content, content_mount, content_pipeline, mount_worker, process_worker, parent=None, **kwargs):
+    def __init__(self, content, content_mount, content_pipeline, mount_worker, process_worker, content_font, parent=None, **kwargs):
         """
         Layout for the status container.
 
@@ -138,16 +139,30 @@ class StatusContainer(QWidget):
                         layout_v1.addWidget(self.content[name])
 
         # Add picture
-        pic_label = QLabel(self)
-        pic_label.setObjectName('picture')
-        pic_label.setStyleSheet('border-image: url("{0}")'.format(image))
-        pic_label.setMinimumSize(100, 100)
+        if image:
+            qimage = QImage('{0}'.format(image))
+            image_height = float(content_font[0][0]['Font'][0]) * 150 / 10
+            try:
+                image_width = image_height * qimage.width() / qimage.height()
+            except ZeroDivisionError:
+                tu.message('Chosen picture: "{0}" - No longer available!'.format(image))
+            else:
+                pic_label = QLabel(self)
+                pic_label.setObjectName('picture')
+                pic_label.setStyleSheet('border-image: url("{0}")'.format(image))
+                pic_label.setMaximumHeight(image_height)
+                pic_label.setMinimumHeight(image_height)
+                pic_label.setMaximumWidth(image_width)
+                pic_label.setMinimumWidth(image_width)
 
-        small_layout = QHBoxLayout()
-        small_layout.addStretch(1)
-        small_layout.addWidget(pic_label)
-        layout_v1.addStretch(1)
-        layout_v1.addLayout(small_layout)
+                layout_image = QHBoxLayout()
+                layout_image.addStretch(1)
+                layout_image.addWidget(pic_label)
+
+                layout_v1.addStretch(1)
+                layout_v1.addLayout(layout_image)
+        else:
+            layout_v1.addStretch(1)
 
         # Reset quota warning
         mount_worker.quota_warning = True
@@ -225,7 +240,9 @@ class StatusContainer(QWidget):
         Returns:
         None
         """
-        self.content[device].sig_change_info_name.emit(text, color)
+        name, *status = text.split()
+        self.content[device].sig_change_info_name.emit(name, color)
+        self.content[device].sig_change_info_quota.emit(' | '.join(status), color)
         self.sig_refresh_quota.emit()
 
     @pyqtSlot(str)

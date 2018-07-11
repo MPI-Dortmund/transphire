@@ -16,6 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import os
 from transphire import transphire_utils as tu
 from transphire import transphire_import as ti
 
@@ -248,14 +249,14 @@ def default_font():
     Content items as list
     """
     items = [
-        ['Font', '15', float, '', 'PLAIN'],
+        ['Font', '8', float, '', 'PLAIN'],
         ['Width adjustment', '1', float, '', 'PLAIN'],
         ['Height adjustment', '1', float, '', 'PLAIN'],
-        ['Start button', '10', float, '', 'PLAIN'],
+        ['Start button', '14', float, '', 'PLAIN'],
         ['Notification edit', '16', float, '', 'PLAIN'],
-        ['Notification check', '8', float, '', 'PLAIN'],
-        ['Notification button', '25', float, '', 'PLAIN'],
-        ['Mount button', '16', float, '', 'PLAIN'],
+        ['Notification check', '10', float, '', 'PLAIN'],
+        ['Notification button', '26', float, '', 'PLAIN'],
+        ['Mount button', '18', float, '', 'PLAIN'],
         ['Frame entry', '5', float, '', 'PLAIN'],
         ['Frame button', '8', float, '', 'PLAIN'],
         ['Frame label', '8', float, '', 'PLAIN'],
@@ -279,8 +280,9 @@ def default_others():
     Return:
     Content items as list
     """
+    file_name = os.path.join(os.path.dirname(__file__), 'images', 'Transphire.png')
     items = [
-        ['Image', '', str, '', 'FILE'],
+        ['Image', file_name, str, '', 'FILE'],
         ['Project name pattern', '', str, '', 'PLAIN'],
         ['Project name pattern example', '', str, '', 'PLAIN'],
         ]

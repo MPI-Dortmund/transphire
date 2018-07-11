@@ -226,6 +226,7 @@ class LoadContent(QWidget):
             settings = copy.deepcopy(entry['settings'])
             dtype = settings['dtype']
             key = settings['name']
+            default_value = settings['values']
             if isinstance(widget, QComboBox):
                 value = widget.currentText()
             elif isinstance(widget, QLineEdit):
@@ -256,7 +257,11 @@ class LoadContent(QWidget):
                     tu.message(message)
                     error_occured = True
             else:
-                pass
+                if default_value:
+                    widget.setStyleSheet(tu.get_style(typ='unchanged'))
+                    print('WARNING: {0} is empty!'.format(key))
+                else:
+                    pass
 
             if key == 'Typ' and not widget.isEnabled():
                 value = 'Copy_hdd'

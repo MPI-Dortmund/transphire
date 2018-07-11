@@ -549,6 +549,7 @@ def get_content_gui(content):
             'content': content['Others'],
             'content_mount': content['Mount'],
             'content_pipeline': content['Pipeline'],
+            'content_font': content['Font'],
             'layout': 'h1',
             },
         {
