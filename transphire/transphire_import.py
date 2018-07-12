@@ -749,7 +749,7 @@ def import_cryolo_v1_0_3(name, directory_name):
     data.sort(order='file_name')
     for i in range(1, 10):
         try:
-            jpg_data = imageio.imread(jpg_name)
+            jpg_data = imageio.imread(data[-i]['image'])
         except:
             jpg_data = None
         try:
