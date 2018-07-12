@@ -40,8 +40,8 @@ def get_picking_command(file_input, new_name, settings, queue_com, name):
     command = None
     block_gpu = None
     gpu_list = None
-    if picking_name == 'crYOLO v1.0.3':
-        command, gpu = create_cryolo_v1_0_3_command(
+    if picking_name == 'crYOLO v1.0.4':
+        command, gpu = create_cryolo_v1_0_4_command(
             picking_name=picking_name,
             file_input=file_input,
             file_output=new_name,
@@ -86,7 +86,7 @@ def find_logfiles(root_path, file_name, settings, queue_com, name):
     log_files = None
     copied_log_files = None
     picking_root_path = os.path.join(settings['picking_folder'], file_name)
-    if settings['Copy']['Picking'] == 'crYOLO v1.0.3':
+    if settings['Copy']['Picking'] == 'crYOLO v1.0.4':
         copied_log_files = ['{0}.box'.format(picking_root_path)]
         log_files = copied_log_files
 
@@ -149,10 +149,10 @@ def create_filter_command(
     return ' '.join(command), file_output_tmp, check_files, block_gpu, gpu_list
 
 
-def create_cryolo_v1_0_3_command(
+def create_cryolo_v1_0_4_command(
         picking_name, file_input, file_output, settings, name
         ):
-    """Create the crYOLO v1.0.3 command"""
+    """Create the crYOLO v1.0.4 command"""
 
     command = []
     # Start the program

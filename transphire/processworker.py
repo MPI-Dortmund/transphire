@@ -551,7 +551,7 @@ class ProcessWorker(QObject):
         check_files.append(self.settings['Copy']['Picking'])
         check_files.append('IMOD header')
 
-        if self.settings['Copy']['Picking'] == 'crYOLO v1.0.3':
+        if self.settings['Copy']['Picking'] == 'crYOLO v1.0.4':
             if self.settings[self.settings['Copy']['Picking']]['Filter micrographs'] == 'True':
                 check_files.append('e2proc2d.py')
             else:

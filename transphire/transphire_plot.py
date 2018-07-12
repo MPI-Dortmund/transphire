@@ -278,9 +278,9 @@ def update_motion_cor_2_v1_0_5(data, settings, label):
     return x_values, y_values, label, title
 
 
-def update_cryolo_v1_0_3(data, settings, label):
+def update_cryolo_v1_0_4(data, settings, label):
     """
-    Update the plot for crYOLO v1.0.3.
+    Update the plot for crYOLO v1.0.4.
 
     Arguments:
     data - Data to plot
