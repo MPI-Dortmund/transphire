@@ -869,6 +869,7 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
         background-color: {2}
         }}
     QScrollArea {{ background-color: transparent }}
+    QDockWidget {{ background-color: rgb(229, 229, 229) }}
 
     """.format(
         'lightgrey',
