@@ -210,25 +210,25 @@ def update_motion_cor_2_v1_0_0(data, settings, label):
     if label == 'overall drift':
         x_values = get_mic_number(data['file_name'], settings)
         y_values = data['overall drift']
-        label = 'Drift / A'
+        label = 'Drift / px'
         title = 'Overall drift'
 
     elif label == 'average drift per frame':
         x_values = get_mic_number(data['file_name'], settings)
         y_values = data['average drift per frame']
-        label = 'Drift / A'
+        label = 'Drift / px'
         title = 'Average drift per frame'
 
     elif label == 'first frame drift':
         x_values = get_mic_number(data['file_name'], settings)
         y_values = data['first frame drift']
-        label = 'Drift / A'
+        label = 'Drift / px'
         title = 'First frame drift'
 
     elif label == 'average drift per frame without first':
         x_values = get_mic_number(data['file_name'], settings)
         y_values = data['average drift per frame without first']
-        label = 'Drift / A'
+        label = 'Drift / px'
         title = 'Average drift per frame without first'
 
     else:
