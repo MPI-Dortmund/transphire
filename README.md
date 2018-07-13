@@ -1,4 +1,4 @@
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1290514.svg)](https://doi.org/10.5281/zenodo.1290514)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1311778.svg)](https://doi.org/10.5281/zenodo.1311778)
 
 # Transphire
 
@@ -17,6 +17,7 @@ SumMovie 1.0.2: http://grigoriefflab.janelia.org/unblur
 CTER 1.0: http://sphire.mpg.de  
 CTFFIND 4.1.8/4.1.10: http://grigoriefflab.janelia.org/ctf  
 Gctf 1.06,1.18: https://www.mrc-lmb.cam.ac.uk/kzhang  
+crYOLO 1.0.4: http://sphire.mpg.de  
 
 ## Installation
 
@@ -33,6 +34,9 @@ Create a new virtual environment
 Activate the environment
 
 > source activate transphire
+or
+> conda activate transhire
+Depending on your installation of anaconda.
 
 Install transphire
 
