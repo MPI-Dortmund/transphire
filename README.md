@@ -34,8 +34,11 @@ Create a new virtual environment
 Activate the environment
 
 > source activate transphire
+
 or
-> conda activate transhire
+
+> conda activate transphire
+
 Depending on your installation of anaconda.
 
 Install transphire
