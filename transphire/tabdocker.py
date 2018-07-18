@@ -102,6 +102,18 @@ class TabDocker(QWidget):
         """
         return self.tab_widget.setMovable(status)
 
+    def tabText(self, idx):
+        """
+        Return the text of the tab at idx
+
+        Arguments:
+        idx - Index of the tab
+
+        Returns:
+        Text of the tab at position isx
+        """
+        return self.tab_widget.tabText(idx)
+
     def setTabText(self, idx, text):
         """
         Set the text for the tab at idx
@@ -114,3 +126,27 @@ class TabDocker(QWidget):
         None
         """
         return self.tab_widget.setTabText(idx, text)
+
+    def removeTab(self, idx):
+        """
+        Remove the widget located at tab idx
+
+        Arguments:
+        idx - Idx of the widget
+
+        Returns:
+        None
+        """
+        return self.tab_widget.removeTab(idx)
+
+    def indexOf(self, widget):
+        """
+        Get the index of the widget.
+
+        Arguments:
+        widget - Adress of the widget
+
+        Returns:
+        Index of the widget
+        """
+        return self.tab_widget.indexOf(widget)
