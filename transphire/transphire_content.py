@@ -308,12 +308,16 @@ def default_notification():
         ['Nr. of values used for median', '5', int, '', 'PLAIN'],
         ]
     dtype_dict = ti.get_dtype_dict()
-    for name in ['ctf', 'motion']:
+    skip_set = set([
+        'file_name',
+        'mic_number',
+        'image',
+        'object'
+        ])
+    for name in ['ctf', 'motion', 'picking']:
         for key in dtype_dict[name]:
             key = key[0]
-            if key == 'file_name':
-                continue
-            elif key == 'mic_number':
+            if key in skip_set:
                 continue
             else:
                 items.append(

@@ -869,7 +869,7 @@ def check_outputs(zero_list, non_zero_list, exists_list, folder, command):
 
 def check_for_outlier(dict_name, data, file_name, settings):
     dtype_dict = ti.get_dtype_dict()
-    lower_median = -int(settings['Notification']['Nr. of values used for median'])
+    lower_median = int(settings['Notification']['Nr. of values used for median'])
     warning_list = []
     skip_list = []
 
@@ -880,16 +880,13 @@ def check_for_outlier(dict_name, data, file_name, settings):
 
     for key in dtype_dict[dict_name]:
         key = key[0]
-        if key == 'file_name':
-            continue
-        elif key == 'mic_number':
-            continue
-        else:
-            pass
 
-        last_values_median = np.median(data[key][lower_median:])
-        warning_low, warning_high = settings['Notification']['{0} warning'.format(key)].split()
-        skip_low, skip_high = settings['Notification']['{0} skip'.format(key)].split()
+        try:
+            last_values_median = np.median(data[key][-lower_median:])
+            warning_low, warning_high = settings['Notification']['{0} warning'.format(key)].split()
+            skip_low, skip_high = settings['Notification']['{0} skip'.format(key)].split()
+        except Exception:
+            continue
 
         if float(warning_low) <= last_values_median and last_values_median <= float(warning_high):
             pass

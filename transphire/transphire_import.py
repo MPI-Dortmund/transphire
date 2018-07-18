@@ -691,7 +691,7 @@ def import_motion_cor_2_v1_1_0(name, directory_name):
     return data, data_original
 
 
-def import_cryolo_v1_0_4(name, directory_name):
+def import_cryolo_v1_0_4(name, directory_name, image=True):
     """
     Import picking information for crYOLO v1.0.4.
 
@@ -747,14 +747,17 @@ def import_cryolo_v1_0_4(name, directory_name):
         data[idx]['object'] = None
 
     data.sort(order='file_name')
-    for i in range(1, 10):
-        try:
-            jpg_data = imageio.imread(data[-i]['image'])
-        except:
-            jpg_data = None
-        try:
-            data[-i]['object'] = jpg_data
-        except:
-            continue
+    if image:
+        for i in range(1, 10):
+            try:
+                jpg_data = imageio.imread(data[-i]['image'])
+            except:
+                jpg_data = None
+            try:
+                data[-i]['object'] = jpg_data
+            except:
+                continue
+    else:
+        pass
     data_original = None
     return data, data_original

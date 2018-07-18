@@ -2335,29 +2335,76 @@ class ProcessThread(QThread):
             name=self.name
             )
 
-        # Add to queue
-        for aim in self.content_settings['aim']:
-            *compare, aim_name = aim.split(':')
-            var = True
-            for typ in compare:
-                name = typ.split('!')[-1]
-                if typ.startswith('!'):
-                    if self.settings['Copy'][name] == 'False':
-                        continue
-                    else:
-                        var = False
-                        break
-                else:
-                    if not self.settings['Copy'][name] == 'False':
-                        continue
-                    else:
-                        var = False
-                        break
-            if var:
-                for log_file in log_files:
-                    self.add_to_queue(aim=aim_name, root_name=log_file)
+        data, data_orig = tu.get_function_dict()[self.settings['Copy']['Picking']]['plot_data'](
+            self.settings['Copy']['Picking'],
+            self.settings['Picking_folder'][self.settings['Copy']['Picking']]
+            )
+
+        warnings, skip_list = tus.check_for_outlier(
+            dict_name='picking',
+            data=data,
+            file_name=file_name,
+            settings=self.settings
+            )
+
+        if skip_list:
+            self.remove_from_translate(os.path.basename(root_name))
+        else:
+            pass
+
+        for warning in skip_list:
+            message = 'The parameter {0} is {1} for file {2}, which is not in the range: {3} to {4} and will be skipped! If this is not the only message, you might consider changing microscope settings!'.format(
+                warning[0],
+                warning[1],
+                root_name,
+                warning[2],
+                warning[3]
+                )
+            self.queue_com['notification'].put(message)
+            self.write_error(msg=message, root_name=root_name)
+
+        for warning in warnings:
+            message = 'The median of the last {0} values for parameter {1} is {2}, which is not in the range: {3} to {4}! You might consider to adjust microscope settings!'.format(
+                self.settings['Notification']['Nr. of values used for median'],
+                warning[0],
+                warning[1],
+                warning[2],
+                warning[3]
+                )
+            if time.time() - self.time_last_error > 1800:
+                self.queue_com['error'].put(message)
+                self.time_last_error = time.time()
             else:
                 pass
+            self.queue_com['notification'].put(message)
+            self.write_error(msg=message, root_name=root_name)
+
+        if skip_list:
+            pass
+        else:
+            # Add to queue
+            for aim in self.content_settings['aim']:
+                *compare, aim_name = aim.split(':')
+                var = True
+                for typ in compare:
+                    name = typ.split('!')[-1]
+                    if typ.startswith('!'):
+                        if self.settings['Copy'][name] == 'False':
+                            continue
+                        else:
+                            var = False
+                            break
+                    else:
+                        if not self.settings['Copy'][name] == 'False':
+                            continue
+                        else:
+                            var = False
+                            break
+                if var:
+                    for log_file in log_files:
+                        self.add_to_queue(aim=aim_name, root_name=log_file)
+                else:
+                    pass
 
     def run_compress(self, root_name):
         """

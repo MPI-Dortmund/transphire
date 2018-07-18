@@ -212,20 +212,20 @@ def create_gctf_v1_06_command(
         pass
 
     ignore_list.append('Split Gpu?')
-    ignore_list.append('--gpu')
+    ignore_list.append('--gid')
     if settings[ctf_name]['Split Gpu?'] == 'True':
         try:
             gpu_id = int(name.split('_')[-1])-1
         except ValueError:
             gpu_id = 0
         try:
-            gpu = settings[ctf_name]['--gpu'].split()[gpu_id]
+            gpu = settings[ctf_name]['--gid'].split()[gpu_id]
         except IndexError:
             raise UserWarning('There are less gpus provided than threads available! Please restart with the same number of pipeline processors as GPUs provided and restart! Stopping this thread!')
     else:
-        gpu = settings[ctf_name]['--gpu']
+        gpu = settings[ctf_name]['--gid']
 
-    command.append('--gpu')
+    command.append('--gid')
     command.append('{0}'.format(gpu))
 
     command.append('--ctfstar')
