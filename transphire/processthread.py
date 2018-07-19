@@ -1280,12 +1280,6 @@ class ProcessThread(QThread):
             )
 
         log_files.extend([log_file, err_file])
-        for file_entry in all_files:
-            try:
-                os.remove(file_entry)
-            except IOError:
-                self.write_error(msg=tb.format_exc(), root_name=file_entry)
-                raise
 
         self.append_to_translate(
             root_name=root_name,
@@ -1329,6 +1323,16 @@ class ProcessThread(QThread):
                         self.add_to_queue(aim=aim_name, root_name=log_file)
             else:
                 pass
+
+        if self.settings['Copy']['Delete data after copy?'] == 'True':
+            for file_entry in all_files:
+                try:
+                    os.remove(file_entry)
+                except IOError:
+                    self.write_error(msg=tb.format_exc(), root_name=file_entry)
+                    raise
+        else:
+            pass
 
     def already_in_translation_file(self, root_name):
         """
@@ -1476,28 +1480,30 @@ class ProcessThread(QThread):
                     except IOError:
                         pass
                     else:
-                        try:
-                            value_x = re.match('.*<X>(.*)</X>.*', lines).group(1)
-                            value_y = re.match('.*<Y>(.*)</Y>.*', lines).group(1)
-                            value_z = re.match('.*<Z>(.*)</Z>.*', lines).group(1)
-                            defocus = re.match('.*<Defocus>(.*)</Defocus>.*', lines).group(1)
-                            applied_defocus = re.match('.*<a:Key>AppliedDefocus</a:Key><a:Value .*?>(.*?)</a:Value>.*', lines).group(1)
-                        except AttributeError:
-                            pass
-                        else:
-                            entries.append(value_x)
-                            entries.append(value_y)
-                            entries.append(value_z)
-                            entries.append(applied_defocus)
-                            entries.append(defocus)
-                            if first_entry:
-                                first_entry.append('_pipeCoordX')
-                                first_entry.append('_pipeCoordY')
-                                first_entry.append('_pipeCoordZ')
-                                first_entry.append('_pipeAppliedDefocusMicroscope')
-                                first_entry.append('_pipeDefocusMicroscope')
+                        xml_values = {
+                            '_pipeCoordX': '.*<X>(.*?)</X>.*',
+                            '_pipeCoordY': '.*<Y>(.*?)</Y>.*',
+                            '_pipeCoordZ': '.*<Z>(.*?)</Z>.*',
+                            '_pipeDefocusMicroscope': '.*<Defocus>(.*?)</Defocus>.*',
+                            '_pipeAppliedDefocusMicroscope': '.*<a:Key>AppliedDefocus</a:Key><a:Value .*?>(.*?)</a:Value>.*',
+                            '_pipeDose': '.*<a:Key>Dose</a:Key><a:Value .*?>(.*?)</a:Value>.*',
+                            '_pipePixelSize': '.*<pixelSize><x><numericValue>(.*?)</numericValue>.*',
+                            '_pipeNrFractions': '.*<b:NumberOffractions>(.*?)</b:NumberOffractions>.*',
+                            '_pipeExposureTime': '.*<camera>.*?<ExposureTime>(.*?)</ExposureTime>.*',
+                            '_pipeHeight': '.*<ReadoutArea.*?<a:height>(.*?)</a:height>.*',
+                            '_pipeWidth': '.*<ReadoutArea.*?<a:width>(.*?)</a:width>.*',
+                            }
+                        for key, value in xml_values.items():
+                            try:
+                                extracted_value = re.match(value, lines).group(1)
+                            except AttributeError:
+                                print('Attribute {0} not present in the XML file, please contact the TranSPHIRE authors')
                             else:
-                                pass
+                                entries.append(extracted_value)
+                                if first_entry:
+                                    first_entry.append(key)
+                                else:
+                                    pass
 
             except ValueError:
                 if first_entry:
@@ -1918,13 +1924,7 @@ class ProcessThread(QThread):
                         sum_files = queue_dict[motion_idx]['sum']
                         log_files = queue_dict[motion_idx]['log']
                         sum_dw_files = queue_dict[motion_idx]['sum_dw']
-                        if 'Picking' in compare:
-                            if motion_idx == 0:
-                                for file_name in sum_dw_files:
-                                    self.add_to_queue(aim=aim_name, root_name=file_name)
-                            else:
-                                pass
-                        elif '!Compress data' in compare:
+                        if '!Compress data' in compare:
                             if motion_idx == 0:
                                 self.add_to_queue(aim=aim_name, root_name=file_input)
                             else:
@@ -1934,13 +1934,12 @@ class ProcessThread(QThread):
                                 self.add_to_queue(aim=aim_name, root_name=file_input)
                             else:
                                 pass
-                        elif 'CTF_frames' in compare or 'CTF_sum' in compare:
+                        elif 'CTF_frames' in compare or 'CTF_sum' in compare or 'Picking' in compare:
                             if motion_idx == 0:
-                                for file_name in sum_files:
-                                    self.add_to_queue(
-                                        aim=aim_name,
-                                        root_name='{0};;;{1}'.format(file_name, file_input)
-                                        )
+                                self.add_to_queue(
+                                    aim=aim_name,
+                                    root_name=';;;'.join([sum_files[0], sum_dw_files[0], file_input])
+                                    )
                             else:
                                 pass
                         else:
@@ -1970,7 +1969,9 @@ class ProcessThread(QThread):
         Returns:
         None
         """
-        file_sum, file_input = root_name.split(';;;')
+        root_name_raw = root_name
+        # Split is file_sum, file_dw_sum, file_frames
+        file_sum, _, file_input = root_name.split(';;;')
         try:
             if self.settings[self.settings['Copy']['CTF']]['Use movies'] == 'True':
                 root_name, _ = os.path.splitext(file_input)
@@ -2230,7 +2231,7 @@ class ProcessThread(QThread):
                     if '!Compress data' in compare or 'Compress data' in compare:
                         self.add_to_queue(aim=aim_name, root_name=file_input)
                     elif 'Picking' in compare:
-                        self.add_to_queue(aim=aim_name, root_name=file_sum)
+                        self.add_to_queue(aim=aim_name, root_name=root_name_raw)
                     else:
                         for log_file in copied_log_files:
                             self.add_to_queue(aim=aim_name, root_name=log_file)
@@ -2247,12 +2248,13 @@ class ProcessThread(QThread):
         None
         """
 
-        # New name
-        file_name = os.path.basename(os.path.splitext(root_name)[0])
+        # New name; Splitis file_sum, file_dw_sum, file_frames
+        _, file_dw_sum, file_frames = root_name.split(';;;')
+        file_name = os.path.basename(os.path.splitext(file_dw_sum)[0])
 
         # Create the command for filtering
         command, file_input, check_files, block_gpu, gpu_list = tup.create_filter_command(
-            file_input=root_name,
+            file_input=file_dw_sum,
             settings=self.settings,
             )
 
@@ -2309,7 +2311,7 @@ class ProcessThread(QThread):
         non_zero_list = [err_file, log_file]
         non_zero_list.extend(check_files)
 
-        root_path = os.path.join(os.path.dirname(root_name), file_name)
+        root_path = os.path.join(os.path.dirname(file_dw_sum), file_name)
         log_files, copied_log_files = tup.find_logfiles(
             root_path=root_path,
             file_name=file_name,
@@ -2348,7 +2350,7 @@ class ProcessThread(QThread):
             )
 
         if skip_list:
-            self.remove_from_translate(os.path.basename(root_name))
+            self.remove_from_translate(os.path.basename(file_dw_sum))
         else:
             pass
 
@@ -2356,12 +2358,17 @@ class ProcessThread(QThread):
             message = 'The parameter {0} is {1} for file {2}, which is not in the range: {3} to {4} and will be skipped! If this is not the only message, you might consider changing microscope settings!'.format(
                 warning[0],
                 warning[1],
-                root_name,
+                file_dw_sum,
                 warning[2],
                 warning[3]
                 )
+            if time.time() - self.time_last_error > 1800:
+                self.queue_com['error'].put(message)
+                self.time_last_error = time.time()
+            else:
+                pass
             self.queue_com['notification'].put(message)
-            self.write_error(msg=message, root_name=root_name)
+            self.write_error(msg=message, root_name=file_dw_sum)
 
         for warning in warnings:
             message = 'The median of the last {0} values for parameter {1} is {2}, which is not in the range: {3} to {4}! You might consider to adjust microscope settings!'.format(
@@ -2377,7 +2384,7 @@ class ProcessThread(QThread):
             else:
                 pass
             self.queue_com['notification'].put(message)
-            self.write_error(msg=message, root_name=root_name)
+            self.write_error(msg=message, root_name=file_dw_sum)
 
         if skip_list:
             pass
@@ -2401,8 +2408,11 @@ class ProcessThread(QThread):
                             var = False
                             break
                 if var:
-                    for log_file in log_files:
-                        self.add_to_queue(aim=aim_name, root_name=log_file)
+                    if '!Compress data' in compare or 'Compress data' in compare:
+                        self.add_to_queue(aim=aim_name, root_name=file_frames)
+                    else:
+                        for log_file in log_files:
+                            self.add_to_queue(aim=aim_name, root_name=log_file)
                 else:
                     pass
 
@@ -2455,7 +2465,7 @@ class ProcessThread(QThread):
                 command = 'rsync {0} {1}'.format(root_name, new_name)
             else:
                 message = '\n'.join([
-                    '{0}: Not known!'.format(self.settings['General']['Output extension']),
+                    '{0}: Not known!'.format(extension),
                     'Please contact the TranSPHIRE authors.'
                     ])
                 self.queue_com['error'].put(message)
