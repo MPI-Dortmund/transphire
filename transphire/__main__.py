@@ -183,19 +183,21 @@ def check_update():
     """
     Check for TranSHPIRE updates on PyPi
     """
-    pip_path = '{0}/pip'.format(sys.path[0])
+    pip_path = '{0}/pip'.format([path for path in sys.path if '/bin' in path][0])
     current_version = transphire.__version__
     version_string = os.popen("{0} install transphire== 2>&1".format(pip_path)).read()
     message_insert = None
-    message_template = '{{0}}\nUse:\n"{0} install transphire"\nto update!\nTo check the changes visit:\n{1}!'.format(
+    message_template = '{{0}}\nUse:\n"{0} install transphire --upgrade"\nto update!\nTo check the changes visit:\n{1}!'.format(
         pip_path,
         "http://sphire.mpg.de/wiki/doku.php?id=downloads:transphire_1"
         )
     try:
-        latest_version = re.search('.* ([0-9]\.[0-9]\.[0-9])\).*', version_string).group(1)
+        latest_version = re.search('.* ([0-9]+\.[0-9]+\.[0-9]+)\).*', version_string).group(1)
     except AttributeError:
-        pass
+        print('Could not check for updates! Please check your internet connection or for erros in the command:  {0}'.format(version_string))
+        print('If you have questions, please contact the TranSPHIRE authors.')
     else:
+        print('Current version: {0} -- Available version: {1}'.format(current_version, latest_version))
         vers_1, vers_2, vers_3 = current_version.split('.')
         latest_vers_1, latest_vers_2, latest_vers_3 = latest_version.split('.')
         if int(latest_vers_1) > int(vers_1):
