@@ -408,12 +408,12 @@ def default_pipeline():
             'Sum to work:Copy to work:Copy_work,' +
             'Sum to HDD:Copy to HDD:Copy_hdd,' +
             'Sum to backup:Copy to backup:Copy_backup,' +
+            'CTF_sum:CTF,' +
             'CTF_frames:CTF,' +
             '!CTF_frames:!CTF_sum:Compress data:Compress,' +
             '!CTF_frames:!CTF_sum:!Compress data:Frames to work:Copy to work:Copy_work,' +
             '!CTF_frames:!CTF_sum:!Compress data:Frames to HDD:Copy to HDD:Copy_hdd,' +
-            '!CTF_frames:!CTF_sum:!Compress data:Frames to backup:Copy to backup:Copy_backup,' +
-            'CTF_sum:CTF',
+            '!CTF_frames:!CTF_sum:!Compress data:Frames to backup:Copy to backup:Copy_backup',
             'PLAIN'
             ],
         [
@@ -421,14 +421,14 @@ def default_pipeline():
             '2',
             int,
             'CTF;' +
-            'Motion:Picking:Picking,' +
             'CTF to work:Copy to work:Copy_work,' +
             'CTF to HDD:Copy to HDD:Copy_hdd,' +
             'CTF to backup:Copy to backup:Copy_backup,' +
-            'Compress data:Compress,' +
-            '!Compress data:Frames to work:Copy to work:Copy_work,' +
-            '!Compress data:Frames to HDD:Copy to HDD:Copy_hdd,' +
-            '!Compress data:Frames to backup:Copy to backup:Copy_backup',
+            'Motion:Picking:Picking,' +
+            '!Picking:Compress data:Compress,' +
+            '!Picking:!Compress data:Frames to work:Copy to work:Copy_work,' +
+            '!Picking:!Compress data:Frames to HDD:Copy to HDD:Copy_hdd,' +
+            '!Picking:!Compress data:Frames to backup:Copy to backup:Copy_backup',
             'PLAIN'
             ],
         [
@@ -438,7 +438,11 @@ def default_pipeline():
             'Picking;' +
             'Picking to work:Copy to work:Copy_work,' +
             'Picking to HDD:Copy to HDD:Copy_hdd,' +
-            'Picking to backup:Copy to backup:Copy_backup',
+            'Picking to backup:Copy to backup:Copy_backup,' +
+            'Compress data:Compress,' +
+            '!Compress data:Frames to work:Copy to work:Copy_work,' +
+            '!Compress data:Frames to HDD:Copy to HDD:Copy_hdd,' +
+            '!Compress data:Frames to backup:Copy to backup:Copy_backup',
             'PLAIN'
             ],
         [
@@ -766,6 +770,7 @@ def default_copy(settings_folder):
         ['CTF', programs_ctf, bool, '', 'COMBO'],
         ['Picking', programs_picking, bool, '', 'COMBO'],
         ['Compress data', ['True', 'Later', 'False'], bool, '', 'COMBO'],
+        ['Delete data after copy?', ['True', 'False'], bool, '', 'COMBO'],
         ['Delete stack after compression?', ['True', 'False'], bool, '', 'COMBO'],
         ]
     return items
