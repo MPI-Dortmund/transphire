@@ -26,7 +26,7 @@ except ImportError:
 class NotificationWidget(QWidget):
     """Widget for notification phone numbers"""
 
-    def __init__(self, name, default, parent=None):
+    def __init__(self, name, default, default_programs_dict, parent=None):
         """
         Initialise layout.
 
@@ -43,10 +43,11 @@ class NotificationWidget(QWidget):
         # Global content
         self.name = name
         self.default = default
+        self.default_programs_dict = default_programs_dict
         if self.default == 'choose':
             self.edit = QComboBox(self)
         else:
-            self.edit = QLineEdit(self.name, self)
+            self.edit = QLineEdit(self.default, self)
             self.edit.setReadOnly(True)
         self.check_box = QCheckBox(self.name, self)
 
@@ -96,7 +97,7 @@ class NotificationWidget(QWidget):
         """
         self.exceptions.append(name)
 
-    def update_combo_email(self, users):
+    def update_combo(self, typ, users):
         """
         Update the combo boxes.
 
@@ -107,21 +108,8 @@ class NotificationWidget(QWidget):
         None
         """
         if self.default == 'choose':
-            items = ['@ {0}'.format(key) for key in users if '@ {0}'.format(key) not in self.exceptions]
-            self.edit.addItems(sorted(items))
-
-    def update_combo_telegram(self, users):
-        """
-        Update the combo boxes.
-
-        Arguments:
-        users - User dictionary
-
-        Returns:
-        None
-        """
-        if self.default == 'choose':
-            items = ['T {0}'.format(key) for key in users if 'T {0}'.format(key) not in self.exceptions]
+            prefix = self.default_programs_dict[typ]
+            items = ['{0} {1}'.format(prefix, key) for key in users if '{0} {1}'.format(prefix, key) not in self.exceptions]
             self.edit.addItems(sorted(items))
 
     def clear_combo(self):

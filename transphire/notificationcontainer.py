@@ -82,6 +82,7 @@ class NotificationContainer(QWidget):
         self.settings_folder = settings_folder
         self.update_id = 0
         self.enable_telegram = None
+        exception_list = []
 
         # Layout
         layout = QVBoxLayout(self)
@@ -89,46 +90,38 @@ class NotificationContainer(QWidget):
 
         max_per_col = 3
 
+        default_programs_dict = {
+            'telegram': 'T',
+            'email': '@'
+            }
+
         # Add to layout
-        layout_default_telegram = QHBoxLayout()
-        layout.addLayout(layout_default_telegram)
-        if noti_content['Default names telegram']:
-            for idx, entry in enumerate(noti_content['Default names telegram'].split(';')):
-                if idx % max_per_col == 0 and idx != 0:
-                    layout_default_telegram.addStretch(1)
-                    layout_default_telegram = QHBoxLayout()
-                    layout.addLayout(layout_default_telegram)
-                name, default = entry.split(':')
-                name = 'T {0}'.format(name)
-                widget = NotificationWidget(name=name, default=name, parent=self)
-                layout_default_telegram.addWidget(widget)
-                self.content[name] = widget
-            if noti_content['Default names telegram'].split(';'):
-                layout_default_telegram.addStretch(1)
-        else:
-            pass
-
-        layout_default_email = QHBoxLayout()
-        layout.addLayout(layout_default_email)
-        if noti_content['Default names email']:
-            for idx, entry in enumerate(noti_content['Default names email'].split(';')):
-                if idx % max_per_col == 0 and idx != 0:
-                    layout_default_email.addStretch(1)
-                    layout_default_email = QHBoxLayout()
-                    layout.addLayout(layout_default_email)
-                name, default = entry.split(':')
-                name = '@ {0}'.format(name)
-                widget = NotificationWidget(name=name, default=name, parent=self)
-                layout_default_email.addWidget(widget)
-                self.content[name] = widget
-            if noti_content['Default names email'].split(';'):
-                layout_default_email.addStretch(1)
-        else:
-            pass
-
-        exception_list = []
-        for key in self.content:
-            exception_list.append(key)
+        for key, value  in default_programs_dict.items():
+            layout_default = QHBoxLayout()
+            layout.addLayout(layout_default)
+            if noti_content['Default names {0}'.format(key)]:
+                offset = 0
+                for idx, entry in enumerate(noti_content['Default names {0}'.format(key)].split(';')):
+                    try:
+                        name, default = entry.split(':')
+                    except ValueError:
+                        print('Default {0} entry does not follow - Name:{0} Name - {1}'.format(key, entry))
+                        offset += 1
+                        continue
+                    if idx-offset % max_per_col == 0 and idx != 0:
+                        layout_default.addStretch(1)
+                        layout_default = QHBoxLayout()
+                        layout.addLayout(layout_default)
+                    name = '{0} {1}'.format(value, name)
+                    default = '{0} {1}'.format(value, default)
+                    exception_list.append(default)
+                    widget = NotificationWidget(name=name, default=default, parent=self, default_programs_dict=default_programs_dict)
+                    layout_default.addWidget(widget)
+                    self.content[name] = widget
+                if noti_content['Default names {0}'.format(key)].split(';'):
+                    layout_default.addStretch(1)
+            else:
+                pass
 
         # Chooseable users
         layout_default_user = QHBoxLayout()
@@ -140,7 +133,7 @@ class NotificationContainer(QWidget):
                 layout.addLayout(layout_default_user)
             name = 'User {0}'.format(idx)
             default = 'choose'
-            widget = NotificationWidget(name=name, default=default, parent=self)
+            widget = NotificationWidget(name=name, default=default, parent=self, default_programs_dict=default_programs_dict)
             for entry in exception_list:
                 widget.add_exceptions(name=entry)
             layout_default_user.addWidget(widget)
@@ -283,7 +276,7 @@ class NotificationContainer(QWidget):
                     name, email = line.replace('\n', '').split('\t')
                     self.users_email[name] = email
         for key in self.content:
-            self.content[key].update_combo_email(self.users_email)
+            self.content[key].update_combo('email', self.users_email)
 
         try:
             server = smtplib.SMTP(self.smtp_server, timeout=10)
@@ -354,7 +347,7 @@ class NotificationContainer(QWidget):
                     del self.users_telegram[key]
 
         for key in self.content:
-            self.content[key].update_combo_telegram(self.users_telegram)
+            self.content[key].update_combo('telegram', self.users_telegram)
 
     @pyqtSlot(str)
     def send_notification(self, text):
