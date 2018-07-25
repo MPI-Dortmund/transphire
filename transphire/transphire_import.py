@@ -337,11 +337,11 @@ def import_ctffind_v4_1_8(name, directory_name):
             else:
                 continue
 
-    data = np.empty(
+    data = np.zeros(
         len(useable_files),
         dtype=get_dtype_dict()['ctf']
         )
-    data_original = np.empty(
+    data_original = np.zeros(
         len(useable_files),
         dtype=get_dtype_dict()[name]
         )
@@ -356,8 +356,12 @@ def import_ctffind_v4_1_8(name, directory_name):
             file_name,
             dtype=get_dtype_import_dict()[name],
             )
+        if data_name.size == 0:
+            continue
+
         data[idx]['file_name'] = file_name
         input_name = None
+
         with open(file_name, 'r') as read:
             for line in read.readlines():
                 match_re = re.match('# Input file: (.*?) ; Number of micrographs: 1', line)
@@ -450,11 +454,11 @@ def import_gctf_v1_06(name, directory_name):
             else:
                 continue
 
-    data = np.empty(
+    data = np.zeros(
         len(useable_files),
         dtype=get_dtype_dict()['ctf']
         )
-    data_original = np.empty(
+    data_original = np.zeros(
         len(useable_files),
         dtype=get_dtype_dict()[name]
         )
@@ -476,6 +480,8 @@ def import_gctf_v1_06(name, directory_name):
             dtype=dtype,
             skip_header=max_header,
             )
+        if data_name.size == 0:
+            continue
         for dtype_name in data_name.dtype.names:
             try:
                 transphire_name = relion_dict[dtype_name]
@@ -544,11 +550,11 @@ def import_cter_v1_0(name, directory_name):
             else:
                 continue
 
-    data = np.empty(
+    data = np.zeros(
         len(useable_files),
         dtype=get_dtype_dict()['ctf']
         )
-    data_original = np.empty(
+    data_original = np.zeros(
         len(useable_files),
         dtype=get_dtype_import_dict()[name]
         )
@@ -562,6 +568,8 @@ def import_cter_v1_0(name, directory_name):
             file_name,
             dtype=get_dtype_import_dict()[name],
             )
+        if data_name.size == 0:
+            continue
         for entry in data_name.dtype.names:
             data_original[idx][entry] = data_name[entry]
             if entry == 'defocus':
@@ -625,7 +633,7 @@ def import_motion_cor_2_v1_0_0(name, directory_name):
             else:
                 continue
 
-    data = np.empty(
+    data = np.zeros(
         len(useable_files),
         dtype=get_dtype_dict()['motion']
         )
@@ -635,6 +643,8 @@ def import_motion_cor_2_v1_0_0(name, directory_name):
             file_name,
             dtype=get_dtype_import_dict()[name]
             )
+        if data_name.size == 0:
+            continue
         data[idx]['file_name'] = file_name
         shift_x = np.array([
             data_name['shift_x'][i+1] - data_name['shift_x'][i] \
@@ -720,7 +730,7 @@ def import_cryolo_v1_0_4(name, directory_name, image=True):
 
     useable_files = [file_name for file_name in sorted(useable_files_box) if file_name in useable_files_jpg]
 
-    data = np.empty(
+    data = np.zeros(
         len(useable_files),
         dtype=get_dtype_dict()['picking']
         )
