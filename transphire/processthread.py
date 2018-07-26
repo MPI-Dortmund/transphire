@@ -1287,14 +1287,6 @@ class ProcessThread(QThread):
             xml_file=xml_file
             )
 
-        self.shared_dict['typ'][self.content_settings['group']]['share_lock'].lock()
-        try:
-            self.shared_dict['share'][self.content_settings['group']].remove(root_name)
-        except IOError:
-            raise
-        finally:
-            self.shared_dict['typ'][self.content_settings['group']]['share_lock'].unlock()
-
         for aim in self.content_settings['aim']:
             *compare, aim_name = aim.split(':')
             var = True
@@ -1333,6 +1325,15 @@ class ProcessThread(QThread):
                     raise
         else:
             pass
+
+        self.shared_dict['typ'][self.content_settings['group']]['share_lock'].lock()
+        try:
+            self.shared_dict['share'][self.content_settings['group']].remove(root_name)
+        except IOError:
+            raise
+        finally:
+            self.shared_dict['typ'][self.content_settings['group']]['share_lock'].unlock()
+
 
     def already_in_translation_file(self, root_name):
         """
