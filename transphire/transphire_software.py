@@ -911,3 +911,17 @@ def check_for_outlier(dict_name, data, file_name, settings):
                 ])
 
     return warning_list, skip_list
+
+
+def get_logfiles(log_prefix):
+    """
+    Return the names of the log_file and error file.
+
+    Arguments:
+    log_prefix - Prefix to use.
+
+    Returns:
+    Name of log file, Name of error file
+    """
+    template = '{0}_transphire.{{0}}'.format(log_prefix)
+    return template.format('log'), template.format('err')

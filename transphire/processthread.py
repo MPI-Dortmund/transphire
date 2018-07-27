@@ -2426,11 +2426,16 @@ class ProcessThread(QThread):
         Returns:
         None
         """
+        new_root_name, extension = os.path.splitext(os.path.basename(root_name))
+
+        log_prefix = os.path.join(
+                self.settings['compress_folder'],
+                new_root_name
+                )
+
         if self.settings['compress_folder'] in root_name:
-            name, _ = os.path.splitext(root_name)
             new_name = root_name
-            log_file = '{0}.log'.format(name)
-            err_file = '{0}.err'.format(name)
+            log_file, err_file = tus.get_logfiles(log_prefix)
             tus.check_outputs(
                 zero_list=[err_file],
                 non_zero_list=[log_file, new_name],
@@ -2441,8 +2446,6 @@ class ProcessThread(QThread):
 
         else:
             # New name
-            new_root_name, extension = os.path.splitext(os.path.basename(root_name))
-
             new_name = os.path.join(
                     self.settings['compress_folder'],
                     '{0}.tiff'.format(new_root_name)
@@ -2473,11 +2476,6 @@ class ProcessThread(QThread):
                 raise IOError(message)
 
             # Log files
-            log_prefix = os.path.join(
-                    self.settings['compress_folder'],
-                    new_root_name
-                    )
-
             log_file, err_file = self.run_command(
                 command=command,
                 log_prefix=log_prefix,
@@ -2700,8 +2698,7 @@ class ProcessThread(QThread):
         Return:
         log_file name, err_file name
         """
-        log_file = '{0}_transphire.log'.format(log_prefix)
-        err_file = '{0}_transphire.err'.format(log_prefix)
+        log_file, err_file = tus.get_logfiles(log_prefix)
 
         mutex_idx = 0
         count_idx = 1
