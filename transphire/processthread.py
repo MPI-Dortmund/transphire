@@ -536,7 +536,7 @@ class ProcessThread(QThread):
                     )
                 self.queue_com['notification'].put(message)
                 self.queue_com['error'].put(message)
-            QThread.sleep(20)
+        QThread.sleep(20)
 
     def start_queue(self):
         """
