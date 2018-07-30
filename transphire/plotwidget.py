@@ -179,18 +179,29 @@ class PlotWidget(QWidget):
             self.figure.clear()
             ax1 = self.figure.add_subplot(111)
 
+            color = '#68a3c3'
+
             if self.plot_typ == 'values':
                 x_label = 'Micrograph ID'
                 y_label = label
-                ax1.plot(x_values, y_values, '.', color='#68a3c3')
+                ax1.plot(x_values, y_values, '.', color=color)
             elif self.plot_typ == 'histogram':
                 x_label = label
                 y_label = 'Nr. of micrographs'
                 if np.max(y_values) - np.min(y_values) < 0.001:
                     ax1.hist(y_values, 1)
                     ax1.set_xlim([np.max(y_values)-1, np.min(y_values)+1])
+                elif title == 'Resolution limit':
+                    if np.max(y_values) > 20:
+                        ax1.hist(y_values[y_values <= 20], 100, color=color)
+                        title = '{0}\n{1} micrographs out of range (0,20)'.format(
+                            title,
+                            y_values[y_values > 20].shape[0]
+                            )
+                    else:
+                        ax1.hist(y_values, 100, color=color)
                 else:
-                    ax1.hist(y_values, 100, color='#68a3c3')
+                    ax1.hist(y_values, 100, color=color)
             else:
                 print('Plotwidget - ', self.plot_typ, ' is not known!!!')
                 return None
@@ -199,7 +210,31 @@ class PlotWidget(QWidget):
             ax1.set_title(title)
             ax1.set_xlabel(x_label)
             ax1.set_ylabel(y_label)
-            self.canvas.draw()
+            try:
+                self.canvas.draw()
+            except RecursionError:
+                import sys
+                print('sys.getrecursionlimit()')
+                print(sys.getrecursionlimit())
+                print('self.plot_typ')
+                print(self.plot_typ)
+                print('label')
+                print(label)
+                print('x_label')
+                print(x_label)
+                print('y_label')
+                print(y_label)
+                print('directory_name')
+                print(directory_name)
+                print('title')
+                print(title)
+                print('x_values')
+                print(x_values)
+                print('y_values')
+                print(y_values)
+                print('COULD NOT DRAW!!!')
+                print('Please contact the TranSHPIRE authors!!!')
+                return None
 
             output_name = os.path.join(
                 directory_name,

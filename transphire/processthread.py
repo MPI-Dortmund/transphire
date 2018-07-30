@@ -536,7 +536,7 @@ class ProcessThread(QThread):
                     )
                 self.queue_com['notification'].put(message)
                 self.queue_com['error'].put(message)
-            QThread.sleep(20)
+        QThread.sleep(20)
 
     def start_queue(self):
         """
@@ -1239,7 +1239,7 @@ class ProcessThread(QThread):
             command=command
             )
 
-        all_files = tus.find_all_files(
+        meta_files, all_files = tus.find_all_files(
             root_name=root_name,
             compare_name_frames=compare_name_frames,
             compare_name_meta=compare_name_meta,
@@ -1252,18 +1252,24 @@ class ProcessThread(QThread):
         log_files = []
         for file_entry in all_files:
             extension = file_entry.split('.')[-1]
+            is_xml = False
             if file_entry in frames:
                 continue
             elif extension == 'mrc':
                 name = '{0}_krios_sum'.format(new_name_meta)
             elif extension == 'dm4' and 'gain' in file_entry:
                 name = '{0}_gain'.format(new_name_meta)
+            elif extension == 'xml' and file_entry in meta_files:
+                is_xml = True
+                name = new_name_meta
+            elif extension == 'xml':
+                name = '{0}_frames'.format(new_name_meta)
             else:
                 name = new_name_meta
 
             new_file = '{0}.{1}'.format(name, extension)
 
-            if extension == 'xml':
+            if is_xml:
                 xml_file = new_file
             else:
                 pass
@@ -1482,29 +1488,48 @@ class ProcessThread(QThread):
                         pass
                     else:
                         xml_values = {
-                            '_pipeCoordX': '.*<X>(.*?)</X>.*',
-                            '_pipeCoordY': '.*<Y>(.*?)</Y>.*',
-                            '_pipeCoordZ': '.*<Z>(.*?)</Z>.*',
-                            '_pipeDefocusMicroscope': '.*<Defocus>(.*?)</Defocus>.*',
-                            '_pipeAppliedDefocusMicroscope': '.*<a:Key>AppliedDefocus</a:Key><a:Value .*?>(.*?)</a:Value>.*',
-                            '_pipeDose': '.*<a:Key>Dose</a:Key><a:Value .*?>(.*?)</a:Value>.*',
-                            '_pipePixelSize': '.*<pixelSize><x><numericValue>(.*?)</numericValue>.*',
-                            '_pipeNrFractions': '.*<b:NumberOffractions>(.*?)</b:NumberOffractions>.*',
-                            '_pipeExposureTime': '.*<camera>.*?<ExposureTime>(.*?)</ExposureTime>.*',
-                            '_pipeHeight': '.*<ReadoutArea.*?<a:height>(.*?)</a:height>.*',
-                            '_pipeWidth': '.*<ReadoutArea.*?<a:width>(.*?)</a:width>.*',
+                            '_pipeCoordX': [r'.*<X>(.*?)</X>.*'],
+                            '_pipeCoordY': [r'.*<Y>(.*?)</Y>.*'],
+                            '_pipeCoordZ': [r'.*<Z>(.*?)</Z>.*'],
+                            '_pipeDefocusMicroscope': [r'.*<Defocus>(.*?)</Defocus>.*'],
+                            '_pipeAppliedDefocusMicroscope': [r'.*<a:Key>AppliedDefocus</a:Key><a:Value .*?>(.*?)</a:Value>.*'],
+                            '_pipeDose': [r'.*<a:Key>Dose</a:Key><a:Value .*?>(.*?)</a:Value>.*'],
+                            '_pipePixelSize': [r'.*<pixelSize><x><numericValue>(.*?)</numericValue>.*'],
+                            '_pipeNrFractions': [r'.*<b:NumberOffractions>(.*?)</b:NumberOffractions>.*', r'<b:StartFrameNumber>'],
+                            '_pipeExposureTime': [r'.*<camera>.*?<ExposureTime>(.*?)</ExposureTime>.*'],
+                            '_pipeHeight': [r'.*<ReadoutArea.*?<a:height>(.*?)</a:height>.*'],
+                            '_pipeWidth': [r'.*<ReadoutArea.*?<a:width>(.*?)</a:width>.*'],
                             }
-                        for key, value in xml_values.items():
-                            try:
-                                extracted_value = re.match(value, lines).group(1)
-                            except AttributeError:
-                                print('Attribute {0} not present in the XML file, please contact the TranSPHIRE authors')
-                            else:
-                                entries.append(extracted_value)
-                                if first_entry:
-                                    first_entry.append(key)
+                        for xml_key, values in xml_values.items():
+                            for xml_value in values:
+                                error = False
+                                try:
+                                    extracted_value = re.match(xml_value, lines).group(1)
+                                except AttributeError:
+                                    try:
+                                        extracted_value = len(re.findall(xml_value, lines))
+                                    except Exception:
+                                        extracted_value = None
+                                        error = True
+                                    else:
+                                        if extracted_value:
+                                            break
+                                        else:
+                                            extracted_value = None
+                                            error = True
                                 else:
-                                    pass
+                                    break
+
+                            entries.append(extracted_value)
+                            if first_entry:
+                                first_entry.append(xml_key)
+                            else:
+                                pass
+
+                            if error:
+                                print('Attribute {0} not present in the XML file, please contact the TranSPHIRE authors'.format(xml_key))
+                            else:
+                                pass
 
             except ValueError:
                 if first_entry:
@@ -2426,11 +2451,16 @@ class ProcessThread(QThread):
         Returns:
         None
         """
+        new_root_name, extension = os.path.splitext(os.path.basename(root_name))
+
+        log_prefix = os.path.join(
+                self.settings['compress_folder'],
+                new_root_name
+                )
+
         if self.settings['compress_folder'] in root_name:
-            name, _ = os.path.splitext(root_name)
             new_name = root_name
-            log_file = '{0}.log'.format(name)
-            err_file = '{0}.err'.format(name)
+            log_file, err_file = tus.get_logfiles(log_prefix)
             tus.check_outputs(
                 zero_list=[err_file],
                 non_zero_list=[log_file, new_name],
@@ -2441,8 +2471,6 @@ class ProcessThread(QThread):
 
         else:
             # New name
-            new_root_name, extension = os.path.splitext(os.path.basename(root_name))
-
             new_name = os.path.join(
                     self.settings['compress_folder'],
                     '{0}.tiff'.format(new_root_name)
@@ -2473,11 +2501,6 @@ class ProcessThread(QThread):
                 raise IOError(message)
 
             # Log files
-            log_prefix = os.path.join(
-                    self.settings['compress_folder'],
-                    new_root_name
-                    )
-
             log_file, err_file = self.run_command(
                 command=command,
                 log_prefix=log_prefix,
@@ -2700,8 +2723,7 @@ class ProcessThread(QThread):
         Return:
         log_file name, err_file name
         """
-        log_file = '{0}_transphire.log'.format(log_prefix)
-        err_file = '{0}_transphire.err'.format(log_prefix)
+        log_file, err_file = tus.get_logfiles(log_prefix)
 
         mutex_idx = 0
         count_idx = 1

@@ -331,6 +331,8 @@ def import_ctffind_v4_1_8(name, directory_name):
                 )
         except ValueError:
             continue
+        except IOError:
+            continue
         else:
             if array.size > 0:
                 useable_files.append(file_name)
@@ -352,12 +354,18 @@ def import_ctffind_v4_1_8(name, directory_name):
 
     for idx, file_name in sorted(enumerate(useable_files)):
 
-        data_name = np.genfromtxt(
-            file_name,
-            dtype=get_dtype_import_dict()[name],
-            )
-        if data_name.size == 0:
+        try:
+            data_name = np.genfromtxt(
+                file_name,
+                dtype=get_dtype_import_dict()[name],
+                )
+        except IOError:
             continue
+        else:
+            if data_name.size == 0:
+                continue
+            else:
+                pass
 
         data[idx]['file_name'] = file_name
         input_name = None
@@ -448,6 +456,8 @@ def import_gctf_v1_06(name, directory_name):
                 )
         except ValueError:
             continue
+        except IOError:
+            continue
         else:
             if data_name.size > 0:
                 useable_files.append(file_name)
@@ -475,13 +485,21 @@ def import_gctf_v1_06(name, directory_name):
             print('Could not read header of {0}!'.format(file_name))
             data, data_original =  None, None
             break
-        data_name = np.genfromtxt(
-            file_name,
-            dtype=dtype,
-            skip_header=max_header,
-            )
-        if data_name.size == 0:
+
+        try:
+            data_name = np.genfromtxt(
+                file_name,
+                dtype=dtype,
+                skip_header=max_header,
+                )
+        except IOError:
             continue
+        else:
+            if data_name.size == 0:
+                continue
+            else:
+                pass
+
         for dtype_name in data_name.dtype.names:
             try:
                 transphire_name = relion_dict[dtype_name]
@@ -544,6 +562,8 @@ def import_cter_v1_0(name, directory_name):
                 )
         except ValueError:
             continue
+        except IOError:
+            continue
         else:
             if data_name.size > 0:
                 useable_files.append(file_name)
@@ -564,12 +584,19 @@ def import_cter_v1_0(name, directory_name):
     data_original.fill(0)
 
     for idx, file_name in sorted(enumerate(useable_files)):
-        data_name = np.genfromtxt(
-            file_name,
-            dtype=get_dtype_import_dict()[name],
-            )
-        if data_name.size == 0:
+        try:
+            data_name = np.genfromtxt(
+                file_name,
+                dtype=get_dtype_import_dict()[name],
+                )
+        except IOError:
             continue
+        else:
+            if data_name.size == 0:
+                continue
+            else:
+                pass
+
         for entry in data_name.dtype.names:
             data_original[idx][entry] = data_name[entry]
             if entry == 'defocus':
@@ -627,6 +654,8 @@ def import_motion_cor_2_v1_0_0(name, directory_name):
                 )
         except ValueError:
             continue
+        except IOError:
+            continue
         else:
             if array.size > 0:
                 useable_files.append(file_name)
@@ -639,12 +668,19 @@ def import_motion_cor_2_v1_0_0(name, directory_name):
         )
     data = np.atleast_1d(data)
     for idx, file_name in enumerate(useable_files):
-        data_name = np.genfromtxt(
-            file_name,
-            dtype=get_dtype_import_dict()[name]
-            )
-        if data_name.size == 0:
+        try:
+            data_name = np.genfromtxt(
+                file_name,
+                dtype=get_dtype_import_dict()[name]
+                )
+        except IOError:
             continue
+        else:
+            if data_name.size == 0:
+                continue
+            else:
+                pass
+
         data[idx]['file_name'] = file_name
         shift_x = np.array([
             data_name['shift_x'][i+1] - data_name['shift_x'][i] \
@@ -723,6 +759,8 @@ def import_cryolo_v1_0_4(name, directory_name, image=True):
             np.genfromtxt(file_name)
         except ValueError:
             continue
+        except IOError:
+            continue
         else:
             useable_files_box.append(os.path.splitext(os.path.basename(file_name))[0])
 
@@ -749,6 +787,8 @@ def import_cryolo_v1_0_4(name, directory_name, image=True):
                 ))
         except ValueError:
             size = 0
+        except IOError:
+            continue
         else:
             size = data_name.shape[0]
         data[idx]['file_name'] = file_name
