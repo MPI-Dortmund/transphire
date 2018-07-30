@@ -1498,7 +1498,7 @@ class ProcessThread(QThread):
                             try:
                                 extracted_value = re.match(value, lines).group(1)
                             except AttributeError:
-                                print('Attribute {0} not present in the XML file, please contact the TranSPHIRE authors')
+                                print('Attribute {0} not present in the XML file, please contact the TranSPHIRE authors'.format(key))
                             else:
                                 entries.append(extracted_value)
                                 if first_entry:
