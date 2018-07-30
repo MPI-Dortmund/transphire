@@ -507,10 +507,13 @@ def find_related_frames_to_jpg(frames_root, root_name, settings, queue_com, name
 
             elif settings['General']['Camera'] == 'Falcon2' or \
                     settings['General']['Camera'] == 'Falcon3':
-                message = '\n'.join([
-                    'Stack and Falcon2/Falcon3 is not supported',
-                    'Please contact the TranSPHIRE authors!'
-                    ])
+                compare_name_frames = frames_root[:-len('_19911213_2019')]
+                compare_name_meta = root_name[:-len('_19911213_2019')]
+                frames = glob.glob('{0}*_Fractions.{1}'.format(
+                    compare_name_frames,
+                    settings['General']['Input extension']
+                    ))
+                return frames, compare_name_frames, compare_name_meta
 
             else:
                 message = '\n'.join([
@@ -664,10 +667,7 @@ def get_copy_command_for_frames(settings, queue_com, name):
 
             elif settings['General']['Camera'] == 'Falcon2' or \
                     settings['General']['Camera'] == 'Falcon3':
-                message = '\n'.join([
-                    'Stack and Falcon2/Falcon3 is not supported in EPU 1.9 version',
-                    'Please contact the TranSPHIRE authors!'
-                    ])
+                return 'rsync'
 
             else:
                 message = '\n'.join([
@@ -747,15 +747,16 @@ def find_all_files(root_name, compare_name_frames, compare_name_meta, settings, 
         if settings['General']['Camera'] == 'K2':
             meta_files = glob.glob('{0}.*'.format(root_name))
             frame_files = glob.glob('{0}*'.format(compare_name_frames))
-            meta_files.extend(frame_files)
-            return set(meta_files)
+            return set(meta_files), set(frame_files)
 
         elif settings['General']['Camera'] == 'Falcon2' or \
                 settings['General']['Camera'] == 'Falcon3':
-            meta_files = glob.glob('{0}*'.format(compare_name_meta))
+            meta_files = [
+                name for name in glob.glob('{0}*'.format(compare_name_meta))
+                if 'Fractions' not in name
+                ]
             frame_files = glob.glob('{0}*'.format(compare_name_frames))
-            meta_files.extend(frame_files)
-            return set(meta_files)
+            return set(meta_files), set(frame_files)
 
         else:
             message = '\n'.join([
@@ -768,15 +769,14 @@ def find_all_files(root_name, compare_name_frames, compare_name_meta, settings, 
         if settings['General']['Camera'] == 'K2':
             meta_files = glob.glob('{0}*'.format(compare_name_meta))
             frame_files = glob.glob('{0}*'.format(compare_name_frames))
-            meta_files.extend(frame_files)
-            return set(meta_files)
+            return set(meta_files), set(frame_files)
 
         elif settings['General']['Camera'] == 'Falcon2' or \
                 settings['General']['Camera'] == 'Falcon3':
-            message = '\n'.join([
-                'Falcon2/Falcon3 is not supported in EPU 1.9',
-                'Please contact the TranSPHIRE authors!'
-                ])
+            meta_files = [
+                name for name in glob.glob('{0}*'.format(compare_name_meta))
+                if 'Fractions' not in name
+                ]
 
         else:
             message = '\n'.join([
