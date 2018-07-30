@@ -537,33 +537,36 @@ class NotificationContainer(QWidget):
             return None
 
         for line in page_dict:
-            msg = line['message']
-            self.update_id = line['update_id'] + 1
             try:
-                first_name = msg['from']['first_name']
-            except KeyError:
-                first_name = None
-            try:
-                last_name = msg['from']['last_name']
-            except KeyError:
-                last_name = None
-            if first_name is None and last_name is None:
-                user = 'Anonymus User'
-            elif first_name is None:
-                user = last_name
-            elif last_name is None:
-                user = first_name
-            else:
-                user = '{0} {1}'.format(first_name, last_name)
+                msg = line['message']
+                self.update_id = line['update_id'] + 1
+                try:
+                    first_name = msg['from']['first_name']
+                except KeyError:
+                    first_name = None
+                try:
+                    last_name = msg['from']['last_name']
+                except KeyError:
+                    last_name = None
+                if first_name is None and last_name is None:
+                    user = 'Anonymus User'
+                elif first_name is None:
+                    user = last_name
+                elif last_name is None:
+                    user = first_name
+                else:
+                    user = '{0} {1}'.format(first_name, last_name)
 
-            if msg['text'].startswith('/send'):
-                text = msg['text'][len('/send'):]
-                self.send_notification('{0}: {1}'.format(user, text))
-            elif msg['text'].startswith('/stop'):
-                self.send_notification('Stopping {0}'.format(os.uname()[1]))
-                self.sig_stop.emit()
-            else:
-                pass
+                if msg['text'].startswith('/send'):
+                    text = msg['text'][len('/send'):]
+                    self.send_notification('{0}: {1}'.format(user, text))
+                elif msg['text'].startswith('/stop'):
+                    self.send_notification('Stopping {0}'.format(os.uname()[1]))
+                    self.sig_stop.emit()
+                else:
+                    pass
+            except Exception:
+                continue
 
     def send_to_user(self, user_id, text, name):
         """
