@@ -435,7 +435,7 @@ def combine_ctf_outputs(
         data_star = data_orig
 
     lines = to_star_file(
-        data=data_star,
+        data=np.copy(data_star),
         ctf_name=ctf_name,
         ctf_settings=ctf_settings,
         project_folder=project_folder,
@@ -457,7 +457,7 @@ def combine_ctf_outputs(
         shared_dict['ctf_star_lock'].unlock()
 
     lines = to_partres_file(
-        data=data_orig,
+        data=np.copy(data_orig),
         ctf_name=ctf_name,
         ctf_settings=ctf_settings,
         project_folder=project_folder,
