@@ -177,6 +177,7 @@ class PlotWidget(QWidget):
 
             color = '#68a3c3'
 
+            self.ax1.clear()
             if self.plot_typ == 'values':
                 x_label = 'Micrograph ID'
                 y_label = label
@@ -298,6 +299,7 @@ class PlotWidget(QWidget):
         else:
             idx = self.idx-1
 
+        self.ax1.clear()
         if self.data['object'][idx] is None:
             try:
                 jpg_data = imageio.imread(self.data['image'][idx])
