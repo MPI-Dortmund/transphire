@@ -405,6 +405,7 @@ def import_ctffind_v4_1_8(name, directory_name):
                 data[idx][entry] = data_name[entry]
 
     data = np.sort(data, order='file_name')
+    data_original = np.sort(data_original, order='file_name')
     return data, data_original
 
 
@@ -531,6 +532,8 @@ def import_gctf_v1_06(name, directory_name):
                 except ValueError:
                     data[idx][transphire_name] = 0
 
+    data = np.sort(data, order='file_name')
+    data_original = np.sort(data_original, order='file_name')
     return data, data_original
 
 
@@ -621,6 +624,8 @@ def import_cter_v1_0(name, directory_name):
             else:
                 continue
 
+    data = np.sort(data, order='file_name')
+    data_original = np.sort(data_original, order='file_name')
     return data, data_original
 
 
@@ -810,4 +815,6 @@ def import_cryolo_v1_0_4(name, directory_name, image=True):
     else:
         pass
     data_original = None
+
+    data = np.sort(data, order='file_name')
     return data, data_original
