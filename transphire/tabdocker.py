@@ -29,7 +29,7 @@ class TabDocker(QWidget):
     QWidget
     """
 
-    def __init__(self, transparent=False, parent=None, **kwargs):
+    def __init__(self, parent=None, **kwargs):
         """
         Initialise layout for TabDocker
 
@@ -150,3 +150,21 @@ class TabDocker(QWidget):
         Index of the widget
         """
         return self.tab_widget.indexOf(widget)
+
+    def setTabPosition(self, position):
+        """
+        Set the tab position of the Tab bar
+
+        Arguments:
+        position - Tab position as string ['North', 'East', 'West', 'South']
+
+        Returns:
+        None
+        """
+        tab_position_dict = {
+            'North': QTabWidget.North,
+            'South': QTabWidget.South,
+            'West': QTabWidget.West,
+            'East': QTabWidget.East,
+            }
+        self.tab_widget.setTabPosition(tab_position_dict[position])

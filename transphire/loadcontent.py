@@ -131,7 +131,6 @@ class LoadContent(QWidget):
             layout_v.addWidget(QLabel(entry[self.idx_name], self))
 
             # Behaviour based on typ
-            widget_2 = None
             if entry[self.idx_type] == 'COMBO':
                 widget = QComboBox(self)
                 widget.addItems(entry[self.idx_values])
@@ -147,27 +146,26 @@ class LoadContent(QWidget):
                 widget.textChanged.connect(self._change_color_to_changed)
                 widget.returnPressed.connect(self._find_file)
                 widget.setPlaceholderText('Press shift+return')
-            elif entry[self.idx_type] == 'FILE/CHOICE':
-                widget = QLineEdit(entry[self.idx_values], self)
-                widget.textChanged.connect(self._change_color_to_changed)
-                widget.returnPressed.connect(self._find_file)
-                widget.setPlaceholderText('Press shift+return')
-                widget_2 = QComboBox(self)
-                widget_2.addItems(['True', 'False'])
-                widget_2.setCurrentIndex(0)
-                widget_2.currentIndexChanged.connect(self._change_color_to_changed)
             else:
                 widget = QLineEdit(entry[self.idx_values], self)
                 widget.textChanged.connect(self._change_color_to_changed)
+
+            widget_2 = QComboBox(self)
+            widget_2.addItems(['Main', 'Advanced'])
+            widget_2.setCurrentIndex(0)
+            widget_2.currentIndexChanged.connect(self._change_color_to_changed)
+
             widget.setObjectName('default_settings')
-            if widget_2 is None:
-                layout_v.addWidget(widget, stretch=1)
-            else:
-                widget_2.setObjectName('default_settings')
-                layout_h_2 = QHBoxLayout()
-                layout_h_2.addWidget(widget, stretch=1)
-                layout_h_2.addWidget(widget_2, stretch=0)
-                layout_v.addLayout(layout_h_2)
+            layout_h_2 = QHBoxLayout()
+            layout_h_2.addWidget(widget, stretch=1)
+            for test_widget in [widget_2]:
+                if test_widget is None:
+                    continue
+                else:
+                    test_widget.setObjectName('default_settings')
+                    layout_h_2.addWidget(test_widget, stretch=0)
+
+            layout_v.addLayout(layout_h_2)
             self.content.append({
                 'widget': widget,
                 'widget_2': widget_2,
@@ -222,7 +220,6 @@ class LoadContent(QWidget):
         error_occured = False
         for entry in self.content:
             widget = entry['widget']
-            widget_2 = entry['widget_2']
             settings = copy.deepcopy(entry['settings'])
             dtype = settings['dtype']
             key = settings['name']
@@ -237,11 +234,13 @@ class LoadContent(QWidget):
                 tu.message(message)
                 sys.exit()
 
-            if isinstance(widget_2, QComboBox):
-                settings['widget_2'] = widget_2.currentText()
-            else:
-                assert widget_2 is None
-                settings['widget_2'] = widget_2
+            for number in ['2']:
+                temp_widget = entry['widget_{0}'.format(number)]
+                if isinstance(temp_widget, QComboBox):
+                    settings['widget_{0}'.format(number)] = temp_widget.currentText()
+                else:
+                    assert temp_widget is None
+                    settings['widget_{0}'.format(number)] = temp_widget
 
             if value:
                 if tu.check_instance(value=value, typ=dtype):
@@ -339,16 +338,16 @@ class LoadContent(QWidget):
                     pass
 
                 if isinstance(widget, QComboBox):
-                    idx = widget.findText(entry[key][0])
+                    hdd_idx = widget.findText(entry[key][0])
                     if idx < 0:
                         if is_hdd:
                             widget.addItem('Copy_hdd')
-                            idx = widget.findText('Copy_hdd')
+                            hdd_idx = widget.findText('Copy_hdd')
                         else:
-                            idx = 0
+                            hdd_idx = 0
                     else:
                         pass
-                    widget.setCurrentIndex(idx)
+                    widget.setCurrentIndex(hdd_idx)
                 elif isinstance(widget, QLineEdit):
                     widget.setText(entry[key][0])
                 else:
@@ -365,7 +364,7 @@ class LoadContent(QWidget):
 
                 if isinstance(widget_2, QComboBox):
                     try:
-                        idx = widget_2.findText(entry[key][1]['widget_2'])
+                        widget_2_idx = widget_2.findText(entry[key][1]['widget_2'])
                     except KeyError:
                         print(
                             'Older version of a save file detected!',
@@ -373,7 +372,8 @@ class LoadContent(QWidget):
                             )
                         continue
                     else:
-                        widget_2.setCurrentIndex(idx)
+                        widget_2_idx = max(0, widget_2_idx)
+                        widget_2.setCurrentIndex(widget_2_idx)
                         widget_2.setStyleSheet(tu.get_style(typ='unchanged'))
                 elif widget_2 is None:
                     pass

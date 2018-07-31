@@ -269,7 +269,7 @@ class DefaultSettings(QDialog):
             content_temp[name] = LoadContentContainer(
                 typ=name,
                 file_name=default_file,
-                settings_folder=settings_folder
+                settings_folder=settings_folder,
                 )
             default_widget.add_tab(widget=content_temp[name], name=name)
             try:
