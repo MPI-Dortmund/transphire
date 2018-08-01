@@ -32,6 +32,8 @@ def default_cryolo_v1_0_4():
     Content items as list
     """
     items = [
+        ['WIDGETS MAIN', '8', int, '', 'PLAIN'],
+        ['WIDGETS ADVANCED', '8', int, '', 'PLAIN'],
         ['--conf', '', str, '', 'FILE'],
         ['--weights', '', str, '', 'FILE'],
         ['--gpu', '0', [int]*99, '', 'PLAIN'],
@@ -58,6 +60,8 @@ def default_cter_v1_0():
     Content items as list
     """
     items = [
+        ['WIDGETS MAIN', '8', int, '', 'PLAIN'],
+        ['WIDGETS ADVANCED', '8', int, '', 'PLAIN'],
         ['--wn', '512', float, '', 'PLAIN'],
         ['--apix', '-1', float, '', 'PLAIN'],
         ['--Cs', '2.0', float, '', 'PLAIN'],
@@ -92,6 +96,8 @@ def default_gctf_v1_06():
     Content items as list
     """
     items = [
+        ['WIDGETS MAIN', '8', int, '', 'PLAIN'],
+        ['WIDGETS ADVANCED', '8', int, '', 'PLAIN'],
         ['--apix', '1.34', float, '', 'PLAIN'],
         ['--dstep', '14.0', float, '', 'PLAIN'],
         ['--kV', '300', float, '', 'PLAIN'],
@@ -153,6 +159,8 @@ def default_gctf_v1_18():
     Content items as list
     """
     items = [
+        ['WIDGETS MAIN', '8', int, '', 'PLAIN'],
+        ['WIDGETS ADVANCED', '8', int, '', 'PLAIN'],
         ['--apix', '1.34', float, '', 'PLAIN'],
         ['--dstep', '14.0', float, '', 'PLAIN'],
         ['--kV', '300', float, '', 'PLAIN'],
@@ -222,12 +230,16 @@ def default_path():
     Return:
     Content items as list
     """
-    items = [['IMOD header', '', str, '', 'FILE/CHOICE']]
-    items.append(['IMOD newstack', '', str, '', 'FILE/CHOICE'])
-    items.append(['IMOD mrc2tif', '', str, '', 'FILE/CHOICE'])
-    items.append(['IMOD dm2mrc', '', str, '', 'FILE/CHOICE'])
-    items.append(['e2proc2d.py', '', str, '', 'FILE/CHOICE'])
-    items.append(['SumMovie v1.0.2', '', str, '', 'FILE/CHOICE'])
+    items = [
+        ['IMOD header', '', str, '', 'FILE/CHOICE'],
+        ['IMOD newstack', '', str, '', 'FILE/CHOICE'],
+        ['IMOD mrc2tif', '', str, '', 'FILE/CHOICE'],
+        ['IMOD dm2mrc', '', str, '', 'FILE/CHOICE'],
+        ['e2proc2d.py', '', str, '', 'FILE/CHOICE'],
+        ['SumMovie v1.0.2', '', str, '', 'FILE/CHOICE'],
+        ['WIDGETS MAIN', '8', int, '', 'PLAIN'],
+        ['WIDGETS ADVANCED', '8', int, '', 'PLAIN'],
+        ]
     function_dict = tu.get_function_dict()
     for key in sorted(function_dict.keys()):
         if function_dict[key]['executable']:
@@ -300,6 +312,8 @@ def default_notification():
     Content items as list
     """
     items = [
+        ['WIDGETS MAIN', '8', int, '', 'PLAIN'],
+        ['WIDGETS ADVANCED', '8', int, '', 'PLAIN'],
         ['Project quota warning (%)', '80', float, '', 'PLAIN'],
         ['Project quota stop (%)', '90', float, '', 'PLAIN'],
         ['Scratch quota warning (%)', '80', float, '', 'PLAIN'],
@@ -486,6 +500,8 @@ def default_ctffind_4_v4_1_8():
     Content items as list
     """
     items = [
+        ['WIDGETS MAIN', '8', int, '', 'PLAIN'],
+        ['WIDGETS ADVANCED', '8', int, '', 'PLAIN'],
         ['Pixel size', '1.0', float, '', 'PLAIN'],
         ['Acceleration voltage', '300.0', float, '', 'PLAIN'],
         ['Spherical aberration', '2.7', float, '', 'PLAIN'],
@@ -567,6 +583,8 @@ def default_motion_cor_2_v1_0_0():
     Content items as list
     """
     items = [
+        ['WIDGETS MAIN', '8', int, '', 'PLAIN'],
+        ['WIDGETS ADVANCED', '8', int, '', 'PLAIN'],
         ['-FmDose', '0', float, '', 'PLAIN'],
         ['-PixSize', '0', float, '', 'PLAIN'],
         ['-kV', '300', float, '', 'PLAIN'],
@@ -609,6 +627,8 @@ def default_motion_cor_2_v1_0_5():
     Content items as list
     """
     items = [
+        ['WIDGETS MAIN', '8', int, '', 'PLAIN'],
+        ['WIDGETS ADVANCED', '8', int, '', 'PLAIN'],
         ['-FmDose', '0', float, '', 'PLAIN'],
         ['-PixSize', '0', float, '', 'PLAIN'],
         ['-kV', '300', float, '', 'PLAIN'],
@@ -652,6 +672,8 @@ def default_motion_cor_2_v1_1_0():
     Content items as list
     """
     items = [
+        ['WIDGETS MAIN', '8', int, '', 'PLAIN'],
+        ['WIDGETS ADVANCED', '8', int, '', 'PLAIN'],
         ['-FmDose', '0', float, '', 'PLAIN'],
         ['-PixSize', '0', float, '', 'PLAIN'],
         ['-kV', '300', float, '', 'PLAIN'],
@@ -696,6 +718,8 @@ def default_general():
     Content items as list
     """
     items = [
+        ['WIDGETS MAIN', '8', int, '', 'PLAIN'],
+        ['WIDGETS ADVANCED', '8', int, '', 'PLAIN'],
         ['Software', ['EPU 1.9', 'EPU 1.8'], str, '', 'COMBO'],
         ['Type', ['Stack', 'Frames'], str, '', 'COMBO'],
         ['Camera', ['K2', 'Falcon3', 'Falcon2'], str, '', 'COMBO'],
@@ -745,6 +769,8 @@ def default_copy(settings_folder):
     programs_picking.extend(extend_list)
 
     items = [
+        ['WIDGETS MAIN', '8', int, '', 'PLAIN'],
+        ['WIDGETS ADVANCED', '8', int, '', 'PLAIN'],
         ['Session to work', ['False', 'True'], bool, '', 'COMBO'],
         ['Session to HDD', ['False', 'True'], bool, '', 'COMBO'],
         ['Session to backup', ['False', 'True'], bool, '', 'COMBO'],

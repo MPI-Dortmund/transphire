@@ -34,7 +34,7 @@ class SettingsContainer(QWidget):
     QWidget
     """
 
-    def __init__(self, content, max_widgets, name, parent=None, **kwargs):
+    def __init__(self, content, name, parent=None, **kwargs):
         """
         Initialise layout of the widget.
 
@@ -56,6 +56,16 @@ class SettingsContainer(QWidget):
         layout_main.addWidget(my_tab_docker)
 
         self.layout_dict = {}
+        for entry in content:
+            for widget in entry:
+                for key in widget:
+                    if key == 'WIDGETS MAIN':
+                        self.layout_dict['Main_max'] = int(widget['WIDGETS MAIN'][0])
+                    elif key == 'WIDGETS ADVANCED':
+                        self.layout_dict['Advanced_max'] = int(widget['WIDGETS ADVANCED'][0])
+                    else:
+                        continue
+
         for dict_name in ['Main', 'Advanced']:
             widget = QWidget(self)
             widget.setObjectName('settings')
@@ -72,8 +82,6 @@ class SettingsContainer(QWidget):
             scroll_area.setWidget(widget)
             my_tab_docker.add_tab(scroll_area, dict_name)
 
-        self.max_widgets = max_widgets
-
         # Global content
         self.content = {}
         self.group = {}
@@ -82,9 +90,13 @@ class SettingsContainer(QWidget):
         for entry in content:
             for widget in entry:
                 for key in widget:
+                    if key == 'WIDGETS MAIN' or key == 'WIDGETS ADVANCED':
+                        continue
                     layout_name = widget[key][1]['widget_2']
+                    widget_name = widget[key][1]['name']
+                    group = widget[key][1]['group']
 
-                    if self.layout_dict['{0}_idx'.format(layout_name)] % self.max_widgets == 0:
+                    if self.layout_dict['{0}_idx'.format(layout_name)] % self.layout_dict['{0}_max'.format(layout_name)] == 0:
                         if self.layout_dict['{0}_v'.format(layout_name)] is not None:
                             self.layout_dict[layout_name].addWidget(Separator(typ='vertical', color='lightgrey'))
                             self.layout_dict['{0}_v'.format(layout_name)].addStretch(1)
@@ -94,8 +106,6 @@ class SettingsContainer(QWidget):
                         self.layout_dict['{0}_v'.format(layout_name)].setContentsMargins(0, 0, 0, 0)
                         self.layout_dict[layout_name].addLayout(self.layout_dict['{0}_v'.format(layout_name)])
 
-                    widget_name = widget[key][1]['name']
-                    group = widget[key][1]['group']
                     widget = SettingsWidget(content=widget[key], name=name, parent=self)
                     if group:
                         group, state = group.split(':')
