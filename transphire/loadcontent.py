@@ -150,10 +150,20 @@ class LoadContent(QWidget):
                 widget = QLineEdit(entry[self.idx_values], self)
                 widget.textChanged.connect(self._change_color_to_changed)
 
-            widget_2 = QComboBox(self)
-            widget_2.addItems(['Main', 'Advanced'])
-            widget_2.setCurrentIndex(0)
-            widget_2.currentIndexChanged.connect(self._change_color_to_changed)
+            exclude_typ_list = [
+                'Mount',
+                'Font',
+                'Others',
+                'Pipeline',
+                'Notification_widget',
+                ]
+            if self.typ not in exclude_typ_list:
+                widget_2 = QComboBox(self)
+                widget_2.addItems(['Main', 'Advanced'])
+                widget_2.setCurrentIndex(0)
+                widget_2.currentIndexChanged.connect(self._change_color_to_changed)
+            else:
+                widget_2 = None
 
             widget.setObjectName('default_settings')
             layout_h_2 = QHBoxLayout()

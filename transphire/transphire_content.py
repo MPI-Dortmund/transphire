@@ -231,14 +231,14 @@ def default_path():
     Content items as list
     """
     items = [
+        ['WIDGETS MAIN', '8', int, '', 'PLAIN'],
+        ['WIDGETS ADVANCED', '8', int, '', 'PLAIN'],
         ['IMOD header', '', str, '', 'FILE/CHOICE'],
         ['IMOD newstack', '', str, '', 'FILE/CHOICE'],
         ['IMOD mrc2tif', '', str, '', 'FILE/CHOICE'],
         ['IMOD dm2mrc', '', str, '', 'FILE/CHOICE'],
         ['e2proc2d.py', '', str, '', 'FILE/CHOICE'],
         ['SumMovie v1.0.2', '', str, '', 'FILE/CHOICE'],
-        ['WIDGETS MAIN', '8', int, '', 'PLAIN'],
-        ['WIDGETS ADVANCED', '8', int, '', 'PLAIN'],
         ]
     function_dict = tu.get_function_dict()
     for key in sorted(function_dict.keys()):
