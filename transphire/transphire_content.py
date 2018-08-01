@@ -233,17 +233,17 @@ def default_path():
     items = [
         ['WIDGETS MAIN', '8', int, '', 'PLAIN'],
         ['WIDGETS ADVANCED', '8', int, '', 'PLAIN'],
-        ['IMOD header', '', str, '', 'FILE/CHOICE'],
-        ['IMOD newstack', '', str, '', 'FILE/CHOICE'],
-        ['IMOD mrc2tif', '', str, '', 'FILE/CHOICE'],
-        ['IMOD dm2mrc', '', str, '', 'FILE/CHOICE'],
-        ['e2proc2d.py', '', str, '', 'FILE/CHOICE'],
-        ['SumMovie v1.0.2', '', str, '', 'FILE/CHOICE'],
+        ['IMOD header', '', str, '', 'FILE'],
+        ['IMOD newstack', '', str, '', 'FILE'],
+        ['IMOD mrc2tif', '', str, '', 'FILE'],
+        ['IMOD dm2mrc', '', str, '', 'FILE'],
+        ['e2proc2d.py', '', str, '', 'FILE'],
+        ['SumMovie v1.0.2', '', str, '', 'FILE'],
         ]
     function_dict = tu.get_function_dict()
     for key in sorted(function_dict.keys()):
         if function_dict[key]['executable']:
-            items.append([key, '', str, '', 'FILE/CHOICE'])
+            items.append([key, '', str, '', 'FILE'])
         else:
             pass
 
