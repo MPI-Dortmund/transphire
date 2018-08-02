@@ -742,6 +742,20 @@ def import_motion_cor_2_v1_1_0(name, directory_name):
     return data, data_original
 
 
+def import_cryolo_v1_0_5(name, directory_name, image=True):
+    """
+    Import picking information for crYOLO v1.0.5.
+
+    Arguments:
+    name - Name of picking program
+    directory_name - Name of the directory to search for files
+
+    Return:
+    Imported data
+    """
+    return import_cryolo_v1_0_4(name, directory_name, image=True)
+
+
 def import_cryolo_v1_0_4(name, directory_name, image=True):
     """
     Import picking information for crYOLO v1.0.4.

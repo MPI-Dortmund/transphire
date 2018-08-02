@@ -86,6 +86,7 @@ class LoadContent(QWidget):
         self.idx_dtype = 2
         self.idx_group = 3
         self.idx_type = 4
+        self.idx_priority = 5
 
         # Fill content based on typ
         content_function = tu.get_function_dict()[typ]['content']
@@ -159,10 +160,12 @@ class LoadContent(QWidget):
                 'Pipeline',
                 'Notification_widget',
                 ]
-            if self.typ not in exclude_typ_list:
+            if self.typ not in exclude_typ_list and not entry[self.idx_name].startswith('WIDGETS'):
                 widget_2 = QComboBox(self)
                 widget_2.addItems(['Main', 'Advanced'])
-                widget_2.setCurrentIndex(0)
+                combo_idx = widget_2.findText(entry[self.idx_priority])
+                assert combo_idx >= 0, entry
+                widget_2.setCurrentIndex(combo_idx)
                 widget_2.currentIndexChanged.connect(self._change_color_to_changed)
             else:
                 widget_2 = None
