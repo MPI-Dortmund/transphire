@@ -139,6 +139,13 @@ def get_dtype_dict():
         ('box_y', '<f8'),
         ('file_name', '|U200'),
         ]
+    dtype['crYOLO v1.0.5'] = [
+        ('coord_x', '<f8'),
+        ('coord_y', '<f8'),
+        ('box_x', '<f8'),
+        ('box_y', '<f8'),
+        ('file_name', '|U200'),
+        ]
     dtype['picking'] = [
         ('object', 'O'),
         ('image', '|U200'),
@@ -281,6 +288,12 @@ def get_dtype_import_dict():
         ('shift_y', '<f8')
         ]
     dtype_import['crYOLO v1.0.4'] = [
+        ('coord_x', '<f8'),
+        ('coord_y', '<f8'),
+        ('box_x', '<f8'),
+        ('box_y', '<f8'),
+        ]
+    dtype_import['crYOLO v1.0.5'] = [
         ('coord_x', '<f8'),
         ('coord_y', '<f8'),
         ('box_x', '<f8'),
