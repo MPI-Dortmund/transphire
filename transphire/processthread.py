@@ -1881,7 +1881,7 @@ class ProcessThread(QThread):
             else:
                 pass
 
-        data, data_orig = tu.get_function_dict()[self.settings['Copy']['Motion']]['plot_data'](
+        data, _ = tu.get_function_dict()[self.settings['Copy']['Motion']]['plot_data'](
             self.settings['Copy']['Motion'],
             self.settings['Motion_folder'][self.settings['Copy']['Motion']]
             )
@@ -1924,6 +1924,118 @@ class ProcessThread(QThread):
                 pass
             self.queue_com['notification'].put(message)
             self.write_error(msg=message, root_name=root_name)
+
+        self.queue_lock.lock()
+        try:
+            mask = np.in1d(
+                np.array(
+                    np.char.rsplit(
+                        np.array(
+                            np.char.rsplit(
+                                data['file_name'],
+                                '/',
+                                1
+                                ).tolist()
+                            )[:, -1],
+                        '.'
+                        ).tolist()
+                    )[:,0],
+                np.char.rsplit(np.char.rsplit(
+                    file_sum,
+                    '/',
+                    1
+                    ).tolist()[-1], '.').tolist()[0]
+                )
+            data = data[mask]
+        finally:
+            self.queue_lock.unlock()
+
+        if data.shape[0] != 0:
+            self.queue_lock.lock()
+            try:
+                sum_file = queue_dict[0]['sum'][0]
+                try:
+                    dw_file = queue_dict[0]['sum_dw'][0]
+                except IndexError:
+                    dw_file = None
+                output_name_mic, output_name_star, output_name_star_relion3 = tum.combine_motion_outputs(
+                    data=data,
+                    settings=self.settings,
+                    queue_com=self.queue_com,
+                    shared_dict=self.shared_dict,
+                    name=self.name,
+                    sum_file=sum_file,
+                    dw_file=dw_file,
+                    )
+                partres_files = sorted(glob.glob(
+                    '{0}/*_transphire.txt'.format(
+                        self.settings['motion_folder']
+                        )
+                    ))
+
+                output_lines = []
+                for file_name in partres_files:
+                    with open(file_name, 'r') as read:
+                        output_lines.append(read.readlines()[-1])
+                with open(output_name_mic, 'w') as write:
+                    write.write(''.join(output_lines))
+
+                star_files = sorted(glob.glob(
+                    '{0}/*_transphire.star'.format(
+                        self.settings['motion_folder']
+                        )
+                    ))
+
+                header = []
+                with open(star_files[0], 'r') as read:
+                    header.extend(read.readlines()[:-1])
+                output_lines = []
+                for file_name in star_files:
+                    with open(file_name, 'r') as read:
+                        output_lines.append(read.readlines()[-1])
+                with open(output_name_star, 'w') as write:
+                    write.write(''.join(header))
+                    write.write(''.join(output_lines))
+
+                star_files = sorted(glob.glob(
+                    '{0}/*_transphire_relion3.star'.format(
+                        self.settings['motion_folder']
+                        )
+                    ))
+
+                header = []
+                with open(star_files[0], 'r') as read:
+                    header.extend(read.readlines()[:-1])
+                output_lines = []
+                for file_name in star_files:
+                    with open(file_name, 'r') as read:
+                        output_lines.append(read.readlines()[-1])
+                with open(output_name_star_relion3, 'w') as write:
+                    write.write(''.join(header))
+                    write.write(''.join(output_lines))
+            finally:
+                self.queue_lock.unlock()
+
+            if not self.settings['Copy']['Copy to work'] == 'False':
+                self.add_to_queue(aim='Copy_work', root_name=output_name_mic)
+                self.add_to_queue(aim='Copy_work', root_name=output_name_star)
+                self.add_to_queue(aim='Copy_work', root_name=output_name_star_relion3)
+            else:
+                pass
+            if not self.settings['Copy']['Copy to HDD'] == 'False':
+                self.add_to_queue(aim='Copy_hdd', root_name=output_name_mic)
+                self.add_to_queue(aim='Copy_hdd', root_name=output_name_star)
+                self.add_to_queue(aim='Copy_hdd', root_name=output_name_star_relion3)
+            else:
+                pass
+            if not self.settings['Copy']['Copy to backup'] == 'False':
+                self.add_to_queue(aim='Copy_backup', root_name=output_name_mic)
+                self.add_to_queue(aim='Copy_backup', root_name=output_name_star)
+                self.add_to_queue(aim='Copy_backup', root_name=output_name_star_relion3)
+            else:
+                pass
+        else:
+            pass
 
         if skip_list:
             pass
@@ -2140,7 +2252,6 @@ class ProcessThread(QThread):
                 pass
             self.write_error(msg=message, root_name=file_sum)
 
-        # Remove all rows that were skipped in the past
         self.queue_lock.lock()
         try:
             mask = np.in1d(

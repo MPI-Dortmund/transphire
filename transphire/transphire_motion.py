@@ -172,6 +172,7 @@ def create_motion_cor_2_v1_0_0_command(motion_name, file_input, file_output, fil
     ignore_list = []
     ignore_list.append('Split Gpu?')
     ignore_list.append('-Gpu')
+    ignore_list.append('dose cutoff (relion3)')
     command = []
     # Start the program
     command.append('{0}'.format(settings['Path'][motion_name]))
@@ -348,3 +349,110 @@ def create_sum_movie_v1_0_2_command(
         )
 
     return command
+
+
+def combine_motion_outputs(
+        data,
+        settings,
+        queue_com,
+        shared_dict,
+        name,
+        sum_file,
+        dw_file,
+        ):
+    """
+    Combine the motion outputs to one micrograph and one relion star file.
+
+    root_path - Root path of the file
+    file_name - File name of the ctf file.
+    settings - TranSPHIRE settings
+    queue_com - Queue for communication
+    name - Name of process
+    sum_file - Name of the dose uncorrected sum file
+
+    Returns:
+    None
+    """
+    motion_name = settings['Copy']['Motion']
+    motion_settings = settings[motion_name]
+    motion_folder = settings['motion_folder']
+    project_folder = '{0}/'.format(settings['project_folder'])
+
+    output_name_mic = os.path.join(
+        motion_folder,
+        '{0}_transphire.txt'.format(os.path.basename(sum_file))
+        )
+    output_name_star = os.path.join(
+        motion_folder,
+        '{0}_transphire.star'.format(os.path.basename(sum_file))
+        )
+    output_name_star_relion3 = os.path.join(
+        motion_folder,
+        '{0}_transphire_relion3.star'.format(os.path.basename(sum_file))
+        )
+
+    with open(output_name_mic, 'w') as write:
+        write.write('{0}\n'.format(os.path.basename(sum_file)))
+
+    header_star = [
+        '_rlnMicrographName'
+        ]
+
+    header_star_relion3 = [
+        '_rlnMicrographNameNoDw',
+        '_rlnMicrographName',
+        '_rlnMicrographMetadata',
+        '_rlnAccumMotionTotal',
+        '_rlnAccumMotionEarly',
+        '_rlnAccumMotionLate',
+        ]
+
+
+    return output_name_mic, output_name_star, output_name_star_relion3
+
+
+def get_relion_header(names):
+    """
+    Create a relion star file header.
+
+    names - Header names as list
+
+    Returns:
+    header string
+    """
+    header = []
+    header.append('')
+    header.append('data_')
+    header.append('')
+    header.append('loop_')
+    for index, name in enumerate(names):
+        header.append('{0} #{1}'.format(name, index+1))
+    return '{0}\n'.format('\n'.join(header))
+
+
+def create_export_data(export_data, lines, maximum_string):
+    """
+    Write export data to file.
+
+    export_data - Data to export.
+    file_name - Name of the file to write to.
+
+    Returns:
+    In place modificaion of lines
+    """
+    for row in export_data:
+        row_string = []
+        for name in export_data.dtype.names:
+            if name == 'mic_number':
+                continue
+            else:
+                pass
+            value = row[name]
+            if isinstance(value, int):
+                row_string.append('{0: 7d}'.format(value))
+            elif isinstance(value, float):
+                row_string.append('{0: 14f}'.format(value))
+            else:
+                length = maximum_string[name]
+                row_string.append('{0:{1}s}'.format(value, length))
+        lines.append('{0}\n'.format('\t'.join(row_string)))
