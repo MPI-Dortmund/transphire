@@ -144,6 +144,14 @@ def get_function_dict():
             'typ': 'picking',
             'allow_empty': [],
             },
+        'crYOLO v1.0.5': {
+            'plot': tp.update_cryolo_v1_0_5,
+            'plot_data': ti.import_cryolo_v1_0_5,
+            'content': tc.default_cryolo_v1_0_5,
+            'executable': True,
+            'typ': 'picking',
+            'allow_empty': [],
+            },
         'Mount': {
             'plot': None,
             'plot_data': None,
@@ -307,9 +315,9 @@ def get_exclude_set(content):
                     widget_2 = entry2[key][1]['widget_2']
                     if widget_2 is None:
                         continue
-                    elif widget_2 == 'True':
+                    elif widget_2 == 'Main':
                         continue
-                    elif widget_2 == 'False':
+                    elif widget_2 == 'Advanced':
                         exclude_list.append(key)
                         exclude_list.append('Plot {0}'.format(key))
                     else:
@@ -500,28 +508,24 @@ def get_content_gui(content):
             'widget': SettingsContainer,
             'content': content['General'],
             'layout': 'Settings',
-            'max_widgets': 8
             },
         {
             'name': 'Notification',
             'widget': SettingsContainer,
             'content': content['Notification'],
             'layout': 'Settings',
-            'max_widgets': 9
             },
         {
             'name': 'Copy',
             'widget': SettingsContainer,
             'content': content['Copy'],
             'layout': 'Settings',
-            'max_widgets': 9
             },
         {
             'name': 'Path',
             'widget': SettingsContainer,
             'content': content['Path'],
             'layout': 'Settings',
-            'max_widgets': 11
             },
         {
             'name': 'Motion',
@@ -575,7 +579,6 @@ def get_content_gui(content):
             'widget': SettingsContainer,
             'content': content[motion_content],
             'layout': 'Motion',
-            'max_widgets': 10
             })
         gui_content.append({
             'name': 'Plot {0}'.format(motion_content),
@@ -600,7 +603,6 @@ def get_content_gui(content):
         'name': 'Frames',
         'widget': FrameContainer,
         'layout': 'Motion',
-        'max_widgets': 11
         })
 
     for ctf_content in content_ctf:
@@ -609,7 +611,6 @@ def get_content_gui(content):
             'widget': SettingsContainer,
             'content': content[ctf_content],
             'layout': 'CTF',
-            'max_widgets': 10
             })
         gui_content.append({
             'name': 'Plot {0}'.format(ctf_content),
@@ -637,7 +638,6 @@ def get_content_gui(content):
             'widget': SettingsContainer,
             'content': content[picking_content],
             'layout': 'Picking',
-            'max_widgets': 11
             })
         gui_content.append({
             'name': 'Plot {0}'.format(picking_content),

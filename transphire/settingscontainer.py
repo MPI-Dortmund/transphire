@@ -23,6 +23,7 @@ except ImportError:
     from PyQt5.QtCore import pyqtSlot
 from transphire.settingswidget import SettingsWidget
 from transphire.separator import Separator
+from transphire.tabdocker import TabDocker
 
 
 class SettingsContainer(QWidget):
@@ -33,7 +34,7 @@ class SettingsContainer(QWidget):
     QWidget
     """
 
-    def __init__(self, content, max_widgets, name, parent=None, **kwargs):
+    def __init__(self, content, name, parent=None, **kwargs):
         """
         Initialise layout of the widget.
 
@@ -47,64 +48,83 @@ class SettingsContainer(QWidget):
         """
         super(SettingsContainer, self).__init__(parent)
 
-        # Layout
-        layout_tmp = QVBoxLayout(self)
-        layout_tmp.setContentsMargins(0, 0, 0, 0)
+        # TabDocker widget for Main and Advanced
+        my_tab_docker = TabDocker(self)
+        my_tab_docker.setTabPosition('South')
+        layout_main = QVBoxLayout(self)
+        layout_main.setContentsMargins(0, 0, 0, 0)
+        layout_main.addWidget(my_tab_docker)
 
-        scroll_area = QScrollArea(self)
-        scroll_area.setWidgetResizable(True)
+        self.layout_dict = {}
+        for entry in content:
+            for widget in entry:
+                for key in widget:
+                    if key == 'WIDGETS MAIN':
+                        self.layout_dict['Main_max'] = int(widget['WIDGETS MAIN'][0])
+                    elif key == 'WIDGETS ADVANCED':
+                        self.layout_dict['Advanced_max'] = int(widget['WIDGETS ADVANCED'][0])
+                    else:
+                        continue
 
-        widget = QWidget(self)
-        widget.setObjectName('settings')
-        scroll_area.setWidget(widget)
-        layout_tmp.addWidget(scroll_area)
+        for dict_name in ['Main', 'Advanced']:
+            widget = QWidget(self)
+            widget.setObjectName('settings')
 
-        layout_v_global = QVBoxLayout(widget)
-        layout_v_global.setContentsMargins(3, 3, 3, 3)
-        layout_v_global.addWidget(QLabel(self))
-        self.layout = QHBoxLayout()
-        self.layout.addStretch(1)
-        self.layout.setContentsMargins(0, 0, 0, 0)
-        self.layout_v = None
-        self.idx = 0
-        self.max_widgets = max_widgets
+            self.layout_dict[dict_name] = QHBoxLayout(widget)
+            self.layout_dict[dict_name].setContentsMargins(3, 3, 3, 3)
+            self.layout_dict[dict_name].addStretch(1)
+
+            self.layout_dict['{0}_v'.format(dict_name)] = None
+            self.layout_dict['{0}_idx'.format(dict_name)] = 0
+
+            scroll_area = QScrollArea(my_tab_docker)
+            scroll_area.setWidgetResizable(True)
+            scroll_area.setWidget(widget)
+            my_tab_docker.add_tab(scroll_area, dict_name)
 
         # Global content
         self.content = {}
         self.group = {}
 
-        # Add to v global layout
-        layout_v_global.addLayout(self.layout, stretch=0)
-        layout_v_global.addStretch(1)
-
         # Add to layout
         for entry in content:
             for widget in entry:
                 for key in widget:
-                    if self.idx % self.max_widgets == 0:
-                        if self.layout_v is not None:
-                            self.layout.addWidget(Separator(typ='vertical', color='lightgrey'))
-                            self.layout_v.addStretch(1)
-                        self.layout_v = QVBoxLayout()
-                        self.layout_v.setContentsMargins(0, 0, 0, 0)
-                        self.layout.addLayout(self.layout_v)
+                    if key == 'WIDGETS MAIN' or key == 'WIDGETS ADVANCED':
+                        continue
+                    layout_name = widget[key][1]['widget_2']
                     widget_name = widget[key][1]['name']
                     group = widget[key][1]['group']
+
+                    if self.layout_dict['{0}_idx'.format(layout_name)] % self.layout_dict['{0}_max'.format(layout_name)] == 0:
+                        if self.layout_dict['{0}_v'.format(layout_name)] is not None:
+                            self.layout_dict[layout_name].addWidget(Separator(typ='vertical', color='lightgrey'))
+                            self.layout_dict['{0}_v'.format(layout_name)].addStretch(1)
+                        else:
+                            pass
+                        self.layout_dict['{0}_v'.format(layout_name)] = QVBoxLayout()
+                        self.layout_dict['{0}_v'.format(layout_name)].setContentsMargins(0, 0, 0, 0)
+                        self.layout_dict[layout_name].addLayout(self.layout_dict['{0}_v'.format(layout_name)])
+
                     widget = SettingsWidget(content=widget[key], name=name, parent=self)
                     if group:
                         group, state = group.split(':')
                         self.group.setdefault(group, [])
                         self.group[group].append([widget, state, widget_name])
                     self.content[widget_name] = widget
-                    self.layout_v.addWidget(widget)
-                    self.idx += 1
+                    self.layout_dict['{0}_v'.format(layout_name)].addWidget(widget)
+                    self.layout_dict['{0}_idx'.format(layout_name)] += 1
 
         for key in self.group:
             self.content[key].sig_index_changed.connect(self.change_state)
             self.change_state(name=key)
 
-        self.layout_v.addStretch(1)
-        self.layout.addStretch(1)
+        for dict_name in ['Main', 'Advanced']:
+            try:
+                self.layout_dict['{0}_v'.format(dict_name)].addStretch(1)
+                self.layout_dict[dict_name].addStretch(1)
+            except AttributeError:
+                pass
 
     @pyqtSlot(str)
     def change_state(self, name):

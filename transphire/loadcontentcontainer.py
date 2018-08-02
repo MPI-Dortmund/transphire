@@ -120,7 +120,7 @@ class LoadContentContainer(QWidget):
             hdd=hdd,
             parent=self,
             separator=[separator_1, separator_2],
-            settings_folder=self.settings_folder
+            settings_folder=self.settings_folder,
             )
         widget.delete.connect(self.remove_widget)
         self.content.append(widget)

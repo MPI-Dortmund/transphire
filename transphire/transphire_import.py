@@ -139,6 +139,13 @@ def get_dtype_dict():
         ('box_y', '<f8'),
         ('file_name', '|U200'),
         ]
+    dtype['crYOLO v1.0.5'] = [
+        ('coord_x', '<f8'),
+        ('coord_y', '<f8'),
+        ('box_x', '<f8'),
+        ('box_y', '<f8'),
+        ('file_name', '|U200'),
+        ]
     dtype['picking'] = [
         ('object', 'O'),
         ('image', '|U200'),
@@ -286,6 +293,12 @@ def get_dtype_import_dict():
         ('box_x', '<f8'),
         ('box_y', '<f8'),
         ]
+    dtype_import['crYOLO v1.0.5'] = [
+        ('coord_x', '<f8'),
+        ('coord_y', '<f8'),
+        ('box_x', '<f8'),
+        ('box_y', '<f8'),
+        ]
     return dtype_import
 
 
@@ -405,6 +418,7 @@ def import_ctffind_v4_1_8(name, directory_name):
                 data[idx][entry] = data_name[entry]
 
     data = np.sort(data, order='file_name')
+    data_original = np.sort(data_original, order='file_name')
     return data, data_original
 
 
@@ -531,6 +545,8 @@ def import_gctf_v1_06(name, directory_name):
                 except ValueError:
                     data[idx][transphire_name] = 0
 
+    data = np.sort(data, order='file_name')
+    data_original = np.sort(data_original, order='file_name')
     return data, data_original
 
 
@@ -621,6 +637,8 @@ def import_cter_v1_0(name, directory_name):
             else:
                 continue
 
+    data = np.sort(data, order='file_name')
+    data_original = np.sort(data_original, order='file_name')
     return data, data_original
 
 
@@ -737,6 +755,20 @@ def import_motion_cor_2_v1_1_0(name, directory_name):
     return data, data_original
 
 
+def import_cryolo_v1_0_5(name, directory_name, image=True):
+    """
+    Import picking information for crYOLO v1.0.5.
+
+    Arguments:
+    name - Name of picking program
+    directory_name - Name of the directory to search for files
+
+    Return:
+    Imported data
+    """
+    return import_cryolo_v1_0_4(name, directory_name, image=True)
+
+
 def import_cryolo_v1_0_4(name, directory_name, image=True):
     """
     Import picking information for crYOLO v1.0.4.
@@ -810,4 +842,6 @@ def import_cryolo_v1_0_4(name, directory_name, image=True):
     else:
         pass
     data_original = None
+
+    data = np.sort(data, order='file_name')
     return data, data_original

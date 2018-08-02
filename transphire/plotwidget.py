@@ -68,13 +68,14 @@ class PlotWidget(QWidget):
 
         # Initialise figure
         self.figure = plt.figure()
+        self.ax1 = self.figure.add_subplot(111)
         self.compute_initial_figure()
 
         # Create canvas for the figure
         self.canvas = FigureCanvas(self.figure)
         self.canvas.setParent(self)
         self.toolbar = NavigationToolbar(self.canvas, self)
-        self.canvas.draw()
+        self.canvas.draw_idle()
 
         layout_v = QVBoxLayout(self)
         # Add for image plot typ
@@ -120,16 +121,15 @@ class PlotWidget(QWidget):
         Return:
         None
         """
-        self.figure.clear()
-        ax1 = self.figure.add_subplot(111)
-        ax1.plot([0.5, 0, 0, 0.5], [1, 1, 0, 0], '#68a3c3')
-        ax1.plot([1, 1.5, 1.5, 1, 1], [0, 0, 1, 1, 0], '#68a3c3')
-        ax1.plot([2, 2, 2.5, 2.5, 2, 2.5], [0, 1, 1, 0.5, 0.5, 0], '#68a3c3')
-        ax1.plot([3, 3, 3.5, 3.5, 3, 3.5], [0, 1, 1, 0.5, 0.5, 0], '#68a3c3')
-        ax1.plot([4, 4, 4.5, 4.5], [1, 0, 0, 1], '#68a3c3')
-        ax1.plot([5, 5, 5.5, 5.5, 5], [0, 1, 1, 0.5, 0.5], '#68a3c3')
-        ax1.plot([6, 6.5, 6.25, 6.25], [1, 1, 1, 0], '#68a3c3')
-        ax1.set_title(title)
+        self.ax1.clear()
+        self.ax1.plot([0.5, 0, 0, 0.5], [1, 1, 0, 0], '#68a3c3')
+        self.ax1.plot([1, 1.5, 1.5, 1, 1], [0, 0, 1, 1, 0], '#68a3c3')
+        self.ax1.plot([2, 2, 2.5, 2.5, 2, 2.5], [0, 1, 1, 0.5, 0.5, 0], '#68a3c3')
+        self.ax1.plot([3, 3, 3.5, 3.5, 3, 3.5], [0, 1, 1, 0.5, 0.5, 0], '#68a3c3')
+        self.ax1.plot([4, 4, 4.5, 4.5], [1, 0, 0, 1], '#68a3c3')
+        self.ax1.plot([5, 5, 5.5, 5.5, 5], [0, 1, 1, 0.5, 0.5], '#68a3c3')
+        self.ax1.plot([6, 6.5, 6.25, 6.25], [1, 1, 1, 0], '#68a3c3')
+        self.ax1.set_title(title)
 
 
     def compute_initial_figure(self):
@@ -142,13 +142,12 @@ class PlotWidget(QWidget):
         Return:
         None
         """
-        self.figure.clear()
-        ax1 = self.figure.add_subplot(111)
-        ax1.plot([0, 0, 0, 0.5, 0.5, 0.5], [0, 1, 0.5, 0.5, 0, 1], '#68a3c3')
-        ax1.plot([1.5, 1, 1, 1.5, 1, 1, 1.5], [0, 0, 0.5, 0.5, 0.5, 1, 1], '#68a3c3')
-        ax1.plot([2, 2, 2.5], [1, 0, 0], '#68a3c3')
-        ax1.plot([3, 3, 3.5], [1, 0, 0], '#68a3c3')
-        ax1.plot([4, 4.15, 4.35, 4.5, 4.5, 4.35, 4.15, 4, 4], [0.3, 0, 0, 0.3, 0.6, 1, 1, 0.6, 0.3], '#68a3c3')
+        self.ax1.clear()
+        self.ax1.plot([0, 0, 0, 0.5, 0.5, 0.5], [0, 1, 0.5, 0.5, 0, 1], '#68a3c3')
+        self.ax1.plot([1.5, 1, 1, 1.5, 1, 1, 1.5], [0, 0, 0.5, 0.5, 0.5, 1, 1], '#68a3c3')
+        self.ax1.plot([2, 2, 2.5], [1, 0, 0], '#68a3c3')
+        self.ax1.plot([3, 3, 3.5], [1, 0, 0], '#68a3c3')
+        self.ax1.plot([4, 4.15, 4.35, 4.5, 4.5, 4.35, 4.15, 4, 4], [0.3, 0, 0, 0.3, 0.6, 1, 1, 0.6, 0.3], '#68a3c3')
 
 
     @pyqtSlot(str, object, str, object)
@@ -176,42 +175,40 @@ class PlotWidget(QWidget):
                 label=self.label,
                 )
 
-            self.figure.clear()
-            ax1 = self.figure.add_subplot(111)
-
             color = '#68a3c3'
 
+            self.ax1.clear()
             if self.plot_typ == 'values':
                 x_label = 'Micrograph ID'
                 y_label = label
-                ax1.plot(x_values, y_values, '.', color=color)
+                self.ax1.plot(x_values, y_values, '.', color=color)
             elif self.plot_typ == 'histogram':
                 x_label = label
                 y_label = 'Nr. of micrographs'
                 if np.max(y_values) - np.min(y_values) < 0.001:
-                    ax1.hist(y_values, 1)
-                    ax1.set_xlim([np.max(y_values)-1, np.min(y_values)+1])
+                    self.ax1.hist(y_values, 1)
+                    self.ax1.set_xlim([np.max(y_values)-1, np.min(y_values)+1])
                 elif title == 'Resolution limit':
                     if np.max(y_values) > 20:
-                        ax1.hist(y_values[y_values <= 20], 100, color=color)
+                        self.ax1.hist(y_values[y_values <= 20], 100, color=color)
                         title = '{0}\n{1} micrographs out of range (0,20)'.format(
                             title,
                             y_values[y_values > 20].shape[0]
                             )
                     else:
-                        ax1.hist(y_values, 100, color=color)
+                        self.ax1.hist(y_values, 100, color=color)
                 else:
-                    ax1.hist(y_values, 100, color=color)
+                    self.ax1.hist(y_values, 100, color=color)
             else:
                 print('Plotwidget - ', self.plot_typ, ' is not known!!!')
                 return None
 
-            ax1.grid()
-            ax1.set_title(title)
-            ax1.set_xlabel(x_label)
-            ax1.set_ylabel(y_label)
+            self.ax1.grid()
+            self.ax1.set_title(title)
+            self.ax1.set_xlabel(x_label)
+            self.ax1.set_ylabel(y_label)
             try:
-                self.canvas.draw()
+                self.canvas.draw_idle()
             except RecursionError:
                 import sys
                 print('sys.getrecursionlimit()')
@@ -230,8 +227,12 @@ class PlotWidget(QWidget):
                 print(title)
                 print('x_values')
                 print(x_values)
+                print('len x_values')
+                print(len(x_values))
                 print('y_values')
                 print(y_values)
+                print('len y_values')
+                print(len(y_values))
                 print('COULD NOT DRAW!!!')
                 print('Please contact the TranSHPIRE authors!!!')
                 return None
@@ -298,8 +299,7 @@ class PlotWidget(QWidget):
         else:
             idx = self.idx-1
 
-        self.figure.clear()
-        ax1 = self.figure.add_subplot(111)
+        self.ax1.clear()
         if self.data['object'][idx] is None:
             try:
                 jpg_data = imageio.imread(self.data['image'][idx])
@@ -307,13 +307,13 @@ class PlotWidget(QWidget):
                 print('Error loading image: {0} -- Message: {1}'.format(self.data['image'][idx], str(e)))
                 self.compute_corrupted_figure(title=self.data['file_name'][idx])
             else:
-                ax1.imshow(jpg_data)
+                self.ax1.imshow(jpg_data)
         else:
-                ax1.imshow(self.data['object'][idx])
-        ax1.get_xaxis().set_visible(False)
-        ax1.get_yaxis().set_visible(False)
-        ax1.set_title(self.data['file_name'][idx])
-        self.canvas.draw()
+                self.ax1.imshow(self.data['object'][idx])
+        self.ax1.get_xaxis().set_visible(False)
+        self.ax1.get_yaxis().set_visible(False)
+        self.ax1.set_title(self.data['file_name'][idx])
+        self.canvas.draw_idle()
 
     def change_idx(self, typ):
         if typ == 'next':
