@@ -572,13 +572,21 @@ class ProcessWorker(QObject):
 
         for name in check_files:
             if name != 'False' and name != 'Later':
-                if not os.path.isfile(self.settings['Path'][name]):
+                try:
+                    is_file = os.path.isfile(self.settings['Path'][name])
+                except KeyError:
                     self.sig_error.emit(
-                        '{0} path not valid! Please adjust it!'.format(name)
+                        '{0} path not valid or disabled (Advanced)! Please adjust it!'.format(name)
                         )
                     error = True
                 else:
-                    pass
+                    if not is_file:
+                        self.sig_error.emit(
+                            '{0} path not valid or disabled (Advanced)! Please adjust it!'.format(name)
+                            )
+                        error = True
+                    else:
+                        pass
             else:
                 pass
 
