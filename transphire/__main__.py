@@ -175,6 +175,7 @@ def run_package():
     """
     Entry point for the transphire package
     """
+    check_running()
     check_update()
     main(**parse_args())
 
@@ -218,7 +219,7 @@ def check_update():
         message = message_template.format(message_insert)
         print(message)
         while True:
-            answer = input('Do you want to quit here to do the update? [y/n]')
+            answer = input('Do you want to quit here to do the update? [y/n]\n')
             if answer not in ['y', 'n']:
                 print('Answer needs to be y or n')
                 continue
@@ -230,5 +231,53 @@ def check_update():
             pass
 
 
+def check_running():
+    """
+    Check if a TranSPHIRE run is already running
+
+    Arguments:
+    None
+
+    Returns:
+    None
+    """
+    pids = [pid for pid in os.listdir('/proc') if pid.isdigit()]
+    running_instances = 0
+
+    for pid in pids:
+        try:
+            with open(os.path.join('/proc', pid, 'cmdline'), 'rb') as read:
+                file_read = read.read()
+        except IOError: # proc has already terminated
+            continue
+        else:
+            if b'/bin/transphire' in file_read:
+                running_instances += 1
+            else:
+                pass
+
+    if running_instances > 1:
+        while True:
+            answer = input(
+                '\n'.join([
+                    'Another TranSPHIRE instance is already opened!',
+                    'Please double check if another job is running, as running multiple instances will crash the jobs',
+                    'Do you want to continue? [y/n]\n'
+                    ])
+                )
+            if answer not in ['y', 'n']:
+                print('Answer needs to be y or n')
+                continue
+            elif answer == 'n':
+                sys.exit()
+            elif answer == 'y':
+                break
+            else:
+                raise IOError('Answer not known {0}'.format(answer))
+    else:
+        pass
+
+
 if __name__ == '__main__':
+    check_running()
     run_package()

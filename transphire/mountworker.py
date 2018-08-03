@@ -357,7 +357,7 @@ class MountWorker(QObject):
                                 self.sig_error.emit('Lost connection: {0}'.format(key), key)
                                 self.refresh_quota()
                             else:
-                                print('Host seems to be down! It may recover soon!')
+                                print('{0} - Host seems to be down! It may recover soon! You might need to manually unmount with sudo umount -l {0}.'.format(mount_folder))
                         else:
                             print('OSError caught in mount_folder: {0}'.format(mount_folder))
                             if self.password:

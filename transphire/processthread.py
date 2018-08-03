@@ -1131,7 +1131,6 @@ class ProcessThread(QThread):
                 pass
         else:
             message = '{0}: No frames found! If this appears very often, please restart TranSPHIRE.'.format(self.name)
-            self.queue_com['error'].put(message, self.name)
             self.queue_com['notification'].put(message)
             self.write_error(msg=message, root_name=root_name)
             raise Exception(message)
@@ -1332,6 +1331,7 @@ class ProcessThread(QThread):
         else:
             pass
 
+        QThread.sleep(1)
         self.shared_dict['typ'][self.content_settings['group']]['share_lock'].lock()
         try:
             self.shared_dict['share'][self.content_settings['group']].remove(root_name)
@@ -1768,6 +1768,7 @@ class ProcessThread(QThread):
                     output_transfer_log_scratch,
                     output_transfer_log
                     )
+                file_stdout_combine = file_stdout
 
                 # Move DW file
                 if do_dw:
@@ -1881,7 +1882,7 @@ class ProcessThread(QThread):
             else:
                 pass
 
-        data, _ = tu.get_function_dict()[self.settings['Copy']['Motion']]['plot_data'](
+        data, data_original = tu.get_function_dict()[self.settings['Copy']['Motion']]['plot_data'](
             self.settings['Copy']['Motion'],
             self.settings['Motion_folder'][self.settings['Copy']['Motion']]
             )
@@ -1941,7 +1942,7 @@ class ProcessThread(QThread):
                         ).tolist()
                     )[:,0],
                 np.char.rsplit(np.char.rsplit(
-                    file_sum,
+                    queue_dict[0]['sum'][0],
                     '/',
                     1
                     ).tolist()[-1], '.').tolist()[0]
@@ -1958,61 +1959,79 @@ class ProcessThread(QThread):
                     dw_file = queue_dict[0]['sum_dw'][0]
                 except IndexError:
                     dw_file = None
-                output_name_mic, output_name_star, output_name_star_relion3 = tum.combine_motion_outputs(
+                output_combine = tum.combine_motion_outputs(
                     data=data,
+                    data_original=data_original,
                     settings=self.settings,
                     queue_com=self.queue_com,
                     shared_dict=self.shared_dict,
                     name=self.name,
+                    log_file=file_stdout_combine,
                     sum_file=sum_file,
                     dw_file=dw_file,
                     )
-                partres_files = sorted(glob.glob(
-                    '{0}/*_transphire.txt'.format(
+                output_name_mic = output_combine[0]
+                output_name_star = output_combine[1]
+                output_name_star_relion3 = output_combine[2]
+                new_gain = output_combine[3]
+                motion_files = sorted(glob.glob(
+                    '{0}/*_transphire_motion.txt'.format(
                         self.settings['motion_folder']
                         )
                     ))
 
                 output_lines = []
-                for file_name in partres_files:
-                    with open(file_name, 'r') as read:
-                        output_lines.append(read.readlines()[-1])
-                with open(output_name_mic, 'w') as write:
-                    write.write(''.join(output_lines))
+                self.shared_dict['motion_txt_lock'].lock()
+                try:
+                    for file_name in motion_files:
+                        with open(file_name, 'r') as read:
+                            output_lines.append(read.readlines()[-1])
+                    with open(output_name_mic, 'w') as write:
+                        write.write(''.join(output_lines))
+                finally:
+                    self.shared_dict['motion_txt_lock'].unlock()
 
                 star_files = sorted(glob.glob(
-                    '{0}/*_transphire.star'.format(
+                    '{0}/*_transphire_motion.star'.format(
                         self.settings['motion_folder']
                         )
                     ))
 
                 header = []
-                with open(star_files[0], 'r') as read:
-                    header.extend(read.readlines()[:-1])
-                output_lines = []
-                for file_name in star_files:
-                    with open(file_name, 'r') as read:
-                        output_lines.append(read.readlines()[-1])
-                with open(output_name_star, 'w') as write:
-                    write.write(''.join(header))
-                    write.write(''.join(output_lines))
+                self.shared_dict['motion_star_lock'].lock()
+                try:
+                    with open(star_files[0], 'r') as read:
+                        header.extend(read.readlines()[:-1])
+                    output_lines = []
+                    for file_name in star_files:
+                        with open(file_name, 'r') as read:
+                            output_lines.append(read.readlines()[-1])
+                    with open(output_name_star, 'w') as write:
+                        write.write(''.join(header))
+                        write.write(''.join(output_lines))
+                finally:
+                    self.shared_dict['motion_star_lock'].unlock()
 
-                star_files = sorted(glob.glob(
+                star_files_relion3 = sorted(glob.glob(
                     '{0}/*_transphire_relion3.star'.format(
                         self.settings['motion_folder']
                         )
                     ))
 
                 header = []
-                with open(star_files[0], 'r') as read:
-                    header.extend(read.readlines()[:-1])
-                output_lines = []
-                for file_name in star_files:
-                    with open(file_name, 'r') as read:
-                        output_lines.append(read.readlines()[-1])
-                with open(output_name_star_relion3, 'w') as write:
-                    write.write(''.join(header))
-                    write.write(''.join(output_lines))
+                self.shared_dict['motion_star_relion3_lock'].lock()
+                try:
+                    with open(star_files_relion3[0], 'r') as read:
+                        header.extend(read.readlines()[:-1])
+                    output_lines = []
+                    for file_name in star_files_relion3:
+                        with open(file_name, 'r') as read:
+                            output_lines.append(read.readlines()[-1])
+                    with open(output_name_star_relion3, 'w') as write:
+                        write.write(''.join(header))
+                        write.write(''.join(output_lines))
+                finally:
+                    self.shared_dict['motion_star_relion3_lock'].unlock()
             finally:
                 self.queue_lock.unlock()
 
@@ -2020,18 +2039,30 @@ class ProcessThread(QThread):
                 self.add_to_queue(aim='Copy_work', root_name=output_name_mic)
                 self.add_to_queue(aim='Copy_work', root_name=output_name_star)
                 self.add_to_queue(aim='Copy_work', root_name=output_name_star_relion3)
+                if new_gain:
+                    self.add_to_queue(aim='Copy_work', root_name=new_gain)
+                else:
+                    pass
             else:
                 pass
             if not self.settings['Copy']['Copy to HDD'] == 'False':
                 self.add_to_queue(aim='Copy_hdd', root_name=output_name_mic)
                 self.add_to_queue(aim='Copy_hdd', root_name=output_name_star)
                 self.add_to_queue(aim='Copy_hdd', root_name=output_name_star_relion3)
+                if new_gain:
+                    self.add_to_queue(aim='Copy_hdd', root_name=new_gain)
+                else:
+                    pass
             else:
                 pass
             if not self.settings['Copy']['Copy to backup'] == 'False':
                 self.add_to_queue(aim='Copy_backup', root_name=output_name_mic)
                 self.add_to_queue(aim='Copy_backup', root_name=output_name_star)
                 self.add_to_queue(aim='Copy_backup', root_name=output_name_star_relion3)
+                if new_gain:
+                    self.add_to_queue(aim='Copy_backup', root_name=new_gain)
+                else:
+                    pass
             else:
                 pass
         else:
@@ -2294,34 +2325,42 @@ class ProcessThread(QThread):
                     sum_file=file_sum
                     )
                 partres_files = sorted(glob.glob(
-                    '{0}/*_transphire_partres.txt'.format(
+                    '{0}/*_transphire_ctf_partres.txt'.format(
                         self.settings['ctf_folder']
                         )
                     ))
 
                 output_lines = []
-                for file_name in partres_files:
-                    with open(file_name, 'r') as read:
-                        output_lines.append(read.readlines()[-1])
-                with open(output_name_partres, 'w') as write:
-                    write.write(''.join(output_lines))
+                self.shared_dict['ctf_partres_lock'].lock()
+                try:
+                    for file_name in partres_files:
+                        with open(file_name, 'r') as read:
+                            output_lines.append(read.readlines()[-1])
+                    with open(output_name_partres, 'w') as write:
+                        write.write(''.join(output_lines))
+                finally:
+                    self.shared_dict['ctf_partres_lock'].unlock()
 
                 star_files = sorted(glob.glob(
-                    '{0}/*_transphire.star'.format(
+                    '{0}/*_transphire_ctf.star'.format(
                         self.settings['ctf_folder']
                         )
                     ))
 
                 header = []
-                with open(star_files[0], 'r') as read:
-                    header.extend(read.readlines()[:-1])
-                output_lines = []
-                for file_name in star_files:
-                    with open(file_name, 'r') as read:
-                        output_lines.append(read.readlines()[-1])
-                with open(output_name_star, 'w') as write:
-                    write.write(''.join(header))
-                    write.write(''.join(output_lines))
+                self.shared_dict['ctf_star_lock'].lock()
+                try:
+                    with open(star_files[0], 'r') as read:
+                        header.extend(read.readlines()[:-1])
+                    output_lines = []
+                    for file_name in star_files:
+                        with open(file_name, 'r') as read:
+                            output_lines.append(read.readlines()[-1])
+                    with open(output_name_star, 'w') as write:
+                        write.write(''.join(header))
+                        write.write(''.join(output_lines))
+                finally:
+                    self.shared_dict['ctf_star_lock'].unlock()
             finally:
                 self.queue_lock.unlock()
 
@@ -2745,7 +2784,7 @@ class ProcessThread(QThread):
                     break
                 else:
                     QThread.msleep(100)
-        elif '_transphire_partres.txt' in file_out:
+        elif '_transphire_ctf_partres.txt' in file_out:
             while True:
                 is_locked = bool(not self.shared_dict['ctf_partres_lock'].tryLock())
                 if not is_locked:
@@ -2753,11 +2792,35 @@ class ProcessThread(QThread):
                     break
                 else:
                     QThread.msleep(100)
-        elif '_transphire.star' in file_out:
+        elif '_transphire_ctf.star' in file_out:
             while True:
                 is_locked = bool(not self.shared_dict['ctf_star_lock'].tryLock())
                 if not is_locked:
                     self.shared_dict['ctf_star_lock'].unlock()
+                    break
+                else:
+                    QThread.msleep(100)
+        elif '_transphire_motion.txt' in file_out:
+            while True:
+                is_locked = bool(not self.shared_dict['motion_txt_lock'].tryLock())
+                if not is_locked:
+                    self.shared_dict['motion_txt_lock'].unlock()
+                    break
+                else:
+                    QThread.msleep(100)
+        elif '_transphire_motion.star' in file_out:
+            while True:
+                is_locked = bool(not self.shared_dict['motion_star_lock'].tryLock())
+                if not is_locked:
+                    self.shared_dict['motion_star_lock'].unlock()
+                    break
+                else:
+                    QThread.msleep(100)
+        elif '_transphire_motion_relion3.star' in file_out:
+            while True:
+                is_locked = bool(not self.shared_dict['motion_star_relion3_lock'].tryLock())
+                if not is_locked:
+                    self.shared_dict['motion_star_relion3_lock'].unlock()
                     break
                 else:
                     QThread.msleep(100)

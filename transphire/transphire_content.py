@@ -633,7 +633,7 @@ def default_motion_cor_2_v1_0_0():
         ['-Crop', '0 0', [int, int], '', 'PLAIN', 'Advanced'],
         ['-Gpu', '0', [int]*99, '', 'PLAIN', 'Advanced'],
         ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced'],
-        ['dose cutoff (relion3)', '4', float, '', 'PLAIN', 'Advanced'],
+        ['dose cutoff', '4', float, '', 'PLAIN', 'Advanced'],
         ]
     return items
 
@@ -679,7 +679,7 @@ def default_motion_cor_2_v1_0_5():
         ['-Crop', '0 0', [int, int], '', 'PLAIN', 'Advanced'],
         ['-Gpu', '0', [int]*99, '', 'PLAIN', 'Advanced'],
         ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced'],
-        ['dose cutoff (relion3)', '4', float, '', 'PLAIN', 'Advanced'],
+        ['dose cutoff', '4', float, '', 'PLAIN', 'Advanced'],
         ]
     return items
 
@@ -726,7 +726,7 @@ def default_motion_cor_2_v1_1_0():
         ['-Gpu', '0', [int]*99, '', 'PLAIN', 'Advanced'],
         ['-GpuMemUsage', '0.5', float, '', 'PLAIN', 'Advanced'],
         ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced'],
-        ['dose cutoff (relion3)', '4', float, '', 'PLAIN', 'Advanced'],
+        ['dose cutoff', '4', float, '', 'PLAIN', 'Advanced'],
         ]
     return items
 

@@ -685,6 +685,7 @@ def import_motion_cor_2_v1_0_0(name, directory_name):
         dtype=get_dtype_dict()['motion']
         )
     data = np.atleast_1d(data)
+    data_original = []
     for idx, file_name in enumerate(useable_files):
         try:
             data_name = np.genfromtxt(
@@ -708,6 +709,7 @@ def import_motion_cor_2_v1_0_0(name, directory_name):
             data_name['shift_y'][i+1] - data_name['shift_y'][i] \
             for i in range(0, int(data_name['frame_number'][-1]-1))
             ])
+        data_original.append([shift_x, shift_y])
         for entry in data.dtype.names:
             if entry == 'overall drift':
                 data[idx][entry] = np.sum(np.sqrt(shift_x**2 + shift_y**2))
@@ -720,8 +722,9 @@ def import_motion_cor_2_v1_0_0(name, directory_name):
             else:
                 pass
 
-    data = np.sort(data, order='file_name')
-    data_original = None
+    sort_idx = np.argsort(data, order='file_name')
+    data = data[sort_idx]
+    data_original = np.array(data_original)[sort_idx]
     return data, data_original
 
 

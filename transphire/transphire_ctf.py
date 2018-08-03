@@ -444,17 +444,11 @@ def combine_ctf_outputs(
         )
     output_name_star = os.path.join(
         ctf_folder,
-        '{0}_transphire.star'.format(os.path.basename(sum_file))
+        '{0}_transphire_ctf.star'.format(os.path.basename(sum_file))
         )
 
-    shared_dict['ctf_star_lock'].lock()
-    try:
-        with open(output_name_star, 'w') as write:
-            write.write(lines)
-    except Exception:
-        raise
-    finally:
-        shared_dict['ctf_star_lock'].unlock()
+    with open(output_name_star, 'w') as write:
+        write.write(lines)
 
     lines = to_partres_file(
         data=np.copy(data_orig),
@@ -466,25 +460,19 @@ def combine_ctf_outputs(
         )
     output_name_partres = os.path.join(
         ctf_folder,
-        '{0}_transphire_partres.txt'.format(os.path.basename(sum_file))
+        '{0}_transphire_ctf_partres.txt'.format(os.path.basename(sum_file))
         )
 
-    shared_dict['ctf_partres_lock'].lock()
-    try:
-        with open(output_name_partres, 'w') as write:
-            write.write(lines)
-    except Exception:
-        raise
-    finally:
-        shared_dict['ctf_partres_lock'].unlock()
+    with open(output_name_partres, 'w') as write:
+        write.write(lines)
 
     output_name_partres_combined = os.path.join(
         project_folder,
-        '{0}_transphire_partres.txt'.format(ctf_name.replace(' ', '_'))
+        '{0}_transphire_ctf_partres.txt'.format(ctf_name.replace(' ', '_'))
         )
     output_name_star_combined = os.path.join(
         project_folder,
-        '{0}_transphire.star'.format(ctf_name.replace(' ', '_'))
+        '{0}_transphire_ctf.star'.format(ctf_name.replace(' ', '_'))
         )
     return output_name_partres_combined, output_name_star_combined
 
