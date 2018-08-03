@@ -700,6 +700,7 @@ def import_motion_cor_2_v1_0_0(name, directory_name):
             else:
                 pass
 
+        data_original.append([data_name['shift_x'], data_name['shift_y']])
         data[idx]['file_name'] = file_name
         shift_x = np.array([
             data_name['shift_x'][i+1] - data_name['shift_x'][i] \
@@ -709,7 +710,6 @@ def import_motion_cor_2_v1_0_0(name, directory_name):
             data_name['shift_y'][i+1] - data_name['shift_y'][i] \
             for i in range(0, int(data_name['frame_number'][-1]-1))
             ])
-        data_original.append([shift_x, shift_y])
         for entry in data.dtype.names:
             if entry == 'overall drift':
                 data[idx][entry] = np.sum(np.sqrt(shift_x**2 + shift_y**2))

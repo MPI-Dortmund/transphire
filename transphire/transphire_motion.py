@@ -382,6 +382,7 @@ def combine_motion_outputs(
     motion_name = settings['Copy']['Motion']
     motion_settings = settings[motion_name]
     motion_folder = settings['motion_folder']
+    log_folder = os.path.dirname(log_file)
     stack_folder = settings['stack_folder']
     project_folder = '{0}/'.format(settings['project_folder'])
     sum_file = sum_file.replace(project_folder, '')
@@ -391,18 +392,18 @@ def combine_motion_outputs(
         pass
 
     output_name_mic = os.path.join(
-        motion_folder,
+        log_folder,
         '{0}_transphire_motion.txt'.format(os.path.basename(sum_file))
         )
     output_name_star = os.path.join(
-        motion_folder,
+        log_folder,
         '{0}_transphire_motion.star'.format(os.path.basename(sum_file))
         )
-
     output_name_star_relion3 = os.path.join(
-        motion_folder,
+        log_folder,
         '{0}_transphire_motion_relion3.star'.format(os.path.basename(sum_file))
         )
+
     output_name_mic_combined = os.path.join(
         project_folder,
         '{0}_transphire_motion.txt'.format(motion_name.replace(' ', '_'))
@@ -451,6 +452,7 @@ def combine_motion_outputs(
         pass
 
     data_meta = [
+        '',
         'data_general',
         '',
         '_rlnImageSizeX {0}'.format(stack_size.group(1)),
@@ -465,20 +467,34 @@ def combine_motion_outputs(
             )
         if not os.path.exists(new_gain):
             tu.copy(motion_settings['-Gain'], new_gain)
+            data_meta.extend([
+                '_rlnMicrographGainName {0}'.format(new_gain.replace(project_folder, '')),
+                ])
         else:
+            data_meta.extend([
+                '_rlnMicrographGainName {0}'.format(new_gain.replace(project_folder, '')),
+                ])
             new_gain = None
-        data_meta.extend([
-            '_rlnMicrographGainName {0}'.format(new_gain.replace(project_folder, '')),
-            ])
     else:
         new_gain = None
 
     if motion_settings['-DefectFile']:
-        data_meta.extend([
-            '_rlnMicrographDefectFile {0}'.format(motion_settings['-DefectFile']),
-            ])
+        new_defect = os.path.join(
+            project_folder,
+            '{0}_defect.mrc'.format(os.path.basename(motion_settings['-DefectFile']))
+            )
+        if not os.path.exists(new_defect):
+            tu.copy(motion_settings['-DefectFile'], new_defect)
+            data_meta.extend([
+                '_rlnMicrographDefectFile {0}'.format(new_defect.replace(project_folder, '')),
+                ])
+        else:
+            data_meta.extend([
+                '_rlnMicrographDefectFile {0}'.format(new_defect.replace(project_folder, '')),
+                ])
+            new_defect = None
     else:
-        pass
+        new_defect = None
 
     data_meta.extend([
         '_rlnMicrographBinning {0}'.format(motion_settings['-FtBin']),
@@ -508,23 +524,22 @@ def combine_motion_outputs(
         '_rlnMicrographShiftY #3',
         ])
 
+    assert data_original.shape[0] == 1, data_original
+    data_original = data_original[0]
     idx_x = 0
     idx_y = 1
-    offset_x = data_original[0][idx_x]
-    offset_y = data_original[0][idx_y]
+    offset_x = data_original[idx_x][0]
+    offset_y = data_original[idx_y][0]
 
     sum_total = 0
     sum_early = 0
     sum_late = 0
     frame_cutoff = float(motion_settings['dose cutoff']) - float(motion_settings['-InitDose'])
     frame_cutoff /= float(motion_settings['-FmDose'])
-    print(data_original.shape)
-    print(data_original)
-    print(offset_x)
     for idx in range(1, data_original.shape[1]):
         drift = np.sqrt(
-            (data_original[0][idx-1][idx_x] - data_original[0][idx][idx_x])**2 +
-            (data_original[0][idx-1][idx_y] - data_original[0][idx][idx_y])**2
+            (data_original[idx_x][idx-1] - data_original[idx_x][idx])**2 +
+            (data_original[idx_y][idx-1] - data_original[idx_y][idx])**2
             )
         sum_total += drift
         if idx <= frame_cutoff:
@@ -532,16 +547,15 @@ def combine_motion_outputs(
         else:
             sum_late += drift
 
-
-    for idx, entry in enumerate(data_original):
-        data_meta.extend(['{0} {1} {2}'.format(
+    for idx in range(data_original.shape[1]):
+        data_meta.extend(['{0}\t{1}\t{2}'.format(
             idx+1,
-            entry[idx_x]-offset_x,
-            entry[idx_y]-offset_y
+            data_original[idx_x][idx]-offset_x,
+            data_original[idx_y][idx]-offset_y
             )])
 
     relion3_meta = os.path.join(
-        motion_folder,
+        log_folder,
         '{0}_transphire_relion3_meta.txt'.format(os.path.basename(sum_file))
         )
     with open(relion3_meta, 'w') as write:
@@ -549,11 +563,11 @@ def combine_motion_outputs(
 
     header_star_relion3 = co.OrderedDict()
     if dw_file:
-        header_star_relion3['_rlnMicrographNameNoDw'] = sum_file
-        header_star_relion3['_rlnMicrographName'] = dw_file
+        header_star_relion3['_rlnMicrographNameNoDw'] = sum_file.replace(project_folder, '')
+        header_star_relion3['_rlnMicrographName'] = dw_file.replace(project_folder, '')
     else:
-        header_star_relion3['_rlnMicrographName'] = sum_file
-    header_star_relion3['_rlnMicrographMetadata'] = relion3_meta
+        header_star_relion3['_rlnMicrographName'] = sum_file.replace(project_folder, '')
+    header_star_relion3['_rlnMicrographMetadata'] = relion3_meta.replace(project_folder, '')
     if sum_total:
         header_star_relion3['_rlnAccumMotionTotal'] = sum_total
         header_star_relion3['_rlnAccumMotionEarly'] = sum_early
@@ -567,7 +581,7 @@ def combine_motion_outputs(
     with open(output_name_star_relion3, 'w') as write:
         write.write('\n'.join(export_lines_star_relion3))
 
-    return output_name_mic_combined, output_name_star_combined, output_name_star_relion3_combined, new_gain
+    return output_name_mic_combined, output_name_star_combined, output_name_star_relion3_combined, new_gain, new_defect
 
 
 def get_relion_header(names):
@@ -586,7 +600,7 @@ def get_relion_header(names):
     header.append('loop_')
     for index, name in enumerate(names):
         header.append('{0} #{1}'.format(name, index+1))
-    return '{0}\n'.format('\n'.join(header))
+    return '\n'.join(header)
 
 
 def create_export_data(export_data, lines):

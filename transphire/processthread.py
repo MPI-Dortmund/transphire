@@ -1974,9 +1974,10 @@ class ProcessThread(QThread):
                 output_name_star = output_combine[1]
                 output_name_star_relion3 = output_combine[2]
                 new_gain = output_combine[3]
+                new_defect = output_combine[4]
                 motion_files = sorted(glob.glob(
                     '{0}/*_transphire_motion.txt'.format(
-                        self.settings['motion_folder']
+                        os.path.dirname(file_stdout_combine)
                         )
                     ))
 
@@ -1993,7 +1994,7 @@ class ProcessThread(QThread):
 
                 star_files = sorted(glob.glob(
                     '{0}/*_transphire_motion.star'.format(
-                        self.settings['motion_folder']
+                        os.path.dirname(file_stdout_combine)
                         )
                     ))
 
@@ -2013,8 +2014,8 @@ class ProcessThread(QThread):
                     self.shared_dict['motion_star_lock'].unlock()
 
                 star_files_relion3 = sorted(glob.glob(
-                    '{0}/*_transphire_relion3.star'.format(
-                        self.settings['motion_folder']
+                    '{0}/*_transphire_motion_relion3.star'.format(
+                        os.path.dirname(file_stdout_combine)
                         )
                     ))
 
@@ -2043,6 +2044,10 @@ class ProcessThread(QThread):
                     self.add_to_queue(aim='Copy_work', root_name=new_gain)
                 else:
                     pass
+                if new_defect:
+                    self.add_to_queue(aim='Copy_work', root_name=new_defect)
+                else:
+                    pass
             else:
                 pass
             if not self.settings['Copy']['Copy to HDD'] == 'False':
@@ -2053,6 +2058,10 @@ class ProcessThread(QThread):
                     self.add_to_queue(aim='Copy_hdd', root_name=new_gain)
                 else:
                     pass
+                if new_defect:
+                    self.add_to_queue(aim='Copy_hdd', root_name=new_defect)
+                else:
+                    pass
             else:
                 pass
             if not self.settings['Copy']['Copy to backup'] == 'False':
@@ -2061,6 +2070,10 @@ class ProcessThread(QThread):
                 self.add_to_queue(aim='Copy_backup', root_name=output_name_star_relion3)
                 if new_gain:
                     self.add_to_queue(aim='Copy_backup', root_name=new_gain)
+                else:
+                    pass
+                if new_defect:
+                    self.add_to_queue(aim='Copy_backup', root_name=new_defect)
                 else:
                     pass
             else:
@@ -2105,9 +2118,14 @@ class ProcessThread(QThread):
                                 pass
                         elif 'CTF_frames' in compare or 'CTF_sum' in compare or 'Picking' in compare:
                             if motion_idx == 0:
+                                sum_file = sum_files[0]
+                                if sum_dw_files:
+                                    dw_file = sum_dw_files[0]
+                                else:
+                                    dw_file = 'None'
                                 self.add_to_queue(
                                     aim=aim_name,
-                                    root_name=';;;'.join([sum_files[0], sum_dw_files[0], file_input])
+                                    root_name=';;;'.join([sum_file, dw_file, file_input])
                                     )
                             else:
                                 pass
@@ -2140,7 +2158,7 @@ class ProcessThread(QThread):
         """
         root_name_raw = root_name
         # Split is file_sum, file_dw_sum, file_frames
-        file_sum, _, file_input = root_name.split(';;;')
+        file_sum, file_dw, file_input = root_name.split(';;;')
         try:
             if self.settings[self.settings['Copy']['CTF']]['Use movies'] == 'True':
                 root_name, _ = os.path.splitext(file_input)
@@ -2322,7 +2340,8 @@ class ProcessThread(QThread):
                     queue_com=self.queue_com,
                     shared_dict=self.shared_dict,
                     name=self.name,
-                    sum_file=file_sum
+                    sum_file=file_sum,
+                    dw_file=file_dw,
                     )
                 partres_files = sorted(glob.glob(
                     '{0}/*_transphire_ctf_partres.txt'.format(
@@ -2425,12 +2444,17 @@ class ProcessThread(QThread):
         """
 
         # New name; Splitis file_sum, file_dw_sum, file_frames
-        _, file_dw_sum, file_frames = root_name.split(';;;')
-        file_name = os.path.basename(os.path.splitext(file_dw_sum)[0])
+        file_sum, file_dw_sum, file_frames = root_name.split(';;;')
+        if file_dw_sum == 'None':
+            file_name = os.path.basename(os.path.splitext(file_sum)[0])
+            file_use = file_sum
+        else:
+            file_name = os.path.basename(os.path.splitext(file_dw_sum)[0])
+            file_use = file_dw_sum
 
         # Create the command for filtering
         command, file_input, check_files, block_gpu, gpu_list = tup.create_filter_command(
-            file_input=file_dw_sum,
+            file_input=file_use,
             settings=self.settings,
             )
 
@@ -2487,7 +2511,7 @@ class ProcessThread(QThread):
         non_zero_list = [err_file, log_file]
         non_zero_list.extend(check_files)
 
-        root_path = os.path.join(os.path.dirname(file_dw_sum), file_name)
+        root_path = os.path.join(os.path.dirname(file_use), file_name)
         log_files, copied_log_files = tup.find_logfiles(
             root_path=root_path,
             file_name=file_name,
@@ -2526,7 +2550,7 @@ class ProcessThread(QThread):
             )
 
         if skip_list:
-            self.remove_from_translate(os.path.basename(file_dw_sum))
+            self.remove_from_translate(os.path.basename(file_use))
         else:
             pass
 
@@ -2534,7 +2558,7 @@ class ProcessThread(QThread):
             message = 'The parameter {0} is {1} for file {2}, which is not in the range: {3} to {4} and will be skipped! If this is not the only message, you might consider changing microscope settings!'.format(
                 warning[0],
                 warning[1],
-                file_dw_sum,
+                file_use,
                 warning[2],
                 warning[3]
                 )
@@ -2544,7 +2568,7 @@ class ProcessThread(QThread):
             else:
                 pass
             self.queue_com['notification'].put(message)
-            self.write_error(msg=message, root_name=file_dw_sum)
+            self.write_error(msg=message, root_name=file_use)
 
         for warning in warnings:
             message = 'The median of the last {0} values for parameter {1} is {2}, which is not in the range: {3} to {4}! You might consider to adjust microscope settings!'.format(
@@ -2560,7 +2584,7 @@ class ProcessThread(QThread):
             else:
                 pass
             self.queue_com['notification'].put(message)
-            self.write_error(msg=message, root_name=file_dw_sum)
+            self.write_error(msg=message, root_name=file_use)
 
         if skip_list:
             pass

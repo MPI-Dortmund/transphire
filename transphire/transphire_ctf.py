@@ -408,7 +408,8 @@ def combine_ctf_outputs(
         queue_com,
         shared_dict,
         name,
-        sum_file
+        sum_file,
+        dw_file,
         ):
     """
     Combine the ctf outputs to one SPHIRE partres and one RELION star file.
@@ -441,6 +442,7 @@ def combine_ctf_outputs(
         project_folder=project_folder,
         ctf_folder=ctf_folder,
         sum_file=sum_file,
+        dw_file=dw_file,
         )
     output_name_star = os.path.join(
         ctf_folder,
@@ -477,7 +479,7 @@ def combine_ctf_outputs(
     return output_name_partres_combined, output_name_star_combined
 
 
-def to_star_file(data, ctf_name, ctf_settings, project_folder, ctf_folder, sum_file):
+def to_star_file(data, ctf_name, ctf_settings, project_folder, ctf_folder, sum_file, dw_file):
     """
     Create a CTF star file from data
 
@@ -502,6 +504,10 @@ def to_star_file(data, ctf_name, ctf_settings, project_folder, ctf_folder, sum_f
         ]
 
     export_dtype.extend(extension_dtype)
+    if dw_file == 'None':
+        pass
+    else:
+        export_dtype.extend([('_rlnMicrographNameNoDw', '|U200')])
     export_data = np.atleast_1d(np.empty(data.shape[0], dtype=export_dtype))
     header = get_relion_header(names=export_data.dtype.names)
 
@@ -510,7 +516,12 @@ def to_star_file(data, ctf_name, ctf_settings, project_folder, ctf_folder, sum_f
         for name in row.dtype.names:
 
             if name == 'file_name':
-                value = sum_file.replace(project_folder, '')
+                if dw_file == 'None':
+                    export_data[idx]['file_name'] = sum_file.replace(project_folder, '')
+                else:
+                    export_data[idx]['_rlnMicrographNameNoDw'] = sum_file.replace(project_folder, '')
+                    export_data[idx]['file_name'] = dw_file.replace(project_folder, '')
+                continue
 
             elif name == 'defocus':
                 value = (1 * row['defocus_diff'] + 2 * row['defocus']) / 2
@@ -529,6 +540,10 @@ def to_star_file(data, ctf_name, ctf_settings, project_folder, ctf_folder, sum_f
         '_rlnCtfImage': len(max(export_data['_rlnCtfImage'], key=len)),
         'file_name': len(max(export_data['file_name'], key=len))
         }
+    if dw_file == 'None':
+        pass
+    else:
+        maximum_string['_rlnMicrographNameNoDw'] = len(max(export_data['_rlnMicrographNameNoDw'], key=len))
     create_export_data(
         export_data=export_data,
         lines=lines,
