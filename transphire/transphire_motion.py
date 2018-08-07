@@ -381,7 +381,6 @@ def combine_motion_outputs(
     """
     motion_name = settings['Copy']['Motion']
     motion_settings = settings[motion_name]
-    motion_folder = settings['motion_folder']
     log_folder = os.path.dirname(log_file)
     stack_folder = settings['stack_folder']
     project_folder = '{0}/'.format(settings['project_folder'])
