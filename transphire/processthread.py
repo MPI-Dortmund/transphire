@@ -1948,6 +1948,7 @@ class ProcessThread(QThread):
                     ).tolist()[-1], '.').tolist()[0]
                 )
             data = data[mask]
+            data_original = data_original[mask]
         finally:
             self.queue_lock.unlock()
 
