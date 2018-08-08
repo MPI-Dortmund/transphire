@@ -1352,20 +1352,22 @@ class ProcessThread(QThread):
         """
         self.shared_dict['translate_lock'].lock()
         try:
-            content_translation_file = np.genfromtxt(
-                os.path.join(
-                    self.settings['project_folder'],
-                    'Translation_file.txt'
-                    ),
-                usecols=0,
-                dtype=str
-                )
-        except OSError:
-            return False
-        except Exception:
-            raise
-        else:
-            return bool(root_name in content_translation_file)
+            try:
+                for name in ('Translation_file.txt', 'Translation_file_bad.txt'):
+                    content_translation_file = np.genfromtxt(
+                        os.path.join(
+                            self.settings['project_folder'],
+                            name
+                            ),
+                        usecols=0,
+                        dtype=str
+                        )
+            except OSError:
+                return False
+            except Exception:
+                raise
+            else:
+                return bool(root_name in content_translation_file)
         finally:
             self.shared_dict['translate_lock'].unlock()
 
@@ -1382,18 +1384,26 @@ class ProcessThread(QThread):
             self.settings['project_folder'],
             'Translation_file.txt'
             )
+        file_name_bad = os.path.join(
+            self.settings['project_folder'],
+            'Translation_file_bad.txt'
+            )
         self.shared_dict['translate_lock'].lock()
         try:
             with open(file_name, 'r') as read:
-                new_lines = []
+                good_lines = []
+                bad_lines = []
                 for line in read.readlines():
                     if root_name in line:
-                        pass
+                        bad_lines.append(line)
                     else:
-                        new_lines.append(line)
+                        good_lines.append(line)
 
             with open(file_name, 'w') as write:
-                write.write(''.join(new_lines))
+                write.write(''.join(good_lines))
+
+            with open(file_name_bad, 'a') as write:
+                write.write(''.join(bad_lines))
 
         finally:
             self.shared_dict['translate_lock'].unlock()
@@ -1425,6 +1435,10 @@ class ProcessThread(QThread):
         file_name = os.path.join(
             self.settings['project_folder'],
             'Translation_file.txt'
+            )
+        file_name_bad = os.path.join(
+            self.settings['project_folder'],
+            'Translation_file_bad.txt'
             )
 
         if os.path.exists(file_name):
@@ -1559,6 +1573,11 @@ class ProcessThread(QThread):
                             )
                         )
                     )
+            with open(file_name_bad, 'a') as write:
+                if first_entry:
+                    write.write(template.format('\n'.join(first_entry)))
+                else:
+                    pass
         except Exception:
             raise
         finally:
@@ -2060,48 +2079,22 @@ class ProcessThread(QThread):
                     else:
                         pass
 
-            if not self.settings['Copy']['Copy to work'] == 'False':
-                self.add_to_queue(aim='Copy_work', root_name=output_name_mic)
-                self.add_to_queue(aim='Copy_work', root_name=output_name_star)
-                self.add_to_queue(aim='Copy_work', root_name=output_name_star_relion3)
-                if new_gain:
-                    self.add_to_queue(aim='Copy_work', root_name=new_gain)
+            for copy_name in ('work', 'HDD', 'backup'):
+                copy_type = 'Copy_{0}'.format(copy_name.lower())
+                if not self.settings['Copy']['Copy to {0}'.format(copy_name)] == 'False':
+                    self.add_to_queue(aim=copy_type, root_name=output_name_mic)
+                    self.add_to_queue(aim=copy_type, root_name=output_name_star)
+                    self.add_to_queue(aim=copy_type, root_name=output_name_star_relion3)
+                    if new_gain:
+                        self.add_to_queue(aim=copy_type, root_name=new_gain)
+                    else:
+                        pass
+                    if new_defect:
+                        self.add_to_queue(aim=copy_type, root_name=new_defect)
+                    else:
+                        pass
                 else:
                     pass
-                if new_defect:
-                    self.add_to_queue(aim='Copy_work', root_name=new_defect)
-                else:
-                    pass
-            else:
-                pass
-            if not self.settings['Copy']['Copy to HDD'] == 'False':
-                self.add_to_queue(aim='Copy_hdd', root_name=output_name_mic)
-                self.add_to_queue(aim='Copy_hdd', root_name=output_name_star)
-                self.add_to_queue(aim='Copy_hdd', root_name=output_name_star_relion3)
-                if new_gain:
-                    self.add_to_queue(aim='Copy_hdd', root_name=new_gain)
-                else:
-                    pass
-                if new_defect:
-                    self.add_to_queue(aim='Copy_hdd', root_name=new_defect)
-                else:
-                    pass
-            else:
-                pass
-            if not self.settings['Copy']['Copy to backup'] == 'False':
-                self.add_to_queue(aim='Copy_backup', root_name=output_name_mic)
-                self.add_to_queue(aim='Copy_backup', root_name=output_name_star)
-                self.add_to_queue(aim='Copy_backup', root_name=output_name_star_relion3)
-                if new_gain:
-                    self.add_to_queue(aim='Copy_backup', root_name=new_gain)
-                else:
-                    pass
-                if new_defect:
-                    self.add_to_queue(aim='Copy_backup', root_name=new_defect)
-                else:
-                    pass
-            else:
-                pass
         else:
             pass
 
@@ -2410,21 +2403,26 @@ class ProcessThread(QThread):
             finally:
                 self.queue_lock.unlock()
 
-            if not self.settings['Copy']['Copy to work'] == 'False':
-                self.add_to_queue(aim='Copy_work', root_name=output_name_partres)
-                self.add_to_queue(aim='Copy_work', root_name=output_name_star)
-            else:
-                pass
-            if not self.settings['Copy']['Copy to HDD'] == 'False':
-                self.add_to_queue(aim='Copy_hdd', root_name=output_name_partres)
-                self.add_to_queue(aim='Copy_hdd', root_name=output_name_star)
-            else:
-                pass
-            if not self.settings['Copy']['Copy to backup'] == 'False':
-                self.add_to_queue(aim='Copy_backup', root_name=output_name_partres)
-                self.add_to_queue(aim='Copy_backup', root_name=output_name_star)
-            else:
-                pass
+            copy_names = []
+            copy_names.extend(star_files)
+            copy_names.extend(partres_files)
+
+            for file_name in copy_names:
+                if not os.path.basename(root_name) in file_name:
+                    continue
+                for copy_name in ('work', 'HDD', 'backup'):
+                    if not self.settings['Copy']['Copy to {0}'.format(copy_name)] == 'False':
+                        self.add_to_queue(aim='Copy_{0}'.format(copy_name.lower()), root_name=file_name)
+                    else:
+                        pass
+
+            for copy_name in ('work', 'HDD', 'backup'):
+                copy_type = 'Copy_{0}'.format(copy_name.lower())
+                if not self.settings['Copy']['Copy to {0}'.format(copy_name)] == 'False':
+                    self.add_to_queue(aim=copy_type, root_name=output_name_partres)
+                    self.add_to_queue(aim=copy_type, root_name=output_name_star)
+                else:
+                    pass
         else:
             pass
 
