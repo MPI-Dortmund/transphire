@@ -559,7 +559,7 @@ def combine_motion_outputs(
 
     relion3_meta = os.path.join(
         log_folder,
-        '{0}_transphire_motion_relion3_meta.txt'.format(os.path.basename(sum_file))
+        '{0}_transphire_motion_relion3_meta.star'.format(os.path.basename(sum_file))
         )
     with open(relion3_meta, 'w') as write:
         write.write('\n'.join(data_meta))
