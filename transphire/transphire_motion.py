@@ -98,7 +98,7 @@ def get_dw_file_name(output_transfer_scratch, file_name, settings, queue_com, na
         raise IOError(message)
 
 
-def get_motion_command(file_input, file_output_scratch, file_log_scratch, settings, queue_com, name):
+def get_motion_command(file_input, file_output_scratch, file_log_scratch, settings, queue_com, name, do_subsum):
     """
     Get the command for the selected motion software.
 
@@ -126,7 +126,8 @@ def get_motion_command(file_input, file_output_scratch, file_log_scratch, settin
             file_log=file_log_scratch,
             settings=settings,
             queue_com=queue_com,
-            name=name
+            name=name,
+            do_subsum=do_subsum,
             )
         gpu_list = gpu.split()
 
@@ -158,7 +159,7 @@ def get_motion_command(file_input, file_output_scratch, file_log_scratch, settin
     return command, block_gpu, gpu_list
 
 
-def create_motion_cor_2_v1_0_0_command(motion_name, file_input, file_output, file_log, settings, queue_com, name):
+def create_motion_cor_2_v1_0_0_command(motion_name, file_input, file_output, file_log, settings, queue_com, name, do_subsum):
     """
     Create the MotionCor2 v1.0.0 command
 
@@ -199,9 +200,12 @@ def create_motion_cor_2_v1_0_0_command(motion_name, file_input, file_output, fil
     # Output micrograph
     command.append('-OutMrc')
     command.append('{0}'.format(file_output))
-    # Write the output stack
-    command.append('-OutStack')
-    command.append('1')
+    if do_subsum:
+        # Write the output stack
+        command.append('-OutStack')
+        command.append('1')
+    else:
+        pass
     # Log file
     command.append('-LogFile')
     command.append('{0}'.format(file_log))
@@ -365,6 +369,7 @@ def combine_motion_outputs(
         log_file,
         sum_file,
         dw_file,
+        add_to_queue,
         ):
     """
     Combine the motion outputs to one micrograph and one relion star file.
@@ -457,7 +462,7 @@ def combine_motion_outputs(
         '_rlnImageSizeX {0}'.format(stack_size.group(1)),
         '_rlnImageSizeY {0}'.format(stack_size.group(2)),
         '_rlnImageSizeZ {0}'.format(stack_size.group(3)),
-        '_rlnMicrographMovieName {0}'.format(movie_name),
+        '_rlnMicrographMovieName {0}'.format(movie_name.replace(project_folder, '')),
         ]
     if motion_settings['-Gain']:
         new_gain = os.path.join(
@@ -555,7 +560,7 @@ def combine_motion_outputs(
 
     relion3_meta = os.path.join(
         log_folder,
-        '{0}_transphire_relion3_meta.txt'.format(os.path.basename(sum_file))
+        '{0}_transphire_motion_relion3_meta.txt'.format(os.path.basename(sum_file))
         )
     with open(relion3_meta, 'w') as write:
         write.write('\n'.join(data_meta))

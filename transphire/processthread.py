@@ -1327,7 +1327,7 @@ class ProcessThread(QThread):
                     os.remove(file_entry)
                 except IOError:
                     self.write_error(msg=tb.format_exc(), root_name=file_entry)
-                    raise
+                    raise BlockingIOError('Cannot remove Frames!')
         else:
             pass
 
@@ -1591,6 +1591,7 @@ class ProcessThread(QThread):
         file_dw_post_move = None
         file_stack = None
         queue_dict = {}
+        do_subsum = bool(len(self.settings['motion_frames']) > 1)
         for motion_idx, key in enumerate(self.settings['motion_frames']):
             # The current settings that we work with
             motion_frames = copy.deepcopy(self.settings['motion_frames'][key])
@@ -1664,7 +1665,6 @@ class ProcessThread(QThread):
                 self.settings['scratch_motion_folder'],
                 output_logfile
                 )
-
 
             output_dw = os.path.join(output_transfer_root, 'DW')
             output_transfer = os.path.join(output_transfer_root, 'Non_DW')
@@ -1751,6 +1751,7 @@ class ProcessThread(QThread):
                     queue_com=self.queue_com,
                     name=self.name,
                     settings=self.settings,
+                    do_subsum=do_subsum
                     )
 
                 file_stdout_scratch, file_stderr_scratch = self.run_command(
@@ -1778,6 +1779,7 @@ class ProcessThread(QThread):
                     pass
 
             else:
+                assert os.path.exists(file_stack)
                 command, block_gpu, gpu_list = tum.create_sum_movie_command(
                     motion_frames=motion_frames,
                     file_input=file_stack,
@@ -1998,7 +2000,6 @@ class ProcessThread(QThread):
                         os.path.dirname(file_stdout_combine)
                         )
                     ))
-
                 header = []
                 self.shared_dict['motion_star_lock'].lock()
                 try:
@@ -2034,8 +2035,30 @@ class ProcessThread(QThread):
                         write.write(''.join(output_lines))
                 finally:
                     self.shared_dict['motion_star_relion3_lock'].unlock()
+
             finally:
                 self.queue_lock.unlock()
+
+            star_files_relion3_meta = sorted(glob.glob(
+                '{0}/*_transphire_motion_relion3_meta.star'.format(
+                    os.path.dirname(file_stdout_combine)
+                    )
+                ))
+
+            copy_names = []
+            copy_names.extend(star_files_relion3_meta)
+            copy_names.extend(star_files_relion3)
+            copy_names.extend(star_files)
+            copy_names.extend(motion_files)
+
+            for file_name in copy_names:
+                if not os.path.basename(root_name) in file_name:
+                    continue
+                for copy_name in ('work', 'HDD', 'backup'):
+                    if not self.settings['Copy']['Copy to {0}'.format(copy_name)] == 'False':
+                        self.add_to_queue(aim='Copy_{0}'.format(copy_name.lower()), root_name=file_name)
+                    else:
+                        pass
 
             if not self.settings['Copy']['Copy to work'] == 'False':
                 self.add_to_queue(aim='Copy_work', root_name=output_name_mic)
@@ -2140,13 +2163,16 @@ class ProcessThread(QThread):
                     else:
                         pass
 
-        self.queue_lock.lock()
-        try:
-            os.remove(file_stack)
-        except Exception:
-            raise
-        finally:
-            self.queue_lock.unlock()
+        if do_subsum:
+            self.queue_lock.lock()
+            try:
+                os.remove(file_stack)
+            except Exception:
+                raise
+            finally:
+                self.queue_lock.unlock()
+        else:
+            pass
 
     def run_ctf(self, root_name):
         """
