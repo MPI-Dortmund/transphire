@@ -1408,18 +1408,16 @@ class ProcessThread(QThread):
         finally:
             self.shared_dict['translate_lock'].unlock()
 
-        if not self.settings['Copy']['Copy to work'] == 'False':
-            self.add_to_queue(aim='Copy_work', root_name=file_name)
-        else:
-            pass
-        if not self.settings['Copy']['Copy to HDD'] == 'False':
-            self.add_to_queue(aim='Copy_hdd', root_name=file_name)
-        else:
-            pass
-        if not self.settings['Copy']['Copy to backup'] == 'False':
-            self.add_to_queue(aim='Copy_backup', root_name=file_name)
-        else:
-            pass
+        self.file_to_distribute(file_name=file_name)
+        self.file_to_distribute(file_name=file_name_bad)
+
+    def file_to_distribute(self, file_name):
+        for copy_name in ('work', 'HDD', 'backup'):
+            copy_type = 'Copy_{0}'.format(copy_name.lower())
+            if not self.settings['Copy']['Copy to {0}'.format(copy_name)] == 'False':
+                self.add_to_queue(aim=copy_type, root_name=file_name)
+            else:
+                pass
 
     def append_to_translate(self, root_name, new_name, xml_file):
         """
@@ -1583,18 +1581,8 @@ class ProcessThread(QThread):
         finally:
             self.shared_dict['translate_lock'].unlock()
 
-        if not self.settings['Copy']['Copy to work'] == 'False':
-            self.add_to_queue(aim='Copy_work', root_name=file_name)
-        else:
-            pass
-        if not self.settings['Copy']['Copy to HDD'] == 'False':
-            self.add_to_queue(aim='Copy_hdd', root_name=file_name)
-        else:
-            pass
-        if not self.settings['Copy']['Copy to backup'] == 'False':
-            self.add_to_queue(aim='Copy_backup', root_name=file_name)
-        else:
-            pass
+        self.file_to_distribute(file_name=file_name)
+        self.file_to_distribute(file_name=file_name_bad)
 
     def run_motion(self, root_name):
         """
@@ -2073,28 +2061,20 @@ class ProcessThread(QThread):
             for file_name in copy_names:
                 if not os.path.basename(root_name) in file_name:
                     continue
-                for copy_name in ('work', 'HDD', 'backup'):
-                    if not self.settings['Copy']['Copy to {0}'.format(copy_name)] == 'False':
-                        self.add_to_queue(aim='Copy_{0}'.format(copy_name.lower()), root_name=file_name)
-                    else:
-                        pass
-
-            for copy_name in ('work', 'HDD', 'backup'):
-                copy_type = 'Copy_{0}'.format(copy_name.lower())
-                if not self.settings['Copy']['Copy to {0}'.format(copy_name)] == 'False':
-                    self.add_to_queue(aim=copy_type, root_name=output_name_mic)
-                    self.add_to_queue(aim=copy_type, root_name=output_name_star)
-                    self.add_to_queue(aim=copy_type, root_name=output_name_star_relion3)
-                    if new_gain:
-                        self.add_to_queue(aim=copy_type, root_name=new_gain)
-                    else:
-                        pass
-                    if new_defect:
-                        self.add_to_queue(aim=copy_type, root_name=new_defect)
-                    else:
-                        pass
                 else:
-                    pass
+                    self.file_to_distribute(file_name=file_name)
+
+            self.file_to_distribute(file_name=output_name_mic)
+            self.file_to_distribute(file_name=output_name_star)
+            self.file_to_distribute(file_name=output_name_star_relion3)
+            if new_gain:
+                self.file_to_distribute(file_name=new_gain)
+            else:
+                pass
+            if new_defect:
+                self.file_to_distribute(file_name=new_defect)
+            else:
+                pass
         else:
             pass
 
@@ -2410,19 +2390,11 @@ class ProcessThread(QThread):
             for file_name in copy_names:
                 if not os.path.basename(root_name) in file_name:
                     continue
-                for copy_name in ('work', 'HDD', 'backup'):
-                    if not self.settings['Copy']['Copy to {0}'.format(copy_name)] == 'False':
-                        self.add_to_queue(aim='Copy_{0}'.format(copy_name.lower()), root_name=file_name)
-                    else:
-                        pass
-
-            for copy_name in ('work', 'HDD', 'backup'):
-                copy_type = 'Copy_{0}'.format(copy_name.lower())
-                if not self.settings['Copy']['Copy to {0}'.format(copy_name)] == 'False':
-                    self.add_to_queue(aim=copy_type, root_name=output_name_partres)
-                    self.add_to_queue(aim=copy_type, root_name=output_name_star)
                 else:
-                    pass
+                    self.file_to_distribute(file_name=file_name)
+
+            self.file_to_distribute(file_name=output_name_partres)
+            self.file_to_distribute(file_name=output_name_star)
         else:
             pass
 
@@ -2826,6 +2798,14 @@ class ProcessThread(QThread):
         True, if ready
         """
         if 'Translation_file.txt' in file_out:
+            while True:
+                is_locked = bool(not self.shared_dict['translate_lock'].tryLock())
+                if not is_locked:
+                    self.shared_dict['translate_lock'].unlock()
+                    break
+                else:
+                    QThread.msleep(100)
+        elif 'Translation_file_bad.txt' in file_out:
             while True:
                 is_locked = bool(not self.shared_dict['translate_lock'].tryLock())
                 if not is_locked:
