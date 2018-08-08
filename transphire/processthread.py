@@ -549,6 +549,7 @@ class ProcessThread(QThread):
         None
         """
         self.queue_lock.lock()
+        error = False
         try:
             if self.queue.empty():
                 self.queue_com['status'].put([
@@ -560,14 +561,19 @@ class ProcessThread(QThread):
                     self.name,
                     '#ffc14d'
                     ])
-                QThread.sleep(5)
-                return None
+                error = True
             else:
                 pass
         except Exception:
-            return None
+            error = True
         finally:
             self.queue_lock.unlock()
+
+        if error:
+            QThread.sleep(5)
+            return None
+        else:
+            pass
 
         # Get new file
         self.queue_lock.lock()
@@ -582,7 +588,6 @@ class ProcessThread(QThread):
                 'lightgreen'
                 ])
             root_name = self.remove_from_queue()
-            QThread.sleep(1)
         except Exception:
             return None
         finally:
@@ -753,7 +758,9 @@ class ProcessThread(QThread):
         Return:
         Name removed from the queue.
         """
-        return self.queue.get(block=False)
+        value = self.queue.get(block=False)
+        QThread.msleep(100)
+        return value
 
     @staticmethod
     def add_to_queue_file(root_name, file_name):
@@ -798,6 +805,7 @@ class ProcessThread(QThread):
                 root_name=root_name,
                 file_name=self.shared_dict['typ'][aim]['save_file']
                 )
+            QThread.msleep(100)
         except Exception:
             raise
         finally:
@@ -2265,11 +2273,6 @@ class ProcessThread(QThread):
             raise IOError('{0} - Please check, if {0} can be executed outside of TranSPHIRE'.format(self.settings['Copy']['CTF']))
 
         if skip_list:
-            self.queue_lock.lock()
-            try:
-                self.shared_dict['bad'][self.typ].append(file_sum)
-            finally:
-                self.queue_lock.unlock()
             self.remove_from_translate(os.path.basename(root_name))
         else:
             pass
@@ -2940,7 +2943,7 @@ class ProcessThread(QThread):
                     lock_var = self.shared_dict['gpu_lock'][entry][mutex_idx].tryLock()
                     assert bool(not lock_var)
                     while self.shared_dict['gpu_lock'][entry][count_idx] != 0:
-                        QThread.msleep(1000)
+                        QThread.msleep(500)
 
             else:
                 for entry in sorted(gpu_list):
@@ -2961,7 +2964,7 @@ class ProcessThread(QThread):
                 stop_time = time.time()
                 out.write('\nTime: {0} sec'.format(stop_time - start_time)) 
 
-        QThread.msleep(1000)
+        QThread.msleep(500)
         if gpu_list:
             if block_gpu:
                 for entry in gpu_list:

@@ -369,7 +369,6 @@ def combine_motion_outputs(
         log_file,
         sum_file,
         dw_file,
-        add_to_queue,
         ):
     """
     Combine the motion outputs to one micrograph and one relion star file.
