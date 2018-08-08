@@ -1862,26 +1862,26 @@ class ProcessThread(QThread):
                     raise
                 finally:
                     self.queue_lock.unlock()
+
+                log_files = glob.glob('{0}0*'.format(file_log))
+                non_zero_list.extend(log_files)
+                tus.check_outputs(
+                    zero_list=zero_list,
+                    non_zero_list=non_zero_list,
+                    exists_list=[],
+                    folder=self.settings['motion_folder'],
+                    command='copy'
+                    )
+
+                copied_files = zero_list_scratch + non_zero_list_scratch
+                for file_entry in copied_files:
+                    try:
+                        os.remove(file_entry)
+                    except IOError:
+                        self.write_error(msg=tb.format_exc(), root_name=file_entry)
+                        raise
             else:
                 pass
-
-            log_files = glob.glob('{0}0*'.format(file_log))
-            non_zero_list.extend(log_files)
-            tus.check_outputs(
-                zero_list=zero_list,
-                non_zero_list=non_zero_list,
-                exists_list=[],
-                folder=self.settings['motion_folder'],
-                command='copy'
-                )
-
-            copied_files = zero_list_scratch + non_zero_list_scratch
-            for file_entry in copied_files:
-                try:
-                    os.remove(file_entry)
-                except IOError:
-                    self.write_error(msg=tb.format_exc(), root_name=file_entry)
-                    raise
 
             queue_dict[motion_idx]['sum'].append(file_output)
             for file_name_log in glob.glob('{0}*'.format(file_log)):
