@@ -827,10 +827,16 @@ class MainWindow(QMainWindow):
         Returns:
         None
         """
-        self.content['Button'].start_monitor_button.setVisible(bool(not start))
-        self.content['Button'].start_monitor_button.setEnabled(bool(not start))
-        self.content['Button'].stop_monitor_button.setVisible(start)
-        self.content['Button'].stop_monitor_button.setEnabled(start)
+        if start:
+            self.content['Button'].start_monitor_button.setVisible(bool(not start))
+            self.content['Button'].start_monitor_button.setEnabled(bool(not start))
+            self.content['Button'].stop_monitor_button.setVisible(start)
+            self.content['Button'].stop_monitor_button.setEnabled(start)
+        else:
+            self.content['Button'].stop_monitor_button.setVisible(start)
+            self.content['Button'].stop_monitor_button.setEnabled(start)
+            self.content['Button'].start_monitor_button.setVisible(bool(not start))
+            self.content['Button'].start_monitor_button.setEnabled(bool(not start))
         settings = self.get_start_settings(monitor=True)
         self.plot_worker_ctf.reset_list()
         self.plot_worker_motion.reset_list()
@@ -839,8 +845,11 @@ class MainWindow(QMainWindow):
             self.enable(bool(not start))
             if not os.path.exists(settings['project_folder']):
                 tu.message('Project folder does not exists. Cannot monitor session.')
+                self.enable(bool(start))
             else:
                 self.process_worker.sig_start.emit(settings)
+                self.content['Button'].start_button.setEnabled(bool(not start))
+                self.content['Button'].stop_button.setEnabled(bool(not start))
         else:
             self.process_worker.stop = True
 
@@ -1032,6 +1041,8 @@ class MainWindow(QMainWindow):
             self.content['Button'].start_button.setEnabled(False)
             self.content['Button'].stop_button.setVisible(True)
             self.content['Button'].stop_button.setEnabled(True)
+            self.content['Button'].start_monitor_button.setEnabled(False)
+            self.content['Button'].stop_monitor_button.setEnabled(False)
             self.plot_worker_ctf.reset_list()
             self.plot_worker_motion.reset_list()
             self.plot_worker_picking.reset_list()
@@ -1098,6 +1109,8 @@ class MainWindow(QMainWindow):
         None
         """
         self.process_worker.stop = True
+        self.content['Button'].start_monitor_button.setEnabled(False)
+        self.content['Button'].stop_monitor_button.setEnabled(False)
         self.content['Button'].start_button.setEnabled(False)
         self.content['Button'].stop_button.setEnabled(False)
 
@@ -1117,6 +1130,8 @@ class MainWindow(QMainWindow):
         self.content['Button'].start_button.setVisible(True)
         self.content['Button'].start_button.setEnabled(True)
         self.content['Button'].stop_button.setEnabled(False)
+        self.content['Button'].start_monitor_button.setEnabled(True)
+        self.content['Button'].stop_monitor_button.setEnabled(True)
 
     @pyqtSlot(bool)
     def enable(self, var, use_all=False):
