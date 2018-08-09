@@ -174,10 +174,19 @@ class PlotWidget(QWidget):
                 settings=settings,
                 label=self.label,
                 )
+            idx_nan = np.isnan(y_values)
+            x_values = x_values[~idx_nan]
+            y_values = y_values[~idx_nan]
 
             color = '#68a3c3'
 
             self.ax1.clear()
+            title_list = [title]
+            if idx_nan.any():
+                title_list.append(
+                    '{0} entries not valid due to NAN'.format(idx_nan.sum())
+                    )
+
             if self.plot_typ == 'values':
                 x_label = 'Micrograph ID'
                 y_label = label
@@ -191,10 +200,9 @@ class PlotWidget(QWidget):
                 elif title == 'Resolution limit':
                     if np.max(y_values) > 20:
                         self.ax1.hist(y_values[y_values <= 20], 100, color=color)
-                        title = '{0}\n{1} micrographs out of range (0,20)'.format(
-                            title,
+                        title_list.append('{0} micrographs out of range (0,20)'.format(
                             y_values[y_values > 20].shape[0]
-                            )
+                            ))
                     else:
                         self.ax1.hist(y_values, 100, color=color)
                 else:
@@ -204,7 +212,7 @@ class PlotWidget(QWidget):
                 return None
 
             self.ax1.grid()
-            self.ax1.set_title(title)
+            self.ax1.set_title('\n'.join(title_list))
             self.ax1.set_xlabel(x_label)
             self.ax1.set_ylabel(y_label)
             try:
@@ -235,6 +243,7 @@ class PlotWidget(QWidget):
                 print(len(y_values))
                 print('COULD NOT DRAW!!!')
                 print('Please contact the TranSHPIRE authors!!!')
+                print('Restarting TranSPHIRE will fix this issue.')
                 return None
 
             output_name = os.path.join(

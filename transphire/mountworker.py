@@ -295,30 +295,36 @@ class MountWorker(QObject):
         Return:
         Current warning status
         """
-        total_quota = shutil.disk_usage(directory).total / 1e12
-        used_quota = shutil.disk_usage(directory).used / 1e12
-        free_quota = shutil.disk_usage(directory).free / 1e12
-        self.sig_quota.emit('{0:.1f}TB / {1:.1f}TB'.format(used_quota, total_quota), name, 'lightgreen')
-        self.sig_success.emit('Connected', name, 'lightgreen')
+        try:
+            total_quota = shutil.disk_usage(directory).total / 1e12
+            used_quota = shutil.disk_usage(directory).used / 1e12
+            free_quota = shutil.disk_usage(directory).free / 1e12
 
-        # Decide if there is a quota warning
-        limit = total_quota * (100 - quota_limit) / 100
-        if warning:
-            if free_quota < limit:
-                warning = False
-                message = 'Less than {0:.2f}Tb ({1:.2f}Tb) free on {2}!'.format(
-                    limit,
-                    free_quota,
-                    name
-                    )
-                self.sig_notification.emit(message)
-                self.sig_error.emit(message, 'None')
+            # Decide if there is a quota warning
+            limit = total_quota * (100 - quota_limit) / 100
+            if warning:
+                if free_quota < limit:
+                    warning = False
+                    message = 'Less than {0:.2f}Tb ({1:.2f}Tb) free on {2}!'.format(
+                        limit,
+                        free_quota,
+                        name
+                        )
+                    self.sig_notification.emit(message)
+                    self.sig_error.emit(message, 'None')
+                else:
+                    pass
+            elif used_quota < limit * 0.9:
+                warning = True
             else:
                 pass
-        elif used_quota < limit * 0.9:
-            warning = True
+        except FileNotFoundError:
+            self.sig_quota.emit('Not avilable', name, '#ff5c33')
+            self.sig_success.emit('Not connected', name, '#ff5c33')
+
         else:
-            pass
+            self.sig_quota.emit('{0:.1f}TB / {1:.1f}TB'.format(used_quota, total_quota), name, 'lightgreen')
+            self.sig_success.emit('Connected', name, 'lightgreen')
         return warning
 
     @pyqtSlot()
@@ -357,7 +363,7 @@ class MountWorker(QObject):
                                 self.sig_error.emit('Lost connection: {0}'.format(key), key)
                                 self.refresh_quota()
                             else:
-                                print('Host seems to be down! It may recover soon!')
+                                print('{0} - Host seems to be down! It may recover soon! You might need to manually unmount with sudo umount -l {0}.'.format(mount_folder))
                         else:
                             print('OSError caught in mount_folder: {0}'.format(mount_folder))
                             if self.password:

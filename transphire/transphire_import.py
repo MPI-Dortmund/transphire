@@ -685,6 +685,7 @@ def import_motion_cor_2_v1_0_0(name, directory_name):
         dtype=get_dtype_dict()['motion']
         )
     data = np.atleast_1d(data)
+    data_original = []
     for idx, file_name in enumerate(useable_files):
         try:
             data_name = np.genfromtxt(
@@ -699,6 +700,7 @@ def import_motion_cor_2_v1_0_0(name, directory_name):
             else:
                 pass
 
+        data_original.append([data_name['shift_x'], data_name['shift_y']])
         data[idx]['file_name'] = file_name
         shift_x = np.array([
             data_name['shift_x'][i+1] - data_name['shift_x'][i] \
@@ -720,8 +722,9 @@ def import_motion_cor_2_v1_0_0(name, directory_name):
             else:
                 pass
 
-    data = np.sort(data, order='file_name')
-    data_original = None
+    sort_idx = np.argsort(data, order='file_name')
+    data = data[sort_idx]
+    data_original = np.array(data_original)[sort_idx]
     return data, data_original
 
 

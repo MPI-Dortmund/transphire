@@ -549,6 +549,7 @@ class ProcessThread(QThread):
         None
         """
         self.queue_lock.lock()
+        error = False
         try:
             if self.queue.empty():
                 self.queue_com['status'].put([
@@ -560,14 +561,19 @@ class ProcessThread(QThread):
                     self.name,
                     '#ffc14d'
                     ])
-                QThread.sleep(5)
-                return None
+                error = True
             else:
                 pass
         except Exception:
-            return None
+            error = True
         finally:
             self.queue_lock.unlock()
+
+        if error:
+            QThread.sleep(5)
+            return None
+        else:
+            pass
 
         # Get new file
         self.queue_lock.lock()
@@ -582,7 +588,6 @@ class ProcessThread(QThread):
                 'lightgreen'
                 ])
             root_name = self.remove_from_queue()
-            QThread.sleep(1)
         except Exception:
             return None
         finally:
@@ -753,7 +758,9 @@ class ProcessThread(QThread):
         Return:
         Name removed from the queue.
         """
-        return self.queue.get(block=False)
+        value = self.queue.get(block=False)
+        QThread.msleep(100)
+        return value
 
     @staticmethod
     def add_to_queue_file(root_name, file_name):
@@ -798,6 +805,7 @@ class ProcessThread(QThread):
                 root_name=root_name,
                 file_name=self.shared_dict['typ'][aim]['save_file']
                 )
+            QThread.msleep(100)
         except Exception:
             raise
         finally:
@@ -1131,7 +1139,6 @@ class ProcessThread(QThread):
                 pass
         else:
             message = '{0}: No frames found! If this appears very often, please restart TranSPHIRE.'.format(self.name)
-            self.queue_com['error'].put(message, self.name)
             self.queue_com['notification'].put(message)
             self.write_error(msg=message, root_name=root_name)
             raise Exception(message)
@@ -1328,10 +1335,11 @@ class ProcessThread(QThread):
                     os.remove(file_entry)
                 except IOError:
                     self.write_error(msg=tb.format_exc(), root_name=file_entry)
-                    raise
+                    raise BlockingIOError('Cannot remove Frames!')
         else:
             pass
 
+        QThread.sleep(1)
         self.shared_dict['typ'][self.content_settings['group']]['share_lock'].lock()
         try:
             self.shared_dict['share'][self.content_settings['group']].remove(root_name)
@@ -1352,20 +1360,22 @@ class ProcessThread(QThread):
         """
         self.shared_dict['translate_lock'].lock()
         try:
-            content_translation_file = np.genfromtxt(
-                os.path.join(
-                    self.settings['project_folder'],
-                    'Translation_file.txt'
-                    ),
-                usecols=0,
-                dtype=str
-                )
-        except OSError:
-            return False
-        except Exception:
-            raise
-        else:
-            return bool(root_name in content_translation_file)
+            try:
+                for name in ('Translation_file.txt', 'Translation_file_bad.txt'):
+                    content_translation_file = np.genfromtxt(
+                        os.path.join(
+                            self.settings['project_folder'],
+                            name
+                            ),
+                        usecols=0,
+                        dtype=str
+                        )
+            except OSError:
+                return False
+            except Exception:
+                raise
+            else:
+                return bool(root_name in content_translation_file)
         finally:
             self.shared_dict['translate_lock'].unlock()
 
@@ -1382,34 +1392,40 @@ class ProcessThread(QThread):
             self.settings['project_folder'],
             'Translation_file.txt'
             )
+        file_name_bad = os.path.join(
+            self.settings['project_folder'],
+            'Translation_file_bad.txt'
+            )
         self.shared_dict['translate_lock'].lock()
         try:
             with open(file_name, 'r') as read:
-                new_lines = []
+                good_lines = []
+                bad_lines = []
                 for line in read.readlines():
                     if root_name in line:
-                        pass
+                        bad_lines.append(line)
                     else:
-                        new_lines.append(line)
+                        good_lines.append(line)
 
             with open(file_name, 'w') as write:
-                write.write(''.join(new_lines))
+                write.write(''.join(good_lines))
+
+            with open(file_name_bad, 'a') as write:
+                write.write(''.join(bad_lines))
 
         finally:
             self.shared_dict['translate_lock'].unlock()
 
-        if not self.settings['Copy']['Copy to work'] == 'False':
-            self.add_to_queue(aim='Copy_work', root_name=file_name)
-        else:
-            pass
-        if not self.settings['Copy']['Copy to HDD'] == 'False':
-            self.add_to_queue(aim='Copy_hdd', root_name=file_name)
-        else:
-            pass
-        if not self.settings['Copy']['Copy to backup'] == 'False':
-            self.add_to_queue(aim='Copy_backup', root_name=file_name)
-        else:
-            pass
+        self.file_to_distribute(file_name=file_name)
+        self.file_to_distribute(file_name=file_name_bad)
+
+    def file_to_distribute(self, file_name):
+        for copy_name in ('work', 'HDD', 'backup'):
+            copy_type = 'Copy_{0}'.format(copy_name.lower())
+            if not self.settings['Copy']['Copy to {0}'.format(copy_name)] == 'False':
+                self.add_to_queue(aim=copy_type, root_name=file_name)
+            else:
+                pass
 
     def append_to_translate(self, root_name, new_name, xml_file):
         """
@@ -1425,6 +1441,10 @@ class ProcessThread(QThread):
         file_name = os.path.join(
             self.settings['project_folder'],
             'Translation_file.txt'
+            )
+        file_name_bad = os.path.join(
+            self.settings['project_folder'],
+            'Translation_file_bad.txt'
             )
 
         if os.path.exists(file_name):
@@ -1559,23 +1579,18 @@ class ProcessThread(QThread):
                             )
                         )
                     )
+            with open(file_name_bad, 'a') as write:
+                if first_entry:
+                    write.write(template.format('\n'.join(first_entry)))
+                else:
+                    pass
         except Exception:
             raise
         finally:
             self.shared_dict['translate_lock'].unlock()
 
-        if not self.settings['Copy']['Copy to work'] == 'False':
-            self.add_to_queue(aim='Copy_work', root_name=file_name)
-        else:
-            pass
-        if not self.settings['Copy']['Copy to HDD'] == 'False':
-            self.add_to_queue(aim='Copy_hdd', root_name=file_name)
-        else:
-            pass
-        if not self.settings['Copy']['Copy to backup'] == 'False':
-            self.add_to_queue(aim='Copy_backup', root_name=file_name)
-        else:
-            pass
+        self.file_to_distribute(file_name=file_name)
+        self.file_to_distribute(file_name=file_name_bad)
 
     def run_motion(self, root_name):
         """
@@ -1591,6 +1606,7 @@ class ProcessThread(QThread):
         file_dw_post_move = None
         file_stack = None
         queue_dict = {}
+        do_subsum = bool(len(self.settings['motion_frames']) > 1)
         for motion_idx, key in enumerate(self.settings['motion_frames']):
             # The current settings that we work with
             motion_frames = copy.deepcopy(self.settings['motion_frames'][key])
@@ -1664,7 +1680,6 @@ class ProcessThread(QThread):
                 self.settings['scratch_motion_folder'],
                 output_logfile
                 )
-
 
             output_dw = os.path.join(output_transfer_root, 'DW')
             output_transfer = os.path.join(output_transfer_root, 'Non_DW')
@@ -1751,6 +1766,7 @@ class ProcessThread(QThread):
                     queue_com=self.queue_com,
                     name=self.name,
                     settings=self.settings,
+                    do_subsum=do_subsum
                     )
 
                 file_stdout_scratch, file_stderr_scratch = self.run_command(
@@ -1768,6 +1784,7 @@ class ProcessThread(QThread):
                     output_transfer_log_scratch,
                     output_transfer_log
                     )
+                file_stdout_combine = file_stdout
 
                 # Move DW file
                 if do_dw:
@@ -1777,6 +1794,7 @@ class ProcessThread(QThread):
                     pass
 
             else:
+                assert os.path.exists(file_stack)
                 command, block_gpu, gpu_list = tum.create_sum_movie_command(
                     motion_frames=motion_frames,
                     file_input=file_stack,
@@ -1852,26 +1870,26 @@ class ProcessThread(QThread):
                     raise
                 finally:
                     self.queue_lock.unlock()
+
+                log_files = glob.glob('{0}0*'.format(file_log))
+                non_zero_list.extend(log_files)
+                tus.check_outputs(
+                    zero_list=zero_list,
+                    non_zero_list=non_zero_list,
+                    exists_list=[],
+                    folder=self.settings['motion_folder'],
+                    command='copy'
+                    )
+
+                copied_files = zero_list_scratch + non_zero_list_scratch
+                for file_entry in copied_files:
+                    try:
+                        os.remove(file_entry)
+                    except IOError:
+                        self.write_error(msg=tb.format_exc(), root_name=file_entry)
+                        raise
             else:
                 pass
-
-            log_files = glob.glob('{0}0*'.format(file_log))
-            non_zero_list.extend(log_files)
-            tus.check_outputs(
-                zero_list=zero_list,
-                non_zero_list=non_zero_list,
-                exists_list=[],
-                folder=self.settings['motion_folder'],
-                command='copy'
-                )
-
-            copied_files = zero_list_scratch + non_zero_list_scratch
-            for file_entry in copied_files:
-                try:
-                    os.remove(file_entry)
-                except IOError:
-                    self.write_error(msg=tb.format_exc(), root_name=file_entry)
-                    raise
 
             queue_dict[motion_idx]['sum'].append(file_output)
             for file_name_log in glob.glob('{0}*'.format(file_log)):
@@ -1881,7 +1899,7 @@ class ProcessThread(QThread):
             else:
                 pass
 
-        data, data_orig = tu.get_function_dict()[self.settings['Copy']['Motion']]['plot_data'](
+        data, data_original = tu.get_function_dict()[self.settings['Copy']['Motion']]['plot_data'](
             self.settings['Copy']['Motion'],
             self.settings['Motion_folder'][self.settings['Copy']['Motion']]
             )
@@ -1925,6 +1943,149 @@ class ProcessThread(QThread):
             self.queue_com['notification'].put(message)
             self.write_error(msg=message, root_name=root_name)
 
+        self.queue_lock.lock()
+        try:
+            mask = np.in1d(
+                np.array(
+                    np.char.rsplit(
+                        np.array(
+                            np.char.rsplit(
+                                data['file_name'],
+                                '/',
+                                1
+                                ).tolist()
+                            )[:, -1],
+                        '.'
+                        ).tolist()
+                    )[:,0],
+                np.char.rsplit(np.char.rsplit(
+                    queue_dict[0]['sum'][0],
+                    '/',
+                    1
+                    ).tolist()[-1], '.').tolist()[0]
+                )
+            data = data[mask]
+            data_original = data_original[mask]
+        finally:
+            self.queue_lock.unlock()
+
+        if data.shape[0] != 0:
+            self.queue_lock.lock()
+            try:
+                sum_file = queue_dict[0]['sum'][0]
+                try:
+                    dw_file = queue_dict[0]['sum_dw'][0]
+                except IndexError:
+                    dw_file = None
+                output_combine = tum.combine_motion_outputs(
+                    data=data,
+                    data_original=data_original,
+                    settings=self.settings,
+                    queue_com=self.queue_com,
+                    shared_dict=self.shared_dict,
+                    name=self.name,
+                    log_file=file_stdout_combine,
+                    sum_file=sum_file,
+                    dw_file=dw_file,
+                    )
+                output_name_mic = output_combine[0]
+                output_name_star = output_combine[1]
+                output_name_star_relion3 = output_combine[2]
+                new_gain = output_combine[3]
+                new_defect = output_combine[4]
+                motion_files = sorted(glob.glob(
+                    '{0}/*_transphire_motion.txt'.format(
+                        os.path.dirname(file_stdout_combine)
+                        )
+                    ))
+
+                output_lines = []
+                self.shared_dict['motion_txt_lock'].lock()
+                try:
+                    for file_name in motion_files:
+                        with open(file_name, 'r') as read:
+                            output_lines.append(read.readlines()[-1])
+                    with open(output_name_mic, 'w') as write:
+                        write.write(''.join(output_lines))
+                finally:
+                    self.shared_dict['motion_txt_lock'].unlock()
+
+                star_files = sorted(glob.glob(
+                    '{0}/*_transphire_motion.star'.format(
+                        os.path.dirname(file_stdout_combine)
+                        )
+                    ))
+                header = []
+                self.shared_dict['motion_star_lock'].lock()
+                try:
+                    with open(star_files[0], 'r') as read:
+                        header.extend(read.readlines()[:-1])
+                    output_lines = []
+                    for file_name in star_files:
+                        with open(file_name, 'r') as read:
+                            output_lines.append(read.readlines()[-1])
+                    with open(output_name_star, 'w') as write:
+                        write.write(''.join(header))
+                        write.write(''.join(output_lines))
+                finally:
+                    self.shared_dict['motion_star_lock'].unlock()
+
+                star_files_relion3 = sorted(glob.glob(
+                    '{0}/*_transphire_motion_relion3.star'.format(
+                        os.path.dirname(file_stdout_combine)
+                        )
+                    ))
+
+                header = []
+                self.shared_dict['motion_star_relion3_lock'].lock()
+                try:
+                    with open(star_files_relion3[0], 'r') as read:
+                        header.extend(read.readlines()[:-1])
+                    output_lines = []
+                    for file_name in star_files_relion3:
+                        with open(file_name, 'r') as read:
+                            output_lines.append(read.readlines()[-1])
+                    with open(output_name_star_relion3, 'w') as write:
+                        write.write(''.join(header))
+                        write.write(''.join(output_lines))
+                finally:
+                    self.shared_dict['motion_star_relion3_lock'].unlock()
+
+            finally:
+                self.queue_lock.unlock()
+
+            star_files_relion3_meta = sorted(glob.glob(
+                '{0}/*_transphire_motion_relion3_meta.star'.format(
+                    os.path.dirname(file_stdout_combine)
+                    )
+                ))
+
+            copy_names = []
+            copy_names.extend(star_files_relion3_meta)
+            copy_names.extend(star_files_relion3)
+            copy_names.extend(star_files)
+            copy_names.extend(motion_files)
+
+            for file_name in copy_names:
+                if not os.path.basename(root_name) in file_name:
+                    continue
+                else:
+                    self.file_to_distribute(file_name=file_name)
+
+            self.file_to_distribute(file_name=output_name_mic)
+            self.file_to_distribute(file_name=output_name_star)
+            self.file_to_distribute(file_name=output_name_star_relion3)
+            if new_gain:
+                self.file_to_distribute(file_name=new_gain)
+            else:
+                pass
+            if new_defect:
+                self.file_to_distribute(file_name=new_defect)
+            else:
+                pass
+        else:
+            pass
+
         if skip_list:
             pass
         else:
@@ -1962,9 +2123,14 @@ class ProcessThread(QThread):
                                 pass
                         elif 'CTF_frames' in compare or 'CTF_sum' in compare or 'Picking' in compare:
                             if motion_idx == 0:
+                                sum_file = sum_files[0]
+                                if sum_dw_files:
+                                    dw_file = sum_dw_files[0]
+                                else:
+                                    dw_file = 'None'
                                 self.add_to_queue(
                                     aim=aim_name,
-                                    root_name=';;;'.join([sum_files[0], sum_dw_files[0], file_input])
+                                    root_name=';;;'.join([sum_file, dw_file, file_input])
                                     )
                             else:
                                 pass
@@ -1978,13 +2144,16 @@ class ProcessThread(QThread):
                     else:
                         pass
 
-        self.queue_lock.lock()
-        try:
-            os.remove(file_stack)
-        except Exception:
-            raise
-        finally:
-            self.queue_lock.unlock()
+        if do_subsum:
+            self.queue_lock.lock()
+            try:
+                os.remove(file_stack)
+            except Exception:
+                raise
+            finally:
+                self.queue_lock.unlock()
+        else:
+            pass
 
     def run_ctf(self, root_name):
         """
@@ -1997,7 +2166,7 @@ class ProcessThread(QThread):
         """
         root_name_raw = root_name
         # Split is file_sum, file_dw_sum, file_frames
-        file_sum, _, file_input = root_name.split(';;;')
+        file_sum, file_dw, file_input = root_name.split(';;;')
         try:
             if self.settings[self.settings['Copy']['CTF']]['Use movies'] == 'True':
                 root_name, _ = os.path.splitext(file_input)
@@ -2104,11 +2273,6 @@ class ProcessThread(QThread):
             raise IOError('{0} - Please check, if {0} can be executed outside of TranSPHIRE'.format(self.settings['Copy']['CTF']))
 
         if skip_list:
-            self.queue_lock.lock()
-            try:
-                self.shared_dict['bad'][self.typ].append(file_sum)
-            finally:
-                self.queue_lock.unlock()
             self.remove_from_translate(os.path.basename(root_name))
         else:
             pass
@@ -2140,7 +2304,6 @@ class ProcessThread(QThread):
                 pass
             self.write_error(msg=message, root_name=file_sum)
 
-        # Remove all rows that were skipped in the past
         self.queue_lock.lock()
         try:
             mask = np.in1d(
@@ -2180,55 +2343,61 @@ class ProcessThread(QThread):
                     queue_com=self.queue_com,
                     shared_dict=self.shared_dict,
                     name=self.name,
-                    sum_file=file_sum
+                    sum_file=file_sum,
+                    dw_file=file_dw,
                     )
                 partres_files = sorted(glob.glob(
-                    '{0}/*_transphire_partres.txt'.format(
+                    '{0}/*_transphire_ctf_partres.txt'.format(
                         self.settings['ctf_folder']
                         )
                     ))
 
                 output_lines = []
-                for file_name in partres_files:
-                    with open(file_name, 'r') as read:
-                        output_lines.append(read.readlines()[-1])
-                with open(output_name_partres, 'w') as write:
-                    write.write(''.join(output_lines))
+                self.shared_dict['ctf_partres_lock'].lock()
+                try:
+                    for file_name in partres_files:
+                        with open(file_name, 'r') as read:
+                            output_lines.append(read.readlines()[-1])
+                    with open(output_name_partres, 'w') as write:
+                        write.write(''.join(output_lines))
+                finally:
+                    self.shared_dict['ctf_partres_lock'].unlock()
 
                 star_files = sorted(glob.glob(
-                    '{0}/*_transphire.star'.format(
+                    '{0}/*_transphire_ctf.star'.format(
                         self.settings['ctf_folder']
                         )
                     ))
 
                 header = []
-                with open(star_files[0], 'r') as read:
-                    header.extend(read.readlines()[:-1])
-                output_lines = []
-                for file_name in star_files:
-                    with open(file_name, 'r') as read:
-                        output_lines.append(read.readlines()[-1])
-                with open(output_name_star, 'w') as write:
-                    write.write(''.join(header))
-                    write.write(''.join(output_lines))
+                self.shared_dict['ctf_star_lock'].lock()
+                try:
+                    with open(star_files[0], 'r') as read:
+                        header.extend(read.readlines()[:-1])
+                    output_lines = []
+                    for file_name in star_files:
+                        with open(file_name, 'r') as read:
+                            output_lines.append(read.readlines()[-1])
+                    with open(output_name_star, 'w') as write:
+                        write.write(''.join(header))
+                        write.write(''.join(output_lines))
+                finally:
+                    self.shared_dict['ctf_star_lock'].unlock()
             finally:
                 self.queue_lock.unlock()
 
-            if not self.settings['Copy']['Copy to work'] == 'False':
-                self.add_to_queue(aim='Copy_work', root_name=output_name_partres)
-                self.add_to_queue(aim='Copy_work', root_name=output_name_star)
-            else:
-                pass
-            if not self.settings['Copy']['Copy to HDD'] == 'False':
-                self.add_to_queue(aim='Copy_hdd', root_name=output_name_partres)
-                self.add_to_queue(aim='Copy_hdd', root_name=output_name_star)
-            else:
-                pass
-            if not self.settings['Copy']['Copy to backup'] == 'False':
-                self.add_to_queue(aim='Copy_backup', root_name=output_name_partres)
-                self.add_to_queue(aim='Copy_backup', root_name=output_name_star)
-            else:
-                pass
+            copy_names = []
+            copy_names.extend(star_files)
+            copy_names.extend(partres_files)
+
+            for file_name in copy_names:
+                if not os.path.basename(root_name) in file_name:
+                    continue
+                else:
+                    self.file_to_distribute(file_name=file_name)
+
+            self.file_to_distribute(file_name=output_name_partres)
+            self.file_to_distribute(file_name=output_name_star)
         else:
             pass
 
@@ -2275,12 +2444,17 @@ class ProcessThread(QThread):
         """
 
         # New name; Splitis file_sum, file_dw_sum, file_frames
-        _, file_dw_sum, file_frames = root_name.split(';;;')
-        file_name = os.path.basename(os.path.splitext(file_dw_sum)[0])
+        file_sum, file_dw_sum, file_frames = root_name.split(';;;')
+        if file_dw_sum == 'None':
+            file_name = os.path.basename(os.path.splitext(file_sum)[0])
+            file_use = file_sum
+        else:
+            file_name = os.path.basename(os.path.splitext(file_dw_sum)[0])
+            file_use = file_dw_sum
 
         # Create the command for filtering
         command, file_input, check_files, block_gpu, gpu_list = tup.create_filter_command(
-            file_input=file_dw_sum,
+            file_input=file_use,
             settings=self.settings,
             )
 
@@ -2337,7 +2511,7 @@ class ProcessThread(QThread):
         non_zero_list = [err_file, log_file]
         non_zero_list.extend(check_files)
 
-        root_path = os.path.join(os.path.dirname(file_dw_sum), file_name)
+        root_path = os.path.join(os.path.dirname(file_use), file_name)
         log_files, copied_log_files = tup.find_logfiles(
             root_path=root_path,
             file_name=file_name,
@@ -2376,7 +2550,7 @@ class ProcessThread(QThread):
             )
 
         if skip_list:
-            self.remove_from_translate(os.path.basename(file_dw_sum))
+            self.remove_from_translate(os.path.basename(file_use))
         else:
             pass
 
@@ -2384,7 +2558,7 @@ class ProcessThread(QThread):
             message = 'The parameter {0} is {1} for file {2}, which is not in the range: {3} to {4} and will be skipped! If this is not the only message, you might consider changing microscope settings!'.format(
                 warning[0],
                 warning[1],
-                file_dw_sum,
+                file_use,
                 warning[2],
                 warning[3]
                 )
@@ -2394,7 +2568,7 @@ class ProcessThread(QThread):
             else:
                 pass
             self.queue_com['notification'].put(message)
-            self.write_error(msg=message, root_name=file_dw_sum)
+            self.write_error(msg=message, root_name=file_use)
 
         for warning in warnings:
             message = 'The median of the last {0} values for parameter {1} is {2}, which is not in the range: {3} to {4}! You might consider to adjust microscope settings!'.format(
@@ -2410,7 +2584,7 @@ class ProcessThread(QThread):
             else:
                 pass
             self.queue_com['notification'].put(message)
-            self.write_error(msg=message, root_name=file_dw_sum)
+            self.write_error(msg=message, root_name=file_use)
 
         if skip_list:
             pass
@@ -2634,7 +2808,15 @@ class ProcessThread(QThread):
                     break
                 else:
                     QThread.msleep(100)
-        elif '_transphire_partres.txt' in file_out:
+        elif 'Translation_file_bad.txt' in file_out:
+            while True:
+                is_locked = bool(not self.shared_dict['translate_lock'].tryLock())
+                if not is_locked:
+                    self.shared_dict['translate_lock'].unlock()
+                    break
+                else:
+                    QThread.msleep(100)
+        elif '_transphire_ctf_partres.txt' in file_out:
             while True:
                 is_locked = bool(not self.shared_dict['ctf_partres_lock'].tryLock())
                 if not is_locked:
@@ -2642,11 +2824,35 @@ class ProcessThread(QThread):
                     break
                 else:
                     QThread.msleep(100)
-        elif '_transphire.star' in file_out:
+        elif '_transphire_ctf.star' in file_out:
             while True:
                 is_locked = bool(not self.shared_dict['ctf_star_lock'].tryLock())
                 if not is_locked:
                     self.shared_dict['ctf_star_lock'].unlock()
+                    break
+                else:
+                    QThread.msleep(100)
+        elif '_transphire_motion.txt' in file_out:
+            while True:
+                is_locked = bool(not self.shared_dict['motion_txt_lock'].tryLock())
+                if not is_locked:
+                    self.shared_dict['motion_txt_lock'].unlock()
+                    break
+                else:
+                    QThread.msleep(100)
+        elif '_transphire_motion.star' in file_out:
+            while True:
+                is_locked = bool(not self.shared_dict['motion_star_lock'].tryLock())
+                if not is_locked:
+                    self.shared_dict['motion_star_lock'].unlock()
+                    break
+                else:
+                    QThread.msleep(100)
+        elif '_transphire_motion_relion3.star' in file_out:
+            while True:
+                is_locked = bool(not self.shared_dict['motion_star_relion3_lock'].tryLock())
+                if not is_locked:
+                    self.shared_dict['motion_star_relion3_lock'].unlock()
                     break
                 else:
                     QThread.msleep(100)
@@ -2737,7 +2943,7 @@ class ProcessThread(QThread):
                     lock_var = self.shared_dict['gpu_lock'][entry][mutex_idx].tryLock()
                     assert bool(not lock_var)
                     while self.shared_dict['gpu_lock'][entry][count_idx] != 0:
-                        QThread.msleep(1000)
+                        QThread.msleep(500)
 
             else:
                 for entry in sorted(gpu_list):
@@ -2758,7 +2964,7 @@ class ProcessThread(QThread):
                 stop_time = time.time()
                 out.write('\nTime: {0} sec'.format(stop_time - start_time)) 
 
-        QThread.msleep(1000)
+        QThread.msleep(500)
         if gpu_list:
             if block_gpu:
                 for entry in gpu_list:
