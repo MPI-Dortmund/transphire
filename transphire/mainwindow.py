@@ -827,16 +827,6 @@ class MainWindow(QMainWindow):
         Returns:
         None
         """
-        if start:
-            self.content['Button'].start_monitor_button.setVisible(bool(not start))
-            self.content['Button'].start_monitor_button.setEnabled(bool(not start))
-            self.content['Button'].stop_monitor_button.setVisible(start)
-            self.content['Button'].stop_monitor_button.setEnabled(start)
-        else:
-            self.content['Button'].stop_monitor_button.setVisible(start)
-            self.content['Button'].stop_monitor_button.setEnabled(start)
-            self.content['Button'].start_monitor_button.setVisible(bool(not start))
-            self.content['Button'].start_monitor_button.setEnabled(bool(not start))
         settings = self.get_start_settings(monitor=True)
         self.plot_worker_ctf.reset_list()
         self.plot_worker_motion.reset_list()
@@ -846,12 +836,24 @@ class MainWindow(QMainWindow):
             if not os.path.exists(settings['project_folder']):
                 tu.message('Project folder does not exists. Cannot monitor session.')
                 self.enable(bool(start))
+                start = False
             else:
                 self.process_worker.sig_start.emit(settings)
                 self.content['Button'].start_button.setEnabled(bool(not start))
                 self.content['Button'].stop_button.setEnabled(bool(not start))
         else:
             self.process_worker.stop = True
+
+        if start:
+            self.content['Button'].start_monitor_button.setVisible(bool(not start))
+            self.content['Button'].start_monitor_button.setEnabled(bool(not start))
+            self.content['Button'].stop_monitor_button.setVisible(start)
+            self.content['Button'].stop_monitor_button.setEnabled(start)
+        else:
+            self.content['Button'].stop_monitor_button.setVisible(start)
+            self.content['Button'].start_monitor_button.setVisible(bool(not start))
+            self.content['Button'].stop_monitor_button.setEnabled(start)
+            self.content['Button'].start_monitor_button.setEnabled(bool(not start))
 
     @pyqtSlot()
     def get_start_settings(self, monitor=False):
@@ -1160,7 +1162,8 @@ class MainWindow(QMainWindow):
         Return:
         None
         """
-        if self.content['Button'].stop_button.isVisible():
+        if self.content['Button'].stop_button.isVisible() or \
+                self.content['Button'].stop_monitor_button.isVisible():
             event.ignore()
             tu.message('First stop the program before closing')
             return None
