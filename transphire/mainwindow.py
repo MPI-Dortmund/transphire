@@ -816,7 +816,6 @@ class MainWindow(QMainWindow):
             print(message_pass)
             return True
 
-
     def monitor(self, start):
         """
         Start the TranSPHIRE monitor processing.
@@ -831,14 +830,20 @@ class MainWindow(QMainWindow):
         self.content['Button'].start_monitor_button.setEnabled(False)
         self.content['Button'].stop_monitor_button.setEnabled(False)
 
-        settings = self.get_start_settings(monitor=True)
         self.plot_worker_ctf.reset_list()
         self.plot_worker_motion.reset_list()
         self.plot_worker_picking.reset_list()
         if start:
-            if not os.path.exists(settings['project_folder']):
+            settings = self.get_start_settings(monitor=True)
+            if settings is None:
+                tu.message('Please fill non emtpy entries.')
+                self.enable(True)
+                self.content['Button'].start_monitor_button.setEnabled(True)
+                start = False
+            elif not os.path.exists(settings['project_folder']):
                 tu.message('Project folder does not exists. Cannot monitor session.')
                 self.enable(True)
+                self.content['Button'].start_monitor_button.setEnabled(True)
                 start = False
             else:
                 self.process_worker.sig_start.emit(settings)
