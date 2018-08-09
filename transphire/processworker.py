@@ -75,7 +75,7 @@ class ProcessWorker(QObject):
         self.password = password
         self.content_process = content_process
         self.mount_directory = mount_directory
-        self.stop = False
+        self.stop = None
         self.settings = {}
 
         # Events
@@ -95,9 +95,6 @@ class ProcessWorker(QObject):
         # Set settings
         self.settings = settings
         content_process = cp.deepcopy(self.content_process)
-
-        # Set stop variable to the return value of the pre_check
-        self.stop = bool(self.pre_check_programs())
 
         # Set paths
         self.settings['stack_folder'] = os.path.join(
@@ -179,176 +176,6 @@ class ProcessWorker(QObject):
                 self.settings
                 )
 
-        # Set default values for folder list and thread list
-        folder_list = ['stack_folder', 'meta_folder']
-        use_threads_list = ['Meta', 'Find', 'Copy']
-
-        # Fill folder list and threads list
-        for name in ['work', 'backup']:
-            short_name = 'Copy_{0}'.format(name)
-            long_name = 'Copy to {0}'.format(name)
-            folder_name = '{0}_folder'.format(short_name)
-            user_name = '{0}_user'.format(short_name)
-            self.settings['Copy'][short_name] = \
-                self.settings['Copy'][long_name]
-
-            if self.settings['Copy'][long_name] != 'False':
-                if self.settings['Copy'][long_name] == 'Later':
-                    pass
-                elif not os.path.ismount(self.settings[folder_name]):
-                    try:
-                        os.listdir(self.settings[folder_name])
-                    except PermissionError:
-                        pass
-                    except FileNotFoundError:
-                        self.sig_error.emit(
-                            '{0} folder {1} not mounted!'.format(
-                                name,
-                                self.settings['Copy'][long_name]
-                                )
-                            )
-                        self.sig_finished.emit()
-                        return None
-                    except OSError as err:
-                        if 'Required key' in str(err):
-                            self.sig_error.emit(
-                                '\n'.join([
-                                    '{0} folder {1} no longer mounted! '.format(
-                                        name,
-                                        self.settings['Copy'][long_name]
-                                        ),
-                                    'Use kinit to refresh the key'
-                                    ])
-                                )
-                            self.sig_finished.emit()
-                            return None
-                        else:
-                            print(
-                                '\n'.join([
-                                    'Unknown Error occured!',
-                                    'Please contact the TranSPHIRE authors!'
-                                    ])
-                            )
-                            raise
-                    else:
-                        self.sig_error.emit(
-                            '{0} folder {1} not mounted!'.format(
-                                name,
-                                self.settings['Copy'][long_name]
-                                )
-                            )
-                        self.sig_finished.emit()
-                        return None
-
-                else:
-                    pass
-                try:
-                    self.settings[user_name] = self.settings[
-                        'user_{0}'.format(
-                            self.settings['Copy'][long_name].replace(' ', '_')
-                            )
-                        ]
-                except KeyError:
-                    self.sig_error.emit('{0} needs remount! '.format(name))
-                    self.sig_finished.emit()
-                    return None
-                use_threads_list.append(short_name)
-            else:
-                pass
-
-        # Decide if one will use copy to HDD
-        self.settings['Copy']['Copy_hdd'] = self.settings['Copy']['Copy to HDD']
-        if self.settings['Copy']['Copy to HDD'] != 'False':
-            if self.settings['Copy']['Copy to HDD'] == 'Later':
-                pass
-            else:
-                try:
-                    for folder in glob.glob('{0}/*'.format(self.settings['Copy_hdd_folder'])):
-                        if not os.path.ismount(folder):
-                            try:
-                                os.listdir(folder)
-                            except PermissionError:
-                                pass
-                            else:
-                                self.sig_error.emit(
-                                    'HDD not mounted or not well unmounted!' +
-                                    'Please remount if you want to use HDD'
-                                    )
-                                self.sig_finished.emit()
-                                return None
-                        else:
-                            pass
-                except FileNotFoundError:
-                    self.sig_error.emit(
-                        'HDD not mounted or not well unmounted!' +
-                        'Please remount if you want to use HDD!'
-                        )
-                    self.sig_finished.emit()
-                    return None
-            use_threads_list.append('Copy_hdd')
-        else:
-            pass
-
-        # Set CTF settings
-        if self.settings['Copy']['CTF'] != 'False':
-            folder_list.append('ctf_folder')
-            use_threads_list.append('CTF')
-            ctf_name = self.settings['Copy']['CTF']
-            try:
-                if self.settings[ctf_name]['Use movies'] == 'True':
-                    self.settings['Copy']['CTF_frames'] = 'True'
-                    self.settings['Copy']['CTF_sum'] = 'False'
-                else:
-                    self.settings['Copy']['CTF_frames'] = 'False'
-                    self.settings['Copy']['CTF_sum'] = 'True'
-            except KeyError:
-                self.settings['Copy']['CTF_frames'] = 'False'
-                self.settings['Copy']['CTF_sum'] = 'True'
-        else:
-            self.settings['Copy']['CTF_frames'] = 'False'
-            self.settings['Copy']['CTF_sum'] = 'False'
-
-        # Set Compress settings
-        if self.settings['Copy']['Compress data'] != 'False':
-            folder_list.append('compress_folder')
-            use_threads_list.append('Compress')
-        else:
-            pass
-
-        # Set Motion settings
-        if self.settings['Copy']['Motion'] != 'False':
-            folder_list.append('motion_folder')
-            use_threads_list.append('Motion')
-        else:
-            pass
-
-        # Set Picking settings
-        if self.settings['Copy']['Picking'] != 'False':
-            folder_list.append('picking_folder')
-            use_threads_list.append('Picking')
-        else:
-            pass
-
-        # Create output directories
-        for entry in folder_list:
-            try:
-                tu.mkdir_p(self.settings[entry])
-            except PermissionError:
-                continue
-            except OSError as err:
-                print(str(err))
-                self.sig_error.emit(str(err))
-                self.sig_finished.emit()
-                return None
-
-        # Queue communication dictionary
-        queue_com = {
-            'status': qu.Queue(),
-            'notification': qu.Queue(),
-            'error': qu.Queue(),
-            }
-
-        # Fill different dictionarys with process information
         typ_dict = {}
         wait_dict = {}
         share_dict = {}
@@ -409,6 +236,269 @@ class ProcessWorker(QObject):
                                 ['{0}_{1}'.format(key, idx+1), process[key]]
                                 )
 
+        # Queue communication dictionary
+        queue_com = {
+            'status': qu.Queue(),
+            'notification': qu.Queue(),
+            'error': qu.Queue(),
+            }
+
+        # Set stop variable to the return value of the pre_check
+        if settings['Monitor']:
+            self.stop = False
+            self.run_monitor(
+                typ_dict=typ_dict,
+                queue_com=queue_com,
+                full_content=full_content,
+                )
+        else:
+            self.stop = bool(self.pre_check_programs())
+            self.run_process(
+                typ_dict=typ_dict,
+                queue_com=queue_com,
+                share_dict=share_dict,
+                bad_dict=bad_dict,
+                queue_dict=queue_dict,
+                content_process=content_process,
+                full_content=full_content,
+                idx_values=idx_values,
+                )
+
+        self.sig_finished.emit()
+
+    def run_monitor(
+            self,
+            typ_dict,
+            queue_com,
+            full_content
+        ):
+        """
+        Run the TranSPHIRE monitor process.
+
+        Arguments:
+        typ_dict - Dictionary for the queue types
+        queue_com - Dictionary for queue communication
+
+        Returns:
+        None
+        """
+        def check_int(number):
+            try:
+                int(number)
+            except:
+                return False
+            else:
+                return True
+
+        while True:
+            if self.stop:
+                text = 'Not monitoring'
+                color = 'white'
+            else:
+                text = 'Monitoring'
+                color = 'lightgreen'
+            for entry in full_content:
+                name = entry[0]
+                key = '_'.join([key for key in name.split('_') if not check_int(key)])
+                with open(typ_dict[key]['save_file']) as read:
+                    nr_do = len([line for line in read.readlines() if line.strip()])
+                with open(typ_dict[key]['done_file']) as read:
+                    nr_done = len([line for line in read.readlines() if line.strip()])
+                queue_com['status'].put([
+                    text,
+                    [
+                        nr_do,
+                        nr_done
+                        ],
+                    name,
+                    color
+                    ])
+            try:
+                self.check_queue(queue_com=queue_com)
+            except BrokenPipeError:
+                pass
+
+            if self.stop:
+                break
+            else:
+                QThread.sleep(3)
+
+    def run_process(self,
+            typ_dict,
+            queue_com,
+            share_dict,
+            bad_dict,
+            queue_dict,
+            content_process,
+            full_content,
+            idx_values,
+        ):
+        """
+        Run the TranSPHIRE process.
+
+        Arguments:
+        typ_dict - Dictionary for the queue types
+        queue_com - Dictionary for queue communication
+
+        Returns:
+        None
+        """
+        # Set default values for folder list and thread list
+        folder_list = ['stack_folder', 'meta_folder']
+        use_threads_list = ['Meta', 'Find', 'Copy']
+
+        # Fill folder list and threads list
+        for name in ['work', 'backup']:
+            short_name = 'Copy_{0}'.format(name)
+            long_name = 'Copy to {0}'.format(name)
+            folder_name = '{0}_folder'.format(short_name)
+            user_name = '{0}_user'.format(short_name)
+            self.settings['Copy'][short_name] = \
+                self.settings['Copy'][long_name]
+
+            if self.settings['Copy'][long_name] != 'False':
+                if self.settings['Copy'][long_name] == 'Later':
+                    pass
+                elif not os.path.ismount(self.settings[folder_name]):
+                    try:
+                        os.listdir(self.settings[folder_name])
+                    except PermissionError:
+                        pass
+                    except FileNotFoundError:
+                        self.sig_error.emit(
+                            '{0} folder {1} not mounted!'.format(
+                                name,
+                                self.settings['Copy'][long_name]
+                                )
+                            )
+                        return None
+                    except OSError as err:
+                        if 'Required key' in str(err):
+                            self.sig_error.emit(
+                                '\n'.join([
+                                    '{0} folder {1} no longer mounted! '.format(
+                                        name,
+                                        self.settings['Copy'][long_name]
+                                        ),
+                                    'Use kinit to refresh the key'
+                                    ])
+                                )
+                            return None
+                        else:
+                            print(
+                                '\n'.join([
+                                    'Unknown Error occured!',
+                                    'Please contact the TranSPHIRE authors!'
+                                    ])
+                            )
+                            raise
+                    else:
+                        self.sig_error.emit(
+                            '{0} folder {1} not mounted!'.format(
+                                name,
+                                self.settings['Copy'][long_name]
+                                )
+                            )
+                        return None
+
+                else:
+                    pass
+                try:
+                    self.settings[user_name] = self.settings[
+                        'user_{0}'.format(
+                            self.settings['Copy'][long_name].replace(' ', '_')
+                            )
+                        ]
+                except KeyError:
+                    self.sig_error.emit('{0} needs remount! '.format(name))
+                    return None
+                use_threads_list.append(short_name)
+            else:
+                pass
+
+        # Decide if one will use copy to HDD
+        self.settings['Copy']['Copy_hdd'] = self.settings['Copy']['Copy to HDD']
+        if self.settings['Copy']['Copy to HDD'] != 'False':
+            if self.settings['Copy']['Copy to HDD'] == 'Later':
+                pass
+            else:
+                try:
+                    for folder in glob.glob('{0}/*'.format(self.settings['Copy_hdd_folder'])):
+                        if not os.path.ismount(folder):
+                            try:
+                                os.listdir(folder)
+                            except PermissionError:
+                                pass
+                            else:
+                                self.sig_error.emit(
+                                    'HDD not mounted or not well unmounted!' +
+                                    'Please remount if you want to use HDD'
+                                    )
+                                return None
+                        else:
+                            pass
+                except FileNotFoundError:
+                    self.sig_error.emit(
+                        'HDD not mounted or not well unmounted!' +
+                        'Please remount if you want to use HDD!'
+                        )
+                    return None
+            use_threads_list.append('Copy_hdd')
+        else:
+            pass
+
+        # Set CTF settings
+        if self.settings['Copy']['CTF'] != 'False':
+            folder_list.append('ctf_folder')
+            use_threads_list.append('CTF')
+            ctf_name = self.settings['Copy']['CTF']
+            try:
+                if self.settings[ctf_name]['Use movies'] == 'True':
+                    self.settings['Copy']['CTF_frames'] = 'True'
+                    self.settings['Copy']['CTF_sum'] = 'False'
+                else:
+                    self.settings['Copy']['CTF_frames'] = 'False'
+                    self.settings['Copy']['CTF_sum'] = 'True'
+            except KeyError:
+                self.settings['Copy']['CTF_frames'] = 'False'
+                self.settings['Copy']['CTF_sum'] = 'True'
+        else:
+            self.settings['Copy']['CTF_frames'] = 'False'
+            self.settings['Copy']['CTF_sum'] = 'False'
+
+        # Set Compress settings
+        if self.settings['Copy']['Compress data'] != 'False':
+            folder_list.append('compress_folder')
+            use_threads_list.append('Compress')
+        else:
+            pass
+
+        # Set Motion settings
+        if self.settings['Copy']['Motion'] != 'False':
+            folder_list.append('motion_folder')
+            use_threads_list.append('Motion')
+        else:
+            pass
+
+        # Set Picking settings
+        if self.settings['Copy']['Picking'] != 'False':
+            folder_list.append('picking_folder')
+            use_threads_list.append('Picking')
+        else:
+            pass
+
+        # Create output directories
+        for entry in folder_list:
+            try:
+                tu.mkdir_p(self.settings[entry])
+            except PermissionError:
+                continue
+            except OSError as err:
+                print(str(err))
+                self.sig_error.emit(str(err))
+                return None
+
+        # Fill different dictionarys with process information
         gpu_mutex_dict = dict([(str(idx), [QMutex(), 0]) for idx in range(99)])
 
         # Shared dictionary
@@ -490,14 +580,13 @@ class ProcessWorker(QObject):
             QThread.sleep(1)
 
         # Run until the user stops the processes
-        go_on = True
-        while go_on:
+        while True:
             try:
                 self.check_queue(queue_com=queue_com)
             except BrokenPipeError:
                 pass
             if self.stop:
-                go_on = False
+                break
             else:
                 pass
             QThread.sleep(3)
@@ -534,8 +623,6 @@ class ProcessWorker(QObject):
                 name,
                 'white'
                 )
-
-        self.sig_finished.emit()
 
     def pre_check_programs(self):
         """

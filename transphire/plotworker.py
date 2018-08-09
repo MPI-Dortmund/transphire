@@ -66,6 +66,11 @@ class PlotWorker(QObject):
         None
         """
         self.settings.append([name, directory_name, settings])
+        self.calculate_array_now(
+            name=name,
+            directory_name=directory_name,
+            settings=settings
+            )
 
     @pyqtSlot()
     def calculate_array(self):
@@ -76,16 +81,23 @@ class PlotWorker(QObject):
         None
         """
         for name, directory_name, settings in self.settings:
-            if name == 'Later' or name == 'False':
-                data = None
-            else:
-                data, _ = tu.get_function_dict()[name]['plot_data'](
-                    name=name,
-                    directory_name=directory_name
-                    )
-            if data is None:
-                pass
-            elif data.size == 0:
-                pass
-            else:
-                self.sig_data.emit(name, data, directory_name, settings)
+            self.calculate_array_now(
+                name=name,
+                directory_name=directory_name,
+                settings=settings
+                )
+
+    def calculate_array_now(self, name, directory_name, settings):
+        if name == 'Later' or name == 'False':
+            data = None
+        else:
+            data, _ = tu.get_function_dict()[name]['plot_data'](
+                name=name,
+                directory_name=directory_name
+                )
+        if data is None:
+            pass
+        elif data.size == 0:
+            pass
+        else:
+            self.sig_data.emit(name, data, directory_name, settings)

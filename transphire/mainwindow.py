@@ -562,6 +562,8 @@ class MainWindow(QMainWindow):
                 self.content[key].sig_save.connect(self.save)
                 self.content[key].sig_start.connect(self.start)
                 self.content[key].sig_stop.connect(self.stop_dialog)
+                self.content[key].sig_monitor_start.connect(lambda: self.monitor(start=True))
+                self.content[key].sig_monitor_stop.connect(lambda: self.monitor(start=False))
                 self.content[key].sig_check_quota.connect(self.check_quota)
             else:
                 pass
@@ -814,8 +816,36 @@ class MainWindow(QMainWindow):
             print(message_pass)
             return True
 
+
+    def monitor(self, start):
+        """
+        Start the TranSPHIRE monitor processing.
+
+        Arguments:
+        start - True if start, False if stop
+
+        Returns:
+        None
+        """
+        self.content['Button'].start_monitor_button.setVisible(bool(not start))
+        self.content['Button'].start_monitor_button.setEnabled(bool(not start))
+        self.content['Button'].stop_monitor_button.setVisible(start)
+        self.content['Button'].stop_monitor_button.setEnabled(start)
+        settings = self.get_start_settings(monitor=True)
+        self.plot_worker_ctf.reset_list()
+        self.plot_worker_motion.reset_list()
+        self.plot_worker_picking.reset_list()
+        if start:
+            self.enable(bool(not start))
+            if not os.path.exists(settings['project_folder']):
+                tu.message('Project folder does not exists. Cannot monitor session.')
+            else:
+                self.process_worker.sig_start.emit(settings)
+        else:
+            self.process_worker.stop = True
+
     @pyqtSlot()
-    def start(self):
+    def get_start_settings(self, monitor=False):
         """
         Start TranSPHIRE processing.
 
@@ -827,6 +857,7 @@ class MainWindow(QMainWindow):
         """
         self.enable(False)
         settings = {}
+        settings['Monitor'] = monitor
         # Load settings to pass them to the working threads
         error_list = []
         skip_list = [
@@ -958,6 +989,11 @@ class MainWindow(QMainWindow):
             settings['project_folder'],
             'error'
             )
+        return settings
+
+    @pyqtSlot()
+    def start(self):
+        settings = self.get_start_settings()
 
         # Check for continue mode
         if os.path.exists(settings['project_folder']):
