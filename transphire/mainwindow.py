@@ -562,6 +562,8 @@ class MainWindow(QMainWindow):
                 self.content[key].sig_save.connect(self.save)
                 self.content[key].sig_start.connect(self.start)
                 self.content[key].sig_stop.connect(self.stop_dialog)
+                self.content[key].sig_monitor_start.connect(lambda: self.monitor(start=True))
+                self.content[key].sig_monitor_stop.connect(lambda: self.monitor(start=False))
                 self.content[key].sig_check_quota.connect(self.check_quota)
             else:
                 pass
@@ -814,8 +816,51 @@ class MainWindow(QMainWindow):
             print(message_pass)
             return True
 
+    def monitor(self, start):
+        """
+        Start the TranSPHIRE monitor processing.
+
+        Arguments:
+        start - True if start, False if stop
+
+        Returns:
+        None
+        """
+        self.enable(False)
+        self.content['Button'].start_monitor_button.setEnabled(False)
+        self.content['Button'].stop_monitor_button.setEnabled(False)
+
+        self.plot_worker_ctf.reset_list()
+        self.plot_worker_motion.reset_list()
+        self.plot_worker_picking.reset_list()
+        if start:
+            settings = self.get_start_settings(monitor=True)
+            if settings is None:
+                tu.message('Please fill non emtpy entries.')
+                self.enable(True)
+                self.content['Button'].start_monitor_button.setEnabled(True)
+                start = False
+            elif not os.path.exists(settings['project_folder']):
+                tu.message('Project folder does not exists. Cannot monitor session.')
+                self.enable(True)
+                self.content['Button'].start_monitor_button.setEnabled(True)
+                start = False
+            else:
+                self.process_worker.sig_start.emit(settings)
+                self.content['Button'].start_button.setEnabled(False)
+                self.content['Button'].stop_button.setEnabled(False)
+        else:
+            self.process_worker.stop = True
+
+        if start:
+            self.content['Button'].start_monitor_button.setVisible(False)
+            self.content['Button'].stop_monitor_button.setVisible(True)
+            self.content['Button'].stop_monitor_button.setEnabled(True)
+        else:
+            pass
+
     @pyqtSlot()
-    def start(self):
+    def get_start_settings(self, monitor=False):
         """
         Start TranSPHIRE processing.
 
@@ -827,6 +872,7 @@ class MainWindow(QMainWindow):
         """
         self.enable(False)
         settings = {}
+        settings['Monitor'] = monitor
         # Load settings to pass them to the working threads
         error_list = []
         skip_list = [
@@ -958,6 +1004,11 @@ class MainWindow(QMainWindow):
             settings['project_folder'],
             'error'
             )
+        return settings
+
+    @pyqtSlot()
+    def start(self):
+        settings = self.get_start_settings()
 
         # Check for continue mode
         if os.path.exists(settings['project_folder']):
@@ -996,6 +1047,8 @@ class MainWindow(QMainWindow):
             self.content['Button'].start_button.setEnabled(False)
             self.content['Button'].stop_button.setVisible(True)
             self.content['Button'].stop_button.setEnabled(True)
+            self.content['Button'].start_monitor_button.setEnabled(False)
+            self.content['Button'].stop_monitor_button.setEnabled(False)
             self.plot_worker_ctf.reset_list()
             self.plot_worker_motion.reset_list()
             self.plot_worker_picking.reset_list()
@@ -1062,6 +1115,8 @@ class MainWindow(QMainWindow):
         None
         """
         self.process_worker.stop = True
+        self.content['Button'].start_monitor_button.setEnabled(False)
+        self.content['Button'].stop_monitor_button.setEnabled(False)
         self.content['Button'].start_button.setEnabled(False)
         self.content['Button'].stop_button.setEnabled(False)
 
@@ -1076,11 +1131,16 @@ class MainWindow(QMainWindow):
         Return:
         None
         """
-        self.enable(True)
         self.content['Button'].stop_button.setVisible(False)
         self.content['Button'].start_button.setVisible(True)
         self.content['Button'].start_button.setEnabled(True)
         self.content['Button'].stop_button.setEnabled(False)
+
+        self.content['Button'].stop_monitor_button.setVisible(False)
+        self.content['Button'].start_monitor_button.setVisible(True)
+        self.content['Button'].start_monitor_button.setEnabled(True)
+        self.content['Button'].stop_monitor_button.setEnabled(False)
+        self.enable(True)
 
     @pyqtSlot(bool)
     def enable(self, var, use_all=False):
@@ -1109,7 +1169,8 @@ class MainWindow(QMainWindow):
         Return:
         None
         """
-        if self.content['Button'].stop_button.isVisible():
+        if self.content['Button'].stop_button.isVisible() or \
+                self.content['Button'].stop_monitor_button.isVisible():
             event.ignore()
             tu.message('First stop the program before closing')
             return None

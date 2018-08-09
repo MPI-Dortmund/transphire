@@ -51,6 +51,8 @@ class ButtonContainer(QWidget):
     sig_save = pyqtSignal()
     sig_start = pyqtSignal()
     sig_stop = pyqtSignal()
+    sig_monitor_start = pyqtSignal()
+    sig_monitor_stop = pyqtSignal()
     sig_check_quota = pyqtSignal()
 
     def __init__(self, parent=None, **kwargs):
@@ -104,6 +106,22 @@ class ButtonContainer(QWidget):
         self.check_quota.clicked.connect(self.sig_check_quota.emit)
         self.check_quota.setObjectName('button')
         layout.addWidget(self.check_quota)
+
+
+        # Start/Stop monitor button
+        self.start_monitor_button = QPushButton('Monitor', self)
+        self.start_monitor_button.clicked.connect(self._start_stop)
+        self.start_monitor_button.setObjectName('start')
+        self.start_monitor_button.setVisible(True)
+        self.start_monitor_button.setEnabled(True)
+        layout.addWidget(self.start_monitor_button)
+
+        self.stop_monitor_button = QPushButton('Monitor', self)
+        self.stop_monitor_button.clicked.connect(self._start_stop)
+        self.stop_monitor_button.setObjectName('stop')
+        self.stop_monitor_button.setVisible(False)
+        self.stop_monitor_button.setEnabled(False)
+        layout.addWidget(self.stop_monitor_button)
 
         # Start/Stop button
         self.start_button = QPushButton('Start', self)
@@ -192,6 +210,10 @@ class ButtonContainer(QWidget):
             self.sig_start.emit()
         elif self.sender().text() == 'Stop':
             self.sig_stop.emit()
+        elif self.sender().text() == 'Monitor' and self.sender().objectName() == 'start':
+            self.sig_monitor_start.emit()
+        elif self.sender().text() == 'Monitor' and self.sender().objectName() == 'stop':
+            self.sig_monitor_stop.emit()
         else:
             print(
                 'Button text not known!',
@@ -218,6 +240,9 @@ class ButtonContainer(QWidget):
             self.save_button.setEnabled(var)
             self.default_settings.setEnabled(var)
             self.start_button.setEnabled(var)
+            self.stop_button.setEnabled(var)
+            self.start_monitor_button.setEnabled(var)
+            self.stop_monitor_button.setEnabled(var)
             self.show_about.setEnabled(var)
             self.check_quota.setEnabled(var)
         else:
