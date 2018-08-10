@@ -1,4 +1,4 @@
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1315682.svg)](https://doi.org/10.5281/zenodo.1315682)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1343497.svg)](https://doi.org/10.5281/zenodo.1343497)
 
 # Transphire
 
