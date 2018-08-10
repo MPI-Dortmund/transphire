@@ -744,9 +744,9 @@ def default_general():
     items = [
         ['WIDGETS MAIN', '7', int, '', 'PLAIN', ''],
         ['WIDGETS ADVANCED', '7', int, '', 'PLAIN', ''],
-        ['Software', ['EPU 1.9', 'EPU 1.8'], str, '', 'COMBO', 'Main'],
+        ['Software', ['EPU 1.9', 'EPU 1.8', 'Folder'], str, '', 'COMBO', 'Main'],
         ['Type', ['Stack', 'Frames'], str, '', 'COMBO', 'Main'],
-        ['Camera', ['K2', 'Falcon3', 'Falcon2'], str, '', 'COMBO', 'Main'],
+        ['Camera', ['K2', 'Falcon3', 'Falcon2', 'Files'], str, '', 'COMBO', 'Main'],
         ['Search path frames', '', str, '', 'DIR', 'Main'],
         ['Search path meta', '', str, '', 'DIR', 'Main'],
         ['Input extension', ['mrc', 'dm4', 'tif', 'tiff'], str, '', 'COMBO', 'Main'],

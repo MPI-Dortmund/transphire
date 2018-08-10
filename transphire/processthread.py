@@ -1224,81 +1224,85 @@ class ProcessThread(QThread):
             name=self.name
             )
 
-        command = '{0} {1} {2}'.format(
-            command_raw,
-            ' '.join(frames),
-            new_stack
-            )
-
-        log_file, err_file = self.run_command(
-            command=command,
-            log_prefix=new_name_stack,
-            block_gpu=False,
-            gpu_list=[],
-            shell=False
-            )
-
-        tus.check_outputs(
-            zero_list=[err_file],
-            non_zero_list=[log_file, new_stack],
-            exists_list=[],
-            folder=self.settings['stack_folder'],
-            command=command
-            )
-
-        meta_files, all_files = tus.find_all_files(
-            root_name=root_name,
-            compare_name_frames=compare_name_frames,
-            compare_name_meta=compare_name_meta,
-            settings=self.settings,
-            queue_com=self.queue_com,
-            name=self.name
-            )
-
-        xml_file = None
         log_files = []
-        for file_entry in all_files:
-            extension = file_entry.split('.')[-1]
-            is_xml = False
-            if file_entry in frames:
-                continue
-            elif extension == 'mrc':
-                name = '{0}_krios_sum'.format(new_name_meta)
-            elif extension == 'dm4' and 'gain' in file_entry:
-                name = '{0}_gain'.format(new_name_meta)
-            elif extension == 'xml' and file_entry in meta_files:
-                is_xml = True
-                name = new_name_meta
-            elif extension == 'xml':
-                name = '{0}_frames'.format(new_name_meta)
-            else:
-                name = new_name_meta
+        if command_raw is None:
+            assert len(frames) == 1
+            new_stack = frames[0]
+        else:
+            command = '{0} {1} {2}'.format(
+                command_raw,
+                ' '.join(frames),
+                new_stack
+                )
 
-            new_file = '{0}.{1}'.format(name, extension)
+            log_file, err_file = self.run_command(
+                command=command,
+                log_prefix=new_name_stack,
+                block_gpu=False,
+                gpu_list=[],
+                shell=False
+                )
 
-            if is_xml:
-                xml_file = new_file
-            else:
-                pass
+            tus.check_outputs(
+                zero_list=[err_file],
+                non_zero_list=[log_file, new_stack],
+                exists_list=[],
+                folder=self.settings['stack_folder'],
+                command=command
+                )
 
-            tu.copy('{0}'.format(file_entry), new_file)
-            log_files.append(new_file)
+            meta_files, all_files = tus.find_all_files(
+                root_name=root_name,
+                compare_name_frames=compare_name_frames,
+                compare_name_meta=compare_name_meta,
+                settings=self.settings,
+                queue_com=self.queue_com,
+                name=self.name
+                )
 
-        tus.check_outputs(
-            zero_list=[],
-            non_zero_list=log_files,
-            exists_list=[],
-            folder=self.settings['meta_folder'],
-            command='copy'
-            )
+            xml_file = None
+            for file_entry in all_files:
+                extension = file_entry.split('.')[-1]
+                is_xml = False
+                if file_entry in frames:
+                    continue
+                elif extension == 'mrc':
+                    name = '{0}_krios_sum'.format(new_name_meta)
+                elif extension == 'dm4' and 'gain' in file_entry:
+                    name = '{0}_gain'.format(new_name_meta)
+                elif extension == 'xml' and file_entry in meta_files:
+                    is_xml = True
+                    name = new_name_meta
+                elif extension == 'xml':
+                    name = '{0}_frames'.format(new_name_meta)
+                else:
+                    name = new_name_meta
 
-        log_files.extend([log_file, err_file])
+                new_file = '{0}.{1}'.format(name, extension)
 
-        self.append_to_translate(
-            root_name=root_name,
-            new_name=new_name_meta,
-            xml_file=xml_file
-            )
+                if is_xml:
+                    xml_file = new_file
+                else:
+                    pass
+
+                tu.copy('{0}'.format(file_entry), new_file)
+                log_files.append(new_file)
+
+            tus.check_outputs(
+                zero_list=[],
+                non_zero_list=log_files,
+                exists_list=[],
+                folder=self.settings['meta_folder'],
+                command='copy'
+                )
+
+            log_files.extend([log_file, err_file])
+
+            self.append_to_translate(
+                root_name=root_name,
+                new_name=new_name_meta,
+                xml_file=xml_file
+                )
 
         for aim in self.content_settings['aim']:
             *compare, aim_name = aim.split(':')

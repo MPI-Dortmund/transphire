@@ -39,7 +39,22 @@ def extract_time_and_grid_information(root_name, settings, queue_com, name):
     hole_number, spot1_number, spot2_number, date, time
     """
     message = None
-    if settings['General']['Software'] == 'EPU 1.8':
+    if settings['General']['Software'] == 'Folder':
+        if settings['General']['Camera'] == 'Files':
+            hole = '0'
+            spot1 = '0'
+            spot2 = '0'
+            date = '0'
+            time = '0'
+        else:
+            message = '\n'.join([
+                'Camera {0} for Software {1} not known!'.format(
+                    settings['General']['Camera'],
+                    settings['General']['Software']
+                    ),
+                'Please contact the TranSPHIRE authors!'
+                ])
+    elif settings['General']['Software'] == 'EPU 1.8':
 
         if settings['General']['Camera'] == 'Falcon2' \
                 or settings['General']['Camera'] == 'Falcon3' \
@@ -118,7 +133,44 @@ def find_frames(frames_root, compare_name, settings, queue_com, name, write_erro
     True if the function was successful.
     """
     message = None
-    if settings['General']['Software'] == 'EPU 1.8':
+    if settings['General']['Software'] == 'Folder':
+
+       ####
+       #
+       # Stack
+       #
+       ####
+
+        if settings['General']['Type'] == 'Stack':
+
+            if settings['General']['Camera'] == 'Files':
+                frames = glob.glob(
+                    '{0}*.{1}'.format(
+                        frames_root,
+                        settings['General']['Input extension']
+                        )
+                    )
+
+            else:
+                message = '\n'.join([
+                    '{0} and {1} is not supported for Software {2}.'.format(
+                        settings['General']['Type'],
+                        settings['General']['Camera'],
+                        settings['General']['Software']
+                        ),
+                    'Please contact the TranSPHIRE authors!'
+                    ])
+
+        else:
+            message = '\n'.join([
+                '{0} is not supported for Software {2}.'.format(
+                    settings['General']['Type'],
+                    settings['General']['Software']
+                    ),
+                'Please contact the TranSPHIRE authors!'
+                ])
+
+    elif settings['General']['Software'] == 'EPU 1.8':
 
         ####
         #
@@ -451,7 +503,45 @@ def find_related_frames_to_jpg(frames_root, root_name, settings, queue_com, name
     name - Name of the process
     """
     message = None
-    if settings['General']['Software'] == 'EPU 1.8':
+    if settings['General']['Software'] == 'Folder':
+
+       ####
+       #
+       # Stack
+       #
+       ####
+
+        if settings['General']['Type'] == 'Stack':
+
+            if settings['General']['Camera'] == 'Files':
+                compare_name_frames = []
+                compare_name_meta = []
+                frames = glob.glob('{0}*.{1}'.format(
+                    compare_name_frames,
+                    settings['General']['Input extension']
+                    ))
+                return frames, compare_name_frames, compare_name_meta
+
+            else:
+                message = '\n'.join([
+                    '{0} and {1} is not supported for Software {2}.'.format(
+                        settings['General']['Type'],
+                        settings['General']['Camera'],
+                        settings['General']['Software']
+                        ),
+                    'Please contact the TranSPHIRE authors!'
+                    ])
+
+        else:
+            message = '\n'.join([
+                '{0} is not supported for Software {2}.'.format(
+                    settings['General']['Type'],
+                    settings['General']['Software']
+                    ),
+                'Please contact the TranSPHIRE authors!'
+                ])
+
+    elif settings['General']['Software'] == 'EPU 1.8':
 
         ####
         #
@@ -634,7 +724,38 @@ def get_copy_command_for_frames(settings, queue_com, name):
     Command to use for copy.
     """
     message = None
-    if settings['General']['Software'] == 'EPU 1.8':
+    if settings['General']['Software'] == 'Folder':
+
+       ####
+       #
+       # Stack
+       #
+       ####
+
+        if settings['General']['Type'] == 'Stack':
+
+            if settings['General']['Camera'] == 'Files':
+                return None
+
+            else:
+                message = '\n'.join([
+                    '{0} and {1} is not supported for Software {2}.'.format(
+                        settings['General']['Type'],
+                        settings['General']['Camera'],
+                        settings['General']['Software']
+                        ),
+                    'Please contact the TranSPHIRE authors!'
+                    ])
+
+        else:
+            message = '\n'.join([
+                '{0} is not supported for Software {2}.'.format(
+                    settings['General']['Type'],
+                    settings['General']['Software']
+                    ),
+                'Please contact the TranSPHIRE authors!'
+                ])
+    elif settings['General']['Software'] == 'EPU 1.8':
 
         ####
         #
