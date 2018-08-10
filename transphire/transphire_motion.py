@@ -427,7 +427,7 @@ def combine_motion_outputs(
     # RELION 2
     header_star = co.OrderedDict()
     if dw_file:
-        header_star['_rlnMicrographNameNoDw'] = sum_file
+        header_star['_rlnMicrographNameNoDW'] = sum_file
         header_star['_rlnMicrographName'] = dw_file
     else:
         header_star['_rlnMicrographName'] = sum_file
@@ -566,7 +566,7 @@ def combine_motion_outputs(
 
     header_star_relion3 = co.OrderedDict()
     if dw_file:
-        header_star_relion3['_rlnMicrographNameNoDw'] = sum_file.replace(project_folder, '')
+        header_star_relion3['_rlnMicrographNameNoDW'] = sum_file.replace(project_folder, '')
         header_star_relion3['_rlnMicrographName'] = dw_file.replace(project_folder, '')
     else:
         header_star_relion3['_rlnMicrographName'] = sum_file.replace(project_folder, '')
