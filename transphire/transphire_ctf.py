@@ -507,7 +507,7 @@ def to_star_file(data, ctf_name, ctf_settings, project_folder, ctf_folder, sum_f
     if dw_file == 'None':
         pass
     else:
-        export_dtype.extend([('_rlnMicrographNameNoDw', '|U200')])
+        export_dtype.extend([('_rlnMicrographNameNoDW', '|U200')])
     export_data = np.atleast_1d(np.empty(data.shape[0], dtype=export_dtype))
     header = get_relion_header(names=export_data.dtype.names)
 
@@ -519,7 +519,7 @@ def to_star_file(data, ctf_name, ctf_settings, project_folder, ctf_folder, sum_f
                 if dw_file == 'None':
                     export_data[idx]['file_name'] = sum_file.replace(project_folder, '')
                 else:
-                    export_data[idx]['_rlnMicrographNameNoDw'] = sum_file.replace(project_folder, '')
+                    export_data[idx]['_rlnMicrographNameNoDW'] = sum_file.replace(project_folder, '')
                     export_data[idx]['file_name'] = dw_file.replace(project_folder, '')
                 continue
 
@@ -543,7 +543,7 @@ def to_star_file(data, ctf_name, ctf_settings, project_folder, ctf_folder, sum_f
     if dw_file == 'None':
         pass
     else:
-        maximum_string['_rlnMicrographNameNoDw'] = len(max(export_data['_rlnMicrographNameNoDw'], key=len))
+        maximum_string['_rlnMicrographNameNoDW'] = len(max(export_data['_rlnMicrographNameNoDW'], key=len))
     create_export_data(
         export_data=export_data,
         lines=lines,
