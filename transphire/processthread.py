@@ -1798,7 +1798,12 @@ class ProcessThread(QThread):
 
                 non_zero_list.append(file_frc)
                 for entry_temp in glob.glob('.SumMovie*'):
-                    os.remove(entry_temp)
+                    try:
+                        os.remove(entry_temp)
+                    except FileNotFoundError:
+                        pass
+                    except IOError:
+                        pass
 
             non_zero_list_scratch.append(file_output_scratch)
             non_zero_list_scratch.append(file_stdout_scratch)
