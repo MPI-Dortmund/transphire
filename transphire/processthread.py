@@ -1228,7 +1228,7 @@ class ProcessThread(QThread):
             command=command
             )
 
-        meta_files, all_files = tus.find_all_files(
+        meta_files, frame_files = tus.find_all_files(
             root_name=root_name,
             compare_name_frames=compare_name_frames,
             compare_name_meta=compare_name_meta,
@@ -1236,6 +1236,8 @@ class ProcessThread(QThread):
             queue_com=self.queue_com,
             name=self.name
             )
+
+        all_files = meta_files.union(frame_files)
 
         xml_file = None
         log_files = []
