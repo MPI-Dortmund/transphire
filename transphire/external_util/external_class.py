@@ -18,6 +18,73 @@
 
 
 import re
+import abc
+
+
+class ExternalBase(abc.ABC):
+
+    @staticmethod
+    @abc.abstractmethod
+    def extract_time_and_grid_information(root_name):
+        return 5, tuple, str
+
+    @staticmethod
+    @abc.abstractmethod
+    def find_frames(compare_name, extension):
+        return 1, list, str
+
+    @staticmethod
+    @abc.abstractmethod
+    def check_nr_frames(frames, command, expected_frames):
+        return 2, tuple, [str, bool]
+
+    @staticmethod
+    @abc.abstractmethod
+    def find_related_frames_to_jpg(frames_root, root_name, extension):
+        return 3, tuple, str
+
+    @staticmethod
+    @abc.abstractmethod
+    def get_copy_command_for_frames():
+        return 1, str, str
+
+    @staticmethod
+    @abc.abstractmethod
+    def find_all_files(compare_name_meta, compare_name_frames):
+        return 2, tuple, set
+
+
+class TemplateClass(ExternalBase):
+
+    @staticmethod
+    @check_instance(ExternalBase)
+    def extract_time_and_grid_information(static_args, static_kwargs):
+        return tsu.extract_time_grid_epu_18_falcon2(*static_args, **static_kwargs)
+
+    @staticmethod
+    @check_instance(ExternalBase)
+    def find_frames(static_args, static_kwargs):
+        return tsu.find_frames_epu18_falcon2(*static_args, **static_kwargs)
+
+    @staticmethod
+    @check_instance(ExternalBase)
+    def check_nr_frames(static_args, static_kwargs):
+        return tsu.check_nr_frames_epu18_falcon2(*static_args, **static_kwargs)
+
+    @staticmethod
+    @check_instance(ExternalBase)
+    def find_related_frames_to_jpg(static_args, static_kwargs):
+        return tsu.find_related_frames_epu18_falcon2(*static_args, **static_kwargs)
+
+    @staticmethod
+    @check_instance(ExternalBase)
+    def get_copy_command_for_frames(static_args, static_kwargs):
+        return tsu.get_copy_command_epu18_falcon2(*static_args, **static_kwargs)
+
+    @staticmethod
+    @check_instance(ExternalBase)
+    def find_all_files(static_args, static_kwargs):
+        return tsu.find_frames_epu18_falcon2(*static_args, **static_kwargs)
 
 
 def check_return(number, type_return, type_entry, return_value):

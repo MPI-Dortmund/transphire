@@ -16,38 +16,37 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import transphire.external_util.software_base as tsb
 import transphire.external_util.class_util as tcu
 import transphire.external_util.software_util as tsu
 
-class SoftwareClass(tsb.SoftwareBase):
+class TemplateClass(tsb.ExternalBase):
 
     @staticmethod
-    @tcu.check_instance(tsb.SoftwareBase)
+    @tcu.check_instance(tsb.ExternalBase)
     def extract_time_and_grid_information(static_args, static_kwargs):
         return tsu.extract_time_grid_epu_18_falcon2(*static_args, **static_kwargs)
 
     @staticmethod
-    @tcu.check_instance(tsb.SoftwareBase)
+    @tcu.check_instance(tsb.ExternalBase)
     def find_frames(static_args, static_kwargs):
         return tsu.find_frames_epu18_falcon2(*static_args, **static_kwargs)
 
     @staticmethod
-    @tcu.check_instance(tsb.SoftwareBase)
+    @tcu.check_instance(tsb.ExternalBase)
     def check_nr_frames(static_args, static_kwargs):
         return tsu.check_nr_frames_epu18_falcon2(*static_args, **static_kwargs)
 
     @staticmethod
-    @tcu.check_instance(tsb.SoftwareBase)
+    @tcu.check_instance(tsb.ExternalBase)
     def find_related_frames_to_jpg(static_args, static_kwargs):
         return tsu.find_related_frames_epu18_falcon2(*static_args, **static_kwargs)
 
     @staticmethod
-    @tcu.check_instance(tsb.SoftwareBase)
+    @tcu.check_instance(tsb.ExternalBase)
     def get_copy_command_for_frames(static_args, static_kwargs):
         return tsu.get_copy_command_epu18_falcon2(*static_args, **static_kwargs)
 
     @staticmethod
-    @tcu.check_instance(tsb.SoftwareBase)
+    @tcu.check_instance(tsb.ExternalBase)
     def find_all_files(static_args, static_kwargs):
         return tsu.find_frames_epu18_falcon2(*static_args, **static_kwargs)
