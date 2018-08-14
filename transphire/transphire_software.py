@@ -16,6 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import importlib
 import glob
 import os
 import re
@@ -23,6 +24,24 @@ import numpy as np
 import traceback as tb
 import pexpect as pe
 from transphire import transphire_import as ti
+
+SOFTWARE_DICT = {}
+for entry in glob.glob(os.path.join(os.path.dirname(__file__), 'Software__*')):
+    name = os.path.basename(os.path.splitext(entry)[0])
+
+    _, software, camera, frame_type = name.split('__')
+    software, version = software.split('-')
+    version = version.replace('_', '.')
+    software = software.replace('_', ' ')
+    software = ' '.join([software, version])
+    camera = camera.replace('_', ' ').replace('-', ' ')
+    frame_type = frame_type.replace('_', ' ').replace('-', ' ')
+
+    module_name = 'transphire.{0}'.format(name)
+    module = importlib.import_module(module_name)
+    SOFTWARE_DICT[software] = {}
+    SOFTWARE_DICT[software][camera] = {}
+    SOFTWARE_DICT[software][camera][frame_type] = module.SoftwareClass()
 
 
 def extract_time_and_grid_information(root_name, settings, queue_com, name):
@@ -39,6 +58,14 @@ def extract_time_and_grid_information(root_name, settings, queue_com, name):
     hole_number, spot1_number, spot2_number, date, time
     """
     message = None
+    software = settings['General']['Software']
+    camera = settings['General']['Camera']
+    frame_type = settings['General']['Type']
+    return_values = SOFTWARE_DICT[software][camera][frame_type].extract_time_and_grid_information(root_name)
+    return return_values
+
+
+
     if settings['General']['Software'] == 'Folder':
         if settings['General']['Camera'] == 'Files':
             hole = '0'
