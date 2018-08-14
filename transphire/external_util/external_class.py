@@ -21,6 +21,54 @@ import re
 import abc
 
 
+def check_return(number, type_return, type_entry, return_value):
+    if type_return is None:
+        assert return_value is type_return
+    else:
+        assert isinstance(return_value, type_return)
+
+    if number == 1:
+        if type_entry is None:
+            assert return_value is type_entry
+        else:
+            assert isinstance(return_value, type_entry)
+    else:
+        dtypes = []
+        if isinstance(type_entry, list):
+            dtypes.extend(type_entry)
+        else:
+            dtypes.extend([type_entry for _ in range(number)])
+        assert len(dtypes) == number
+
+        for value, entry in zip(return_value, dtypes):
+            if entry is None:
+                assert value is None
+            else:
+                assert isinstance(value, entry)
+
+
+def check_instance(parent_instance):
+    def check_arguments(func):
+        def wrap(*args, **kwargs):
+            self = args[0]
+            args = args[1:]
+            func_name = re.match(r'.*\.([^ ]+) .*', str(func)).group(1)
+            method = getattr(parent_instance, func_name)
+            number, type_return, type_entry = method(*args, **kwargs)
+            return_value = func(self, static_args=args, static_kwargs=kwargs, name=func_name)
+
+            check_return(
+                number=number,
+                type_return=type_return,
+                type_entry=type_entry,
+                return_value=return_value
+                )
+
+            return return_value
+        return wrap
+    return check_arguments
+
+
 class ExternalBase(abc.ABC):
 
     @staticmethod
@@ -82,53 +130,3 @@ class TemplateClass(ExternalBase):
     @check_instance(ExternalBase)
     def find_all_files(self, static_args, static_kwargs, name):
         return self.template_dict[name](*static_args, **static_kwargs)
-
-
-def check_return(number, type_return, type_entry, return_value):
-    if type_return is None:
-        assert return_value is type_return
-    else:
-        assert isinstance(return_value, type_return)
-
-    if number == 1:
-        if type_entry is None:
-            assert return_value is type_entry
-        else:
-            assert isinstance(return_value, type_entry)
-    else:
-        dtypes = []
-        if isinstance(type_entry, list):
-            dtypes.extend(type_entry)
-        else:
-            dtypes.extend([type_entry for _ in range(number)])
-        assert len(dtypes) == number
-
-        for value, entry in zip(return_value, dtypes):
-            if entry is None:
-                assert value is None
-            else:
-                assert isinstance(value, entry)
-
-
-def check_instance(parent_instance):
-
-    def check_arguments(func):
-
-        def wrap(*args, **kwargs):
-            func_name = re.match(r'.*\.([^ ]+) .*', str(func)).group(1)
-            method = getattr(parent_instance, func_name)
-            number, type_return, type_entry = method(*args, **kwargs)
-            return_value = func(static_args=args, static_kwargs=kwargs, name=func_name)
-
-            check_return(
-                number=number,
-                type_return=type_return,
-                type_entry=type_entry,
-                return_value=return_value
-                )
-
-            return return_value
-
-        return wrap
-
-    return check_arguments
