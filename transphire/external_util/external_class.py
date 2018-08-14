@@ -56,35 +56,32 @@ class ExternalBase(abc.ABC):
 
 class TemplateClass(ExternalBase):
 
-    @staticmethod
-    @check_instance(ExternalBase)
-    def extract_time_and_grid_information(static_args, static_kwargs):
-        return tsu.extract_time_grid_epu_18_falcon2(*static_args, **static_kwargs)
+    def __init__(self, template_dict):
+        self.template_dict = template_dict
 
-    @staticmethod
     @check_instance(ExternalBase)
-    def find_frames(static_args, static_kwargs):
-        return tsu.find_frames_epu18_falcon2(*static_args, **static_kwargs)
+    def extract_time_and_grid_information(self, static_args, static_kwargs, name):
+        return self.template_dict[name](*static_args, **static_kwargs)
 
-    @staticmethod
     @check_instance(ExternalBase)
-    def check_nr_frames(static_args, static_kwargs):
-        return tsu.check_nr_frames_epu18_falcon2(*static_args, **static_kwargs)
+    def find_frames(self, static_args, static_kwargs, name):
+        return self.template_dict[name](*static_args, **static_kwargs)
 
-    @staticmethod
     @check_instance(ExternalBase)
-    def find_related_frames_to_jpg(static_args, static_kwargs):
-        return tsu.find_related_frames_epu18_falcon2(*static_args, **static_kwargs)
+    def check_nr_frames(self, static_args, static_kwargs, name):
+        return self.template_dict[name](*static_args, **static_kwargs)
 
-    @staticmethod
     @check_instance(ExternalBase)
-    def get_copy_command_for_frames(static_args, static_kwargs):
-        return tsu.get_copy_command_epu18_falcon2(*static_args, **static_kwargs)
+    def find_related_frames_to_jpg(self, static_args, static_kwargs, name):
+        return self.template_dict[name](*static_args, **static_kwargs)
 
-    @staticmethod
     @check_instance(ExternalBase)
-    def find_all_files(static_args, static_kwargs):
-        return tsu.find_frames_epu18_falcon2(*static_args, **static_kwargs)
+    def get_copy_command_for_frames(self, static_args, static_kwargs, name):
+        return self.template_dict[name](*static_args, **static_kwargs)
+
+    @check_instance(ExternalBase)
+    def find_all_files(self, static_args, static_kwargs, name):
+        return self.template_dict[name](*static_args, **static_kwargs)
 
 
 def check_return(number, type_return, type_entry, return_value):
@@ -121,7 +118,7 @@ def check_instance(parent_instance):
             func_name = re.match(r'.*\.([^ ]+) .*', str(func)).group(1)
             method = getattr(parent_instance, func_name)
             number, type_return, type_entry = method(*args, **kwargs)
-            return_value = func(static_args=args, static_kwargs=kwargs)
+            return_value = func(static_args=args, static_kwargs=kwargs, name=func_name)
 
             check_return(
                 number=number,
