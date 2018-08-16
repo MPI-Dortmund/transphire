@@ -345,7 +345,7 @@ class ProcessWorker(QObject):
         """
         # Set default values for folder list and thread list
         folder_list = ['stack_folder', 'meta_folder']
-        use_threads_list = ['Meta', 'Find', 'Copy']
+        use_threads_list = ['Meta', 'Find', 'Import']
 
         # Fill folder list and threads list
         for name in ['work', 'backup']:
@@ -527,13 +527,13 @@ class ProcessWorker(QObject):
                         )
 
         # Define file number and check if file already exists
-        shared_dict['typ']['Copy']['file_number'] = int(self.settings['General']['Start number']) - 1
+        shared_dict['typ']['Import']['file_number'] = int(self.settings['General']['Start number']) - 1
 
         if self.settings['General']['Rename micrographs'] == 'True':
             new_name = '{0}/{1}{2:0{3}d}{4}'.format(
                 self.settings['meta_folder'],
                 self.settings['General']['Rename prefix'],
-                shared_dict['typ']['Copy']['file_number']+1,
+                shared_dict['typ']['Import']['file_number']+1,
                 len(self.settings['General']['Estimated mic number']),
                 self.settings['General']['Rename suffix']
                 )
@@ -541,15 +541,15 @@ class ProcessWorker(QObject):
             if os.path.exists('{0}.jpg'.format(new_name)):
                 self.stop = True
                 try:
-                    with open(shared_dict['typ']['Copy']['number_file'], 'r') as read:
-                        shared_dict['typ']['Copy']['file_number'] = int(read.readline())
+                    with open(shared_dict['typ']['Import']['number_file'], 'r') as read:
+                        shared_dict['typ']['Import']['file_number'] = int(read.readline())
                 except FileNotFoundError:
-                    shared_dict['typ']['Copy']['file_number'] = int(self.settings['General']['Start number'])
+                    shared_dict['typ']['Import']['file_number'] = int(self.settings['General']['Start number'])
                 message = '{0}: File {1} already exists!\n'.format(
-                    'Copy',
+                    'Import',
                     new_name
                     ) + \
-                    'Check Startnumber! Last one used: {0}'.format(shared_dict['typ']['Copy']['file_number'])
+                    'Check Startnumber! Last one used: {0}'.format(shared_dict['typ']['Import']['file_number'])
                 queue_com['error'].put(message)
                 queue_com['notification'].put(message)
             else:
