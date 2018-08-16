@@ -1011,7 +1011,11 @@ class MainWindow(QMainWindow):
         settings = self.get_start_settings()
 
         # Check for continue mode
-        if os.path.exists(settings['project_folder']):
+        if settings is None:
+            tu.message('Please fill non emtpy entries.')
+            settings['Copy_software_meta'] = True
+            result = False
+        elif os.path.exists(settings['project_folder']):
             result = self.continue_dialog(
                 text1='Output project folder already exists!',
                 text2='Do you really want to continue the old run?\nType: YES!'
@@ -1078,10 +1082,13 @@ class MainWindow(QMainWindow):
         """
         dialog = InputBox(is_password=False, parent=self)
         dialog.setText(text1, text2)
-        dialog.exec_()
+        result = dialog.exec_()
 
-        result = dialog.getText()
-        return bool(result == 'YES!')
+        if result:
+            text = dialog.getText()
+            return bool(text == 'YES!')
+        else:
+            return False
 
     @pyqtSlot()
     def stop_dialog(self):
