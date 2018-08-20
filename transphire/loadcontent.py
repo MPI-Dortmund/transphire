@@ -162,7 +162,7 @@ class LoadContent(QWidget):
                 ]
             if self.typ not in exclude_typ_list and not entry[self.idx_name].startswith('WIDGETS'):
                 widget_2 = QComboBox(self)
-                widget_2.addItems(['Main', 'Advanced'])
+                widget_2.addItems(['Main', 'Advanced', 'Rare'])
                 combo_idx = widget_2.findText(entry[self.idx_priority])
                 assert combo_idx >= 0, entry
                 widget_2.setCurrentIndex(combo_idx)

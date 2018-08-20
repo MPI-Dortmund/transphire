@@ -47,6 +47,7 @@ def default_cryolo_v1_0_4():
     items = [
         ['WIDGETS MAIN', '5', int, '', 'PLAIN', ''],
         ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', ''],
+        ['WIDGETS RARE', '5', int, '', 'PLAIN', ''],
         ['--conf', '', str, '', 'FILE', 'Main'],
         ['--weights', '', str, '', 'FILE', 'Main'],
         ['--threshold', '0.3', float, '', 'PLAIN', 'Main'],
@@ -75,6 +76,7 @@ def default_cter_v1_0():
     items = [
         ['WIDGETS MAIN', '7', int, '', 'PLAIN', ''],
         ['WIDGETS ADVANCED', '7', int, '', 'PLAIN', ''],
+        ['WIDGETS RARE', '7', int, '', 'PLAIN', ''],
         ['--apix', '-1', float, '', 'PLAIN', 'Main'],
         ['--Cs', '2.0', float, '', 'PLAIN', 'Main'],
         ['--voltage', '300', float, '', 'PLAIN', 'Main'],
@@ -111,6 +113,7 @@ def default_gctf_v1_06():
     items = [
         ['WIDGETS MAIN', '7', int, '', 'PLAIN', ''],
         ['WIDGETS ADVANCED', '7', int, '', 'PLAIN', ''],
+        ['WIDGETS RARE', '7', int, '', 'PLAIN', ''],
         ['--apix', '1.34', float, '', 'PLAIN', 'Main'],
         ['--dstep', '14.0', float, '', 'PLAIN', 'Main'],
         ['--kV', '300', float, '', 'PLAIN', 'Main'],
@@ -174,6 +177,7 @@ def default_gctf_v1_18():
     items = [
         ['WIDGETS MAIN', '7', int, '', 'PLAIN', 'Main'],
         ['WIDGETS ADVANCED', '7', int, '', 'PLAIN', 'Main'],
+        ['WIDGETS RARE', '7', int, '', 'PLAIN', 'Main'],
         ['--apix', '1.34', float, '', 'PLAIN', 'Main'],
         ['--dstep', '14.0', float, '', 'PLAIN', 'Main'],
         ['--kV', '300', float, '', 'PLAIN', 'Main'],
@@ -246,6 +250,7 @@ def default_path():
     items = [
         ['WIDGETS MAIN', '8', int, '', 'PLAIN', 'Main'],
         ['WIDGETS ADVANCED', '8', int, '', 'PLAIN', 'Main'],
+        ['WIDGETS RARE', '8', int, '', 'PLAIN', 'Main'],
         ['IMOD header', '', str, '', 'FILE', 'Main'],
         ['IMOD newstack', '', str, '', 'FILE', 'Main'],
         ['IMOD mrc2tif', '', str, '', 'FILE', 'Main'],
@@ -327,6 +332,7 @@ def default_notification():
     items = [
         ['WIDGETS MAIN', '10', int, '', 'PLAIN', ''],
         ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', ''],
         ['Project quota warning (%)', '80', float, '', 'PLAIN', 'Main'],
         ['Project quota stop (%)', '90', float, '', 'PLAIN', 'Main'],
         ['Scratch quota warning (%)', '80', float, '', 'PLAIN', 'Main'],
@@ -523,6 +529,7 @@ def default_ctffind_4_v4_1_8():
     items = [
         ['WIDGETS MAIN', '7', int, '', 'PLAIN', ''],
         ['WIDGETS ADVANCED', '7', int, '', 'PLAIN', ''],
+        ['WIDGETS RARE', '7', int, '', 'PLAIN', ''],
         ['Pixel size', '1.0', float, '', 'PLAIN', 'Main'],
         ['Acceleration voltage', '300.0', float, '', 'PLAIN', 'Main'],
         ['Spherical aberration', '2.7', float, '', 'PLAIN', 'Main'],
@@ -606,6 +613,7 @@ def default_motion_cor_2_v1_0_0():
     items = [
         ['WIDGETS MAIN', '5', int, '', 'PLAIN', ''],
         ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', ''],
+        ['WIDGETS RARE', '5', int, '', 'PLAIN', ''],
         ['-FmDose', '0', float, '', 'PLAIN', 'Main'],
         ['-PixSize', '0', float, '', 'PLAIN', 'Main'],
         ['-kV', '300', float, '', 'PLAIN', 'Main'],
@@ -651,6 +659,7 @@ def default_motion_cor_2_v1_0_5():
     items = [
         ['WIDGETS MAIN', '5', int, '', 'PLAIN', ''],
         ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', ''],
+        ['WIDGETS RARE', '5', int, '', 'PLAIN', ''],
         ['-FmDose', '0', float, '', 'PLAIN', 'Main'],
         ['-PixSize', '0', float, '', 'PLAIN', 'Main'],
         ['-kV', '300', float, '', 'PLAIN', 'Main'],
@@ -697,6 +706,7 @@ def default_motion_cor_2_v1_1_0():
     items = [
         ['WIDGETS MAIN', '5', int, '', 'PLAIN', ''],
         ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', ''],
+        ['WIDGETS RARE', '5', int, '', 'PLAIN', ''],
         ['-FmDose', '0', float, '', 'PLAIN', 'Main'],
         ['-PixSize', '0', float, '', 'PLAIN', 'Main'],
         ['-kV', '300', float, '', 'PLAIN', 'Main'],
@@ -744,6 +754,7 @@ def default_general():
     items = [
         ['WIDGETS MAIN', '7', int, '', 'PLAIN', ''],
         ['WIDGETS ADVANCED', '7', int, '', 'PLAIN', ''],
+        ['WIDGETS RARE', '7', int, '', 'PLAIN', ''],
         ['Software', ['EPU 1.9', 'EPU 1.8'], str, '', 'COMBO', 'Main'],
         ['Type', ['Stack', 'Frames'], str, '', 'COMBO', 'Main'],
         ['Camera', ['K2', 'Falcon3', 'Falcon2'], str, '', 'COMBO', 'Main'],
@@ -795,6 +806,7 @@ def default_copy(settings_folder):
     items = [
         ['WIDGETS MAIN', '8', int, '', 'PLAIN', ''],
         ['WIDGETS ADVANCED', '8', int, '', 'PLAIN', ''],
+        ['WIDGETS RARE', '8', int, '', 'PLAIN', ''],
         ['Copy to work', copy_work, bool, '', 'COMBO', 'Main'],
         ['Copy to backup', copy_backup, bool, '', 'COMBO', 'Main'],
         ['Copy to HDD', copy_hdd, bool, '', 'COMBO', 'Main'],
