@@ -1013,7 +1013,6 @@ class MainWindow(QMainWindow):
         # Check for continue mode
         if settings is None:
             tu.message('Please fill non emtpy entries.')
-            settings['Copy_software_meta'] = True
             result = False
         elif os.path.exists(settings['project_folder']):
             result = self.continue_dialog(
@@ -1033,20 +1032,20 @@ class MainWindow(QMainWindow):
             settings['Copy_software_meta'] = True
             result = True
 
-        # Create project and settings folder
-        for name in [
-                'project_folder', 'settings_folder',
-                'scratch_folder', 'queue_folder', 'error_folder'
-                ]:
-            try:
-                tu.mkdir_p(settings[name])
-            except FileNotFoundError:
-                tu.message('Project name cannot be empty')
-                self.enable(True)
-                return None
-
         # Start or stop procedure
         if result:
+            # Create project and settings folder
+            for name in [
+                    'project_folder', 'settings_folder',
+                    'scratch_folder', 'queue_folder', 'error_folder'
+                    ]:
+                try:
+                    tu.mkdir_p(settings[name])
+                except FileNotFoundError:
+                    tu.message('Project name cannot be empty')
+                    self.enable(True)
+                    return None
+
             self.content['Button'].start_button.setVisible(False)
             self.content['Button'].start_button.setEnabled(False)
             self.content['Button'].stop_button.setVisible(True)
