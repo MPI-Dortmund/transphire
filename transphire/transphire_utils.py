@@ -440,6 +440,7 @@ def get_key_names(settings_folder, name):
         'Copy_work': [],
         'Copy_backup': [],
         'Copy_hdd': [],
+        'Import': [],
         'Copy': [],
         }
     for entry in data:
@@ -454,6 +455,12 @@ def get_key_names(settings_folder, name):
                 else:
                     pass
         return_dict[typ].append(name)
+    if return_dict['Copy']:
+        print('')
+        print('Old Copy type detected! Please edit the TranSPHIRE settings and change them to Import')
+        print('')
+        return_dict['Import'].extend(return_dict['Copy'])
+        del return_dict['Copy']
     return return_dict
 
 

@@ -158,6 +158,7 @@ class StatusContainer(QWidget):
                 layout_image = QHBoxLayout()
                 layout_image.addStretch(1)
                 layout_image.addWidget(pic_label)
+                layout_image.addStretch(1)
 
                 layout_v1.addStretch(1)
                 layout_v1.addLayout(layout_image)

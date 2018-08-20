@@ -413,9 +413,9 @@ def default_pipeline():
             'PLAIN',
             ''
             ],
-        ['Find', '1', int, 'Find;Copy', 'PLAIN', ''],
+        ['Find', '1', int, 'Find;Import', 'PLAIN', ''],
         [
-            'Copy',
+            'Import',
             '1',
             int,
             'Find;' +
@@ -588,7 +588,7 @@ def default_mount(hdd=None):
         ['SSH address', '', str, '', 'PLAIN', ''],
         ['Quota command', '', str, '', 'PLAIN', ''],
         ['Quota / TB', '', float, '', 'PLAIN', ''],
-        ['Typ', ['Copy', 'Copy_work', 'Copy_backup'], str, '', 'COMBO', ''],
+        ['Typ', ['Import', 'Copy_work', 'Copy_backup'], str, '', 'COMBO', ''],
         ]
     return items
 
@@ -820,7 +820,7 @@ def default_copy(settings_folder):
         ['Picking to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced'],
         ['Picking to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced'],
         ['Picking to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced'],
-        ['Delete data after copy?', ['True', 'False'], bool, '', 'COMBO', 'Advanced'],
+        ['Delete data after import?', ['True', 'False'], bool, '', 'COMBO', 'Advanced'],
         ['Delete stack after compression?', ['True', 'False'], bool, '', 'COMBO', 'Advanced'],
         ]
     return items

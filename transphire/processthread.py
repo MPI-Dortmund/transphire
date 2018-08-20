@@ -595,8 +595,8 @@ class ProcessThread(QThread):
 
         # Set for every process a method and the right lost_connection name
         method_dict = {
-            'Copy': {
-                'method': self.run_copy,
+            'Import': {
+                'method': self.run_import,
                 'lost_connect': 'full_transphire'
                 },
             'Motion': {
@@ -705,7 +705,7 @@ class ProcessThread(QThread):
                     )
             finally:
                 self.queue_lock.unlock()
-            if self.typ == 'Copy':
+            if self.typ == 'Import':
                 pass
             else:
                 self.queue_lock.lock()
@@ -1089,9 +1089,9 @@ class ProcessThread(QThread):
 
         return file_list
 
-    def run_copy(self, root_name):
+    def run_import(self, root_name):
         """
-        Copy found files to em-transfer.
+        Import found files to em-transfer.
 
         root_name - Root name of file to copy.
 
@@ -1313,7 +1313,7 @@ class ProcessThread(QThread):
             else:
                 pass
 
-        if self.settings['Copy']['Delete data after copy?'] == 'True':
+        if self.settings['Copy']['Delete data after import?'] == 'True':
             for file_entry in all_files:
                 try:
                     os.remove(file_entry)
