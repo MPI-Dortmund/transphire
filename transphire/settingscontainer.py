@@ -63,10 +63,12 @@ class SettingsContainer(QWidget):
                         self.layout_dict['Main_max'] = int(widget['WIDGETS MAIN'][0])
                     elif key == 'WIDGETS ADVANCED':
                         self.layout_dict['Advanced_max'] = int(widget['WIDGETS ADVANCED'][0])
+                    elif key == 'WIDGETS RARE':
+                        self.layout_dict['Rare_max'] = int(widget['WIDGETS RARE'][0])
                     else:
                         continue
 
-        for dict_name in ['Main', 'Advanced']:
+        for dict_name in ['Main', 'Advanced', 'Rare']:
             widget = QWidget(self)
             widget.setObjectName('settings')
 
@@ -90,7 +92,7 @@ class SettingsContainer(QWidget):
         for entry in content:
             for widget in entry:
                 for key in widget:
-                    if key == 'WIDGETS MAIN' or key == 'WIDGETS ADVANCED':
+                    if key == 'WIDGETS MAIN' or key == 'WIDGETS ADVANCED' or key == 'WIDGETS RARE':
                         continue
                     layout_name = widget[key][1]['widget_2']
                     widget_name = widget[key][1]['name']
@@ -119,7 +121,7 @@ class SettingsContainer(QWidget):
             self.content[key].sig_index_changed.connect(self.change_state)
             self.change_state(name=key)
 
-        for dict_name in ['Main', 'Advanced']:
+        for dict_name in ['Main', 'Advanced', 'Rare']:
             try:
                 self.layout_dict['{0}_v'.format(dict_name)].addStretch(1)
                 self.layout_dict[dict_name].addStretch(1)

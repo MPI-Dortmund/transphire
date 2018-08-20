@@ -317,7 +317,7 @@ def get_exclude_set(content):
                         continue
                     elif widget_2 == 'Main':
                         continue
-                    elif widget_2 == 'Advanced':
+                    elif widget_2 == 'Advanced' or widget_2 == 'Rare':
                         exclude_list.append(key)
                         exclude_list.append('Plot {0}'.format(key))
                     else:
