@@ -947,7 +947,7 @@ def check_for_outlier(dict_name, data, file_name, settings):
                 warning_high
                 ])
 
-        assert data[mask].shape[0] == 1
+        assert data[mask].shape[0] == 1, data[mask]
 
         if float(skip_low) <= data[key][mask][0] and data[key][mask][0] <= float(skip_high):
             pass

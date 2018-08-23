@@ -2493,7 +2493,7 @@ class ProcessThread(QThread):
         warnings, skip_list = tus.check_for_outlier(
             dict_name='picking',
             data=data,
-            file_name=file_name,
+            file_name=file_use,
             settings=self.settings
             )
 
