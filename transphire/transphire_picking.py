@@ -53,6 +53,18 @@ def get_picking_command(file_input, new_name, settings, queue_com, name):
         block_gpu = True
         gpu_list = gpu.split()
 
+    elif picking_name == 'crYOLO v1.1.0':
+        command, gpu = create_cryolo_v1_1_0_command(
+            picking_name=picking_name,
+            file_input=file_input,
+            file_output=new_name,
+            settings=settings,
+            name=name,
+            )
+        check_files = []
+        block_gpu = True
+        gpu_list = gpu.split()
+
     else:
         message = '\n'.join([
             '{0}: Not known!'.format(settings['Copy']['Picking']),
@@ -88,7 +100,8 @@ def find_logfiles(root_path, file_name, settings, queue_com, name):
     copied_log_files = None
     picking_root_path = os.path.join(settings['picking_folder'], file_name)
     if settings['Copy']['Picking'] == 'crYOLO v1.0.4' or \
-            settings['Copy']['Picking'] == 'crYOLO v1.0.5':
+           settings['Copy']['Picking'] == 'crYOLO v1.0.5' or \
+            settings['Copy']['Picking'] == 'crYOLO v1.1.0':
         copied_log_files = ['{0}.box'.format(picking_root_path)]
         log_files = copied_log_files
 
@@ -149,6 +162,65 @@ def create_filter_command(
 
     check_files = [file_output_tmp, file_output_jpg]
     return ' '.join(command), file_output_tmp, check_files, block_gpu, gpu_list
+
+
+def create_cryolo_v1_1_0_command(
+        picking_name, file_input, file_output, settings, name
+        ):
+    """Create the crYOLO v1.1.0 command"""
+
+    command = []
+    # Start the program
+    ignore_list = []
+    ignore_list.append('--filament')
+    ignore_list.append('Filter micrographs')
+    ignore_list.append('Filter value high pass (A)')
+    ignore_list.append('Filter value low pass (A)')
+    ignore_list.append('Pixel size (A/px)')
+    ignore_list.append('Box size')
+    ignore_list.append('Split Gpu?')
+    ignore_list.append('--gpu')
+
+    command.append('{0}'.format(settings['Path'][picking_name]))
+
+    command.append('-i')
+    command.append('{0}'.format(file_input))
+    command.append('-o')
+    command.append('{0}'.format(file_output))
+    command.append('--write_empty')
+
+    if settings[picking_name]['--filament'] == 'True':
+        command.append('--filament')
+    else:
+        ignore_list.append('--filament_width')
+        ignore_list.append('--box_distance')
+        ignore_list.append('--minimum_number_boxes')
+
+    if settings[picking_name]['Split Gpu?'] == 'True':
+        try:
+            gpu_id = int(name.split('_')[-1])-1
+        except ValueError:
+            gpu_id = 0
+        try:
+            gpu = settings[picking_name]['--gpu'].split()[gpu_id]
+        except IndexError:
+            raise UserWarning('There are less gpus provided than threads available! Please restart with the same number of pipeline processors as GPUs provided and restart! Stopping this thread!')
+    else:
+        gpu = settings[picking_name]['--gpu']
+
+    command.append('--gpu')
+    command.append('{0}'.format(gpu))
+
+    for key in settings[picking_name]:
+        if key in ignore_list:
+            continue
+        else:
+            command.append(key)
+            command.append(
+                '{0}'.format(settings[picking_name][key])
+                )
+
+    return ' '.join(command), gpu
 
 
 def create_cryolo_v1_0_4_command(

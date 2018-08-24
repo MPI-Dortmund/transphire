@@ -21,6 +21,39 @@ from transphire import transphire_utils as tu
 from transphire import transphire_import as ti
 
 
+def default_cryolo_v1_1_0():
+    """
+    Content of crYOLO version 1.1.0
+
+    Arguments:
+    None
+
+    Return:
+    Content items as list
+    """
+    items = [
+        ['WIDGETS MAIN', '5', int, '', 'PLAIN', ''],
+        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', ''],
+        ['WIDGETS RARE', '5', int, '', 'PLAIN', ''],
+        ['--conf', '', str, '', 'FILE', 'Main'],
+        ['--weights', '', str, '', 'FILE', 'Main'],
+        ['--threshold', '0.3', float, '', 'PLAIN', 'Main'],
+        ['Pixel size (A/px)', '1', float, 'Filter micrographs:True', 'PLAIN', 'Main'],
+        ['Box size', '200', int, '', 'PLAIN', 'Main'],
+        ['--filament', ['False', 'True'], bool, '', 'COMBO', 'Main'],
+        ['--filament_width', '0', float, '--filament:True', 'PLAIN', 'Main'],
+        ['--box_distance', '0', int, '--filament:True', 'PLAIN', 'Main'],
+        ['--minimum_number_boxes', '0', int, '--filament:True', 'PLAIN', 'Main'],
+        ['Filter micrographs', ['True', 'False'], bool, '', 'COMBO', 'Advanced'],
+        ['Filter value high pass (A)', '9999', float, 'Filter micrographs:True', 'PLAIN', 'Advanced'],
+        ['Filter value low pass (A)', '10', float, 'Filter micrographs:True', 'PLAIN', 'Advanced'],
+        ['--patch', '-1', int, '', 'PLAIN', 'Advanced'],
+        ['--gpu', '0', [int]*99, '', 'PLAIN', 'Advanced'],
+        ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced'],
+        ]
+    return items
+
+
 def default_cryolo_v1_0_5():
     """
     Content of crYOLO version 1.0.5

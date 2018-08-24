@@ -144,6 +144,14 @@ def get_function_dict():
             'typ': 'picking',
             'allow_empty': [],
             },
+        'crYOLO v1.1.0': {
+            'plot': tp.update_cryolo_v1_1_0,
+            'plot_data': ti.import_cryolo_v1_1_0,
+            'content': tc.default_cryolo_v1_1_0,
+            'executable': True,
+            'typ': 'picking',
+            'allow_empty': [],
+            },
         'crYOLO v1.0.5': {
             'plot': tp.update_cryolo_v1_0_5,
             'plot_data': ti.import_cryolo_v1_0_5,
