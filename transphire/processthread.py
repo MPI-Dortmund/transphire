@@ -1922,14 +1922,15 @@ class ProcessThread(QThread):
                             1
                             ).tolist()
                         )[:, -1],
-                    '.'
+                    '.',
+                    1
                     ).tolist()
                 )[:,0],
             np.char.rsplit(np.char.rsplit(
                 queue_dict[0]['sum'][0],
                 '/',
                 1
-                ).tolist()[-1], '.').tolist()[0]
+                ).tolist()[-1], '.', 1).tolist()[0]
             )
         data = data[mask]
         data_original = data_original[mask]
@@ -2268,14 +2269,15 @@ class ProcessThread(QThread):
                             1
                             ).tolist()
                         )[:, -1],
-                    '.'
+                    '.',
+                    1
                     ).tolist()
                 )[:,0],
             np.char.rsplit(np.char.rsplit(
                 file_sum,
                 '/',
                 1
-                ).tolist()[-1], '.').tolist()[0]
+                ).tolist()[-1], '.', 1).tolist()[0]
             )
         data = data[mask]
         data_orig = data_orig[mask]
@@ -2491,7 +2493,7 @@ class ProcessThread(QThread):
         warnings, skip_list = tus.check_for_outlier(
             dict_name='picking',
             data=data,
-            file_name=file_name,
+            file_name=file_use,
             settings=self.settings
             )
 
