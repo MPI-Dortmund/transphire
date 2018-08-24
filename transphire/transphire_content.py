@@ -43,7 +43,7 @@ def default_cryolo_v1_1_0():
         ['--filament', ['False', 'True'], bool, '', 'COMBO', 'Main'],
         ['--filament_width', '0', float, '--filament:True', 'PLAIN', 'Main'],
         ['--box_distance', '0', int, '--filament:True', 'PLAIN', 'Main'],
-        ['--minimum_number_boxes', '0', int, '--filament:True', 'PLAIN', 'Main'],
+        ['--minium_number_boxes', '0', int, '--filament:True', 'PLAIN', 'Main'],
         ['Filter micrographs', ['True', 'False'], bool, '', 'COMBO', 'Advanced'],
         ['Filter value high pass (A)', '9999', float, 'Filter micrographs:True', 'PLAIN', 'Advanced'],
         ['Filter value low pass (A)', '10', float, 'Filter micrographs:True', 'PLAIN', 'Advanced'],

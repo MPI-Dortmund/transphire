@@ -146,6 +146,13 @@ def get_dtype_dict():
         ('box_y', '<f8'),
         ('file_name', '|U200'),
         ]
+    dtype['crYOLO v1.1.0'] = [
+        ('coord_x', '<f8'),
+        ('coord_y', '<f8'),
+        ('box_x', '<f8'),
+        ('box_y', '<f8'),
+        ('file_name', '|U200'),
+        ]
     dtype['picking'] = [
         ('object', 'O'),
         ('image', '|U200'),
@@ -294,6 +301,12 @@ def get_dtype_import_dict():
         ('box_y', '<f8'),
         ]
     dtype_import['crYOLO v1.0.5'] = [
+        ('coord_x', '<f8'),
+        ('coord_y', '<f8'),
+        ('box_x', '<f8'),
+        ('box_y', '<f8'),
+        ]
+    dtype_import['crYOLO v1.1.0'] = [
         ('coord_x', '<f8'),
         ('coord_y', '<f8'),
         ('box_x', '<f8'),
@@ -783,10 +796,10 @@ def import_cryolo_v1_1_0(name, directory_name, image=True):
     Return:
     Imported data
     """
-    return import_cryolo_v1_0_4(name, directory_name, image=True)
+    return import_cryolo_v1_0_4(name, directory_name, image=True, extension='txt')
 
 
-def import_cryolo_v1_0_4(name, directory_name, image=True):
+def import_cryolo_v1_0_4(name, directory_name, image=True, extension='box'):
     """
     Import picking information for crYOLO v1.0.4.
 
@@ -800,7 +813,7 @@ def import_cryolo_v1_0_4(name, directory_name, image=True):
     placeholder = '*'
 
     files_box = np.array(
-        glob.glob(os.path.join(directory_name, '{0}.box'.format(placeholder)))
+        glob.glob(os.path.join(directory_name, '{0}.{1}'.format(placeholder, extension)))
         )
     useable_files_box = []
     for file_name in files_box:
@@ -828,7 +841,7 @@ def import_cryolo_v1_0_4(name, directory_name, image=True):
             'jpg',
             '{0}.jpg'.format(file_name)
             )
-        box_name = os.path.join(directory_name, '{0}.box'.format(file_name))
+        box_name = os.path.join(directory_name, '{0}.{1}'.format(file_name, extension))
         try:
             data_name = np.atleast_1d(np.genfromtxt(
                 box_name,

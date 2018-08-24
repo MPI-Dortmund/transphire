@@ -100,9 +100,12 @@ def find_logfiles(root_path, file_name, settings, queue_com, name):
     copied_log_files = None
     picking_root_path = os.path.join(settings['picking_folder'], file_name)
     if settings['Copy']['Picking'] == 'crYOLO v1.0.4' or \
-           settings['Copy']['Picking'] == 'crYOLO v1.0.5' or \
-            settings['Copy']['Picking'] == 'crYOLO v1.1.0':
+            settings['Copy']['Picking'] == 'crYOLO v1.0.5':
         copied_log_files = ['{0}.box'.format(picking_root_path)]
+        log_files = copied_log_files
+
+    elif settings['Copy']['Picking'] == 'crYOLO v1.1.0':
+        copied_log_files = ['{0}.txt'.format(picking_root_path)]
         log_files = copied_log_files
 
     else:
@@ -287,18 +290,23 @@ def create_box_jpg(file_name, settings, queue_com, name):
     It creates a file.
     """
     picking_name = settings['Copy']['Picking']
-    box_file = os.path.join(settings['picking_folder'], '{0}.box'.format(file_name))
+    box_file = find_logfiles(file_name, file_name, settings, queue_com, name)[0][0]
     jpg_file = os.path.join(settings['picking_folder'], '{0}.jpg'.format(file_name))
     new_jpg_file = os.path.join(settings['picking_folder'], 'jpg', '{0}.jpg'.format(file_name))
     tu.mkdir_p(os.path.join(settings['picking_folder'], 'jpg'))
 
-    box_data = np.atleast_2d(np.genfromtxt(box_file, dtype=int))
+    box_data = np.atleast_2d(np.genfromtxt(box_file).astype(int))
     jpg_data = imageio.imread(jpg_file, as_gray=False, pilmode='RGB')
 
     bin_value = 4
     if box_data.size > 0:
-        box_data[:, 0] += box_data[:, 2]//2
-        box_data[:, 1] += box_data[:, 3]//2
+        if box_file.endswith('.box'):
+            box_data[:, 0] += box_data[:, 2]//2
+            box_data[:, 1] += box_data[:, 3]//2
+        elif box_file.endswith('.txt'):
+            pass
+        else:
+            assert 'Box ending not known!', box_file
         box_data[:, 0] = box_data[:, 0]//bin_value
         box_data[:, 1] = box_data[:, 1]//bin_value
 
