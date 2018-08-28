@@ -1208,18 +1208,23 @@ class MainWindow(QMainWindow):
         self.thread_plot_motion.quit()
         self.thread_plot_picking.quit()
 
+        print('Wait for thread mount')
         self.thread_mount.wait()
+        print('Wait for thread process')
         self.thread_process.wait()
+        print('Wait for thread ctf')
         self.thread_plot_ctf.wait()
+        print('Wait for thread motion')
         self.thread_plot_motion.wait()
+        print('Wait for thread picking')
         self.thread_plot_picking.wait()
 
+        print('Wait for thread mount')
         for key in self.content['Mount'].content:
             thread = self.mount_thread_list[key]['thread']
             calculator = self.mount_thread_list[key]['object']
             calculator.kill_thread = True
             thread.quit()
             thread.wait()
-        message = 'Bye Bye'
-        print(message)
+        print('Bye Bye')
         super(MainWindow, self).closeEvent(event)
