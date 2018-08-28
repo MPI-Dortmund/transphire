@@ -43,7 +43,7 @@ def get_header(input_file):
             name = name.replace('_rlnFinalResolution', '_rlnCtfMaxResolution')
             if name == '_rlnMicrographName' or \
                     name == '_rlnCtfImage':
-                header.append((name, '|U200'))
+                header.append((name, '|U1200'))
             else:
                 header.append((name, '<f8'))
         elif line == '' or line == 'data_' or line == 'loop_':
@@ -76,7 +76,7 @@ def get_dtype_dict():
         ('phase_shift', '<f8'),
         ('cross_corr', '<f8'),
         ('limit', '<f8'),
-        ('file_name', '|U200')
+        ('file_name', '|U1200')
         ]
     dtype['Gctf v1.06'] = [
         ('defocus_1', '<f8'),
@@ -85,7 +85,7 @@ def get_dtype_dict():
         ('phase_shift', '<f8'),
         ('cross_corr', '<f8'),
         ('limit', '<f8'),
-        ('file_name', '|U200')
+        ('file_name', '|U1200')
         ]
     dtype['Gctf v1.18'] = [
         ('defocus_1', '<f8'),
@@ -94,7 +94,7 @@ def get_dtype_dict():
         ('phase_shift', '<f8'),
         ('cross_corr', '<f8'),
         ('limit', '<f8'),
-        ('file_name', '|U200')
+        ('file_name', '|U1200')
         ]
     dtype['CTER v1.0'] = [
         ('defocus_1', '<f8'),
@@ -103,7 +103,7 @@ def get_dtype_dict():
         ('phase_shift', '<f8'),
         ('cross_corr', '<f8'),
         ('limit', '<f8'),
-        ('file_name', '|U200')
+        ('file_name', '|U1200')
         ]
     dtype['CTFFIND4 v4.1.10'] = [
         ('mic_number', '<f8'),
@@ -113,7 +113,7 @@ def get_dtype_dict():
         ('phase_shift', '<f8'),
         ('cross_corr', '<f8'),
         ('limit', '<f8'),
-        ('file_name', '|U200')
+        ('file_name', '|U1200')
         ]
     dtype['CTFFIND4 v4.1.8'] = [
         ('mic_number', '<f8'),
@@ -123,41 +123,41 @@ def get_dtype_dict():
         ('phase_shift', '<f8'),
         ('cross_corr', '<f8'),
         ('limit', '<f8'),
-        ('file_name', '|U200')
+        ('file_name', '|U1200')
         ]
     dtype['motion'] = [
         ('overall drift', '<f8'),
         ('average drift per frame', '<f8'),
         ('first frame drift', '<f8'),
         ('average drift per frame without first', '<f8'),
-        ('file_name', '|U200')
+        ('file_name', '|U1200')
         ]
     dtype['crYOLO v1.0.4'] = [
         ('coord_x', '<f8'),
         ('coord_y', '<f8'),
         ('box_x', '<f8'),
         ('box_y', '<f8'),
-        ('file_name', '|U200'),
+        ('file_name', '|U1200'),
         ]
     dtype['crYOLO v1.0.5'] = [
         ('coord_x', '<f8'),
         ('coord_y', '<f8'),
         ('box_x', '<f8'),
         ('box_y', '<f8'),
-        ('file_name', '|U200'),
+        ('file_name', '|U1200'),
         ]
     dtype['crYOLO v1.1.0'] = [
         ('coord_x', '<f8'),
         ('coord_y', '<f8'),
         ('box_x', '<f8'),
         ('box_y', '<f8'),
-        ('file_name', '|U200'),
+        ('file_name', '|U1200'),
         ]
     dtype['picking'] = [
         ('object', 'O'),
-        ('image', '|U200'),
+        ('image', '|U1200'),
         ('particles', '<i8'),
-        ('file_name', '|U200'),
+        ('file_name', '|U1200'),
         ]
     return dtype
 
@@ -243,7 +243,7 @@ def get_dtype_import_dict():
         ('reserved_spot', '<f8'),
         ('const_amplitude_contrast', '<f8'),
         ('phase_shift', '<f8'),
-        ('file_name', '|U200'),
+        ('file_name', '|U1200'),
         ]
     dtype_import['Gctf v1.06'] = [
         ('defocus_1', '<f8'),
