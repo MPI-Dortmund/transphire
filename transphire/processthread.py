@@ -1073,6 +1073,7 @@ class ProcessThread(QThread):
 
                 self.shared_dict['typ'][self.content_settings['group']]['share_lock'].lock()
                 try:
+                    print('Find', self.content_settings['group'])
                     if root_name in self.shared_dict['share'][self.content_settings['group']]:
                         continue
                     else:
@@ -1325,6 +1326,7 @@ class ProcessThread(QThread):
 
         QThread.sleep(1)
         self.shared_dict['typ'][self.content_settings['group']]['share_lock'].lock()
+        print('Import', self.content_settings['group'])
         try:
             self.shared_dict['share'][self.content_settings['group']].remove(root_name)
         finally:
