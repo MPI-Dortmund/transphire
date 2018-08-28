@@ -495,7 +495,7 @@ def to_star_file(data, ctf_name, ctf_settings, project_folder, ctf_folder, sum_f
     """
     export_dtype = data.dtype.descr
     extension_dtype = [
-        ('_rlnCtfImage', '|U200'),
+        ('_rlnCtfImage', '|U1200'),
         ('_rlnVoltage', '<f8'),
         ('_rlnSphericalAberration', '<f8'),
         ('_rlnAmplitudeContrast', '<f8'),
@@ -507,7 +507,7 @@ def to_star_file(data, ctf_name, ctf_settings, project_folder, ctf_folder, sum_f
     if dw_file == 'None':
         pass
     else:
-        export_dtype.extend([('_rlnMicrographNameNoDW', '|U200')])
+        export_dtype.extend([('_rlnMicrographNameNoDW', '|U1200')])
     export_data = np.atleast_1d(np.empty(data.shape[0], dtype=export_dtype))
     header = get_relion_header(names=export_data.dtype.names)
 

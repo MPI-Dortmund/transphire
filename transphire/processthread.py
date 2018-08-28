@@ -954,7 +954,7 @@ class ProcessThread(QThread):
 
         data = np.empty(
             len(file_list),
-            dtype=[('root', '|U200'), ('date', '<i8'), ('time', '<i8')]
+            dtype=[('root', '|U1200'), ('date', '<i8'), ('time', '<i8')]
             )
 
         for idx, root_name in enumerate(file_list):
