@@ -2748,6 +2748,7 @@ class ProcessThread(QThread):
         Returns:
         True, if ready
         """
+        return True
         if 'Translation_file.txt' in file_out:
             while True:
                 is_locked = bool(not self.shared_dict['translate_lock'].tryLock())
