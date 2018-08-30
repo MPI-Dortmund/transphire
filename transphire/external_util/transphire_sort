@@ -1,0 +1,183 @@
+UTILS
+
+    CTF_recursive_file_search
+    CTF_to_star_file
+    CTF_create_export_data
+    CTF_to_partres_file
+    CTF_get_relion_header
+    CTF_get_constant_value
+    CTF_contrast_to_shift
+    CTF_shift_to_contrast
+
+    Motion_get_relion_header
+    Motion_create_export_data
+
+    Picking_create_box_jpg
+    Picking_create_box
+    Picking_create_circle
+
+    Plot_get_mic_number
+
+    Software_check_outputs
+    Software_check_for_outlier
+    Software_get_logfiles
+
+    Util_copy
+    Util_get_function_dict
+    Util_mkdir_p
+    Util_question
+    Util_get_exclude_set
+    Util_reduce_programs
+    Util_reduce_copy_entries
+    Util_reduce_path_widget
+    Util_get_key_names
+    Util_get_content_gui
+    Util_look_and_feel_small
+    Util_look_and_feel
+    Util_check_instance
+    Util_get_style
+
+    Import_get_header
+    Import_get_dtype_dict
+    Import_get_transphire_dict
+    Import_get_relion_dict
+    Import_get_dtype_import_dict
+
+
+PRE-PRE_COMMAND
+
+PRE_COMMAND
+
+    Motion_create_sum_movie_command
+    Picking_create_filter_command
+
+POST-PRE_COMMAND
+
+
+PRE-MAIN_COMMAND
+
+    Motion_get_motion_default
+    Motion_get_dw_file_name
+    Software_find_frames
+    Software_check_nr_frames
+    Software_find_related_frames_to_jpg
+    Software_extract_time_and_grid_information
+
+
+MAIN_COMMAND
+
+    CTF_create_XXX_command
+    Motion_create_XXX_command
+    Picking_create_XXX_command
+    Software_get_copy_command_for_frames
+
+POST-MAIN_COMMAND
+
+    Picking_find_logfiles
+    CTF_find_logfiles
+    Software_find_all_files
+
+ANAYLISE
+
+    Motion_combine_motion_outputs
+    CTF_combine_ctf_outputs
+
+PRE-POST_COMMAND
+
+POST_COMMAND
+
+POST-POST_COMMAND
+
+PLOT
+
+    import_XXX
+
+
+
+
+
+____META____
+
+
+- recursive search to find data
+    - isfile and not Data
+    - Add to file_list
+- Copy files
+- Tar files
+- Add to queue
+
+
+____FIND____
+
+- recursive search to find data
+    - isfile and not Data
+    - Check if already copied
+    - Find associated frames to jpg
+    - Check if bad (Wrong number of frames)
+    - Add to shared dict
+    - Add to file_list
+- sort data by date
+- Add to queue
+
+
+___COPY____
+
+- Find frames to jpg
+- Check size of frames
+- Check if already copied
+- Check if there is enough space for the file
+- Assign Micrograph rename number
+- Check if the new name does already exists
+- Create new output name
+- Get copy/newstack command  
+- Run newstack command if len(frames) != 1
+    - Create command
+    - Run command
+    - Check outputs
+- Find all files related to jpg
+- Copy all files to the computer and rename them
+- Check outputs
+- Append to translate file
+    - Extract XML information
+- Add to queue
+- Remove frames if True
+- Remove from shared_dict
+
+
+____MOTION____
+
+- Check if there will be subsums
+- Loop over frame settings
+    - Get First and Last frame 
+    - Check if dose weighting
+    - Create Shift file with zero shifts
+    - Create log output names
+    - Create output_directories
+    - MotionCor2
+        - Create DW output directory
+        - Create output names
+        - Get the DW file_name
+        - Get the motion command
+        - Run the cmmand
+        - Create Non-Scratch names
+        - Append the dw file name to lists
+    - SumMovie2
+        - Get summovie command
+        - Run command
+        - Create Non-Scratch names
+        - Remove temporary SumMovie file
+    - Append files to non_zero and zero lists
+    - Check if the outputs are valid
+    - Copy the DW file
+    - if scratch and project are different, copy all other files
+    - Check if the outputs are valid
+    - Remove files on scratch
+    - Import shift data
+    - Check for shift outlier
+    - Remove from translation if shift outlier
+    - Warn, if there is an outlier
+    - Write MotionCor star file and partres file
+    - Add to queue
+    - Remove frames if necessary
+
+
