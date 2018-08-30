@@ -1273,21 +1273,21 @@ class ProcessThread(QThread):
                 tu.copy('{0}'.format(file_entry), new_file)
                 log_files.append(new_file)
 
-            tus.check_outputs(
-                zero_list=[],
-                non_zero_list=log_files,
-                exists_list=[],
-                folder=self.settings['meta_folder'],
-                command='copy'
-                )
+        tus.check_outputs(
+            zero_list=[],
+            non_zero_list=log_files,
+            exists_list=[],
+            folder=self.settings['meta_folder'],
+            command='copy'
+            )
 
-            log_files.extend([log_file, err_file])
+        log_files.extend([log_file, err_file])
 
-            self.append_to_translate(
-                root_name=root_name,
-                new_name=new_name_meta,
-                xml_file=xml_file
-                )
+        self.append_to_translate(
+            root_name=root_name,
+            new_name=new_name_meta,
+            xml_file=xml_file
+            )
 
         for aim in self.content_settings['aim']:
             *compare, aim_name = aim.split(':')
@@ -1552,20 +1552,20 @@ class ProcessThread(QThread):
                 ]
 
         template = '{0}\n'
-        with open(file_name, 'a') as write:
-            if first_entry:
-                write.write(template.format('\n'.join(first_entry)))
-            else:
-                pass
-            write.write(
-                template.format(
-                    '\t'.join(
-                        ['{0}'.format(entry) for entry in entries]
-                        )
-                    )
-                )
         self.shared_dict['translate_lock'].lock()
         try:
+            with open(file_name, 'a') as write:
+                if first_entry:
+                    write.write(template.format('\n'.join(first_entry)))
+                else:
+                    pass
+                write.write(
+                    template.format(
+                        '\t'.join(
+                            ['{0}'.format(entry) for entry in entries]
+                            )
+                        )
+                    )
             with open(file_name_bad, 'a') as write:
                 if first_entry:
                     write.write(template.format('\n'.join(first_entry)))
