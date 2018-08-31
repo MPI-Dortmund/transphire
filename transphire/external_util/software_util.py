@@ -16,6 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+
 import glob
 import os
 import re
@@ -23,7 +24,7 @@ import subprocess
 import traceback as tb
 
 
-def extract_time_grid_epu_18_falcon2(root_name):
+def get_meta_info__epu_18_falcon2(root_name):
     """
     Extract time and grid information from the root_name string.
 
@@ -40,7 +41,7 @@ def extract_time_grid_epu_18_falcon2(root_name):
     return hole, grid_number, spot1, spot2, date, time
 
 
-def find_frames_epu18_falcon2(compare_name, extension):
+def get_frames__epu18_falcon2(compare_name, extension):
     frames = glob.glob(
         '{0}*_Fractions.{1}'.format(
             compare_name,
@@ -50,7 +51,7 @@ def find_frames_epu18_falcon2(compare_name, extension):
     return frames
 
 
-def check_nr_frames_epu18_falcon2(frames, command, expected_nr_frames):
+def get_number_of_frames__epu18_falcon2(frames, command, expected_nr_frames):
     message = None
     return_value = True
     try:
@@ -84,7 +85,7 @@ def check_nr_frames_epu18_falcon2(frames, command, expected_nr_frames):
     return message, return_value
 
 
-def find_related_frames_epu18_falcon2(frames_root, root_name, extension):
+def get_meta_data__epu18_falcon2(frames_root, root_name, extension):
     compare_name_frames = frames_root[:-len('_19911213_2019')]
     compare_name_meta = root_name[:-len('_19911213_2019')]
     frames = glob.glob('{0}*_Fractions.{1}'.format(
@@ -94,14 +95,5 @@ def find_related_frames_epu18_falcon2(frames_root, root_name, extension):
     return frames, compare_name_frames, compare_name_meta
 
 
-def get_copy_command_epu18_falcon2():
+def get_command__epu18_falcon2():
     return 'rsync'
-
-
-def find_all_files_epu18_falcon2(compare_name_meta, compare_name_frames):
-        meta_files = [
-            name for name in glob.glob('{0}*'.format(compare_name_meta))
-            if 'Fractions' not in name
-            ]
-        frame_files = glob.glob('{0}*'.format(compare_name_frames))
-        return set(meta_files), set(frame_files)
