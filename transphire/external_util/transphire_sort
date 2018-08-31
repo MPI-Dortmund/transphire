@@ -171,13 +171,72 @@ ____MOTION____
     - Copy the DW file
     - if scratch and project are different, copy all other files
     - Check if the outputs are valid
-    - Remove files on scratch
-    - Import shift data
-    - Check for shift outlier
-    - Remove from translation if shift outlier
-    - Warn, if there is an outlier
-    - Write MotionCor star file and partres file
-    - Add to queue
-    - Remove frames if necessary
+- Remove files on scratch
+- Import shift data
+- Check for shift outlier
+- Remove from translation if shift outlier
+- Warn, if there is an outlier
+- Write MotionCor star file and micrograph file
+- Add to queue
+- Remove frames if necessary
 
 
+____CTF____
+
+- Get file names
+- Check if movie mode is used
+- Create output names
+- Get CTF command
+- Run command
+- Find all files
+- Adjust err_file
+- Check if outputs are reasonable
+- Copy the files to the right directory if necessary
+- Check if outputs are reasonable
+- Remove old files if copied
+- Get CTF data
+- Check for outliers
+- Remove from translation if ctf outliers
+- Warn, if there is an outlier
+- Write CTF star file and partres file
+- Add to queue
+
+
+____Picking____
+
+- Get file names
+- Get filter command
+- Run filter command
+- Check filter outputs
+- Get picking command
+- Run picking command
+- Find all picking logfiles
+- Check if outputs are reasonable
+- Create jpg files with applied box files
+- Import picking data
+- Check for picking outliers
+- Remove from translate if picking outliers
+- Warn, if there is an outlier
+- Add to queue
+
+
+____Compress____
+
+- Get file names
+- If compress folder name in file_name
+    - Check if the logfiles are valid
+- Else
+    - Get new compress name
+    - Check if the file does exists
+    - Get command based on extension
+    - Run command
+    - Check outputs
+- Add to queue
+
+
+____copy_extern____
+
+- Get mount folder and mount options
+- Copy as another user, or as the same user
+- If hdd is enabled, decide which hdd to use
+- Run the copy method
