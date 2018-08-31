@@ -88,6 +88,12 @@ POST_COMMAND
 
 POST-POST_COMMAND
 
+IMPORT
+
+EXPORT
+
+FINAL_COMMAND
+
 PLOT
 
     import_XXX
@@ -99,144 +105,183 @@ PLOT
 ____META____
 
 
-- recursive search to find data
-    - isfile and not Data
-    - Add to file_list
-- Copy files
-- Tar files
+PRE-COMMAND
+    - recursive search to find data
+        - isfile and not Data
+        - Add to file_list
+COMMAND
+    - Copy files
+POST-COMMAND
+    - Tar files
+
 - Add to queue
 
 
 ____FIND____
 
-- recursive search to find data
-    - isfile and not Data
-    - Check if already copied
-    - Find associated frames to jpg
-    - Check if bad (Wrong number of frames)
-    - Add to shared dict
-    - Add to file_list
-- sort data by date
+PRE-COMMAND
+    - recursive search to find data
+        - isfile and not Data
+        - Check if already copied
+        - Find associated frames to jpg
+        - Check if bad (Wrong number of frames)
+        - Add to shared dict
+        - Add to file_list
+COMMAND
+    - sort data by date
+
 - Add to queue
 
 
 ___COPY____
 
 - Find frames to jpg
-- Check size of frames
-- Check if already copied
-- Check if there is enough space for the file
-- Assign Micrograph rename number
-- Check if the new name does already exists
-- Create new output name
-- Get copy/newstack command  
-- Run newstack command if len(frames) != 1
-    - Create command
-    - Run command
+PRE-COMMAND
+    - Check size of frames
+    - Check if already copied
+    - Check if there is enough space for the file
+    - Assign Micrograph rename number
+    - Check if the new name does already exists
+    - Create new output name
+
+COMMAND
+    - Get copy/newstack command  
+    - Run newstack command if len(frames) != 1
+        - Create command
+        - Run command
+        - Check outputs
+
+PRE-POST_COMMAND
+    - Find all files related to jpg
+POST_COMMAND
+    - Copy all files to the computer and rename them
     - Check outputs
-- Find all files related to jpg
-- Copy all files to the computer and rename them
-- Check outputs
-- Append to translate file
-    - Extract XML information
+POST-POST_COMMAND
+    - Append to translate file
+        - Extract XML information
+
 - Add to queue
-- Remove frames if True
-- Remove from shared_dict
+
+FINAL_COMMAND
+    - Remove frames if True
+    - Remove from shared_dict
 
 
 ____MOTION____
 
-- Check if there will be subsums
-- Loop over frame settings
-    - Get First and Last frame 
-    - Check if dose weighting
-    - Create Shift file with zero shifts
-    - Create log output names
-    - Create output_directories
-    - MotionCor2
-        - Create DW output directory
-        - Create output names
-        - Get the DW file_name
-        - Get the motion command
-        - Run the cmmand
-        - Create Non-Scratch names
-        - Append the dw file name to lists
-    - SumMovie2
-        - Get summovie command
-        - Run command
-        - Create Non-Scratch names
-        - Remove temporary SumMovie file
-    - Append files to non_zero and zero lists
-    - Check if the outputs are valid
-    - Copy the DW file
-    - if scratch and project are different, copy all other files
-    - Check if the outputs are valid
-- Remove files on scratch
-- Import shift data
-- Check for shift outlier
-- Remove from translation if shift outlier
-- Warn, if there is an outlier
-- Write MotionCor star file and micrograph file
+PRE-COMMAND:
+    - Check if there will be subsums
+COMMAND
+    - Loop over frame settings
+        - Get First and Last frame 
+        - Check if dose weighting
+        - Create Shift file with zero shifts
+        - Create log output names
+        - Create output_directories
+        - MotionCor2
+            - Create DW output directory
+            - Create output names
+            - Get the DW file_name
+            - Get the motion command
+            - Run the cmmand
+            - Create Non-Scratch names
+            - Append the dw file name to lists
+        - SumMovie2
+            - Get summovie command
+            - Run command
+            - Create Non-Scratch names
+            - Remove temporary SumMovie file
+        - Append files to non_zero and zero lists
+        - Check if the outputs are valid
+        - Copy the DW file
+        - if scratch and project are different, copy all other files
+        - Check if the outputs are valid
+POST-COMMAND
+    - Remove files on scratch
+    - Import shift data
+    - Check for shift outlier
+    - Remove from translation if shift outlier
+    - Warn, if there is an outlier
+    - Write MotionCor star file and micrograph file
+
 - Add to queue
-- Remove frames if necessary
+
+FINAL_COMMAND
+    - Remove frames if necessary
 
 
 ____CTF____
 
-- Get file names
-- Check if movie mode is used
-- Create output names
-- Get CTF command
-- Run command
-- Find all files
-- Adjust err_file
-- Check if outputs are reasonable
-- Copy the files to the right directory if necessary
-- Check if outputs are reasonable
-- Remove old files if copied
-- Get CTF data
-- Check for outliers
-- Remove from translation if ctf outliers
-- Warn, if there is an outlier
-- Write CTF star file and partres file
+PRE-COMMAND
+    - Get file names
+    - Check if movie mode is used
+    - Create output names
+COMMAND
+    - Get CTF command
+    - Run command
+    - Find all files
+    - Adjust err_file
+    - Check if outputs are reasonable
+POST-COMMAND
+    - Copy the files to the right directory if necessary
+    - Check if outputs are reasonable
+    - Remove old files if copied
+    - Get CTF data
+    - Check for outliers
+    - Remove from translation if ctf outliers
+    - Warn, if there is an outlier
+    - Write CTF star file and partres file
+
 - Add to queue
 
 
 ____Picking____
 
-- Get file names
-- Get filter command
-- Run filter command
-- Check filter outputs
-- Get picking command
-- Run picking command
-- Find all picking logfiles
-- Check if outputs are reasonable
-- Create jpg files with applied box files
-- Import picking data
-- Check for picking outliers
-- Remove from translate if picking outliers
-- Warn, if there is an outlier
+PRE-PRE_COMMAND
+    - Get file names
+    - Get filter command
+PRE_COMMAND
+    - Run filter command
+POST-PRE_COMMAND
+    - Check filter outputs
+PRE-COMMAND
+    - Get picking command
+COMMAND
+    - Run picking command
+POST-COMMAND
+    - Find all picking logfiles
+    - Check if outputs are reasonable
+    - Create jpg files with applied box files
+    - Import picking data
+    - Check for picking outliers
+    - Remove from translate if picking outliers
+    - Warn, if there is an outlier
+
 - Add to queue
 
 
 ____Compress____
 
-- Get file names
-- If compress folder name in file_name
+PRE-COMMAND
+    - Get file names
+    - If compress folder name in file_name
     - Check if the logfiles are valid
-- Else
-    - Get new compress name
-    - Check if the file does exists
-    - Get command based on extension
-    - Run command
-    - Check outputs
+    - Else
+        - Get new compress name
+        - Check if the file does exists
+        - Get command based on extension
+COMMAND
+        - Run command
+POST-COMMAND
+        - Check outputs
 - Add to queue
 
 
 ____copy_extern____
 
-- Get mount folder and mount options
-- Copy as another user, or as the same user
-- If hdd is enabled, decide which hdd to use
-- Run the copy method
+Pre-COMMAND
+    - Get mount folder and mount options
+    - Copy as another user, or as the same user
+    - If hdd is enabled, decide which hdd to use
+COMMAND
+    - Run the copy method
