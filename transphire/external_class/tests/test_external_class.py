@@ -51,8 +51,47 @@ class TestTemplateClass_Motion():
         assert test_class_template_motion.run_step('get_frame_range') == 'motion_class_get_frame_range'
 
 
+class TestTemplateClass_CTF():
+
+    def test_get_import_data(self, test_class_template_ctf):
+        assert test_class_template_ctf.run_step('get_import_data') == 'ctf_class_get_import_data'
+
+    def test_get_command(self, test_class_template_ctf):
+        assert test_class_template_ctf.run_step('get_command') == 'ctf_class_get_command'
+
+    def test_move_outputs(self, test_class_template_ctf):
+        assert test_class_template_ctf.run_step('move_outputs') == 'ctf_class_move_outputs'
+
+
+class TestTemplateClass_Picking():
+
+    def test_get_import_data(self, test_class_template_picking):
+        assert test_class_template_picking.run_step('get_import_data') == 'picking_class_get_import_data'
+
+    def test_get_command(self, test_class_template_picking):
+        assert test_class_template_picking.run_step('get_command') == 'picking_class_get_command'
+
+    def test_get_filter_command(self, test_class_template_picking):
+        assert test_class_template_picking.run_step('get_filter_command') == 'picking_class_get_filter_command'
+
+
+class TestTemplateClass_Compress():
+
+    def test_get_command(self, test_class_template_compress):
+        assert test_class_template_compress.run_step('get_command') == 'compress_class_get_command'
+
+
+class TestTemplateClass_Copy_Extern():
+
+    def test_tar_files(self, test_class_template_copy_extern):
+        assert test_class_template_copy_extern.run_step('tar_files') == 'copy_extern_class_tar_files'
+
+    def test_get_command(self, test_class_template_copy_extern):
+        assert test_class_template_copy_extern.run_step('get_command') == 'copy_extern_class_get_command'
+
+
 class TestTemplateClass_Unknown():
 
     def test_class_unknown(self):
-        with pytest.raises(AssertionError):
+        with pytest.raises(KeyError):
             ec.TemplateClass('unknown', {})

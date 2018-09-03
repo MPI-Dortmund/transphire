@@ -21,7 +21,7 @@ import abc
 from . import external_class_util as eu
 
 
-class InterfaceMotionClass(abc.ABC):
+class InterfaceClass(abc.ABC):
 
     @staticmethod
     @abc.abstractmethod
@@ -39,19 +39,19 @@ class InterfaceMotionClass(abc.ABC):
         return 1, None, None
 
 
-class TemplateMotionClass(InterfaceMotionClass):
+class TemplateClass(InterfaceClass):
 
     def __init__(self, template_dict):
         self.template_dict = template_dict
 
-    @eu.check_interface(InterfaceMotionClass)
+    @eu.check_interface(InterfaceClass)
     def get_frame_range(self, static_args, static_kwargs, name):
         return self.template_dict[name](*static_args, **static_kwargs)
 
-    @eu.check_interface(InterfaceMotionClass)
+    @eu.check_interface(InterfaceClass)
     def get_import_data(self, static_args, static_kwargs, name):
         return self.template_dict[name](*static_args, **static_kwargs)
 
-    @eu.check_interface(InterfaceMotionClass)
+    @eu.check_interface(InterfaceClass)
     def get_command(self, static_args, static_kwargs, name):
         return self.template_dict[name](*static_args, **static_kwargs)

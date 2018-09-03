@@ -17,9 +17,13 @@
 """
 
 import abc
-from . import external_class_util as eu
-from . import external_class_software as es
-from . import external_class_motion as em
+from . import external_class_util as eutil
+from . import external_class_software as esoft
+from . import external_class_motion as emot
+from . import external_class_ctf as ectf
+from . import external_class_picking as epick
+from . import external_class_compress as ecomp
+from . import external_class_copy_extern as ece
 
 
 class InterfaceClass(abc.ABC):
@@ -34,14 +38,16 @@ class TemplateClass(InterfaceClass):
 
     def __init__(self, class_type: str, function_dict: dict):
         super().__init__()
-        self.parent = None
-        if class_type == 'software':
-            self.parent = es.TemplateSoftwareClass(function_dict)
-        elif class_type == 'motion':
-            self.parent = em.TemplateMotionClass(function_dict)
-        else:
-            assert False, f'{self.parent} not known!'
+        type_dict = {
+            'software': esoft,
+            'motion': emot,
+            'ctf': ectf,
+            'picking': epick,
+            'compress': ecomp,
+            'copy_extern': ece,
+            }
+        self.parent = type_dict[class_type].TemplateClass(function_dict)
 
-    @eu.check_interface(InterfaceClass)
+    @eutil.check_interface(InterfaceClass)
     def run_step(self, static_args, static_kwargs, name):
         return getattr(self.parent, name)(name, *static_args, **static_kwargs)
