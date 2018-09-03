@@ -31,22 +31,22 @@ class InterfaceSoftwareClass(abc.ABC):
     @staticmethod
     @abc.abstractmethod
     def get_frames():
-        return None, None, None
+        return 1, None, None
 
     @staticmethod
     @abc.abstractmethod
     def get_number_of_frames():
-        return None, None, None
+        return 1, None, None
 
     @staticmethod
     @abc.abstractmethod
     def get_meta_data():
-        return None, None, None
+        return 1, None, None
 
     @staticmethod
     @abc.abstractmethod
     def get_command():
-        return None, None, None
+        return 1, None, None
 
 
 class TemplateSoftwareClass(InterfaceSoftwareClass):
@@ -54,34 +54,22 @@ class TemplateSoftwareClass(InterfaceSoftwareClass):
     def __init__(self, template_dict):
         self.template_dict = template_dict
 
-    @eu.check_instance(InterfaceSoftwareClass)
+    @eu.check_interface(InterfaceSoftwareClass)
     def get_meta_info(self, static_args, static_kwargs, name):
         return self.template_dict[name](*static_args, **static_kwargs)
 
-    @eu.check_instance(InterfaceSoftwareClass)
+    @eu.check_interface(InterfaceSoftwareClass)
     def get_frames(self, static_args, static_kwargs, name):
         return self.template_dict[name](*static_args, **static_kwargs)
 
-    @eu.check_instance(InterfaceSoftwareClass)
+    @eu.check_interface(InterfaceSoftwareClass)
     def get_number_of_frames(self, static_args, static_kwargs, name):
         return self.template_dict[name](*static_args, **static_kwargs)
 
-    @eu.check_instance(InterfaceSoftwareClass)
+    @eu.check_interface(InterfaceSoftwareClass)
     def get_meta_data(self, static_args, static_kwargs, name):
         return self.template_dict[name](*static_args, **static_kwargs)
 
-    @eu.check_instance(InterfaceSoftwareClass)
+    @eu.check_interface(InterfaceSoftwareClass)
     def get_command(self, static_args, static_kwargs, name):
         return self.template_dict[name](*static_args, **static_kwargs)
-
-
-if __name__ == '__main__':
-    def test():
-        print('hi')
-    test_dict = {
-        'get_meta_info': test,
-        'get_frames': test,
-        'get_number_of_frames': test,
-        'get_meta_data': test,
-        'get_command': test,
-        }

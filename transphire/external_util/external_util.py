@@ -46,16 +46,17 @@ def check_return(number, type_return, type_entry, return_value):
                 assert isinstance(value, entry)
 
 
-def check_instance(parent_instance):
+def check_interface(parent_instance):
     def check_arguments(func):
         def wrap(*args, **kwargs):
             self = args[0]
             func_name = args[1]
             args = args[2:]
+
             test_name = re.match(r'.*\.([^ ]+) .*', str(func)).group(1).split('__')[0]
             method = getattr(parent_instance, test_name)
             number, type_return, type_entry = method(*args, **kwargs)
-            return_value = func(self, static_args=args, static_kwargs=kwargs, name=test_name)
+            return_value = func(self, static_args=args, static_kwargs=kwargs, name=func_name)
 
             check_return(
                 number=number,
