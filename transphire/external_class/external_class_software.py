@@ -18,7 +18,7 @@
 
 
 import abc
-from . import external_util as eu
+from . import external_class_util as eu
 
 
 class InterfaceSoftwareClass(abc.ABC):
