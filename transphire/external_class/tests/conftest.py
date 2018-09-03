@@ -17,6 +17,7 @@
 """
 
 
+import inspect
 import pytest
 from .. import external_class_motion as em
 from .. import external_class_software as es
@@ -54,7 +55,7 @@ class DummyFunctions_Software():
 
 
 def get_dict(dummy_class):
-    attributes = [attr for attr in dir(dummy_class) if not attr.startswith('__')]
+    attributes = [attr[0] for attr in inspect.getmembers(dummy_class) if not attr[0].startswith('__')]
     test_dict = {}
     for attr in attributes:
         name = attr.split('__')[0]
