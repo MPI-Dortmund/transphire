@@ -19,6 +19,7 @@
 import abc
 from . import external_class_util as eu
 from . import external_class_software as es
+from . import external_class_motion as em
 
 
 class InterfaceClass(abc.ABC):
@@ -29,11 +30,18 @@ class InterfaceClass(abc.ABC):
         return 1, None, None
 
 
-class TemplateClass(InterfaceClass, es.TemplateSoftwareClass):
+class TemplateClass(InterfaceClass):
 
-    def __init__(self, function_dict):
-        super().__init__(function_dict)
+    def __init__(self, class_type: str, function_dict: dict):
+        super().__init__()
+        self.parent = None
+        if class_type == 'software':
+            self.parent = es.TemplateSoftwareClass(function_dict)
+        elif class_type == 'motion':
+            self.parent = em.TemplateMotionClass(function_dict)
+        else:
+            assert False, f'{self.parent} not known!'
 
     @eu.check_interface(InterfaceClass)
     def run_step(self, static_args, static_kwargs, name):
-        return getattr(super(), name)(name, *static_args, **static_kwargs)
+        return getattr(self.parent, name)(name, *static_args, **static_kwargs)

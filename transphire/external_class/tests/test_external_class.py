@@ -21,52 +21,38 @@ import pytest
 from .. import external_class as ec
 
 
-class DummyFunctions():
+class TestTemplateClass_Software():
 
-    def get_meta_info__dummy():
-        return 'class_get_meta_info'
+    def test_get_meta_info(self, test_class_template_software):
+        assert test_class_template_software.run_step('get_meta_info') == 'software_class_get_meta_info'
 
-    def get_frames__dummy():
-        return 'class_get_frames'
+    def test_get_frames(self, test_class_template_software):
+        assert test_class_template_software.run_step('get_frames') == 'software_class_get_frames'
 
-    def get_number_of_frames__dummy():
-        return 'class_get_number_of_frames'
+    def test_get_number_of_frames(self, test_class_template_software):
+        assert test_class_template_software.run_step('get_number_of_frames') == 'software_class_get_number_of_frames'
 
-    def get_meta_data__dummy():
-        return 'class_get_meta_data'
+    def test_get_meta_data(self, test_class_template_software):
+        assert test_class_template_software.run_step('get_meta_data') == 'software_class_get_meta_data'
 
-    def get_command__dummy():
-        return 'class_get_command'
+    def test_get_command(self, test_class_template_software):
+        assert test_class_template_software.run_step('get_command') == 'software_class_get_command'
 
 
-class TestTemplateClass():
+class TestTemplateClass_Motion():
 
-    @pytest.fixture(scope='class')
-    def get_test_dict(self):
-        return {
-            'get_meta_info': DummyFunctions.get_meta_info__dummy,
-            'get_frames': DummyFunctions.get_frames__dummy,
-            'get_number_of_frames': DummyFunctions.get_number_of_frames__dummy,
-            'get_meta_data': DummyFunctions.get_meta_data__dummy,
-            'get_command': DummyFunctions.get_command__dummy,
-            }
+    def test_get_import_data(self, test_class_template_motion):
+        assert test_class_template_motion.run_step('get_import_data') == 'motion_class_get_import_data'
 
-    def test_get_meta_info(self, get_test_dict):
-        test = ec.TemplateClass(get_test_dict)
-        assert test.run_step('get_meta_info') == 'class_get_meta_info'
+    def test_get_command(self, test_class_template_motion):
+        assert test_class_template_motion.run_step('get_command') == 'motion_class_get_command'
 
-    def test_get_frames(self, get_test_dict):
-        test = ec.TemplateClass(get_test_dict)
-        assert test.run_step('get_frames') == 'class_get_frames'
+    def test_get_frame_range(self, test_class_template_motion):
+        assert test_class_template_motion.run_step('get_frame_range') == 'motion_class_get_frame_range'
 
-    def test_get_number_of_frames(self, get_test_dict):
-        test = ec.TemplateClass(get_test_dict)
-        assert test.run_step('get_number_of_frames') == 'class_get_number_of_frames'
 
-    def test_get_meta_data(self, get_test_dict):
-        test = ec.TemplateClass(get_test_dict)
-        assert test.run_step('get_meta_data') == 'class_get_meta_data'
+class TestTemplateClass_Unknown():
 
-    def test_get_command(self, get_test_dict):
-        test = ec.TemplateClass(get_test_dict)
-        assert test.run_step('get_command') == 'class_get_command'
+    def test_class_unknown(self):
+        with pytest.raises(AssertionError):
+            ec.TemplateClass('unknown', {})
