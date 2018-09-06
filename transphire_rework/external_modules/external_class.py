@@ -23,8 +23,17 @@ import inspect
 
 
 def check_interface(parent_instance):
+    """
+    Decorator that passes the parent instance for sanity checks.
+    """
     def check_existence(func):
+        """
+        Decorator that passes the function to execute it.
+        """
         def wrap(*args, **kwargs):
+            """
+            Execute the actual function after checking the existence in the interface class.
+            """
             func_name = args[1]
             new_args = args[1:]
 
@@ -41,6 +50,13 @@ def check_interface(parent_instance):
 
 
 class InterfaceClass(abc.ABC): # pragma: no cover
+    """
+    Abstract interface class.
+    It does not allow creation of an instance.
+
+    Inherits:
+    abc.ABC
+    """
 
     @staticmethod
     @abc.abstractmethod
@@ -87,7 +103,7 @@ class InterfaceClass(abc.ABC): # pragma: no cover
     @abc.abstractmethod
     def get_pre_first_command():
         """
-        Returns the command that will be executed before the first command
+        Returns the command that will be executed before the first command.
         """
         pass
 
@@ -96,7 +112,7 @@ class InterfaceClass(abc.ABC): # pragma: no cover
     @abc.abstractmethod
     def get_first_command():
         """
-        Returns the command that will be executed as the first command
+        Returns the command that will be executed as the first command.
         """
         pass
 
@@ -104,7 +120,7 @@ class InterfaceClass(abc.ABC): # pragma: no cover
     @abc.abstractmethod
     def get_post_first_command():
         """
-        Returns the command that will be executed after the first command
+        Returns the command that will be executed after the first command.
         """
         pass
 
@@ -112,7 +128,7 @@ class InterfaceClass(abc.ABC): # pragma: no cover
     @abc.abstractmethod
     def get_pre_second_command():
         """
-        Returns the command that will be executed before the second command
+        Returns the command that will be executed before the second command.
         """
         pass
 
@@ -120,7 +136,7 @@ class InterfaceClass(abc.ABC): # pragma: no cover
     @abc.abstractmethod
     def get_second_command():
         """
-        Returns the command that will be executed as the second command
+        Returns the command that will be executed as the second command.
         """
         pass
 
@@ -128,7 +144,7 @@ class InterfaceClass(abc.ABC): # pragma: no cover
     @abc.abstractmethod
     def get_post_second_command():
         """
-        Returns the command that will be executed after the second command
+        Returns the command that will be executed after the second command.
         """
         pass
 
@@ -136,7 +152,7 @@ class InterfaceClass(abc.ABC): # pragma: no cover
     @abc.abstractmethod
     def get_pre_third_command():
         """
-        Returns the command that will be executed before the third command
+        Returns the command that will be executed before the third command.
         """
         pass
 
@@ -144,7 +160,7 @@ class InterfaceClass(abc.ABC): # pragma: no cover
     @abc.abstractmethod
     def get_third_command():
         """
-        Returns the command that will be executed as the third command
+        Returns the command that will be executed as the third command.
         """
         pass
 
@@ -152,36 +168,73 @@ class InterfaceClass(abc.ABC): # pragma: no cover
     @abc.abstractmethod
     def get_post_third_command():
         """
-        Returns the command that will be executed after the third command
+        Returns the command that will be executed after the third command.
         """
         pass
 
     @staticmethod
     @abc.abstractmethod
-    def get_pre_final_command(): pass
+    def get_pre_final_command():
+        """
+        Returns the command that will be executed before the final command.
+        """
+        pass
 
     @staticmethod
     @abc.abstractmethod
-    def get_final_command(): pass
+    def get_final_command():
+        """
+        Returns the command that will be executed as the final command.
+        """
+        pass
 
     @staticmethod
     @abc.abstractmethod
-    def get_post_final_command(): pass
+    def get_post_final_command():
+        """
+        Returns the command that will be executed after the final command.
+        """
+        pass
 
     @staticmethod
     @abc.abstractmethod
-    def get_import_data(): pass
+    def get_import_data():
+        """
+        Returns the command that will import the data.
+        """
+        pass
 
     @staticmethod
     @abc.abstractmethod
-    def get_output_files(): pass
+    def get_output_files():
+        """
+        Returns the suffixes of the output file for sanity checks.
+        """
+        pass
 
 
 class TemplateClass(object):
+    """
+    TemplateClass
+
+    It wraps the settings of the software.
+
+    Inherits:
+    object
+    """
 
     def __init__(self, external_dict):
         self.external_dict = external_dict
 
     @check_interface(InterfaceClass)
     def run_step(self, name):
+        """
+        Return the value of the external_dict.
+
+        Arguments:
+        external_dict: Dictionary containing the program information.
+
+        Returns:
+        Value of the dictionar key.
+        """
         return self.external_dict[name]
