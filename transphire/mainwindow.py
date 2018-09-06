@@ -463,24 +463,60 @@ class MainWindow(QMainWindow):
         None
         """
         # Layout dictionary
+        widget_layout_h2 = QWidget(self)
+        widget_layout_h3 = QWidget(self)
+        widget_layout_h4 = QWidget(self)
+        widget_layout_v1 = QWidget(self)
+        widget_layout_v2 = QWidget(self)
+
         self.layout = {}
         self.layout['h1'] = QHBoxLayout(self.central_widget)
-        self.layout['h2'] = QHBoxLayout()
-        self.layout['h3'] = QHBoxLayout()
-        self.layout['h4'] = QHBoxLayout()
-        self.layout['v'] = QVBoxLayout()
+        self.layout['h2'] = QHBoxLayout(widget_layout_h2)
+        self.layout['h3'] = QHBoxLayout(widget_layout_h3)
+        self.layout['h4'] = QHBoxLayout(widget_layout_h4)
+        self.layout['v1'] = QVBoxLayout(widget_layout_v1)
+        self.layout['v2'] = QVBoxLayout(widget_layout_v2)
+
+        self.layout['h2'].setContentsMargins(0, 0, 0, 0)
+        self.layout['h3'].setContentsMargins(0, 0, 0, 0)
+        self.layout['h4'].setContentsMargins(0, 0, 0, 0)
+        self.layout['v1'].setContentsMargins(0, 0, 0, 0)
+        self.layout['v2'].setContentsMargins(0, 0, 0, 0)
+
 
         # Layout architecture
-        self.layout['h1'].addLayout(self.layout['v'], stretch=1)
-        self.layout['v'].addLayout(self.layout['h2'], stretch=0)
-        self.layout['v'].addWidget(
-            Separator(typ='horizontal', color='grey'), stretch=0
+        self.layout['h1'].addWidget(widget_layout_v1, stretch=1)
+        self.layout['h1'].addWidget(
+            Separator(
+                typ='vertical',
+                color='black',
+                left=widget_layout_v1,
+                right=widget_layout_v2,
+                ),
+            stretch=0
             )
-        self.layout['v'].addLayout(self.layout['h3'], stretch=0)
-        self.layout['v'].addWidget(
-            Separator(typ='horizontal', color='grey'), stretch=0
+        self.layout['h1'].addWidget(widget_layout_v2, stretch=0)
+
+        self.layout['v1'].addWidget(widget_layout_h2, stretch=0)
+        self.layout['v1'].addWidget(
+            Separator(
+                typ='horizontal',
+                color='grey',
+                up=widget_layout_h2,
+                ),
+            stretch=0
             )
-        self.layout['v'].addLayout(self.layout['h4'], stretch=1)
+        self.layout['v1'].addWidget(widget_layout_h3, stretch=0)
+        self.layout['v1'].addWidget(
+            Separator(
+                typ='horizontal',
+                color='grey',
+                up=widget_layout_h3,
+                down=widget_layout_h4,
+                ),
+            stretch=0
+            )
+        self.layout['v1'].addWidget(widget_layout_h4, stretch=1)
 
     def fill_content(self, content_gui):
         """

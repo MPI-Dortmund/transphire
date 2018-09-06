@@ -24,31 +24,6 @@ import numpy as np
 import traceback as tb
 import pexpect as pe
 from transphire import transphire_import as ti
-from transphire.external_util import software_util as su
-from transphire.external_util import external_class as ec
-
-SOFTWARE_DICT = {}
-for entry in glob.glob(os.path.join(
-        os.path.dirname(__file__),
-        'external',
-        'Software__*'
-        )):
-    name = os.path.basename(os.path.splitext(entry)[0])
-
-    _, software, camera, frame_type = name.split('__')
-    software, version = software.split('-')
-    version = version.replace('_', '.')
-    software = software.replace('_', ' ')
-    software = ' '.join([software, version])
-    camera = camera.replace('_', ' ').replace('-', ' ')
-    frame_type = frame_type.replace('_', ' ').replace('-', ' ')
-
-    module_name = 'transphire.external.{0}'.format(name)
-    module = importlib.import_module(module_name)
-    SOFTWARE_DICT[software] = {}
-    SOFTWARE_DICT[software][camera] = {}
-    SOFTWARE_DICT[software][camera][frame_type] = ec.TemplateClass({'get_copy_command_for_frames': su.get_copy_command_epu18_falcon2})
-    SOFTWARE_DICT[software][camera][frame_type].get_copy_command_for_frames()
 
 
 def extract_time_and_grid_information(root_name, settings, queue_com, name):
