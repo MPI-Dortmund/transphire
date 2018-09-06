@@ -1,0 +1,84 @@
+{
+  "get_type": "software",
+  "get_name": "EPU",
+  "get_version": "1.09",
+  "get_camera": "Falcon3",
+  "get_movie_type": "Stack",
+  "get_pre_first_command": null,
+  "get_first_command": null,
+  "get_post_first_command": null,
+  "get_pre_second_command": null,
+  "get_second_command": null,
+  "get_post_second_command": null,
+  "get_pre_third_command": null,
+  "get_third_command": null,
+  "get_post_third_command": null,
+  "get_pre_final_command": null,
+  "get_final_command": null,
+  "get_post_final_command": null,
+  "get_import_data": null,
+  "get_output_files": [
+    ".txt",
+    ".log"
+  ],
+  "get_content": {
+    "test1": {
+      "default": 0,
+      "tooltip": "test1 tooltip",
+      "dependency": [],
+      "type": "int",
+      "xml": false,
+      "lower_limit": 0,
+      "upper_limit": "inf",
+      "is_dir": false,
+      "is_file": false,
+      "new_output_file": [],
+      "suppressed_output_file": []
+    },
+    "test2": {
+      "default": "True",
+      "tooltip": "test2 tooltip",
+      "dependency": [],
+      "type": "bool",
+      "xml": null,
+      "lower_limit": null,
+      "upper_limit": null,
+      "is_dir": false,
+      "is_file": false,
+      "new_output_file": [],
+      "suppressed_output_file": []
+    },
+    "test3": {
+      "default": "3.0",
+      "tooltip": "test3 tooltip",
+      "dependency": [],
+      "type": "float",
+      "xml": true,
+      "lower_limit": "-inf",
+      "upper_limit": "inf",
+      "is_dir": false,
+      "is_file": false,
+      "new_output_file": [],
+      "suppressed_output_file": []
+    },
+    "test4": {
+      "default": "",
+      "tooltip": "test4 tooltip",
+      "dependency": [
+        "test2:True"
+      ],
+      "type": "str",
+      "xml": true,
+      "lower_limit": "-inf",
+      "upper_limit": "inf",
+      "is_dir": true,
+      "is_file": false,
+      "new_output_file": [
+        "_test.txt"
+      ],
+      "suppressed_output_file": [
+        "_no_test.txt"
+      ]
+    }
+  }
+}
