@@ -1,0 +1,1433 @@
+
+  <MicroscopeImage xmlns="http://schemas.datacontract.org/2004/07/Fei.SharedObjects" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+
+  <name>
+Empty
+  </name>
+
+  <uniqueID>
+16daeb7f-0ce8-4ef3-ad8d-1eb1d00fb49e
+  </uniqueID>
+
+  <CustomData xmlns:a="http://schemas.microsoft.com/2003/10/Serialization/Arrays">
+
+  <a:KeyValueOfstringanyType>
+
+  <a:Key>
+DoseOnCamera
+  </a:Key>
+
+  <a:Value i:type="b:double" xmlns:b="http://www.w3.org/2001/XMLSchema">
+16.659272912190094
+  </a:Value>
+
+  </a:KeyValueOfstringanyType>
+
+  <a:KeyValueOfstringanyType>
+
+  <a:Key>
+Dose
+  </a:Key>
+
+  <a:Value i:type="b:double" xmlns:b="http://www.w3.org/2001/XMLSchema">
+5.2653358621930176E+21
+  </a:Value>
+
+  </a:KeyValueOfstringanyType>
+
+  <a:KeyValueOfstringanyType>
+
+  <a:Key>
+PhasePlateUsed
+  </a:Key>
+
+  <a:Value i:type="b:boolean" xmlns:b="http://www.w3.org/2001/XMLSchema">
+false
+  </a:Value>
+
+  </a:KeyValueOfstringanyType>
+
+  <a:KeyValueOfstringanyType>
+
+  <a:Key>
+AppliedDefocus
+  </a:Key>
+
+  <a:Value i:type="b:double" xmlns:b="http://www.w3.org/2001/XMLSchema">
+-1.6E-06
+  </a:Value>
+
+  </a:KeyValueOfstringanyType>
+
+  </CustomData>
+
+  <IntensityScale i:nil="true"/>
+
+  <ReferenceTransformation>
+
+  <matrix xmlns:a="http://schemas.datacontract.org/2004/07/System.Windows.Media">
+
+  <a:_m11>
+-5.5127806375978276E-11
+  </a:_m11>
+
+  <a:_m12>
+-1.1174869370720874E-11
+  </a:_m12>
+
+  <a:_m21>
+-1.1174869370720889E-11
+  </a:_m21>
+
+  <a:_m22>
+5.5127806375978276E-11
+  </a:_m22>
+
+  <a:_offsetX>
+0
+  </a:_offsetX>
+
+  <a:_offsetY>
+0
+  </a:_offsetY>
+
+  <a:_padding>
+0
+  </a:_padding>
+
+  <a:_type>
+TRANSFORM_IS_UNKNOWN
+  </a:_type>
+
+  </matrix>
+
+  <unit xmlns:a="http://schemas.datacontract.org/2004/07/Fei.Common.Types">
+
+  <a:_x003C_PrefixExponent_x003E_k__BackingField>
+1
+  </a:_x003C_PrefixExponent_x003E_k__BackingField>
+
+  <a:_x003C_Symbol_x003E_k__BackingField>
+m
+  </a:_x003C_Symbol_x003E_k__BackingField>
+
+  </unit>
+
+  </ReferenceTransformation>
+
+  <SpatialScale>
+
+  <offset>
+
+  <x>
+
+  <numericValue>
+0
+  </numericValue>
+
+  <unit xmlns:a="http://schemas.datacontract.org/2004/07/Fei.Common.Types">
+
+  <a:_x003C_PrefixExponent_x003E_k__BackingField>
+1
+  </a:_x003C_PrefixExponent_x003E_k__BackingField>
+
+  <a:_x003C_Symbol_x003E_k__BackingField>
+m
+  </a:_x003C_Symbol_x003E_k__BackingField>
+
+  </unit>
+
+  </x>
+
+  <y>
+
+  <numericValue>
+0
+  </numericValue>
+
+  <unit xmlns:a="http://schemas.datacontract.org/2004/07/Fei.Common.Types">
+
+  <a:_x003C_PrefixExponent_x003E_k__BackingField>
+1
+  </a:_x003C_PrefixExponent_x003E_k__BackingField>
+
+  <a:_x003C_Symbol_x003E_k__BackingField>
+m
+  </a:_x003C_Symbol_x003E_k__BackingField>
+
+  </unit>
+
+  </y>
+
+  </offset>
+
+  <pixelSize>
+
+  <x>
+
+  <numericValue>
+5.6249022800658466E-11
+  </numericValue>
+
+  <unit xmlns:a="http://schemas.datacontract.org/2004/07/Fei.Common.Types">
+
+  <a:_x003C_PrefixExponent_x003E_k__BackingField>
+1
+  </a:_x003C_PrefixExponent_x003E_k__BackingField>
+
+  <a:_x003C_Symbol_x003E_k__BackingField>
+m
+  </a:_x003C_Symbol_x003E_k__BackingField>
+
+  </unit>
+
+  </x>
+
+  <y>
+
+  <numericValue>
+5.6249022800658466E-11
+  </numericValue>
+
+  <unit xmlns:a="http://schemas.datacontract.org/2004/07/Fei.Common.Types">
+
+  <a:_x003C_PrefixExponent_x003E_k__BackingField>
+1
+  </a:_x003C_PrefixExponent_x003E_k__BackingField>
+
+  <a:_x003C_Symbol_x003E_k__BackingField>
+m
+  </a:_x003C_Symbol_x003E_k__BackingField>
+
+  </unit>
+
+  </y>
+
+  </pixelSize>
+
+  </SpatialScale>
+
+  <microscopeData>
+
+  <acquisition>
+
+  <acquisitionDateTime>
+2018-07-30T18:21:24.6127707+02:00
+  </acquisitionDateTime>
+
+  <analyticalDetectors/>
+
+  <camera>
+
+  <Binning xmlns:a="http://schemas.datacontract.org/2004/07/System.Drawing">
+
+  <a:x>
+1
+  </a:x>
+
+  <a:y>
+1
+  </a:y>
+
+  </Binning>
+
+  <CameraLocation>
+BottomMounted
+  </CameraLocation>
+
+  <CameraSpecificInput xmlns:a="http://schemas.microsoft.com/2003/10/Serialization/Arrays">
+
+  <a:KeyValueOfstringanyType>
+
+  <a:Key>
+CetaFramesSummed
+  </a:Key>
+
+  <a:Value i:type="b:int" xmlns:b="http://www.w3.org/2001/XMLSchema">
+1
+  </a:Value>
+
+  </a:KeyValueOfstringanyType>
+
+  <a:KeyValueOfstringanyType>
+
+  <a:Key>
+CetaNoiseReductionEnabled
+  </a:Key>
+
+  <a:Value i:type="b:boolean" xmlns:b="http://www.w3.org/2001/XMLSchema">
+true
+  </a:Value>
+
+  </a:KeyValueOfstringanyType>
+
+  <a:KeyValueOfstringanyType>
+
+  <a:Key>
+ElectronCountingEnabled
+  </a:Key>
+
+  <a:Value i:type="b:boolean" xmlns:b="http://www.w3.org/2001/XMLSchema">
+true
+  </a:Value>
+
+  </a:KeyValueOfstringanyType>
+
+  <a:KeyValueOfstringanyType>
+
+  <a:Key>
+AlignIntegratedImageEnabled
+  </a:Key>
+
+  <a:Value i:type="b:boolean" xmlns:b="http://www.w3.org/2001/XMLSchema">
+true
+  </a:Value>
+
+  </a:KeyValueOfstringanyType>
+
+  <a:KeyValueOfstringanyType>
+
+  <a:Key>
+SuperResolutionFactor
+  </a:Key>
+
+  <a:Value i:type="b:int" xmlns:b="http://www.w3.org/2001/XMLSchema">
+1
+  </a:Value>
+
+  </a:KeyValueOfstringanyType>
+
+  <a:KeyValueOfstringanyType>
+
+  <a:Key>
+FractionationSettings
+  </a:Key>
+
+  <a:Value i:type="b:VaridistantFractionation" xmlns:b="http://schemas.datacontract.org/2004/07/Fei.Applications.Common.Omp.Interface">
+
+  <b:DoseFractions>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+12
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+1
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+24
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+13
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+36
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+25
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+48
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+37
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+60
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+49
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+72
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+61
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+84
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+73
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+96
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+85
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+108
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+97
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+120
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+109
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+132
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+121
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+144
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+133
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+156
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+145
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+168
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+157
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+180
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+169
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+192
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+181
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+204
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+193
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+216
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+205
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+228
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+217
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+240
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+229
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+252
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+241
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+264
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+253
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+276
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+265
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+288
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+277
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+300
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+289
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+312
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+301
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+324
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+313
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+336
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+325
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+348
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+337
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+360
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+349
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+372
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+361
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+384
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+373
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+396
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+385
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+408
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+397
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+420
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+409
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+432
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+421
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+444
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+433
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+456
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+445
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+468
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+457
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+480
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+469
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+492
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+481
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+504
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+493
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+516
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+505
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+528
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+517
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+540
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+529
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+552
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+541
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+564
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+553
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+576
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+565
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+588
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+577
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+600
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+589
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+612
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+601
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+624
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+613
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+636
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+625
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+648
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+637
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+660
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+649
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+672
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+661
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+684
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+673
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  <a:anyType i:type="b:DoseFractionDefinition">
+
+  <b:EndFrameNumber>
+696
+  </b:EndFrameNumber>
+
+  <b:StartFrameNumber>
+685
+  </b:StartFrameNumber>
+
+  </a:anyType>
+
+  </b:DoseFractions>
+
+  </a:Value>
+
+  </a:KeyValueOfstringanyType>
+
+  </CameraSpecificInput>
+
+  <DarkGainCorrection>
+None
+  </DarkGainCorrection>
+
+  <ExposureTime>
+18.094098
+  </ExposureTime>
+
+  <Inserted>
+true
+  </Inserted>
+
+  <Name>
+BM-Falcon
+  </Name>
+
+  <PreExposurePauseTime>
+0
+  </PreExposurePauseTime>
+
+  <PreExposureSupported>
+false
+  </PreExposureSupported>
+
+  <PreExposureTime>
+0
+  </PreExposureTime>
+
+  <ReadoutArea xmlns:a="http://schemas.datacontract.org/2004/07/System.Drawing">
+
+  <a:height>
+4096
+  </a:height>
+
+  <a:width>
+4096
+  </a:width>
+
+  <a:x>
+0
+  </a:x>
+
+  <a:y>
+0
+  </a:y>
+
+  </ReadoutArea>
+
+  <Shutter>
+PreSpecimen
+  </Shutter>
+
+  </camera>
+
+  <plateCamera>
+
+  <ExposureTime>
+0
+  </ExposureTime>
+
+  <Use>
+false
+  </Use>
+
+  </plateCamera>
+
+  <scanSettings>
+
+  <DwellTime>
+0
+  </DwellTime>
+
+  <ReducedArea i:nil="true" xmlns:a="http://schemas.datacontract.org/2004/07/System.Drawing"/>
+
+  <Resolution xmlns:a="http://schemas.datacontract.org/2004/07/System.Drawing">
+
+  <a:height>
+0
+  </a:height>
+
+  <a:width>
+0
+  </a:width>
+
+  </Resolution>
+
+  <ScanArea xmlns:a="http://schemas.datacontract.org/2004/07/System.Drawing">
+
+  <a:height>
+0
+  </a:height>
+
+  <a:width>
+0
+  </a:width>
+
+  <a:x>
+0
+  </a:x>
+
+  <a:y>
+0
+  </a:y>
+
+  </ScanArea>
+
+  <ScanRotation>
+0
+  </ScanRotation>
+
+  </scanSettings>
+
+  <scanningDetector>
+
+  <DetectorType>
+SecondaryElectrons
+  </DetectorType>
+
+  <Gain i:nil="true"/>
+
+  <Inserted>
+false
+  </Inserted>
+
+  <Name i:nil="true"/>
+
+  <Offset i:nil="true"/>
+
+  </scanningDetector>
+
+  </acquisition>
+
+  <core>
+
+  <ApplicationSoftware>
+Fei EPU
+  </ApplicationSoftware>
+
+  <ApplicationSoftwareVersion>
+1.0.2.24
+  </ApplicationSoftwareVersion>
+
+  <Guid>
+2811633a-f2d2-4151-9a92-98161a8ff0b0
+  </Guid>
+
+  </core>
+
+  <gun>
+
+  <AccelerationVoltage>
+300000
+  </AccelerationVoltage>
+
+  <ExtractorVoltage i:nil="true"/>
+
+  <Filament i:nil="true"/>
+
+  <GunLens i:nil="true"/>
+
+  <Sourcetype>
+FieldEmission
+  </Sourcetype>
+
+  <WehneltBias i:nil="true"/>
+
+  </gun>
+
+  <instrument>
+
+  <AcquisitionSoftware i:nil="true"/>
+
+  <AcquisitionSoftwareVersion i:nil="true"/>
+
+  <ComputerName>
+TITAN52334050
+  </ComputerName>
+
+  <InstrumentID>
+3405
+  </InstrumentID>
+
+  <InstrumentModel>
+TITAN52334050
+  </InstrumentModel>
+
+  </instrument>
+
+  <optics>
+
+  <BeamConvergence i:nil="true"/>
+
+  <BeamDiameter>
+1.3E-06
+  </BeamDiameter>
+
+  <BeamShift xmlns:a="http://schemas.datacontract.org/2004/07/Fei.Types">
+
+  <a:_x>
+-1.8117721992894076E-05
+  </a:_x>
+
+  <a:_y>
+-0.0036944570019841194
+  </a:_y>
+
+  </BeamShift>
+
+  <BeamTilt xmlns:a="http://schemas.datacontract.org/2004/07/Fei.Types">
+
+  <a:_x>
+0.022405700758099556
+  </a:_x>
+
+  <a:_y>
+-0.052897602319717407
+  </a:_y>
+
+  </BeamTilt>
+
+  <Cameralength>
+0
+  </Cameralength>
+
+  <ColumnOperatingMode>
+TEM
+  </ColumnOperatingMode>
+
+  <ColumnOperatingTemSubMode>
+BrightField
+  </ColumnOperatingTemSubMode>
+
+  <CondenserStigmator xmlns:a="http://schemas.datacontract.org/2004/07/Fei.Types">
+
+  <a:_x>
+0
+  </a:_x>
+
+  <a:_y>
+0
+  </a:_y>
+
+  </CondenserStigmator>
+
+  <Defocus>
+-1.8927662442115285E-06
+  </Defocus>
+
+  <DiffractionFocus>
+0
+  </DiffractionFocus>
+
+  <DiffractionShift xmlns:a="http://schemas.datacontract.org/2004/07/Fei.Types">
+
+  <a:_x>
+0
+  </a:_x>
+
+  <a:_y>
+0
+  </a:_y>
+
+  </DiffractionShift>
+
+  <DiffractionStigmator xmlns:a="http://schemas.datacontract.org/2004/07/Fei.Types">
+
+  <a:_x>
+0
+  </a:_x>
+
+  <a:_y>
+0
+  </a:_y>
+
+  </DiffractionStigmator>
+
+  <EFTEMOn>
+false
+  </EFTEMOn>
+
+  <EnergyFilter i:nil="true"/>
+
+  <Focus>
+-0.00067214710376829853
+  </Focus>
+
+  <GunStigmator i:nil="true" xmlns:a="http://schemas.datacontract.org/2004/07/Fei.Types"/>
+
+  <IlluminationMode>
+Parallel
+  </IlluminationMode>
+
+  <IlluminationProbeSubMode i:nil="true"/>
+
+  <ImageShift xmlns:a="http://schemas.datacontract.org/2004/07/Fei.Types">
+
+  <a:_x>
+0
+  </a:_x>
+
+  <a:_y>
+0
+  </a:_y>
+
+  </ImageShift>
+
+  <Intensity>
+0
+  </Intensity>
+
+  <ObjectiveLensMode>
+HM
+  </ObjectiveLensMode>
+
+  <ObjectiveStigmator xmlns:a="http://schemas.datacontract.org/2004/07/Fei.Types">
+
+  <a:_x>
+0
+  </a:_x>
+
+  <a:_y>
+0
+  </a:_y>
+
+  </ObjectiveStigmator>
+
+  <ProbeMode>
+NanoProbe
+  </ProbeMode>
+
+  <ProjectorMode>
+Imaging
+  </ProjectorMode>
+
+  <SpotIndex>
+7
+  </SpotIndex>
+
+  <StemDefocus>
+0
+  </StemDefocus>
+
+  <StemFieldOfView i:nil="true"/>
+
+  <StemMagnification i:nil="true"/>
+
+  <TemMagnification>
+
+  <NominalMagnification>
+120000
+  </NominalMagnification>
+
+  </TemMagnification>
+
+  </optics>
+
+  <sample>
+
+  <Description i:nil="true"/>
+
+  <ID i:nil="true"/>
+
+  </sample>
+
+  <stage>
+
+  <Holder>
+Unspecified
+  </Holder>
+
+  <Position>
+
+  <A>
+-0.00074167406709999993
+  </A>
+
+  <B>
+0.01758816
+  </B>
+
+  <X>
+-0.0001801111116
+  </X>
+
+  <Y>
+-0.000507975032
+  </Y>
+
+  <Z>
+-3.8079027233600004E-05
+  </Z>
+
+  </Position>
+
+  <SampleLoader>
+None
+  </SampleLoader>
+
+  </stage>
+
+  <vacuum>
+
+  <ProjectionChamberPressure>
+0
+  </ProjectionChamberPressure>
+
+  <SamplePressure>
+0
+  </SamplePressure>
+
+  <VacuumMode>
+Ready
+  </VacuumMode>
+
+  </vacuum>
+
+  </microscopeData>
+
+  </MicroscopeImage>
+

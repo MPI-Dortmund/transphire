@@ -24,7 +24,7 @@ import subprocess
 import traceback as tb
 
 
-def get_meta_info__epu_18_falcon2(root_name):
+def get_meta_xml__epu_18_falcon2(root_name):
     """
     Extract time and grid information from the root_name string.
 
