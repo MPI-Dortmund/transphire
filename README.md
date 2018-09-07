@@ -1,4 +1,5 @@
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1403032.svg)](https://doi.org/10.5281/zenodo.1403032)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1411480.svg)](https://doi.org/10.5281/zenodo.1411480)
+
 
 
 
@@ -20,7 +21,7 @@ SumMovie 1.0.2: http://grigoriefflab.janelia.org/unblur
 CTER 1.0: http://sphire.mpg.de  
 CTFFIND 4.1.8/4.1.10: http://grigoriefflab.janelia.org/ctf  
 Gctf 1.06,1.18: https://www.mrc-lmb.cam.ac.uk/kzhang  
-crYOLO 1.0.4: http://sphire.mpg.de  
+crYOLO 1.0.4/1.0.5/1.1.0: http://sphire.mpg.de  
 
 ## Installation
 
