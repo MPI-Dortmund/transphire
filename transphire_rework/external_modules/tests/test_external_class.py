@@ -23,9 +23,9 @@ from .. import external_class as ec
 
 class TestTemplateClass:
 
-    def test_not_known_should_raise_assertion(self):
-        test_class = ec.TemplateClass({'now_known': 'worked'})
-        with pytest.raises(AssertionError):
+    def test_not_known_should_raise_AttributeError(self):
+        test_class = ec.TemplateClass({'not_known': 'worked'})
+        with pytest.raises(AttributeError):
             test_class.run_step('now_known')
 
     def test_get_content_should_return_worked(self):

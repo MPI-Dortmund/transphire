@@ -38,10 +38,10 @@ def check_interface(parent_instance):
             new_args = args[1:]
 
             try:
-                assert hasattr(parent_instance, func_name)
-            except AssertionError as e:
+                getattr(parent_instance, func_name)()
+            except AttributeError as e:
                 function_names = '\n'.join(sorted(list(inspect.getmembers(parent_instance)[0][1])))
-                raise AssertionError(f'Interface instance "{parent_instance}" does not yet have a method named "{func_name}": Choose\n{function_names}') from e
+                raise AttributeError(f'Interface instance "{parent_instance}" does not yet have a method named "{func_name}": Choose\n{function_names}') from e
 
             return_value = func(args[0], *new_args, **kwargs)
             return return_value
@@ -49,7 +49,7 @@ def check_interface(parent_instance):
     return check_existence
 
 
-class InterfaceClass(abc.ABC): # pragma: no cover
+class InterfaceClass(abc.ABC):
     """
     Abstract interface class.
     It does not allow creation of an instance.
