@@ -98,14 +98,18 @@ def find_logfiles(root_path, file_name, settings, queue_com, name):
     """
     log_files = None
     copied_log_files = None
+    picking_name = settings['Copy']['Picking']
     picking_root_path = os.path.join(settings['picking_folder'], file_name)
-    if settings['Copy']['Picking'] == 'crYOLO v1.0.4' or \
-            settings['Copy']['Picking'] == 'crYOLO v1.0.5':
+    if picking_name == 'crYOLO v1.0.4' or \
+            picking_name == 'crYOLO v1.0.5':
         copied_log_files = ['{0}.box'.format(picking_root_path)]
         log_files = copied_log_files
 
-    elif settings['Copy']['Picking'] == 'crYOLO v1.1.0':
-        copied_log_files = ['{0}.txt'.format(picking_root_path)]
+    elif picking_name == 'crYOLO v1.1.0':
+        if settings[picking_name]['--filament'] == 'True':
+            copied_log_files = ['{0}.txt'.format(picking_root_path)]
+        else:
+            copied_log_files = ['{0}.box'.format(picking_root_path)]
         log_files = copied_log_files
 
     else:
