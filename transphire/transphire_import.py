@@ -796,10 +796,10 @@ def import_cryolo_v1_1_0(name, directory_name, image=True):
     Return:
     Imported data
     """
-    return import_cryolo_v1_0_4(name, directory_name, image=True, extension='txt')
+    return import_cryolo_v1_0_4(name, directory_name, image=True)
 
 
-def import_cryolo_v1_0_4(name, directory_name, image=True, extension='box'):
+def import_cryolo_v1_0_4(name, directory_name, image=True):
     """
     Import picking information for crYOLO v1.0.4.
 
@@ -812,9 +812,13 @@ def import_cryolo_v1_0_4(name, directory_name, image=True, extension='box'):
     """
     placeholder = '*'
 
-    files_box = np.array(
-        glob.glob(os.path.join(directory_name, '{0}.{1}'.format(placeholder, extension)))
-        )
+    box_files = glob.glob(os.path.join(directory_name, '{0}.{1}'.format(placeholder, 'box')))
+    extension = 'box'
+    if not box_files:
+        extension = 'txt'
+        box_files = glob.glob(os.path.join(directory_name, '{0}.{1}'.format(placeholder, 'txt')))
+
+    files_box = np.array(box_files)
     useable_files_box = []
     for file_name in files_box:
         try:
