@@ -20,6 +20,45 @@
 import xml.etree.ElementTree as et
 import re
 
+level_dict = {
+    'level 0': {
+        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}AccelerationVoltage': [],
+        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}ExposureTime': [],
+        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}PreExposureTime': [],
+        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}PreExposurePauseTime': [],
+        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}ApplicationSoftware': [],
+        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}ApplicationSoftwareVersion': [],
+        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}ComputerName': [],
+        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}InstrumentID': [],
+        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}InstrumentModel': [],
+        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}InstrumentID': [],
+        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}Defocus': [],
+        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}Intensity': [],
+        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}acquisitionDateTime': [],
+        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}NominalMagnification': [],
+        },
+    'level 1': {
+        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}Binning': ['x', 'y'],
+        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}ReadoutArea': ['height', 'width'],
+        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}Position': ['A', 'B', 'X', 'Y', 'Z'],
+        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}ImageShift': ['_x', '_y'],
+        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}BeamShift': ['_x', '_y'],
+        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}BeamTilt': ['_x', '_y'],
+        },
+    'level 3': {
+        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}SpatialScale': ['numericValue'],
+        }
+    }
+
+
+def get_key_without_prefix(key):
+    xml_key_pattern = re.compile(r'.*{.*}(.*)')
+    try:
+        return_key = xml_key_pattern.match(key).group(1)
+    except AttributeError:
+        return_key = key
+    return return_key.strip().strip('_')
+
 
 def get_all_key_value(node, data_dict):
     findall_name_key = '{http://schemas.microsoft.com/2003/10/Serialization/Arrays}Key'
@@ -54,29 +93,44 @@ def get_all_key_value(node, data_dict):
         pass
 
 
-def get_level_1_xml(node, search_keys, data_dict, xml_key_pattern):
-    key_1 = xml_key_pattern.match(node.tag).group(1).strip().strip('_')
-    for child in node:
-        key_2 = xml_key_pattern.match(child.tag).group(1).strip().strip('_')
-        key = '_'.join([key_1, key_2])
-        for key_check in search_keys:
-            if key_check in child.tag:
-                data_dict[key] = child.text.strip()
+def get_level_0_xml(node, key, search_keys, data_dict):
+    if key == node.tag:
+        dict_key = get_key_without_prefix(node.tag)
+        if node.text:
+            data_dict[dict_key] = node.text.strip()
+    else:
+        pass
 
 
-def get_level_3_xml(node, search_keys, data_dict, xml_key_pattern):
-    for child in node:
-        key_1 = xml_key_pattern.match(child.tag).group(1).strip().strip('_')
-        for grand_child in child:
-            key_2 = xml_key_pattern.match(grand_child.tag).group(1).strip().strip('_')
+def get_level_1_xml(node, key, search_keys, data_dict):
+    if key == node.tag:
+        key_1 = get_key_without_prefix(node.tag)
+        for child in node:
+            key_2 = get_key_without_prefix(child.tag)
             key = '_'.join([key_1, key_2])
-            for grand_grand_child in grand_child:
-                for key_check in search_keys:
-                    if key_check in grand_grand_child.tag:
-                        data_dict[key] = grand_grand_child.text.strip()
+            for key_check in search_keys:
+                if key_check in child.tag:
+                    data_dict[key] = child.text.strip()
+    else:
+        pass
 
 
-def recursive_node(node, data_dict, xml_key_pattern):
+def get_level_3_xml(node, key, search_keys, data_dict):
+    if key == node.tag:
+        for child in node:
+            key_1 = get_key_without_prefix(child.tag)
+            for grand_child in child:
+                key_2 = get_key_without_prefix(grand_child.tag)
+                key = '_'.join([key_1, key_2])
+                for grand_grand_child in grand_child:
+                    for key_check in search_keys:
+                        if key_check in grand_grand_child.tag:
+                            data_dict[key] = grand_grand_child.text.strip()
+    else:
+        pass
+
+
+def recursive_node(node, data_dict, level_dict, level_func_dict):
     """
     Find all xml information recursively.
 
@@ -87,64 +141,44 @@ def recursive_node(node, data_dict, xml_key_pattern):
     Returns:
     None - Dictionary will be modified inplace
     """
-    level_0_names = [
-        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}AccelerationVoltage',
-        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}ExposureTime',
-        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}PreExposureTime',
-        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}PreExposurePauseTime',
-        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}ApplicationSoftware',
-        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}ApplicationSoftwareVersion',
-        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}ComputerName',
-        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}InstrumentID',
-        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}InstrumentModel',
-        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}InstrumentID',
-        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}Defocus',
-        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}Intensity',
-        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}acquisitionDateTime',
-        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}NominalMagnification',
-        ]
-    level_1_names = {
-        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}Binning': ['x', 'y'],
-        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}ReadoutArea': ['height', 'width'],
-        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}Position': ['A', 'B', 'X', 'Y', 'Z'],
-        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}ImageShift': ['_x', '_y'],
-        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}BeamShift': ['_x', '_y'],
-        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}BeamTilt': ['_x', '_y'],
-        }
-    level_3_names = {
-        '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}SpatialScale': ['numericValue'],
-        }
 
     get_all_key_value(node, data_dict)
 
-    for key in level_0_names:
-        findall = node.findall(key)
-        for child in findall:
-            key = xml_key_pattern.match(child.tag).group(1).strip().strip('_')
-            if child.text:
-                data_dict[key] = child.text.strip()
-
-    for key in level_1_names:
-        findall = node.findall(key)
-        for child in findall:
-            get_level_1_xml(child, level_1_names[key], data_dict, xml_key_pattern)
-
-    for key in level_3_names:
-        findall = node.findall(key)
-        for child in findall:
-            get_level_3_xml(child, level_3_names[key], data_dict, xml_key_pattern)
-
+    for level_key, level_value in level_dict.items():
+        for key, value in level_value.items():
+            level_func_dict[level_key](
+                node=node,
+                key=level_key,
+                search_keys=value,
+                data_dict=data_dict,
+                )
 
     for child in node:
-        recursive_node(child, data_dict, xml_key_pattern)
+        recursive_node(
+            node=child,
+            data_dict=data_dict,
+            leve_dict=level_dict,
+            level_func_dict=level_func_dict
+            )
 
 
 def read_xml(file_name):
+
+    level_func_dict = {
+        'level 0': get_level_0_xml,
+        'level 1': get_level_1_xml,
+        'level 3': get_level_3_xml,
+        }
+
     tree = et.parse(file_name)
     root = tree.getroot()
-    xml_key_pattern = re.compile(r'.*{.*}(.*)')
     data_dict = {}
-    recursive_node(root, data_dict, xml_key_pattern)
+    recursive_node(
+        node=root,
+        data_dict=data_dict,
+        leve_dict=level_dict,
+        level_func_dict=level_func_dict
+        )
 
     if 'DoseOnCamera' not in data_dict:
         data_dict['DoseOnCamera'] = float(data_dict['Dose']) * float(data_dict['pixelSize_x'])**2
