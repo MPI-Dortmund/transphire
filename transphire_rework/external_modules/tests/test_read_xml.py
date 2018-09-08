@@ -101,3 +101,9 @@ class TestGetAllKeyValue():
         data_dict = {}
         with pytest.raises(AssertionError):
             read_xml.get_all_key_value(root, data_dict)
+
+
+class TestGetLevel1Xml():
+
+    def test_should_return_zero(self):
+        pass
