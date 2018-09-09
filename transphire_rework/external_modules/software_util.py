@@ -24,6 +24,43 @@ import subprocess
 import traceback as tb
 
 
+def get_xml_keys__epu():
+    level_dict = {
+        'key_value': {
+            '{http://schemas.microsoft.com/2003/10/Serialization/Arrays}Key': \
+                '{http://schemas.microsoft.com/2003/10/Serialization/Arrays}Value'
+            },
+        'level 0': {
+            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}AccelerationVoltage': [],
+            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}ExposureTime': [],
+            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}PreExposureTime': [],
+            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}PreExposurePauseTime': [],
+            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}ApplicationSoftware': [],
+            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}ApplicationSoftwareVersion': [],
+            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}ComputerName': [],
+            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}InstrumentID': [],
+            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}InstrumentModel': [],
+            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}InstrumentID': [],
+            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}Defocus': [],
+            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}Intensity': [],
+            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}acquisitionDateTime': [],
+            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}NominalMagnification': [],
+            },
+        'level 1': {
+            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}Binning': ['x', 'y'],
+            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}ReadoutArea': ['height', 'width'],
+            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}Position': ['A', 'B', 'X', 'Y', 'Z'],
+            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}ImageShift': ['_x', '_y'],
+            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}BeamShift': ['_x', '_y'],
+            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}BeamTilt': ['_x', '_y'],
+            },
+        'level 3': {
+            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}SpatialScale': ['numericValue'],
+            }
+        }
+
+
+
 def get_meta_xml__epu_18_falcon2(root_name):
     """
     Extract time and grid information from the root_name string.
