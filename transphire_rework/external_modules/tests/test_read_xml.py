@@ -907,8 +907,61 @@ class TestReadXML():
 
         assert data_dict == return_dict
 
-    def test_epu_1_9_falcon_should_return_filled_dict(self, level_dict):
-        file_name = os.path.join(THIS_DIR, "xml_epu_1_9_falcon.xml")
+    def test_epu_1_11_falcon_should_return_filled_dict(self, level_dict):
+        file_name = os.path.join(THIS_DIR, "xml_epu_1_11_falcon.xml")
+        data_dict = read_xml.read_xml(file_name, level_dict)
+
+        return_dict = {
+            'DoseOnCamera': '369.58234062113087',
+            'Dose': '2.4137967554022204E+22',
+            'PhasePlateUsed': 'false',
+            'AppliedDefocus': '-1.8E-06',
+            'CetaFramesSummed': '1',
+            'CetaNoiseReductionEnabled': 'false',
+            'ElectronCountingEnabled': 'false',
+            'AlignIntegratedImageEnabled': 'false',
+            'SuperResolutionFactor': '1',
+            'NumberOffractions': '119',
+            'FramesPerFraction': '1',
+            'AccelerationVoltage': '200000',
+            'camera_ExposureTime': '2.99076',
+            'camera_PreExposureTime': '0',
+            'camera_PreExposurePauseTime': '0',
+            'ApplicationSoftware': 'Fei EPU',
+            'ApplicationSoftwareVersion': '1.5.1.50',
+            'ComputerName': 'TALOS-9950416',
+            'InstrumentModel': 'TALOS-9950416',
+            'InstrumentID': '9950416',
+            'Defocus': '-1.7465633364799447E-06',
+            'Intensity': '0.42227506866503856',
+            'acquisitionDateTime': '2018-08-27T18:15:57.2721016+02:00',
+            'NominalMagnification': '120000',
+            'Binning_x': '1',
+            'Binning_y': '1',
+            'ReadoutArea_height': '4096',
+            'ReadoutArea_width': '4096',
+            'Position_A': '9.19453108501629E-05',
+            'Position_B': '0',
+            'Position_X': '7.5287520000000022E-05',
+            'Position_Y': '-2.8958801999999861E-05',
+            'Position_Z': '4.3042649999999983E-05',
+            'ImageShift_x': '0',
+            'ImageShift_y': '0',
+            'BeamShift_x': '0.014924436807632446',
+            'BeamShift_y': '-0.0010031891288235784',
+            'BeamTilt_x': '0.027286317199468613',
+            'BeamTilt_y': '0.0871329978108406',
+            'offset_x': '0',
+            'offset_y': '0',
+            'pixelSize_x': '1.237386165753307E-10',
+            'pixelSize_y': '1.237386165753307E-10',
+            'BinaryResult.Detector': 'BM-Falcon',
+            }
+
+        assert data_dict == return_dict
+
+    def test_epu_1_11_falcon_vpp_should_return_filled_dict(self, level_dict):
+        file_name = os.path.join(THIS_DIR, "xml_epu_1_11_falcon_vpp.xml")
         data_dict = read_xml.read_xml(file_name, level_dict)
 
         return_dict = {
