@@ -32,7 +32,6 @@ def get_xml_keys__epu():
             },
         'level 0': {
             '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}AccelerationVoltage': [],
-            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}ExposureTime': [],
             '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}PreExposureTime': [],
             '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}PreExposurePauseTime': [],
             '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}ApplicationSoftware': [],
@@ -47,6 +46,7 @@ def get_xml_keys__epu():
             '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}NominalMagnification': [],
             },
         'level 1': {
+            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}camera': ['ExposureTime'],
             '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}Binning': ['x', 'y'],
             '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}ReadoutArea': ['height', 'width'],
             '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}Position': ['A', 'B', 'X', 'Y', 'Z'],

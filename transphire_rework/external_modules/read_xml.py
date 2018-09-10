@@ -92,7 +92,7 @@ def get_level_1_xml(node, key, search_keys, data_dict):
             key_2 = get_key_without_prefix(child.tag)
             combined_key = '_'.join([key_1, key_2])
             for key_check in search_keys_no_prefix:
-                if key_check in key_2:
+                if key_check == key_2:
                     add_to_dict(data_dict, combined_key, child.text)
     else:
         pass
@@ -109,7 +109,7 @@ def get_level_3_xml(node, key, search_keys, data_dict):
                 for grand_grand_child in grand_child:
                     test_tag = get_key_without_prefix(grand_grand_child.tag)
                     for key_check in search_keys_no_prefix:
-                        if key_check in test_tag:
+                        if key_check == test_tag:
                             add_to_dict(data_dict, key, grand_grand_child.text)
     else:
         pass
@@ -163,8 +163,5 @@ def read_xml(file_name, level_dict):
         level_dict=level_dict,
         level_func_dict=level_func_dict
         )
-
-    if 'DoseOnCamera' not in data_dict:
-        data_dict['DoseOnCamera'] = float(data_dict['Dose']) * float(data_dict['pixelSize_x'])**2
 
     return data_dict

@@ -17,9 +17,13 @@
 """
 
 
+import os
 import xml.etree.ElementTree as et
 import pytest
 from .. import read_xml
+
+
+THIS_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
 class TestGetAllKeyValue():
@@ -811,3 +815,250 @@ class TestRecursiveNode():
         read_xml.recursive_node(root, data_dict, level_dict, level_func_dict)
 
         assert data_dict == {'sub_level_3_1_sub_level_3_2': 'sub_level_3_3'}
+
+
+class TestReadXML():
+
+    @pytest.fixture(scope='class')
+    def level_dict(self):
+        level_dict = {
+            'key_value': {
+                '{http://schemas.microsoft.com/2003/10/Serialization/Arrays}Key': \
+                    '{http://schemas.microsoft.com/2003/10/Serialization/Arrays}Value'
+                },
+            'level 0': {
+                '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}AccelerationVoltage': [],
+                '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}ApplicationSoftware': [],
+                '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}ApplicationSoftwareVersion': [],
+                '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}ComputerName': [],
+                '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}InstrumentID': [],
+                '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}InstrumentModel': [],
+                '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}InstrumentID': [],
+                '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}Defocus': [],
+                '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}Intensity': [],
+                '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}acquisitionDateTime': [],
+                '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}NominalMagnification': [],
+                },
+            'level 1': {
+                '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}camera': ['ExposureTime', 'PreExposureTime', 'PreExposurePauseTime'],
+                '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}Binning': ['x', 'y'],
+                '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}ReadoutArea': ['height', 'width'],
+                '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}Position': ['A', 'B', 'X', 'Y', 'Z'],
+                '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}ImageShift': ['_x', '_y'],
+                '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}BeamShift': ['_x', '_y'],
+                '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}BeamTilt': ['_x', '_y'],
+                },
+            'level 3': {
+                '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}SpatialScale': ['numericValue'],
+                }
+            }
+            
+        return level_dict
+
+    def test_epu_1_8_falcon_should_return_filled_dict(self, level_dict):
+        file_name = os.path.join(THIS_DIR, "xml_epu_1_8_falcon_2.xml")
+        data_dict = read_xml.read_xml(file_name, level_dict)
+
+        return_dict = {
+            'DoseOnCamera': '2777.1328318769706',
+            'Dose': '1.310205842097034E+23',
+            'PhasePlateUsed': 'false',
+            'AppliedDefocus': '-1.2E-06',
+            'CetaFramesSummed': '1',
+            'CetaNoiseReductionEnabled': 'true',
+            'ElectronCountingEnabled': 'false',
+            'AlignIntegratedImageEnabled': 'false',
+            'SuperResolutionFactor': '1',
+            'NumberOffractions': '30',
+            'FramesPerFraction': '1',
+            'AccelerationVoltage': '300000',
+            'camera_ExposureTime': '1.49538',
+            'camera_PreExposureTime': '0',
+            'camera_PreExposurePauseTime': '0',
+            'ApplicationSoftware': 'Fei EPU',
+            'ApplicationSoftwareVersion': '1.0.2.24',
+            'ComputerName': 'TITAN52334050',
+            'InstrumentModel': 'TITAN52334050',
+            'InstrumentID': '3405',
+            'Defocus': '-5.3518729175058636E-06',
+            'Intensity': '0',
+            'acquisitionDateTime': '2018-07-26T10:10:09.2386864+02:00',
+            'NominalMagnification': '47000',
+            'Binning_x': '1',
+            'Binning_y': '1',
+            'ReadoutArea_height': '4096',
+            'ReadoutArea_width': '4096',
+            'Position_A': '-0.00025304174054',
+            'Position_B': '0.01758816',
+            'Position_X': '0.0004230068863',
+            'Position_Y': '0.00038534540800000004',
+            'Position_Z': '-0.0002004311951728',
+            'ImageShift_x': '0',
+            'ImageShift_y': '0',
+            'BeamShift_x': '0.00057684897910803556',
+            'BeamShift_y': '-0.0053513972088694572',
+            'BeamTilt_x': '0.022405700758099556',
+            'BeamTilt_y': '-0.052897602319717407',
+            'offset_x': '0',
+            'offset_y': '0',
+            'pixelSize_x': '1.4558899918970525E-10',
+            'pixelSize_y': '1.4558899918970525E-10',
+            }
+
+        assert data_dict == return_dict
+
+    def test_epu_1_9_falcon_should_return_filled_dict(self, level_dict):
+        file_name = os.path.join(THIS_DIR, "xml_epu_1_9_falcon.xml")
+        data_dict = read_xml.read_xml(file_name, level_dict)
+
+        return_dict = {
+            'DoseOnCamera': '369.58234062113087',
+            'Dose': '2.4137967554022204E+22',
+            'PhasePlateUsed': 'false',
+            'AppliedDefocus': '-1.8E-06',
+            'CetaFramesSummed': '1',
+            'CetaNoiseReductionEnabled': 'false',
+            'ElectronCountingEnabled': 'false',
+            'AlignIntegratedImageEnabled': 'false',
+            'SuperResolutionFactor': '1',
+            'NumberOffractions': '119',
+            'FramesPerFraction': '1',
+            'AccelerationVoltage': '200000',
+            'camera_ExposureTime': '2.99076',
+            'camera_PreExposureTime': '0',
+            'camera_PreExposurePauseTime': '0',
+            'ApplicationSoftware': 'Fei EPU',
+            'ApplicationSoftwareVersion': '1.5.1.50',
+            'ComputerName': 'TALOS-9950416',
+            'InstrumentModel': 'TALOS-9950416',
+            'InstrumentID': '9950416',
+            'Defocus': '-1.7465633364799447E-06',
+            'Intensity': '0.42227506866503856',
+            'acquisitionDateTime': '2018-08-27T18:15:57.2721016+02:00',
+            'NominalMagnification': '120000',
+            'Binning_x': '1',
+            'Binning_y': '1',
+            'ReadoutArea_height': '4096',
+            'ReadoutArea_width': '4096',
+            'Position_A': '9.19453108501629E-05',
+            'Position_B': '0',
+            'Position_X': '7.5287520000000022E-05',
+            'Position_Y': '-2.8958801999999861E-05',
+            'Position_Z': '4.3042649999999983E-05',
+            'ImageShift_x': '0',
+            'ImageShift_y': '0',
+            'BeamShift_x': '0.014924436807632446',
+            'BeamShift_y': '-0.0010031891288235784',
+            'BeamTilt_x': '0.027286317199468613',
+            'BeamTilt_y': '0.0871329978108406',
+            'offset_x': '0',
+            'offset_y': '0',
+            'pixelSize_x': '1.237386165753307E-10',
+            'pixelSize_y': '1.237386165753307E-10',
+            'BinaryResult.Detector': 'BM-Falcon',
+            }
+
+        assert data_dict == return_dict
+
+    def test_epu_1_8_k2_should_return_filled_dict(self, level_dict):
+        file_name = os.path.join(THIS_DIR, "xml_epu_1_8_k2.xml")
+        data_dict = read_xml.read_xml(file_name, level_dict)
+
+        return_dict = {
+            'Dose': '4.4034254472809153E+21',
+            'PhasePlateUsed': 'false',
+            'AppliedDefocus': '-2E-06',
+            'CetaFramesSummed': '1',
+            'CetaNoiseReductionEnabled': 'false',
+            'ElectronCountingEnabled': 'true',
+            'AlignIntegratedImageEnabled': 'false',
+            'SuperResolutionFactor': '1',
+            'NumberOffractions': '40',
+            'FramesPerFraction': '1',
+            'AccelerationVoltage': '300000',
+            'camera_ExposureTime': '10',
+            'camera_PreExposureTime': '0',
+            'camera_PreExposurePauseTime': '0',
+            'ApplicationSoftware': 'Fei EPU',
+            'ApplicationSoftwareVersion': '1.0.2.24',
+            'ComputerName': 'TITAN52334050',
+            'InstrumentModel': 'TITAN52334050',
+            'InstrumentID': '3405',
+            'Defocus': '-4.1145761222574709E-06',
+            'Intensity': '0',
+            'acquisitionDateTime': '2018-07-27T15:03:51.422415+02:00',
+            'NominalMagnification': '105000',
+            'Binning_x': '1',
+            'Binning_y': '1',
+            'ReadoutArea_height': '3838',
+            'ReadoutArea_width': '3710',
+            'Position_A': '-0.00049735790382',
+            'Position_B': '0.01758816',
+            'Position_X': '0.0001011122438',
+            'Position_Y': '0.00018212982400000002',
+            'Position_Z': '7.69634926848E-05',
+            'ImageShift_x': '0',
+            'ImageShift_y': '0',
+            'BeamShift_x': '0',
+            'BeamShift_y': '0',
+            'BeamTilt_x': '0.022405700758099556',
+            'BeamTilt_y': '-0.052897602319717407',
+            'offset_x': '0',
+            'offset_y': '0',
+            'pixelSize_x': '1.1202724164993683E-10',
+            'pixelSize_y': '1.1202724164993683E-10',
+            }
+
+        assert data_dict == return_dict
+
+    def test_epu_1_9_k2_should_return_filled_dict(self, level_dict):
+        file_name = os.path.join(THIS_DIR, "xml_epu_1_9_k2.xml")
+        data_dict = read_xml.read_xml(file_name, level_dict)
+
+        return_dict = {
+            'Dose': '5.0949700264944667E+21',
+            'PhasePlateUsed': 'true',
+            'AppliedDefocus': '-5E-07',
+            'CetaFramesSummed': '1',
+            'CetaNoiseReductionEnabled': 'false',
+            'ElectronCountingEnabled': 'true',
+            'AlignIntegratedImageEnabled': 'false',
+            'SuperResolutionFactor': '1',
+            'NumberOffractions': '50',
+            'FramesPerFraction': '1',
+            'AccelerationVoltage': '300000',
+            'camera_ExposureTime': '15',
+            'camera_PreExposureTime': '0',
+            'camera_PreExposurePauseTime': '0',
+            'ApplicationSoftware': 'Fei EPU',
+            'ApplicationSoftwareVersion': '1.2.0.16',
+            'ComputerName': 'TITAN52337040',
+            'InstrumentModel': 'TITAN52337040',
+            'InstrumentID': '3704',
+            'Defocus': '-4.8596167414599369E-06',
+            'Intensity': '0.41315126103110034',
+            'acquisitionDateTime': '2018-09-06T18:53:08.3688571+02:00',
+            'NominalMagnification': '130000',
+            'Binning_x': '1',
+            'Binning_y': '1',
+            'ReadoutArea_height': '3838',
+            'ReadoutArea_width': '3710',
+            'Position_A': '0.00017930847697997243',
+            'Position_B': '0.0169176125',
+            'Position_X': '3.8876719700000088E-05',
+            'Position_Y': '0.00054299326400000022',
+            'Position_Z': '-0.00012699411581439991',
+            'ImageShift_x': '0',
+            'ImageShift_y': '0',
+            'BeamShift_x': '-0.011826804839074612',
+            'BeamShift_y': '0.0073098903521895409',
+            'BeamTilt_x': '-0.034887045621871948',
+            'BeamTilt_y': '0.036312207579612732',
+            'offset_x': '0',
+            'offset_y': '0',
+            'pixelSize_x': '1.0732100624855079E-10',
+            'pixelSize_y': '1.0732100624855079E-10',
+            }
+
+        assert data_dict == return_dict
+
