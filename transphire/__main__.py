@@ -198,6 +198,9 @@ def check_update():
         print('Could not check for updates! Please check your internet connection or for erros in the command:  {0}'.format(version_string))
         print('If you have questions, please contact the TranSPHIRE authors.')
     else:
+        if current_version == 'XX.XX.XX':
+            print('Available version: {0}'.format(latest_version))
+            return None
         print('Current version: {0} -- Available version: {1}'.format(current_version, latest_version))
         vers_1, vers_2, vers_3 = current_version.split('.')
         latest_vers_1, latest_vers_2, latest_vers_3 = latest_version.split('.')
