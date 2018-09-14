@@ -1,6 +1,7 @@
 import pkg_resources
 from pkg_resources import get_distribution
 import os
+import re
 
 try:
     _dist = get_distribution('transphire')
@@ -16,6 +17,8 @@ except pkg_resources.DistributionNotFound:
         transphire = re.search(r'(transphire==[0-9\.]*)', pip_output)
         __version__ = transphire.group(1).split('==')[1]
     except:
-        __version__ = 'Please install this project with setup.py'
+        __version__ = 'XX.XX.XX'
+        print('Could not find version number! Please install this project with setup.py!')
+        print('Use: "pip freeze" to find the transphire version')
 else:
     __version__ = _dist.version
