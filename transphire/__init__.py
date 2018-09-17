@@ -1,5 +1,6 @@
 import pkg_resources
 from pkg_resources import get_distribution
+import sys
 import os
 import re
 
@@ -13,7 +14,7 @@ try:
         raise pkg_resources.DistributionNotFound
 except pkg_resources.DistributionNotFound:
     try:
-        pip_path = '{0}/../../../../../bin/pip'.format(os.path.dirname(here))
+        pip_path = '{0}/pip'.format([path for path in sys.path if '/bin' in path][0])
         pip_output = os.popen('{0} freeze'.format(pip_path)).read()
         transphire = re.search(r'(transphire==[0-9\.]*)', pip_output)
         __version__ = transphire.group(1).split('==')[1]
