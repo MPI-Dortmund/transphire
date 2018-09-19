@@ -86,28 +86,4 @@ A more detailed tutorial will be available soon.
 
 ## FAQ
 
-* SPHIRE, crYOLO, and EMAN do use python 2, but TranSPHIRE uses python 3.
-Do I need to combine the environments somehow to use those within TranSPHIRE?
-
-> No you do not need to combine the environments if you use anaconda for the installation.
-> Anaconda is dealing with different environments in a smart way, so we do not need to worry about it.
-> 
-> Short explanation:
-> The first line of a program starting with #! is called the shebang line.
-> In case a program is directly executed without further specification of the interpreter, i.e. ./program.py instead of python program.py, the interpreter specified in the shebang line is used.
-> 
-> Conda and pip inside of conda make sure that the shebang line of the installed program is set correctly to the python version of the current environment, including the correct linkage of installed packages and dependencies.
-> 
-> For example:
-> head -n 1 /home/em-transfer-user/applications/miniconda/v3.6.5/envs/transphire/bin/transphire
-> #!/home/em-transfer-user/applications/miniconda/v3.6.5/envs/transphire/bin/python
-> 
-> head -n 1 /home/em-transfer-user/applications/miniconda/v3.6.5/envs/cryolo/bin/cryolo_predict.py
-> #!/home/em-transfer-user/applications/miniconda/v3.6.5/envs/cryolo/bin/python
-> 
-> head -n 1 /home/em-transfer-user/applications/sphire/v1.1/bin/sxcter.py
-> #!/home/em-transfer-user/applications/sphire/v1.1/bin/python
->
-> Therefore, just providing the absolute path to the executable in the Path Tab of TranSPHIRE will make the program work.
->
-> However, if the shebang line is not present or is pointing to another location, e.g. #!/usr/local/env python, (Might happen during the source code installation of SPHIRE/EMAN2), the line should be adjusted to point to the correct python version.
+Please refere to this link: [https://github.com/MPI-Dortmund/transphire/wiki/FAQ](https://github.com/MPI-Dortmund/transphire/wiki/FAQ)
