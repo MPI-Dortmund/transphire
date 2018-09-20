@@ -1,6 +1,8 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1419991.svg)](https://doi.org/10.5281/zenodo.1419991)
 
+A tutorial is available in the wiki.
 
+[Wiki](https://github.com/MPI-Dortmund/transphire/wiki)
 
 
 # Transphire
