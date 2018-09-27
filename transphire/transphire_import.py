@@ -422,9 +422,7 @@ def import_ctffind_v4_1_8(name, directory_name):
             if entry == 'defocus_1':
                 data[idx]['defocus'] = (data_name['defocus_1']+data_name['defocus_2'])/2
             elif entry == 'defocus_2':
-                data[idx]['defocus_diff'] = np.abs(
-                    data_name['defocus_1']-data_name['defocus_2']
-                    )
+                data[idx]['defocus_diff'] = data_name['defocus_2']-data_name['defocus_1']
             elif entry == 'phase_shift':
                 data[idx][entry] = np.degrees(data_name[entry])
             else:
@@ -547,9 +545,7 @@ def import_gctf_v1_06(name, directory_name):
                     data[idx][transphire_name] = 0
             elif transphire_name == 'defocus_2':
                 try:
-                    data[idx]['defocus_diff'] = np.abs(
-                        data_name['_rlnDefocusU']-data_name['_rlnDefocusV']
-                        )
+                    data[idx]['defocus_diff'] = data_name['_rlnDefocusV']-data_name['_rlnDefocusU']
                 except ValueError:
                     data[idx][transphire_name] = 0
             else:
