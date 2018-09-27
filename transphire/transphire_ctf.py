@@ -625,7 +625,7 @@ def to_partres_file(data, ctf_name, ctf_settings, project_folder, ctf_folder, su
                 elif name == 'defocus':
                     value = (row['defocus_1'] + row['defocus_2']) / 20000
                 elif name == 'astigmatism_amplitude':
-                    value = np.abs(row['defocus_1'] - row['defocus_2']) / 10000
+                    value = np.abs(-row['defocus_1'] + row['defocus_2']) / 10000
                 elif name == 'astigmatism_angle':
                     value = 45 - row['astigmatism']
                 elif name == 'limit_defocus_and_astigmatism':
