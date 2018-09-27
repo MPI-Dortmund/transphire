@@ -524,7 +524,7 @@ def to_star_file(data, ctf_name, ctf_settings, project_folder, ctf_folder, sum_f
                 continue
 
             elif name == 'defocus':
-                value = (1 * row['defocus_diff'] + 2 * row['defocus']) / 2
+                value = (-1 * row['defocus_diff'] + 2 * row['defocus']) / 2
             elif name == 'defocus_diff':
                 value = 2 * row['defocus'] - export_data[idx]['defocus']
             else:
@@ -625,7 +625,7 @@ def to_partres_file(data, ctf_name, ctf_settings, project_folder, ctf_folder, su
                 elif name == 'defocus':
                     value = (row['defocus_1'] + row['defocus_2']) / 20000
                 elif name == 'astigmatism_amplitude':
-                    value = np.abs(row['defocus_1'] - row['defocus_2']) / 10000
+                    value = (-row['defocus_1'] + row['defocus_2']) / 10000
                 elif name == 'astigmatism_angle':
                     value = 45 - row['astigmatism']
                 elif name == 'limit_defocus_and_astigmatism':
