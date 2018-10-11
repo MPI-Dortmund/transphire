@@ -28,7 +28,7 @@ import pandas as pd
 import transphire_transform as tt
 
 
-def get_xml_keys__1_8() -> typing.Dict[str, typing.Dict[str, typing.List[str]]]:
+def get_xml_keys() -> typing.Dict[str, typing.Dict[str, typing.List[str]]]:
     """
     Get the xml keys to find the related objects.
 
@@ -46,7 +46,7 @@ def get_xml_keys__1_8() -> typing.Dict[str, typing.Dict[str, typing.List[str]]]:
     shared_object = 'http://schemas.datacontract.org/2004/07/Fei.SharedObjects'
     level_dict = {
         'key_value': {
-            '{{{0}}}Key'.format(arrays): ['{{{0}}}Value'],
+            '{{{0}}}Key'.format(arrays): ['{{{0}}}Value'.format(arrays)],
             },
         'level 0': {
             '{{{0}}}AccelerationVoltage'.format(shared_object): [],
@@ -78,7 +78,7 @@ def get_xml_keys__1_8() -> typing.Dict[str, typing.Dict[str, typing.List[str]]]:
     return level_dict
 
 
-def extract_gridsquare_and_spotid__1_8_falcon(file_path: str) -> pd.DataFrame:
+def extract_gridsquare_and_spotid__1_8(file_path: str) -> pd.DataFrame:
     """
     Extract the gridsquare number and the spot id from the file name.
 
@@ -88,15 +88,40 @@ def extract_gridsquare_and_spotid__1_8_falcon(file_path: str) -> pd.DataFrame:
     Returns:
     Pandas data frame containing the information.
     """
-    gridsquare: str
-    basename
+    match_pattern: typing.Optional[typing.Match[str]]
+    group_dict: typing.Dict[str, str]
 
-    dirnames, basename = os.path.split(file_path)
-    grid_number = grid.split('_')[1]
-    *_, hole, _, spot1, spot2, date, time = old_file.split('_')
+    match_pattern = re.match(
+        ''.join([
+            r'.*/GridSquare_(?P<GridSquare>[0-9]+)/Data/FoilHole_(?P<HoleNumber>[0-9]+)_Data_',
+            r'(?P<SpotNumber>[0-9]+_[0-9]+)_(?P<Date>[0-9]+)_(?P<Time>[0-9]+).*',
+            ]),
+        file_path
+        )
+    if match_pattern:
+        group_dict = match_pattern.groupdict()
+    else:
+        match_pattern = re.match(
+            ''.join([
+                r'.*/FoilHole_(?P<HoleNumber>[0-9]+)_Data_',
+                r'(?P<SpotNumber>[0-9]+_[0-9]+)_(?P<Date>[0-9]+)_(?P<Time>[0-9]+).*',
+                ]),
+            file_path
+            )
+        if match_pattern:
+            group_dict = match_pattern.groupdict()
+        else:
+            group_dict = {}
+    for key, value in group_dict.items():
+        group_dict[key] = int(''.join(value.split('_')))
+
+    return pd.DataFrame(group_dict, index=[0])
 
 
-def get_meta_data__1_8_falcon(root_name: str, xml_file: str) -> pd.DataFrame:
+def get_meta_data__1_8(
+        file_name: typing.Optional[str]=None,
+        xml_file: typing.Optional[str]=None,
+    ) -> pd.DataFrame:
     """
     Extract time and grid information from the root_name string.
 
@@ -108,36 +133,40 @@ def get_meta_data__1_8_falcon(root_name: str, xml_file: str) -> pd.DataFrame:
     """
     xml_data: pd.DataFrame
     file_data: pd.DataFrame
+    data_list: typing.List[pd.DataFrame]
 
-    xml_data = tt.load_xml(file_name=xml_file, get_xml_keys__1_8())
-    file_data = extract_gridsquare_and_spotid__1_8_falcon(root_name)
-    return pd.concat([xml_data, file_data], axis=1)
+    data_list = []
+    if xml_file is not None:
+        data_list.append(tt.load_xml(file_name=xml_file, level_dict=get_xml_keys()))
+    if file_name is not None:
+        data_list.append(extract_gridsquare_and_spotid__1_8(file_name))
+    return pd.concat(data_list, axis=1)
 
 
-def get_frames__1_8_falcon(compare_name: str, extension: str) -> typing.List[str]:
+def get_movie__1_8_falcon(
+        compare_name: str,
+    ) -> typing.List[str]:
     """
     Find the fractions for falcon EPU version 1.8
 
     Arguments:
     compare_name - Part of the name that is used for comparison
-    extension - File extension of the frames
 
     Returns:
-    List of found movies
+    List of found movie files
     """
-    frames: typing.List[str]
+    fraction_file: typing.List[str]
 
-    frames = glob.glob(
-        '{0}*_Fractions.{1}'.format(
-            compare_name,
-            extension
-            )
-        )
-    return frames
+    fraction_file = [
+        entry
+        for entry in glob.glob('{0}_Fractions.*'.format(compare_name))
+        if '.xml' not in entry
+        ]
+    return fraction_file
 
 
 def get_number_of_frames__1_8_falcon(
-        frames: typing.List[str],
+        frames_list: typing.List[str],
         command: str,
         expected_nr_frames: int
     ) -> typing.Tuple[typing.Optional[str], typing.Optional[bool]]:

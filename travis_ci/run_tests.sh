@@ -86,7 +86,7 @@ function my_pytest {
     echo "##############"
     echo
     rm -r OUTPUT_TEST_FOLDER
-    pytest --cov=transphire_transform --cov-report term-missing -s
+    pytest --cov=transphire --cov-report term-missing -s
     return ${?}
 }
 
