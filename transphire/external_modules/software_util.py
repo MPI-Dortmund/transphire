@@ -25,7 +25,7 @@ import traceback as tb
 import typing
 
 
-def get_xml_keys__epu() -> typing.Dict[typing.Dict[str, typing.List[str]]]:
+def get_xml_keys__epu() -> typing.Dict[str, typing.Dict[str, typing.List[str]]]:
     """
     Get the xml keys to find the related objects.
 
@@ -37,7 +37,7 @@ def get_xml_keys__epu() -> typing.Dict[typing.Dict[str, typing.List[str]]]:
     """
     arrays: str
     shared_object: str
-    level_dict: typing.Dict[typing.Dict[str, typing.List[str]]]
+    level_dict: typing.Dict[str, typing.Dict[str, typing.List[str]]]
 
     arrays = 'http://schemas.microsoft.com/2003/10/Serialization/Arrays'
     shared_object = 'http://schemas.datacontract.org/2004/07/Fei.SharedObjects'

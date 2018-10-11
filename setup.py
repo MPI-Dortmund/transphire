@@ -18,7 +18,7 @@
 
 
 import os
-import setuptools
+import setuptools # type: ignore
 
 
 THIS_FILE = os.path.abspath(os.path.dirname(__file__))
