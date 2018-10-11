@@ -24,8 +24,11 @@ import subprocess
 import traceback as tb
 import typing
 
+import pandas as pd
+import transphire_transform as tt
 
-def get_xml_keys__epu() -> typing.Dict[str, typing.Dict[str, typing.List[str]]]:
+
+def get_xml_keys__1_8() -> typing.Dict[str, typing.Dict[str, typing.List[str]]]:
     """
     Get the xml keys to find the related objects.
 
@@ -75,8 +78,25 @@ def get_xml_keys__epu() -> typing.Dict[str, typing.Dict[str, typing.List[str]]]:
     return level_dict
 
 
+def extract_gridsquare_and_spotid__1_8_falcon(file_path: str) -> pd.DataFrame:
+    """
+    Extract the gridsquare number and the spot id from the file name.
 
-def get_meta_xml__epu_18_falcon2(root_name: str) -> typing.Tuple[str, ...]:
+    Arguments:
+    file_path - File path of the movie or frame file
+
+    Returns:
+    Pandas data frame containing the information.
+    """
+    gridsquare: str
+    basename
+
+    dirnames, basename = os.path.split(file_path)
+    grid_number = grid.split('_')[1]
+    *_, hole, _, spot1, spot2, date, time = old_file.split('_')
+
+
+def get_meta_data__1_8_falcon(root_name: str, xml_file: str) -> pd.DataFrame:
     """
     Extract time and grid information from the root_name string.
 
@@ -86,22 +106,15 @@ def get_meta_xml__epu_18_falcon2(root_name: str) -> typing.Tuple[str, ...]:
     Returns:
     hole, grid_number, spot1, spot2, date, time
     """
-    grid: str
-    hole: str
-    spot1: str
-    spot2: str
-    date: str
-    time: str
-    old_file: str
-    grid_number: str
+    xml_data: pd.DataFrame
+    file_data: pd.DataFrame
 
-    *_, grid, _, old_file = os.path.realpath(root_name).split('/')
-    grid_number = grid.split('_')[1]
-    *_, hole, _, spot1, spot2, date, time = old_file.split('_')
-    return hole, grid_number, spot1, spot2, date, time
+    xml_data = tt.load_xml(file_name=xml_file, get_xml_keys__1_8())
+    file_data = extract_gridsquare_and_spotid__1_8_falcon(root_name)
+    return pd.concat([xml_data, file_data], axis=1)
 
 
-def get_frames__epu18_falcon2(compare_name: str, extension: str) -> typing.List[str]:
+def get_frames__1_8_falcon(compare_name: str, extension: str) -> typing.List[str]:
     """
     Find the fractions for falcon EPU version 1.8
 
@@ -123,7 +136,7 @@ def get_frames__epu18_falcon2(compare_name: str, extension: str) -> typing.List[
     return frames
 
 
-def get_number_of_frames__epu18_falcon2(
+def get_number_of_frames__1_8_falcon(
         frames: typing.List[str],
         command: str,
         expected_nr_frames: int
@@ -181,35 +194,31 @@ def get_number_of_frames__epu18_falcon2(
     return message, return_value
 
 
-def get_meta_data__epu18_falcon2(
-        frames_root: str,
-        root_name: str,
-        extension: str
-    ) -> typing.Tuple[typing.List[str], str, str]:
+def get_compare_names__1_8_falcon(
+        frames_name: str,
+        meta_name: str,
+    ) -> typing.Tuple[str, str, str]:
     """
     Get the meta data related to the found movies.
 
     Arguments:
-    frames_root - Name of the frames
-    extension - File extension
+    frames_name - Name of the frames/movie file
+    meta_name - Name of the meta file
 
     Returns:
-    List of frames, Compare name for the frames, compare name for the meta
+    Compare name for the frames, compare name for the meta, movie extension
     """
     compare_name_frames: str
     compare_name_meta: str
-    frames: typing.List[str]
+    extension = str
 
-    compare_name_frames = frames_root[:-len('_19911213_2019')]
-    compare_name_meta = root_name[:-len('_19911213_2019')]
-    frames = glob.glob('{0}*_Fractions.{1}'.format(
-        compare_name_frames,
-        extension
-        ))
-    return frames, compare_name_frames, compare_name_meta
+    extension = os.path.splitext(frames_name)[1]
+    compare_name_frames = frames_name[:-len('_19911213_2019')]
+    compare_name_meta = meta_name[:-len('_19911213_2019')]
+    return compare_name_frames, compare_name_meta, extension
 
 
-def get_command__epu18_falcon2() -> str:
+def get_copy_command__1_8_falcon() -> str:
     """
     Get the copy command for the micrographs
 
