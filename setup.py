@@ -8,7 +8,7 @@ with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setuptools.setup(
     name='transphire',
-    version='1.4.5',
+    version='2.0.0',
     description='Automated post data aquisition processing tool',
     long_description=long_description,
     url='https://github.com/mstabrin/transphire',
@@ -23,7 +23,7 @@ setuptools.setup(
             ]
         },
     install_requires = [
-        'numpy>=1.14.0,<1.15.0',
+        'numpy>=1.15.0,<1.16.0',
         'matplotlib>=2.2.0,<2.3.0',
         'pexpect>=4.6.0,<4.7.0',
         'cython>=0.28.0,<0.29.0',
@@ -32,7 +32,7 @@ setuptools.setup(
         'transphire_transform>=0.0.1',
         ],
     classifiers = (
-        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
         'Operating System :: POSIX :: Linux',
         'Environment :: X11 Applications :: Qt',
