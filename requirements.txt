@@ -24,3 +24,4 @@ pytz==2018.5
 six==1.11.0
 typed-ast==1.1.0
 wrapt==1.10.11
+transphire_transform==0.0.1
