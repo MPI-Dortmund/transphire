@@ -19,7 +19,7 @@
 
 import typing
 
-from transphire_transform.dump_load import util
+from transphire_transform.dump_load import util as tt_util
 
 from .acquisition_software import epu
 
@@ -69,17 +69,16 @@ def load_software(
         'EPU': {
             'Falcon': {
                 '1.8': {
-                    'get_meta_data': epu.get_meta_data__1_8_falcon,
-                    'get_frames': epu.get_frames__1_8_falcon,
+                    'get_meta_data': epu.get_meta_data__1_8,
+                    'get_movie': epu.get_movie__1_8_falcon,
                     'get_number_of_frames': epu.get_number_of_frames__1_8_falcon,
-                    'get_compare_names': epu.get_compare_names__1_8_falcon,
                     'get_copy_command': epu.get_copy_command__1_8_falcon,
                     },
                 },
             },
         }
 
-    function_dict = util.extract_function_from_function_dict(
+    function_dict = tt_util.extract_function_from_function_dict(
         function_dict[software][camera],
         version
         )
