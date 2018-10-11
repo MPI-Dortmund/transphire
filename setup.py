@@ -50,6 +50,7 @@ setuptools.setup(
         'telepot>=12.0,<13.0',
         'imageio>=2.3.0,<2.4.0',
         'transphire_transform>=0.0.1',
+        'hyperspy>=1.4',
         ],
     classifiers = (
         'Programming Language :: Python :: 3.7',
