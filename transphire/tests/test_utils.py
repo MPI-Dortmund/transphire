@@ -16,25 +16,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import os
+from .. import utils
 
-import shutil
+class TestCopy:
 
-
-def copy(file_in, file_out):
-    """
-    Copy file_in to a new location file_out.
-
-    If copy2 fails because of permissions, fall back to copyfile.
-
-    Arguments:
-    file_in - Input file
-    file_out - Output file/directory
-
-    Return:
-    None
-    """
-
-    try:
-        shutil.copy2(file_in, file_out)
-    except PermissionError: # pragma: no cover | Cannot be tested on one file system
-        shutil.copyfile(file_in, file_out)
+    def test_no_permission_error_copys_file(self, tmpdir):
+        input_file = tmpdir.join('input_test_no_permission_error_copys_file.txt')
+        output_file = tmpdir.join('output_test_no_permission_error_copys_file.txt')
+        with open(input_file, 'w'):
+            pass
+        utils.copy(input_file, output_file)
+        assert os.path.exists(output_file)
