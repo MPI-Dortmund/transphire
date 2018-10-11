@@ -24,6 +24,7 @@ import subprocess
 import traceback as tb
 import typing
 
+import hyperspy.api as hs
 import pandas as pd
 import transphire_transform as tt
 
@@ -162,65 +163,25 @@ def get_movie__1_8_falcon(
         for entry in glob.glob('{0}_Fractions.*'.format(compare_name))
         if '.xml' not in entry
         ]
-    return fraction_file
+    assert len(fraction_file) == 1
+    return pd.DataFrame({'MicrographMovieName': fraction_file}, index=[0])
 
 
-def get_number_of_frames__1_8_falcon(
-        frames_list: typing.List[str],
-        command: str,
-        expected_nr_frames: int
-    ) -> typing.Tuple[typing.Optional[str], typing.Optional[bool]]:
+def get_number_of_frames__1_8_falcon(data_frame: pd.DataFrame) -> pd.DataFrame:
     """
     Extract the number of frames of the movie.
 
-    Returns True if the expected number of frames matches
-    Returns False if the file does not match or cannot be read
-    Returns None if the expected number of frames does not match
-
     Arguments:
-    frames - List of movies
-    command - Run the command to find the number of frames
-    expected_nr_frames - Expected number of frames
+    data_frame - Pandas data frame containing the MicrographMovieName
 
     Returns:
-    Message in case something goes wrong, Return value
+    None, Modified in-place
     """
-    message: typing.Optional[str]
-    return_value: typing.Optional[bool]
-    output: str
-    number_of_frames: typing.Optional[typing.Match[str]]
+    mic_name: str
 
-    message = None
-    return_value = True
-    try:
-        output = subprocess.check_output([command, frames[0]], encoding='utf-8')
-    except BlockingIOError:
-        message = str(tb.format_exc())
-        return_value = False
-
-    if not return_value:
-        pass
-    elif len(frames) != 1:
-        message = 'File {{0}} has {0} movie files instead of 1\n'.format(
-            len(frames)
-            )
-        return_value = None
-    else:
-        number_of_frames = re.match(
-            r'.*Number of columns, rows, sections .....[ ]+[0-9]+[ ]+[0-9]+[ ]+([0-9]+).*',
-            output
-            )
-        if not number_of_frames:
-            return_value = False
-            message = 'Could not read header of file {0}'.format(frames[0])
-        elif number_of_frames != expected_nr_frames:
-            return_value = None
-            message = 'File {{0}} has {0} frames instead of {1}\n'.format(
-                number_of_frames.group(1),
-                expected_nr_frames
-                )
-
-    return message, return_value
+    mic_name = data_frame['MicrographMovieName'].iloc[0]
+    data_frame['FoundNumberOffractions'] = hs.load(mic_name).axes_manager[0].size
+    return None
 
 
 def get_compare_names__1_8_falcon(

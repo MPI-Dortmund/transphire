@@ -270,14 +270,40 @@ class TestGetMovie_18falcon:
     def test_search_file_mrc_should_return_file_path(self):
         mrc_file = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_mrc', 'FoilHole_983503_Data_984274_984275_20171201_1435_Fractions.mrc')
         compare_name = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_mrc', 'FoilHole_983503_Data_984274_984275_20171201_1435')
-        assert epu.get_movie__1_8_falcon(compare_name) == [mrc_file]
+        assert epu.get_movie__1_8_falcon(compare_name).equals(pd.DataFrame({'MicrographMovieName': mrc_file}, index=[0]))
 
     def test_search_file_tif_should_return_file_path(self):
         tif_file = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_tif', 'FoilHole_983503_Data_984274_984275_20171201_1435_Fractions.tif')
         compare_name = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_tif', 'FoilHole_983503_Data_984274_984275_20171201_1435')
-        assert epu.get_movie__1_8_falcon(compare_name) == [tif_file]
+        assert epu.get_movie__1_8_falcon(compare_name).equals(pd.DataFrame({'MicrographMovieName': tif_file}, index=[0]))
 
     def test_search_file_tiff_should_return_file_path(self):
         tiff_file = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_tiff', 'FoilHole_983503_Data_984274_984275_20171201_1435_Fractions.tiff')
         compare_name = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_tiff', 'FoilHole_983503_Data_984274_984275_20171201_1435')
-        assert epu.get_movie__1_8_falcon(compare_name) == [tiff_file]
+        assert epu.get_movie__1_8_falcon(compare_name).equals(pd.DataFrame({'MicrographMovieName': tiff_file}, index=[0]))
+
+    def test_search_file_tiff_mutli_should_raise_AssertionError(self):
+        compare_name = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_tiff_multi', 'FoilHole_983503_Data_984274_984275_20171201_1435')
+        with pytest.raises(AssertionError):
+            epu.get_movie__1_8_falcon(compare_name)
+
+
+class TestGetNumberOfFrames_18falcon:
+
+    def test_read_mrc_header_returns_9(self):
+        mrc_file = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_mrc', 'FoilHole_983503_Data_984274_984275_20171201_1435_Fractions.mrc')
+        data_frame = pd.DataFrame({'MicrographMovieName': mrc_file}, index=[0])
+        epu.get_number_of_frames__1_8_falcon(data_frame)
+        assert data_frame['FoundNumberOffractions'].iloc[0] == 9
+
+    def test_read_tif_header_returns_9(self):
+        mrc_file = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_tif', 'FoilHole_983503_Data_984274_984275_20171201_1435_Fractions.tif')
+        data_frame = pd.DataFrame({'MicrographMovieName': mrc_file}, index=[0])
+        epu.get_number_of_frames__1_8_falcon(data_frame)
+        assert data_frame['FoundNumberOffractions'].iloc[0] == 9
+
+    def test_read_tiff_header_returns_9(self):
+        mrc_file = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_tiff', 'FoilHole_983503_Data_984274_984275_20171201_1435_Fractions.tiff')
+        data_frame = pd.DataFrame({'MicrographMovieName': mrc_file}, index=[0])
+        epu.get_number_of_frames__1_8_falcon(data_frame)
+        assert data_frame['FoundNumberOffractions'].iloc[0] == 9
