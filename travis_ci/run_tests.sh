@@ -14,7 +14,7 @@ function my_mypy {
     for name in "${file_names[@]}"
     do
         echo ${name}
-        mypy ${name}
+        mypy ${name} --disallow-untyped-defs --check-untyped-defs --disallow-incomplete-defs
         if [[ ${?} != 0 ]]
         then
             error=true
@@ -65,7 +65,7 @@ function my_pylint {
     for name in "${file_names[@]}"
     do
         echo ${name}
-        pylint ${name}
+        pylint ${name} --rcfile=travis_ci/pylint.rc
         if [[ ${?} != 0 ]]
         then
             error=true
