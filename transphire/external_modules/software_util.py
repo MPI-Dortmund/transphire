@@ -22,46 +22,61 @@ import os
 import re
 import subprocess
 import traceback as tb
+import typing
 
 
-def get_xml_keys__epu():
+def get_xml_keys__epu() -> typing.Dict[typing.Dict[str, typing.List[str]]]:
+    """
+    Get the xml keys to find the related objects.
+
+    Arguments:
+    None
+
+    Returns:
+    Dictionary of the important keys and levels
+    """
+    arrays: str
+    shared_object: str
+    level_dict: typing.Dict[typing.Dict[str, typing.List[str]]]
+
+    arrays = 'http://schemas.microsoft.com/2003/10/Serialization/Arrays'
+    shared_object = 'http://schemas.datacontract.org/2004/07/Fei.SharedObjects'
     level_dict = {
         'key_value': {
-            '{http://schemas.microsoft.com/2003/10/Serialization/Arrays}Key': \
-                '{http://schemas.microsoft.com/2003/10/Serialization/Arrays}Value'
+            '{{{0}}}Key'.format(arrays): ['{{{0}}}Value'],
             },
         'level 0': {
-            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}AccelerationVoltage': [],
-            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}PreExposureTime': [],
-            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}PreExposurePauseTime': [],
-            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}ApplicationSoftware': [],
-            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}ApplicationSoftwareVersion': [],
-            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}ComputerName': [],
-            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}InstrumentID': [],
-            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}InstrumentModel': [],
-            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}InstrumentID': [],
-            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}Defocus': [],
-            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}Intensity': [],
-            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}acquisitionDateTime': [],
-            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}NominalMagnification': [],
+            '{{{0}}}AccelerationVoltage'.format(shared_object): [],
+            '{{{0}}}PreExposureTime'.format(shared_object): [],
+            '{{{0}}}PreExposurePauseTime'.format(shared_object): [],
+            '{{{0}}}ApplicationSoftware'.format(shared_object): [],
+            '{{{0}}}ApplicationSoftwareVersion'.format(shared_object): [],
+            '{{{0}}}ComputerName'.format(shared_object): [],
+            '{{{0}}}InstrumentID'.format(shared_object): [],
+            '{{{0}}}InstrumentModel'.format(shared_object): [],
+            '{{{0}}}Defocus'.format(shared_object): [],
+            '{{{0}}}Intensity'.format(shared_object): [],
+            '{{{0}}}acquisitionDateTime'.format(shared_object): [],
+            '{{{0}}}NominalMagnification'.format(shared_object): [],
             },
         'level 1': {
-            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}camera': ['ExposureTime'],
-            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}Binning': ['x', 'y'],
-            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}ReadoutArea': ['height', 'width'],
-            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}Position': ['A', 'B', 'X', 'Y', 'Z'],
-            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}ImageShift': ['_x', '_y'],
-            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}BeamShift': ['_x', '_y'],
-            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}BeamTilt': ['_x', '_y'],
+            '{{{0}}}camera'.format(shared_object): ['ExposureTime'],
+            '{{{0}}}Binning'.format(shared_object): ['x', 'y'],
+            '{{{0}}}ReadoutArea'.format(shared_object): ['height', 'width'],
+            '{{{0}}}Position'.format(shared_object): ['A', 'B', 'X', 'Y', 'Z'],
+            '{{{0}}}ImageShift'.format(shared_object): ['_x', '_y'],
+            '{{{0}}}BeamShift'.format(shared_object): ['_x', '_y'],
+            '{{{0}}}BeamTilt'.format(shared_object): ['_x', '_y'],
             },
         'level 3': {
-            '{http://schemas.datacontract.org/2004/07/Fei.SharedObjects}SpatialScale': ['numericValue'],
+            '{{{0}}}SpatialScale'.format(shared_object): ['numericValue'],
             }
         }
+    return level_dict
 
 
 
-def get_meta_xml__epu_18_falcon2(root_name):
+def get_meta_xml__epu_18_falcon2(root_name: str) -> typing.Tuple[str, ...]:
     """
     Extract time and grid information from the root_name string.
 
@@ -71,14 +86,34 @@ def get_meta_xml__epu_18_falcon2(root_name):
     Returns:
     hole, grid_number, spot1, spot2, date, time
     """
-    *skip, grid, skip, old_file = \
-        os.path.realpath(root_name).split('/')
+    grid: str
+    hole: str
+    spot1: str
+    spot2: str
+    date: str
+    time: str
+    old_file: str
+    grid_number: str
+
+    *_, grid, _, old_file = os.path.realpath(root_name).split('/')
     grid_number = grid.split('_')[1]
-    *skip, hole, skip, spot1, spot2, date, time = old_file.split('_')
+    *_, hole, _, spot1, spot2, date, time = old_file.split('_')
     return hole, grid_number, spot1, spot2, date, time
 
 
-def get_frames__epu18_falcon2(compare_name, extension):
+def get_frames__epu18_falcon2(compare_name: str, extension: str) -> typing.List[str]:
+    """
+    Find the fractions for falcon EPU version 1.8
+
+    Arguments:
+    compare_name - Part of the name that is used for comparison
+    extension - File extension of the frames
+
+    Returns:
+    List of found movies
+    """
+    frames: typing.List[str]
+
     frames = glob.glob(
         '{0}*_Fractions.{1}'.format(
             compare_name,
@@ -88,7 +123,31 @@ def get_frames__epu18_falcon2(compare_name, extension):
     return frames
 
 
-def get_number_of_frames__epu18_falcon2(frames, command, expected_nr_frames):
+def get_number_of_frames__epu18_falcon2(
+        frames: typing.List[str],
+        command: str,
+        expected_nr_frames: int
+    ) -> typing.Tuple[typing.Optional[str], typing.Optional[bool]]:
+    """
+    Extract the number of frames of the movie.
+
+    Returns True if the expected number of frames matches
+    Returns False if the file does not match or cannot be read
+    Returns None if the expected number of frames does not match
+
+    Arguments:
+    frames - List of movies
+    command - Run the command to find the number of frames
+    expected_nr_frames - Expected number of frames
+
+    Returns:
+    Message in case something goes wrong, Return value
+    """
+    message: typing.Optional[str]
+    return_value: typing.Optional[bool]
+    output: str
+    number_of_frames: typing.Optional[typing.Match[str]]
+
     message = None
     return_value = True
     try:
@@ -122,7 +181,25 @@ def get_number_of_frames__epu18_falcon2(frames, command, expected_nr_frames):
     return message, return_value
 
 
-def get_meta_data__epu18_falcon2(frames_root, root_name, extension):
+def get_meta_data__epu18_falcon2(
+        frames_root: str,
+        root_name: str,
+        extension: str
+    ) -> typing.Tuple[typing.List[str], str, str]:
+    """
+    Get the meta data related to the found movies.
+
+    Arguments:
+    frames_root - Name of the frames
+    extension - File extension
+
+    Returns:
+    List of frames, Compare name for the frames, compare name for the meta
+    """
+    compare_name_frames: str
+    compare_name_meta: str
+    frames: typing.List[str]
+
     compare_name_frames = frames_root[:-len('_19911213_2019')]
     compare_name_meta = root_name[:-len('_19911213_2019')]
     frames = glob.glob('{0}*_Fractions.{1}'.format(
@@ -132,5 +209,14 @@ def get_meta_data__epu18_falcon2(frames_root, root_name, extension):
     return frames, compare_name_frames, compare_name_meta
 
 
-def get_command__epu18_falcon2():
+def get_command__epu18_falcon2() -> str:
+    """
+    Get the copy command for the micrographs
+
+    Arguments:
+    None
+
+    Returns:
+    Command for the copying
+    """
     return 'rsync'

@@ -17,7 +17,6 @@
 """
 
 
-import re
 import abc
 import inspect
 
@@ -39,9 +38,14 @@ def check_interface(parent_instance):
 
             try:
                 getattr(parent_instance, func_name)()
-            except AttributeError as e:
+            except AttributeError as err:
                 function_names = '\n'.join(sorted(list(inspect.getmembers(parent_instance)[0][1])))
-                raise AttributeError(f'Interface instance "{parent_instance}" does not yet have a method named "{func_name}": Choose\n{function_names}') from e
+                msg = [
+                    f'Interface instance "{parent_instance}" does not yet',
+                    f'have a method named "{func_name}": Choose\n{function_names}'
+                    ]
+
+                raise AttributeError(' '.join(msg)) from err
 
             return_value = func(args[0], *new_args, **kwargs)
             return return_value
@@ -213,7 +217,7 @@ class InterfaceClass(abc.ABC):
         pass
 
 
-class TemplateClass(object):
+class TemplateClass: # pylint: disable=R0903
     """
     TemplateClass
 

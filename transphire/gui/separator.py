@@ -25,7 +25,38 @@ except ImportError:
 class Separator(QWidget):
     """Separator widget"""
 
-    def __init__(self, typ, color, up=None, down=None, left=None, right=None, parent=None):
+    def __init__(
+            self,
+            typ,
+            color,
+            is_up=False,
+            is_down=False,
+            is_left=False,
+            is_right=False,
+            parent=None
+            ):
+        """
+        Init function for the Seperator
+
+        Arguments:
+        typ - Either horizontal or vertical
+        color - Color of the widget
+        is_up - Affects the widgets to the top
+        is_down - Affects the widgets to the down
+        is_left - Affects the widgets to the left
+        is_right - Affects the widgets to the right
+        parent - Parent widget
+        """
+        up_char: str
+        down_char: str
+        left_char: str
+        right_char: str
+        self.direction_dict: typing.Dict[str, bool]
+        label: QLabel
+        label2: QLabel
+        layout: QBoxLayout
+        layout_2: QBoxLayout
+
         super(Separator, self).__init__(parent)
 
         up_char = '\u2227'
@@ -34,10 +65,10 @@ class Separator(QWidget):
         right_char = '>'
 
         self.direction_dict = {
-            up_char: up,
-            down_char: down,
-            left_char: left,
-            right_char: right,
+            up_char: is_up,
+            down_char: is_down,
+            left_char: is_left,
+            right_char: is_right,
             }
 
         label = QLabel()
@@ -61,7 +92,7 @@ class Separator(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addLayout(layout_2, stretch=1)
 
-        if up or down or left or right:
+        if is_up or is_down or is_left or is_right:
             label2 = QLabel()
             label2.setStyleSheet('background: {0}'.format(color))
             if typ == 'horizontal':
@@ -114,4 +145,10 @@ class Separator(QWidget):
 
 
     def hide_show_widget(self, status):
+        """
+        Hide or show the widget with the status.
+
+        Arguments:
+        status - Status show or status hide.
+        """
         self.direction_dict[self.sender().text()].setVisible(not status)
