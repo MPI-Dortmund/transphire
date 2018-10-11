@@ -20,7 +20,7 @@
 import shutil
 
 
-def copy(file_in, file_out):
+def copy(file_in: str, file_out: str) -> None:
     """
     Copy file_in to a new location file_out.
 
