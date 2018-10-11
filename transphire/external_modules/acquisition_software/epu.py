@@ -18,16 +18,12 @@
 
 
 import glob
-import os
 import re
-import subprocess
-import shutil
-import traceback as tb
 import typing
 
-import hyperspy.api as hs
-import pandas as pd
-import transphire_transform as tt
+import hyperspy.api as hs # type: ignore
+import pandas as pd # type: ignore
+import transphire_transform as tt # type: ignore
 
 
 from ... import utils
@@ -95,6 +91,7 @@ def extract_gridsquare_and_spotid__1_8(file_path: str) -> pd.DataFrame:
     """
     match_pattern: typing.Optional[typing.Match[str]]
     group_dict: typing.Dict[str, str]
+    output_dict: typing.Dict[str, int]
 
     match_pattern = re.match(
         ''.join([
@@ -117,10 +114,12 @@ def extract_gridsquare_and_spotid__1_8(file_path: str) -> pd.DataFrame:
             group_dict = match_pattern.groupdict()
         else:
             group_dict = {}
-    for key, value in group_dict.items():
-        group_dict[key] = int(''.join(value.split('_')))
 
-    return pd.DataFrame(group_dict, index=[0])
+    output_dict = {}
+    for key, value in group_dict.items():
+        output_dict[key] = int(''.join(value.split('_')))
+
+    return pd.DataFrame(output_dict, index=[0])
 
 
 def get_meta_data__1_8(
@@ -136,8 +135,6 @@ def get_meta_data__1_8(
     Returns:
     hole, grid_number, spot1, spot2, date, time
     """
-    xml_data: pd.DataFrame
-    file_data: pd.DataFrame
     data_list: typing.List[pd.DataFrame]
 
     data_list = []

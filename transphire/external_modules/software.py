@@ -19,7 +19,7 @@
 
 import typing
 
-from transphire_transform.dump_load import util as tt_util
+from transphire_transform.dump_load import util as tt_util # type: ignore
 
 from .acquisition_software import epu
 
@@ -78,8 +78,8 @@ def load_software(
             },
         }
 
-    function_dict = tt_util.extract_function_from_function_dict(
+    function = tt_util.extract_function_from_function_dict(
         function_dict[software][camera],
         version
         )
-    return function_dict[function_name]
+    return function[function_name]
