@@ -21,12 +21,16 @@ import glob
 import os
 import re
 import subprocess
+import shutil
 import traceback as tb
 import typing
 
 import hyperspy.api as hs
 import pandas as pd
 import transphire_transform as tt
+
+
+from ... import utils
 
 
 def get_xml_keys() -> typing.Dict[str, typing.Dict[str, typing.List[str]]]:
@@ -184,31 +188,7 @@ def get_number_of_frames__1_8_falcon(data_frame: pd.DataFrame) -> pd.DataFrame:
     return None
 
 
-def get_compare_names__1_8_falcon(
-        frames_name: str,
-        meta_name: str,
-    ) -> typing.Tuple[str, str, str]:
-    """
-    Get the meta data related to the found movies.
-
-    Arguments:
-    frames_name - Name of the frames/movie file
-    meta_name - Name of the meta file
-
-    Returns:
-    Compare name for the frames, compare name for the meta, movie extension
-    """
-    compare_name_frames: str
-    compare_name_meta: str
-    extension = str
-
-    extension = os.path.splitext(frames_name)[1]
-    compare_name_frames = frames_name[:-len('_19911213_2019')]
-    compare_name_meta = meta_name[:-len('_19911213_2019')]
-    return compare_name_frames, compare_name_meta, extension
-
-
-def get_copy_command__1_8_falcon() -> str:
+def get_copy_command__1_8_falcon() -> typing.Callable[..., typing.Any]:
     """
     Get the copy command for the micrographs
 
@@ -216,6 +196,6 @@ def get_copy_command__1_8_falcon() -> str:
     None
 
     Returns:
-    Command for the copying
+    Command for the copying, Command in case copying fails
     """
-    return 'rsync'
+    return utils.copy

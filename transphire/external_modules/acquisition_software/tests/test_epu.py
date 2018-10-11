@@ -22,6 +22,7 @@ import os
 import pandas as pd
 import pytest
 
+from .... import utils
 from .. import epu
 
 THIS_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -196,11 +197,11 @@ class TestGetMetaData_18:
         data_frame = epu.get_meta_data__1_8(xml_file=xml_file)[list(return_dict.keys())]
         assert data_frame.equals(return_frame)
 
-    def test_file_name_and_xml_file_returns_empty_data_frame(self):
+    def test_empty_file_name_and_empty_xml_file_returns_empty_data_frame(self):
         input_file = os.path.join('test1', 'test2', 'test3', 'Images-Disc1', 'GridSquare123', 'Data', 'FoilHole28385656_Data_28397105_28397106_20180530_0221_Fractions.mrc')
         assert epu.get_meta_data__1_8(input_file).equals(pd.DataFrame({}, index=[0]))
 
-    def test_xml_file_returns_correct_values(self):
+    def test_xml_file_and_empty_xml_returns_correct_values(self):
         input_file = os.path.join('test1', 'test2', 'test3', 'Images-Disc1', 'GridSquare_123', 'Data', 'FoilHole_28385656_Data_28397105_28397106_20180530_0221_Fractions.mrc')
         xml_file = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'xml.xml')
         return_dict_xml = {
@@ -307,3 +308,9 @@ class TestGetNumberOfFrames_18falcon:
         data_frame = pd.DataFrame({'MicrographMovieName': mrc_file}, index=[0])
         epu.get_number_of_frames__1_8_falcon(data_frame)
         assert data_frame['FoundNumberOffractions'].iloc[0] == 9
+
+
+class TestGetCopyCommand_18falcon:
+
+    def test_function_returns_copy_command(self):
+        assert epu.get_copy_command__1_8_falcon() == utils.copy
