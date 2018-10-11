@@ -19,6 +19,7 @@
 
 import abc
 import inspect
+import typing
 
 
 def check_interface(parent_instance):
@@ -227,18 +228,23 @@ class TemplateClass: # pylint: disable=R0903
     object
     """
 
-    def __init__(self, external_dict):
+    def __init__(
+            self,
+            external_dict: typing.Dict[str, typing.Callable[..., typing.Any]]
+        ) -> None:
+        self.external_dict: typing.Dict[str, typing.Callable[..., typing.Any]]
+
         self.external_dict = external_dict
 
     @check_interface(InterfaceClass)
-    def run_step(self, name):
+    def run_step(self, name: str) -> typing.Callable[..., typing.Any]:
         """
         Return the value of the external_dict.
 
         Arguments:
-        external_dict: Dictionary containing the program information.
+        name - .
 
         Returns:
-        Value of the dictionar key.
+        Value of the dictionary key.
         """
         return self.external_dict[name]
