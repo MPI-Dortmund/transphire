@@ -21,10 +21,10 @@ import glob
 import re
 import typing
 
+import mrcfile
 import hyperspy.api as hs # type: ignore
 import pandas as pd # type: ignore
 import transphire_transform as tt # type: ignore
-
 
 from ... import utils
 
@@ -47,33 +47,33 @@ def get_xml_keys() -> typing.Dict[str, typing.Dict[str, typing.List[str]]]:
     shared_object = 'http://schemas.datacontract.org/2004/07/Fei.SharedObjects'
     level_dict = {
         'key_value': {
-            '{{{0}}}Key'.format(arrays): ['{{{0}}}Value'.format(arrays)],
+            f'{{{arrays}}}Key': [f'{{{arrays}}}Value'],
             },
         'level 0': {
-            '{{{0}}}AccelerationVoltage'.format(shared_object): [],
-            '{{{0}}}PreExposureTime'.format(shared_object): [],
-            '{{{0}}}PreExposurePauseTime'.format(shared_object): [],
-            '{{{0}}}ApplicationSoftware'.format(shared_object): [],
-            '{{{0}}}ApplicationSoftwareVersion'.format(shared_object): [],
-            '{{{0}}}ComputerName'.format(shared_object): [],
-            '{{{0}}}InstrumentID'.format(shared_object): [],
-            '{{{0}}}InstrumentModel'.format(shared_object): [],
-            '{{{0}}}Defocus'.format(shared_object): [],
-            '{{{0}}}Intensity'.format(shared_object): [],
-            '{{{0}}}acquisitionDateTime'.format(shared_object): [],
-            '{{{0}}}NominalMagnification'.format(shared_object): [],
+            f'{{{shared_object}}}AccelerationVoltage': [],
+            f'{{{shared_object}}}PreExposureTime': [],
+            f'{{{shared_object}}}PreExposurePauseTime': [],
+            f'{{{shared_object}}}ApplicationSoftware': [],
+            f'{{{shared_object}}}ApplicationSoftwareVersion': [],
+            f'{{{shared_object}}}ComputerName': [],
+            f'{{{shared_object}}}InstrumentID': [],
+            f'{{{shared_object}}}InstrumentModel': [],
+            f'{{{shared_object}}}Defocus': [],
+            f'{{{shared_object}}}Intensity': [],
+            f'{{{shared_object}}}acquisitionDateTime': [],
+            f'{{{shared_object}}}NominalMagnification': [],
             },
         'level 1': {
-            '{{{0}}}camera'.format(shared_object): ['ExposureTime'],
-            '{{{0}}}Binning'.format(shared_object): ['x', 'y'],
-            '{{{0}}}ReadoutArea'.format(shared_object): ['height', 'width'],
-            '{{{0}}}Position'.format(shared_object): ['A', 'B', 'X', 'Y', 'Z'],
-            '{{{0}}}ImageShift'.format(shared_object): ['_x', '_y'],
-            '{{{0}}}BeamShift'.format(shared_object): ['_x', '_y'],
-            '{{{0}}}BeamTilt'.format(shared_object): ['_x', '_y'],
+            f'{{{shared_object}}}camera': ['ExposureTime'],
+            f'{{{shared_object}}}Binning': ['x', 'y'],
+            f'{{{shared_object}}}ReadoutArea': ['height', 'width'],
+            f'{{{shared_object}}}Position': ['A', 'B', 'X', 'Y', 'Z'],
+            f'{{{shared_object}}}ImageShift': ['_x', '_y'],
+            f'{{{shared_object}}}BeamShift': ['_x', '_y'],
+            f'{{{shared_object}}}BeamTilt': ['_x', '_y'],
             },
         'level 3': {
-            '{{{0}}}SpatialScale'.format(shared_object): ['numericValue'],
+            f'{{{shared_object}}}SpatialScale': ['numericValue'],
             }
         }
     return level_dict
@@ -122,10 +122,7 @@ def extract_gridsquare_and_spotid__1_8(file_path: str) -> pd.DataFrame:
     return pd.DataFrame(output_dict, index=[0])
 
 
-def get_meta_data__1_8(
-        file_name: typing.Optional[str]=None,
-        xml_file: typing.Optional[str]=None,
-    ) -> pd.DataFrame:
+def get_meta_data__1_8(data_frame: pd.DataFrame) -> None:
     """
     Extract time and grid information from the root_name string.
 
@@ -138,16 +135,27 @@ def get_meta_data__1_8(
     data_list: typing.List[pd.DataFrame]
 
     data_list = []
-    if xml_file is not None:
-        data_list.append(tt.load_xml(file_name=xml_file, level_dict=get_xml_keys()))
-    if file_name is not None:
-        data_list.append(extract_gridsquare_and_spotid__1_8(file_name))
-    return pd.concat(data_list, axis=1)
+    if 'MicrographNameXmlRaw' in data_frame.columns.values:
+        data_list.append(tt.load_xml(file_name=data_frame['MicrographNameXmlRaw'].iloc[0], level_dict=get_xml_keys()))
+        data_list.append(extract_gridsquare_and_spotid__1_8(data_frame['MicrographNameXmlRaw'].iloc[0]))
+    elif 'MicrographNameJpgRaw' in data_frame.columns.values:
+        data_list.append(extract_gridsquare_and_spotid__1_8(data_frame['MicrographNameJpgRaw'].iloc[0]))
+    elif 'MicrographNameMovieRaw' in data_frame.columns.values:
+        data_list.append(extract_gridsquare_and_spotid__1_8(data_frame['MicrographNameMovieRaw'].iloc[0]))
+    elif 'MicrographNameMrcKriosRaw' in data_frame.columns.values:
+        data_list.append(extract_gridsquare_and_spotid__1_8(data_frame['MicrographNameMrcKriosRaw'].iloc[0]))
+    elif 'MicrographNameGainRaw' in data_frame.columns.values:
+        data_list.append(extract_gridsquare_and_spotid__1_8(data_frame['MicrographNameGainRaw'].iloc[0]))
+    elif 'MicrographNameFrameXmlRaw' in data_frame.columns.values:
+        data_list.append(extract_gridsquare_and_spotid__1_8(data_frame['MicrographNameFrameXmlRaw'].iloc[0]))
+
+    for frame in data_list:
+        for name in frame.columns.values:
+            data_frame[name] = frame[name]
+    return None
 
 
-def get_movie__1_8_falcon(
-        compare_name: str,
-    ) -> typing.List[str]:
+def get_movie__1_8_falcon(data_frame: pd.DataFrame) -> None:
     """
     Find the fractions for falcon EPU version 1.8
 
@@ -161,26 +169,27 @@ def get_movie__1_8_falcon(
 
     fraction_file = [
         entry
-        for entry in glob.glob('{0}_Fractions.*'.format(compare_name))
+        for entry in glob.glob(f'{data_frame["compare_name"].iloc[0]}*_Fractions.*')
         if '.xml' not in entry
         ]
     assert len(fraction_file) == 1
-    return pd.DataFrame({'MicrographMovieName': fraction_file}, index=[0])
+    data_frame['MicrographMovieNameRaw'] = fraction_file[0]
+    return None
 
 
-def get_number_of_frames__1_8_falcon(data_frame: pd.DataFrame) -> pd.DataFrame:
+def get_number_of_frames__1_8_falcon(data_frame: pd.DataFrame) -> None:
     """
     Extract the number of frames of the movie.
 
     Arguments:
-    data_frame - Pandas data frame containing the MicrographMovieName
+    data_frame - Pandas data frame containing the MicrographMovieNameRaw
 
     Returns:
     None, Modified in-place
     """
     mic_name: str
 
-    mic_name = data_frame['MicrographMovieName'].iloc[0]
+    mic_name = data_frame['MicrographMovieNameRaw'].iloc[0]
     data_frame['FoundNumberOffractions'] = hs.load(mic_name).axes_manager[0].size
     return None
 
@@ -196,3 +205,28 @@ def get_copy_command__1_8_falcon() -> typing.Callable[..., typing.Any]:
     Command for the copying, Command in case copying fails
     """
     return utils.copy
+
+
+def get_movie__1_8_k2_frames(data_frame: pd.DataFrame) -> None:
+    """
+    Find the fractions for k2 EPU version 1.8
+
+    Arguments:
+    compare_name - Part of the name that is used for comparison.
+
+    Returns:
+    List of found movie files
+    """
+    fraction_files: typing.List[str]
+    fraction_file: str
+    write: mrcfile.MrcFile
+
+    fraction_files = [
+        entry
+        for entry in sorted(glob.glob(f'{data_frame["compare_name"].iloc[0]}*-*'))
+        if '.xml' not in entry
+        ]
+    fraction_file = f'{data_frame["compare_name"].iloc[0]}-Fractions.mrc'
+    with mrcfile.open(fraction_file) as write:
+        pass
+    data_frame['MicrographMovieNameRaw'] = fraction_file
