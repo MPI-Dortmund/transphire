@@ -221,8 +221,6 @@ class TestGetMetaData_18:
 
         compare_data = pd.DataFrame({'MicrographNameXmlRaw': xml_file}, index=[0])
         epu.get_meta_data__1_8(compare_data)
-        print(compare_data.iloc[0])
-        print(return_frame.iloc[0])
         assert compare_data[order].equals(return_frame[order])
 
 
@@ -231,20 +229,27 @@ class TestGetMovie_18falcon:
     def test_search_file_mrc_should_return_file_path(self):
         mrc_file = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_mrc', 'FoilHole_983503_Data_984274_984275_20171201_1435_Fractions.mrc')
         compare_name = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_mrc', 'FoilHole_983503_Data_984274_984275')
-        assert epu.get_movie__1_8_falcon(compare_name).equals(pd.DataFrame({'MicrographMovieNameRaw': mrc_file}, index=[0]))
+        compare_name = pd.DataFrame({'compare_name': compare_name}, index=[0])
+        epu.get_movie__1_8_falcon(compare_name)
+        assert compare_name['MicrographMovieNameRaw'].iloc[0] == mrc_file
 
     def test_search_file_tif_should_return_file_path(self):
         tif_file = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_tif', 'FoilHole_983503_Data_984274_984275_20171201_1435_Fractions.tif')
         compare_name = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_tif', 'FoilHole_983503_Data_984274_984275')
-        assert epu.get_movie__1_8_falcon(compare_name).equals(pd.DataFrame({'MicrographMovieNameRaw': tif_file}, index=[0]))
+        compare_name = pd.DataFrame({'compare_name': compare_name}, index=[0])
+        epu.get_movie__1_8_falcon(compare_name)
+        assert compare_name['MicrographMovieNameRaw'].iloc[0] == tif_file
 
     def test_search_file_tiff_should_return_file_path(self):
         tiff_file = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_tiff', 'FoilHole_983503_Data_984274_984275_20171201_1435_Fractions.tiff')
         compare_name = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_tiff', 'FoilHole_983503_Data_984274_984275')
-        assert epu.get_movie__1_8_falcon(compare_name).equals(pd.DataFrame({'MicrographMovieNameRaw': tiff_file}, index=[0]))
+        compare_name = pd.DataFrame({'compare_name': compare_name}, index=[0])
+        epu.get_movie__1_8_falcon(compare_name)
+        assert compare_name['MicrographMovieNameRaw'].iloc[0] == tiff_file
 
     def test_search_file_tiff_mutli_should_raise_AssertionError(self):
         compare_name = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_tiff_multi', 'FoilHole_983503_Data_984274_984275')
+        compare_name = pd.DataFrame({'compare_name': compare_name}, index=[0])
         with pytest.raises(AssertionError):
             epu.get_movie__1_8_falcon(compare_name)
 
@@ -255,19 +260,19 @@ class TestGetNumberOfFrames_18falcon:
         mrc_file = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_mrc', 'FoilHole_983503_Data_984274_984275_20171201_1435_Fractions.mrc')
         data_frame = pd.DataFrame({'MicrographMovieNameRaw': mrc_file}, index=[0])
         epu.get_number_of_frames__1_8_falcon(data_frame)
-        assert data_frame['FoundNumberOffractions'].iloc[0] == 9
+        assert data_frame['FoundNumberOfFractions'].iloc[0] == 9
 
     def test_read_tif_header_returns_9(self):
         mrc_file = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_tif', 'FoilHole_983503_Data_984274_984275_20171201_1435_Fractions.tif')
         data_frame = pd.DataFrame({'MicrographMovieNameRaw': mrc_file}, index=[0])
         epu.get_number_of_frames__1_8_falcon(data_frame)
-        assert data_frame['FoundNumberOffractions'].iloc[0] == 9
+        assert data_frame['FoundNumberOfFractions'].iloc[0] == 9
 
     def test_read_tiff_header_returns_9(self):
         mrc_file = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_tiff', 'FoilHole_983503_Data_984274_984275_20171201_1435_Fractions.tiff')
         data_frame = pd.DataFrame({'MicrographMovieNameRaw': mrc_file}, index=[0])
         epu.get_number_of_frames__1_8_falcon(data_frame)
-        assert data_frame['FoundNumberOffractions'].iloc[0] == 9
+        assert data_frame['FoundNumberOfFractions'].iloc[0] == 9
 
 
 class TestGetCopyCommand_18falcon:
@@ -276,31 +281,19 @@ class TestGetCopyCommand_18falcon:
         assert epu.get_copy_command__1_8_falcon() == utils.copy
 
 
-class TestGetMovie_18falcon:
+class TestGetMovie_18k2:
 
-    def test_search_file_mrc_should_return_file_path(self):
-        mrc_file = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_mrc', 'FoilHole_983503_Data_984274_984275_20171201_1435_Fractions.mrc')
-        compare_name_data = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_mrc', 'FoilHole_983503_Data_984274_984275')
-        compare_name = pd.DataFrame({'compare_name': compare_name_data}, index=[0])
-        epu.get_movie__1_8_falcon(compare_name)
+    def test_search_file_mrc_should_return_file_path(self, tmpdir):
+        output_file = tmpdir.join('test_search_file_mrc_should_return_file_path')
+        compare_name_data = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_k2', 'FoilHole_983503_Data_984274_984275')
+        compare_name = pd.DataFrame({'compare_name': compare_name_data, 'OutputStackFolder': output_file}, index=[0])
+        epu.get_movie__1_8_k2(compare_name)
         assert compare_name['MicrographMovieNameRaw'].iloc[0] == mrc_file
 
-    def test_search_file_tif_should_return_file_path(self):
-        tif_file = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_tif', 'FoilHole_983503_Data_984274_984275_20171201_1435_Fractions.tif')
-        compare_name_data = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_tif', 'FoilHole_983503_Data_984274_984275')
-        compare_name = pd.DataFrame({'compare_name': compare_name_data}, index=[0])
-        epu.get_movie__1_8_falcon(compare_name)
-        assert compare_name['MicrographMovieNameRaw'].iloc[0] == tif_file
 
-    def test_search_file_tiff_should_return_file_path(self):
-        tiff_file = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_tiff', 'FoilHole_983503_Data_984274_984275_20171201_1435_Fractions.tiff')
-        compare_name_data = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_tiff', 'FoilHole_983503_Data_984274_984275')
-        compare_name = pd.DataFrame({'compare_name': compare_name_data}, index=[0])
-        epu.get_movie__1_8_falcon(compare_name)
-        assert compare_name['MicrographMovieNameRaw'].iloc[0] == tiff_file
+class TestGetNumberOfFrames_18k2:
 
-    def test_search_file_tiff_mutli_should_raise_AssertionError(self):
-        compare_name = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_tiff_multi', 'FoilHole_983503_Data_984274_984275')
-        compare_name = pd.DataFrame({'compare_name': compare_name}, index=[0])
-        with pytest.raises(AssertionError):
-            epu.get_movie__1_8_falcon(compare_name)
+    def test_correct_number_returns_correct_value(self):
+        compare_name = pd.DataFrame({}, index=[0])
+        epu.get_number_of_frames__1_8_k2(['a', 'b', 'c'], compare_name)
+        assert compare_name.equals(pd.DataFrame({'FoundNumberOfFractions': 3}, index=[0]))

@@ -21,6 +21,7 @@ import glob
 import re
 import typing
 
+import numpy as np
 import mrcfile
 import hyperspy.api as hs # type: ignore
 import pandas as pd # type: ignore
@@ -174,6 +175,9 @@ def get_movie__1_8_falcon(data_frame: pd.DataFrame) -> None:
         ]
     assert len(fraction_file) == 1
     data_frame['MicrographMovieNameRaw'] = fraction_file[0]
+    # Stores data in the FoundNumberOfFractions entry
+    get_number_of_frames__1_8_falcon(data_frame=data_frame)
+    assert 'FoundNumberOfFractions' in data_frame.columns.values
     return None
 
 
@@ -190,7 +194,7 @@ def get_number_of_frames__1_8_falcon(data_frame: pd.DataFrame) -> None:
     mic_name: str
 
     mic_name = data_frame['MicrographMovieNameRaw'].iloc[0]
-    data_frame['FoundNumberOffractions'] = hs.load(mic_name).axes_manager[0].size
+    data_frame['FoundNumberOfFractions'] = hs.load(mic_name).axes_manager[0].size
     return None
 
 
@@ -207,26 +211,60 @@ def get_copy_command__1_8_falcon() -> typing.Callable[..., typing.Any]:
     return utils.copy
 
 
-def get_movie__1_8_k2_frames(data_frame: pd.DataFrame) -> None:
+def get_movie__1_8_k2(data_frame: pd.DataFrame) -> None:
     """
     Find the fractions for k2 EPU version 1.8
 
     Arguments:
-    compare_name - Part of the name that is used for comparison.
+    data_frame - Pandas data frame containg all the information.
 
     Returns:
-    List of found movie files
+    None
     """
     fraction_files: typing.List[str]
     fraction_file: str
     write: mrcfile.MrcFile
+    data_arrays: typing.List[np.ndarray]
+    first_fraction_file: hs._signals.signal2d.Signal2D
+    nx: int
 
     fraction_files = [
         entry
         for entry in sorted(glob.glob(f'{data_frame["compare_name"].iloc[0]}*-*'))
         if '.xml' not in entry
         ]
-    fraction_file = f'{data_frame["compare_name"].iloc[0]}-Fractions.mrc'
+    fraction_file = f'{data_frame["OutputStackFolder"].iloc[0]}_Fractions.mrc'
+    data_frame['MicrographMovieNameRaw'] = fraction_file
+
+    get_number_of_frames__1_8_k2(frames_list=fraction_files, data_frame=data_frame)
+    assert 'FoundNumberOfFractions' in data_frame.columns.values
+
+    data_arrays = []
+
+    first_fraction_file = hs.load(fraction_files[0])
+    assert first_fraction_file.axes_manager[0].size == 1
+    nx = first_fraction_file.axes_manager[1].size
+    output_array = np.empty((data_frame['FoundNumberOfFractions'].iloc[0], nx, nx))
+
+    for file_name in fraction_files[1:]:
+        hs.load
+
     with mrcfile.open(fraction_file) as write:
         pass
-    data_frame['MicrographMovieNameRaw'] = fraction_file
+
+    return None
+
+
+def get_number_of_frames__1_8_k2(frames_list: typing.List[str], data_frame: pd.DataFrame) -> None:
+    """
+    Extract the number of frames of the movie.
+
+    Arguments:
+    frames_list - List of found frames
+    data_frame - Pandas data frame
+
+    Returns:
+    None, Modified in-place
+    """
+    data_frame['FoundNumberOfFractions'] = len(frames_list)
+    return None
