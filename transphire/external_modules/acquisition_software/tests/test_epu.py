@@ -123,43 +123,50 @@ class TestGetMetaData_18:
 
     def test_empty_frame_return_empty_data_frame(self):
         compare_data = pd.DataFrame({}, index=[0])
-        epu.get_meta_data__1_8(compare_data)
+        epu.get_meta_data__1_8(compare_data, index=0)
         assert compare_data.equals(pd.DataFrame({}, index=[0]))
+
+    def test_micrograph_name_jpg_raw_row_returns_correct_gridsquare(self):
+        input_file = os.path.join('test1', 'test2', 'test3', 'Images-Disc1', 'GridSquare_123', 'Data', 'FoilHole_28385656_Data_28397105_28397106_20180530_0221.jpg')
+        input_file_2 = os.path.join('test1', 'test2', 'test3', 'Images-Disc1', 'GridSquare_456', 'Data', 'FoilHole_28385656_Data_28397105_28397106_20180530_0221.jpg')
+        compare_data = pd.DataFrame({'MicrographNameJpgRaw': [input_file, input_file_2]})
+        epu.get_meta_data__1_8(compare_data, index=1)
+        assert compare_data['GridSquare'].iloc[1] == 456
 
     def test_micrograph_name_jpg_raw_returns_correct_gridsquare(self):
         input_file = os.path.join('test1', 'test2', 'test3', 'Images-Disc1', 'GridSquare_123', 'Data', 'FoilHole_28385656_Data_28397105_28397106_20180530_0221.jpg')
         compare_data = pd.DataFrame({'MicrographNameJpgRaw': input_file}, index=[0])
-        epu.get_meta_data__1_8(compare_data)
+        epu.get_meta_data__1_8(compare_data, index=0)
         assert compare_data['GridSquare'].iloc[0] == 123
 
     def test_micrograph_name_movie_raw_returns_correct_hole(self):
         input_file = os.path.join('test1', 'test2', 'test3', 'Images-Disc1', 'GridSquare_123', 'Data', 'FoilHole_28385656_Data_28397105_28397106_20180530_0221_Fractions.mrc')
         compare_data = pd.DataFrame({'MicrographNameMovieRaw': input_file}, index=[0])
-        epu.get_meta_data__1_8(compare_data)
+        epu.get_meta_data__1_8(compare_data, index=0)
         assert compare_data['HoleNumber'].iloc[0] == 28385656
 
     def test_micrograph_name_mrc_krios_raw_returns_correct_spot(self):
         input_file = os.path.join('test1', 'test2', 'test3', 'Images-Disc1', 'GridSquare_123', 'Data', 'FoilHole_28385656_Data_28397105_28397106_20180530_0221.mrc')
         compare_data = pd.DataFrame({'MicrographNameMrcKriosRaw': input_file}, index=[0])
-        epu.get_meta_data__1_8(compare_data)
+        epu.get_meta_data__1_8(compare_data, index=0)
         assert compare_data['SpotNumber'].iloc[0] == 2839710528397106
 
     def test_micrograph_name_gain_raw_returns_correct_date(self):
         input_file = os.path.join('test1', 'test2', 'test3', 'Images-Disc1', 'GridSquare_123', 'Data', 'FoilHole_28385656_Data_28397105_28397106_20180530_0221_gain_ref.dm4')
         compare_data = pd.DataFrame({'MicrographNameGainRaw': input_file}, index=[0])
-        epu.get_meta_data__1_8(compare_data)
+        epu.get_meta_data__1_8(compare_data, index=0)
         assert compare_data['Date'].iloc[0] == 20180530
 
     def test_micrograph_name_frame_xml_raw_returns_correct_time(self):
         input_file = os.path.join('test1', 'test2', 'test3', 'Images-Disc1', 'GridSquare_123', 'Data', 'FoilHole_28385656_Data_28397105_28397106_20180530_0221_Fractions.xml')
         compare_data = pd.DataFrame({'MicrographNameFrameXmlRaw': input_file}, index=[0])
-        epu.get_meta_data__1_8(compare_data)
+        epu.get_meta_data__1_8(compare_data, index=0)
         assert compare_data['Time'].iloc[0] == 221
 
     def test_micrograph_name_wrong_returns_empty_data_frame(self):
         input_file = os.path.join('test1', 'test2', 'test3', 'Images-Disc1', 'GridSquare123', 'Data', 'FoilHole28385656_Data_28397105_28397106_20180530_0221_Fractions.mrc')
         compare_data = pd.DataFrame({'MicrographNameFrameXmlRaw': input_file}, index=[0])
-        epu.get_meta_data__1_8(compare_data)
+        epu.get_meta_data__1_8(compare_data, index=0)
         assert compare_data.equals(pd.DataFrame({'MicrographNameFrameXmlRaw': input_file}, index=[0]))
 
     def test_xml_file_and_empty_xml_returns_correct_values(self):
@@ -222,38 +229,45 @@ class TestGetMetaData_18:
         return_frame = pd.concat([return_frame_xml, return_frame_data], axis=1)
 
         compare_data = pd.DataFrame({'MicrographNameXmlRaw': xml_file}, index=[0])
-        epu.get_meta_data__1_8(compare_data)
+        epu.get_meta_data__1_8(compare_data, index=0)
         assert compare_data[order].equals(return_frame[order])
 
 
 class TestGetMovie_18falcon:
 
+    def test_search_file_mrc_index_1_should_return_file_path(self):
+        mrc_file = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_mrc', 'FoilHole_983503_Data_984274_984275_20171201_1435_Fractions.mrc')
+        compare_name = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_mrc', 'FoilHole_983503_Data_984274_984275')
+        compare_name = pd.DataFrame({'compare_name': compare_name}, index=[0, 1])
+        epu.get_movie__1_8_falcon(compare_name, index=1)
+        assert compare_name['MicrographMovieNameRaw'].iloc[1] == mrc_file
+
     def test_search_file_mrc_should_return_file_path(self):
         mrc_file = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_mrc', 'FoilHole_983503_Data_984274_984275_20171201_1435_Fractions.mrc')
         compare_name = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_mrc', 'FoilHole_983503_Data_984274_984275')
         compare_name = pd.DataFrame({'compare_name': compare_name}, index=[0])
-        epu.get_movie__1_8_falcon(compare_name)
+        epu.get_movie__1_8_falcon(compare_name, index=0)
         assert compare_name['MicrographMovieNameRaw'].iloc[0] == mrc_file
 
     def test_search_file_tif_should_return_file_path(self):
         tif_file = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_tif', 'FoilHole_983503_Data_984274_984275_20171201_1435_Fractions.tif')
         compare_name = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_tif', 'FoilHole_983503_Data_984274_984275')
         compare_name = pd.DataFrame({'compare_name': compare_name}, index=[0])
-        epu.get_movie__1_8_falcon(compare_name)
+        epu.get_movie__1_8_falcon(compare_name, index=0)
         assert compare_name['MicrographMovieNameRaw'].iloc[0] == tif_file
 
     def test_search_file_tiff_should_return_file_path(self):
         tiff_file = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_tiff', 'FoilHole_983503_Data_984274_984275_20171201_1435_Fractions.tiff')
         compare_name = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_tiff', 'FoilHole_983503_Data_984274_984275')
         compare_name = pd.DataFrame({'compare_name': compare_name}, index=[0])
-        epu.get_movie__1_8_falcon(compare_name)
+        epu.get_movie__1_8_falcon(compare_name, index=0)
         assert compare_name['MicrographMovieNameRaw'].iloc[0] == tiff_file
 
     def test_search_file_tiff_mutli_should_raise_AssertionError(self):
         compare_name = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_tiff_multi', 'FoilHole_983503_Data_984274_984275')
         compare_name = pd.DataFrame({'compare_name': compare_name}, index=[0])
         with pytest.raises(AssertionError):
-            epu.get_movie__1_8_falcon(compare_name)
+            epu.get_movie__1_8_falcon(compare_name, index=0)
 
 
 class TestGetNumberOfFrames_18falcon:
@@ -261,20 +275,26 @@ class TestGetNumberOfFrames_18falcon:
     def test_read_mrc_header_returns_9(self):
         mrc_file = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_mrc', 'FoilHole_983503_Data_984274_984275_20171201_1435_Fractions.mrc')
         data_frame = pd.DataFrame({'MicrographMovieNameRaw': mrc_file}, index=[0])
-        epu.get_number_of_frames__1_8_falcon(data_frame)
+        epu.get_number_of_frames__1_8_falcon(data_frame, index=0)
         assert data_frame['FoundNumberOfFractions'].iloc[0] == 9
 
     def test_read_tif_header_returns_9(self):
         mrc_file = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_tif', 'FoilHole_983503_Data_984274_984275_20171201_1435_Fractions.tif')
         data_frame = pd.DataFrame({'MicrographMovieNameRaw': mrc_file}, index=[0])
-        epu.get_number_of_frames__1_8_falcon(data_frame)
+        epu.get_number_of_frames__1_8_falcon(data_frame, index=0)
         assert data_frame['FoundNumberOfFractions'].iloc[0] == 9
 
     def test_read_tiff_header_returns_9(self):
         mrc_file = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_tiff', 'FoilHole_983503_Data_984274_984275_20171201_1435_Fractions.tiff')
         data_frame = pd.DataFrame({'MicrographMovieNameRaw': mrc_file}, index=[0])
-        epu.get_number_of_frames__1_8_falcon(data_frame)
+        epu.get_number_of_frames__1_8_falcon(data_frame, index=0)
         assert data_frame['FoundNumberOfFractions'].iloc[0] == 9
+
+    def test_read_tiff_header_index_1_should_return_9(self):
+        mrc_file = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_tiff', 'FoilHole_983503_Data_984274_984275_20171201_1435_Fractions.tiff')
+        data_frame = pd.DataFrame({'MicrographMovieNameRaw': mrc_file}, index=[0, 1])
+        epu.get_number_of_frames__1_8_falcon(data_frame, index=1)
+        assert data_frame['FoundNumberOfFractions'].iloc[1] == 9
 
 
 class TestGetCopyCommand_18falcon:
@@ -289,7 +309,7 @@ class TestGetMovie_18k2:
         output_file = tmpdir.join('test_search_file_mrc_should_return_file_path')
         compare_name_data = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_k2', 'FoilHole_983503_Data_984274_984275')
         compare_name = pd.DataFrame({'compare_name': compare_name_data, 'OutputStackFolder': output_file}, index=[0])
-        epu.get_movie__1_8_k2(compare_name)
+        epu.get_movie__1_8_k2(compare_name, index=0)
         assert compare_name['MicrographMovieNameRaw'].iloc[0] == f'{output_file}_Fractions.mrc'
 
 
@@ -297,7 +317,7 @@ class TestGetMovie_18k2:
         output_file = tmpdir.join('test_output_file_should_have_9_entries')
         compare_name_data = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_k2', 'FoilHole_983503_Data_984274_984275')
         compare_name = pd.DataFrame({'compare_name': compare_name_data, 'OutputStackFolder': output_file}, index=[0])
-        epu.get_movie__1_8_k2(compare_name)
+        epu.get_movie__1_8_k2(compare_name, index=0)
         assert hs.load(f'{output_file}_Fractions.mrc').axes_manager[0].size == 9
 
 
@@ -305,7 +325,7 @@ class TestGetMovie_18k2:
         output_file = tmpdir.join('test_first_data_entry_is_same_as_first_original_data')
         compare_name_data = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_k2', 'FoilHole_983503_Data_984274_984275')
         compare_name = pd.DataFrame({'compare_name': compare_name_data, 'OutputStackFolder': output_file}, index=[0])
-        epu.get_movie__1_8_k2(compare_name)
+        epu.get_movie__1_8_k2(compare_name, index=0)
         assert np.array_equal(hs.load(f'{output_file}_Fractions.mrc').data[0], hs.load(f'{compare_name_data}_20171201_1435-1.mrc').data[0])
 
 
@@ -313,7 +333,7 @@ class TestGetMovie_18k2:
         output_file = tmpdir.join('test_last_data_entry_is_same_as_first_original_data')
         compare_name_data = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_k2', 'FoilHole_983503_Data_984274_984275')
         compare_name = pd.DataFrame({'compare_name': compare_name_data, 'OutputStackFolder': output_file}, index=[0])
-        epu.get_movie__1_8_k2(compare_name)
+        epu.get_movie__1_8_k2(compare_name, index=0)
         assert np.array_equal(hs.load(f'{output_file}_Fractions.mrc').data[-1], hs.load(f'{compare_name_data}_20171201_1435-9.mrc').data[0])
 
 
@@ -321,7 +341,7 @@ class TestGetMovie_18k2:
         output_file = tmpdir.join('test_first_data_entry_unordered_should_be_same_as_first_original_data')
         compare_name_data = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_k2_unordered', 'FoilHole_983503_Data_984274_984275')
         compare_name = pd.DataFrame({'compare_name': compare_name_data, 'OutputStackFolder': output_file}, index=[0])
-        epu.get_movie__1_8_k2(compare_name)
+        epu.get_movie__1_8_k2(compare_name, index=0)
         assert np.array_equal(hs.load(f'{output_file}_Fractions.mrc').data[0], hs.load(f'{compare_name_data}_20171201_1435-2.mrc').data[0])
 
 
@@ -329,7 +349,14 @@ class TestGetMovie_18k2:
         output_file = tmpdir.join('test_last_data_entry_is_same_as_first_original_data')
         compare_name_data = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_k2_unordered', 'FoilHole_983503_Data_984274_984275')
         compare_name = pd.DataFrame({'compare_name': compare_name_data, 'OutputStackFolder': output_file}, index=[0])
-        epu.get_movie__1_8_k2(compare_name)
+        epu.get_movie__1_8_k2(compare_name, index=0)
+        assert np.array_equal(hs.load(f'{output_file}_Fractions.mrc').data[-1], hs.load(f'{compare_name_data}_20171201_1435-10.mrc').data[0])
+
+    def test_last_data_entry_should_be_same_as_last_original_data_index_1(self, tmpdir):
+        output_file = tmpdir.join('test_last_data_entry_is_same_as_first_original_data')
+        compare_name_data = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_k2_unordered', 'FoilHole_983503_Data_984274_984275')
+        compare_name = pd.DataFrame({'compare_name': compare_name_data, 'OutputStackFolder': output_file}, index=[0, 1])
+        epu.get_movie__1_8_k2(compare_name, index=1)
         assert np.array_equal(hs.load(f'{output_file}_Fractions.mrc').data[-1], hs.load(f'{compare_name_data}_20171201_1435-10.mrc').data[0])
 
 
@@ -337,5 +364,10 @@ class TestGetNumberOfFrames_18k2:
 
     def test_correct_number_returns_correct_value(self):
         compare_name = pd.DataFrame({}, index=[0])
-        epu.get_number_of_frames__1_8_k2(['a', 'b', 'c'], compare_name)
+        epu.get_number_of_frames__1_8_k2(['a', 'b', 'c'], compare_name, index=0)
         assert compare_name.equals(pd.DataFrame({'FoundNumberOfFractions': 3}, index=[0]))
+
+    def test_correct_number_returns_correct_value_index_1(self):
+        compare_name = pd.DataFrame({}, index=[0, 1])
+        epu.get_number_of_frames__1_8_k2(['a', 'b', 'c'], compare_name, index=1)
+        assert compare_name.equals(pd.DataFrame({'FoundNumberOfFractions': [np.nan_to_num(-np.inf), 3]}, index=[0, 1]).astype(int))

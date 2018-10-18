@@ -123,12 +123,13 @@ def extract_gridsquare_and_spotid__1_8(file_path: str) -> pd.DataFrame:
     return pd.DataFrame(output_dict, index=[0])
 
 
-def get_meta_data__1_8(data_frame: pd.DataFrame) -> None:
+def get_meta_data__1_8(data_frame: pd.DataFrame, index: int) -> None:
     """
     Extract time and grid information from the root_name string.
 
     Arguments:
-    root_name - Name of the file
+    data_frame - Data frame containing the data
+    index - Index of the line to process
 
     Returns:
     hole, grid_number, spot1, spot2, date, time
@@ -136,32 +137,38 @@ def get_meta_data__1_8(data_frame: pd.DataFrame) -> None:
     data_list: typing.List[pd.DataFrame]
 
     data_list = []
-    if 'MicrographNameXmlRaw' in data_frame.columns.values:
-        data_list.append(tt.load_xml(file_name=data_frame['MicrographNameXmlRaw'].iloc[0], level_dict=get_xml_keys()))
-        data_list.append(extract_gridsquare_and_spotid__1_8(data_frame['MicrographNameXmlRaw'].iloc[0]))
-    elif 'MicrographNameJpgRaw' in data_frame.columns.values:
-        data_list.append(extract_gridsquare_and_spotid__1_8(data_frame['MicrographNameJpgRaw'].iloc[0]))
-    elif 'MicrographNameMovieRaw' in data_frame.columns.values:
-        data_list.append(extract_gridsquare_and_spotid__1_8(data_frame['MicrographNameMovieRaw'].iloc[0]))
-    elif 'MicrographNameMrcKriosRaw' in data_frame.columns.values:
-        data_list.append(extract_gridsquare_and_spotid__1_8(data_frame['MicrographNameMrcKriosRaw'].iloc[0]))
-    elif 'MicrographNameGainRaw' in data_frame.columns.values:
-        data_list.append(extract_gridsquare_and_spotid__1_8(data_frame['MicrographNameGainRaw'].iloc[0]))
-    elif 'MicrographNameFrameXmlRaw' in data_frame.columns.values:
-        data_list.append(extract_gridsquare_and_spotid__1_8(data_frame['MicrographNameFrameXmlRaw'].iloc[0]))
+    if 'MicrographNameXmlRaw' in data_frame:
+        data_list.append(tt.load_xml(file_name=data_frame['MicrographNameXmlRaw'].iloc[index], level_dict=get_xml_keys()))
+        data_list.append(extract_gridsquare_and_spotid__1_8(data_frame['MicrographNameXmlRaw'].iloc[index]))
+    elif 'MicrographNameJpgRaw' in data_frame:
+        data_list.append(extract_gridsquare_and_spotid__1_8(data_frame['MicrographNameJpgRaw'].iloc[index]))
+    elif 'MicrographNameMovieRaw' in data_frame:
+        data_list.append(extract_gridsquare_and_spotid__1_8(data_frame['MicrographNameMovieRaw'].iloc[index]))
+    elif 'MicrographNameMrcKriosRaw' in data_frame:
+        data_list.append(extract_gridsquare_and_spotid__1_8(data_frame['MicrographNameMrcKriosRaw'].iloc[index]))
+    elif 'MicrographNameGainRaw' in data_frame:
+        data_list.append(extract_gridsquare_and_spotid__1_8(data_frame['MicrographNameGainRaw'].iloc[index]))
+    elif 'MicrographNameFrameXmlRaw' in data_frame:
+        data_list.append(extract_gridsquare_and_spotid__1_8(data_frame['MicrographNameFrameXmlRaw'].iloc[index]))
 
     for frame in data_list:
-        for name in frame.columns.values:
-            data_frame[name] = frame[name]
+        for name in frame:
+            data_frame.at[index, name] = frame[name].iloc[0]
+            if not isinstance(frame[name].iloc[0], type(data_frame[name].iloc[index])):
+                if isinstance(frame[name].iloc[0], np.integer):
+                    data_frame[name] = data_frame[name].fillna(np.nan_to_num(-np.inf)).astype(type(frame[name].iloc[0]), copy=False)
+                else:
+                    data_frame[name] = data_frame[name].astype(type(frame[name].iloc[0]), copy=False)
     return None
 
 
-def get_movie__1_8_falcon(data_frame: pd.DataFrame) -> None:
+def get_movie__1_8_falcon(data_frame: pd.DataFrame, index: int) -> None:
     """
     Find the fractions for falcon EPU version 1.8
 
     Arguments:
     compare_name - Part of the name that is used for comparison
+    index - Index of the dataframe
 
     Returns:
     List of found movie files
@@ -174,14 +181,14 @@ def get_movie__1_8_falcon(data_frame: pd.DataFrame) -> None:
         if '.xml' not in entry
         ]
     assert len(fraction_file) == 1
-    data_frame['MicrographMovieNameRaw'] = fraction_file[0]
+    data_frame.at[index, 'MicrographMovieNameRaw'] = fraction_file[0]
     # Stores data in the FoundNumberOfFractions entry
-    get_number_of_frames__1_8_falcon(data_frame=data_frame)
-    assert 'FoundNumberOfFractions' in data_frame.columns.values
+    get_number_of_frames__1_8_falcon(data_frame=data_frame, index=index)
+    assert 'FoundNumberOfFractions' in data_frame
     return None
 
 
-def get_number_of_frames__1_8_falcon(data_frame: pd.DataFrame) -> None:
+def get_number_of_frames__1_8_falcon(data_frame: pd.DataFrame, index: int) -> None:
     """
     Extract the number of frames of the movie.
 
@@ -193,7 +200,7 @@ def get_number_of_frames__1_8_falcon(data_frame: pd.DataFrame) -> None:
     """
     mic_name: str
 
-    mic_name = data_frame['MicrographMovieNameRaw'].iloc[0]
+    mic_name = data_frame['MicrographMovieNameRaw'].iloc[index]
     data_frame['FoundNumberOfFractions'] = hs.load(mic_name).axes_manager[0].size
     return None
 
@@ -211,7 +218,7 @@ def get_copy_command__1_8_falcon() -> typing.Callable[..., typing.Any]:
     return utils.copy
 
 
-def get_movie__1_8_k2(data_frame: pd.DataFrame) -> None:
+def get_movie__1_8_k2(data_frame: pd.DataFrame, index: int) -> None:
     """
     Find the fractions for k2 EPU version 1.8
 
@@ -240,7 +247,7 @@ def get_movie__1_8_k2(data_frame: pd.DataFrame) -> None:
     fraction_file = f'{data_frame["OutputStackFolder"].iloc[0]}_Fractions.mrc'
     data_frame['MicrographMovieNameRaw'] = fraction_file
 
-    get_number_of_frames__1_8_k2(frames_list=fraction_files, data_frame=data_frame)
+    get_number_of_frames__1_8_k2(frames_list=fraction_files, data_frame=data_frame, index=index)
     assert 'FoundNumberOfFractions' in data_frame.columns.values
 
     data_arrays = []
@@ -248,7 +255,7 @@ def get_movie__1_8_k2(data_frame: pd.DataFrame) -> None:
     first_fraction_file = hs.load(fraction_files[0])
     assert first_fraction_file.axes_manager[0].size == 1
     nx = first_fraction_file.axes_manager[1].size
-    output_array = np.empty((data_frame['FoundNumberOfFractions'].iloc[0], nx, nx), dtype=np.float32)
+    output_array = np.empty((data_frame['FoundNumberOfFractions'].iloc[index].astype(int), nx, nx), dtype=np.float32)
     output_array[0] = first_fraction_file.data[0]
 
     for idx, file_name in enumerate(fraction_files[1:], 1):
@@ -260,7 +267,7 @@ def get_movie__1_8_k2(data_frame: pd.DataFrame) -> None:
     return None
 
 
-def get_number_of_frames__1_8_k2(frames_list: typing.List[str], data_frame: pd.DataFrame) -> None:
+def get_number_of_frames__1_8_k2(frames_list: typing.List[str], data_frame: pd.DataFrame, index: int) -> None:
     """
     Extract the number of frames of the movie.
 
@@ -271,5 +278,7 @@ def get_number_of_frames__1_8_k2(frames_list: typing.List[str], data_frame: pd.D
     Returns:
     None, Modified in-place
     """
-    data_frame['FoundNumberOfFractions'] = len(frames_list)
+    data_frame.at[index, 'FoundNumberOfFractions'] = len(frames_list)
+    if not isinstance(data_frame['FoundNumberOfFractions'].iloc[index], np.integer):
+        data_frame['FoundNumberOfFractions'] = data_frame['FoundNumberOfFractions'].fillna(np.nan_to_num(-np.inf)).astype(np.int64, copy=False)
     return None
