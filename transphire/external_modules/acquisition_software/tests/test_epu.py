@@ -297,10 +297,10 @@ class TestGetNumberOfFrames_18falcon:
         assert data_frame['FoundNumberOfFractions'].iloc[1] == 9
 
 
-class TestGetCopyCommand_18falcon:
+class TestGetCopyCommand_18:
 
     def test_function_returns_copy_command(self):
-        assert epu.get_copy_command__1_8_falcon() == utils.copy
+        assert epu.get_copy_command__1_8() == utils.copy
 
 
 class TestGetMovie_18k2:

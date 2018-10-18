@@ -70,9 +70,15 @@ def load_software(
             'Falcon': {
                 '1.8': {
                     'get_meta_data': epu.get_meta_data__1_8,
+                    'get_copy_command': epu.get_copy_command__1_8,
                     'get_movie': epu.get_movie__1_8_falcon,
-                    'get_number_of_frames': epu.get_number_of_frames__1_8_falcon,
-                    'get_copy_command': epu.get_copy_command__1_8_falcon,
+                    },
+                },
+            'K2': {
+                '1.8': {
+                    'get_meta_data': epu.get_meta_data__1_8,
+                    'get_copy_command': epu.get_copy_command__1_8,
+                    'get_movie': epu.get_movie__1_8_k2,
                     },
                 },
             },

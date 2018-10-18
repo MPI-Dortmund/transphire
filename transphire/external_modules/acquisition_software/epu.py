@@ -180,6 +180,59 @@ def get_meta_data__1_8(data_frame: pd.DataFrame, index: int) -> None:
     return None
 
 
+def get_copy_command__1_8() -> typing.Callable[..., typing.Any]:
+    """
+    Get the copy command for the micrographs
+
+    Arguments:
+    None
+
+    Returns:
+    Command for the copying, Command in case copying fails
+    """
+    return utils.copy
+
+
+def get_number_of_frames__1_8_falcon(data_frame: pd.DataFrame, index: int) -> None:
+    """
+    Extract the number of frames of the movie.
+
+    Arguments:
+    data_frame - Pandas data frame containing the MicrographMovieNameRaw
+
+    Returns:
+    None, Modified in-place
+    """
+    mic_name: str
+
+    mic_name = data_frame['MicrographMovieNameRaw'].iloc[index]
+    data_frame['FoundNumberOfFractions'] = hs.load(mic_name).axes_manager[0].size
+    return None
+
+
+def get_number_of_frames__1_8_k2(
+        frames_list: typing.List[str],
+        data_frame: pd.DataFrame,
+        index: int
+    ) -> None:
+    """
+    Extract the number of frames of the movie.
+
+    Arguments:
+    frames_list - List of found frames
+    data_frame - Pandas data frame
+
+    Returns:
+    None, Modified in-place
+    """
+    data_frame.at[index, 'FoundNumberOfFractions'] = len(frames_list)
+    if not isinstance(data_frame['FoundNumberOfFractions'].iloc[index], np.integer):
+        data_frame['FoundNumberOfFractions'] = data_frame['FoundNumberOfFractions'].fillna(
+            np.nan_to_num(-np.inf)
+            ).astype(np.int64, copy=False)
+    return None
+
+
 def get_movie__1_8_falcon(data_frame: pd.DataFrame, index: int) -> None:
     """
     Find the fractions for falcon EPU version 1.8
@@ -204,36 +257,6 @@ def get_movie__1_8_falcon(data_frame: pd.DataFrame, index: int) -> None:
     get_number_of_frames__1_8_falcon(data_frame=data_frame, index=index)
     assert 'FoundNumberOfFractions' in data_frame
     return None
-
-
-def get_number_of_frames__1_8_falcon(data_frame: pd.DataFrame, index: int) -> None:
-    """
-    Extract the number of frames of the movie.
-
-    Arguments:
-    data_frame - Pandas data frame containing the MicrographMovieNameRaw
-
-    Returns:
-    None, Modified in-place
-    """
-    mic_name: str
-
-    mic_name = data_frame['MicrographMovieNameRaw'].iloc[index]
-    data_frame['FoundNumberOfFractions'] = hs.load(mic_name).axes_manager[0].size
-    return None
-
-
-def get_copy_command__1_8_falcon() -> typing.Callable[..., typing.Any]:
-    """
-    Get the copy command for the micrographs
-
-    Arguments:
-    None
-
-    Returns:
-    Command for the copying, Command in case copying fails
-    """
-    return utils.copy
 
 
 def get_movie__1_8_k2(data_frame: pd.DataFrame, index: int) -> None:
@@ -286,27 +309,4 @@ def get_movie__1_8_k2(data_frame: pd.DataFrame, index: int) -> None:
     with mrcfile.new(fraction_file) as mrc_file:
         mrc_file.set_data(output_array)
 
-    return None
-
-
-def get_number_of_frames__1_8_k2(
-        frames_list: typing.List[str],
-        data_frame: pd.DataFrame,
-        index: int
-    ) -> None:
-    """
-    Extract the number of frames of the movie.
-
-    Arguments:
-    frames_list - List of found frames
-    data_frame - Pandas data frame
-
-    Returns:
-    None, Modified in-place
-    """
-    data_frame.at[index, 'FoundNumberOfFractions'] = len(frames_list)
-    if not isinstance(data_frame['FoundNumberOfFractions'].iloc[index], np.integer):
-        data_frame['FoundNumberOfFractions'] = data_frame['FoundNumberOfFractions'].fillna(
-            np.nan_to_num(-np.inf)
-            ).astype(np.int64, copy=False)
     return None
