@@ -229,11 +229,14 @@ def get_movie__1_8_k2(data_frame: pd.DataFrame) -> None:
     nx: int
     output_array: np.ndarray
 
+    convert = lambda text: int(text) if text.isdigit() else text
+    alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
     fraction_files = [
         entry
-        for entry in sorted(glob.glob(f'{data_frame["compare_name"].iloc[0]}*-*'))
+        for entry in sorted(glob.glob(f'{data_frame["compare_name"].iloc[0]}*-*'), key=alphanum_key)
         if '.xml' not in entry
         ]
+
     fraction_file = f'{data_frame["OutputStackFolder"].iloc[0]}_Fractions.mrc'
     data_frame['MicrographMovieNameRaw'] = fraction_file
 
