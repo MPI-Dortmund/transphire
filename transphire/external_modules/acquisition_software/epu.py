@@ -18,6 +18,7 @@
 
 
 import glob
+import os
 import re
 import typing
 
@@ -329,7 +330,7 @@ def get_movie__1_9_k2(data_frame: pd.DataFrame, index: int) -> None:
         entry
         for entry in glob.glob(f'{data_frame["compare_name"].iloc[index]}*-*')
         if '.xml' not in entry
-        and 'gain-ref' not in entry
+        and 'gain' not in os.path.basename(entry)
         ]
     assert len(fraction_file) == 1
     data_frame.at[index, 'MicrographMovieNameRaw'] = fraction_file[0]
@@ -337,5 +338,3 @@ def get_movie__1_9_k2(data_frame: pd.DataFrame, index: int) -> None:
     get_number_of_frames__1_8_falcon(data_frame=data_frame, index=index)
     assert 'FoundNumberOfFractions' in data_frame
     return None
-
-

@@ -235,6 +235,13 @@ class TestGetMetaData_18:
 
 class TestGetMovie_18falcon:
 
+    def test_search_file_mrc_index_1_should_return_9_frames(self):
+        mrc_file = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_mrc', 'FoilHole_983503_Data_984274_984275_20171201_1435_Fractions.mrc')
+        compare_name = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_mrc', 'FoilHole_983503_Data_984274_984275')
+        compare_name = pd.DataFrame({'compare_name': compare_name}, index=[0, 1])
+        epu.get_movie__1_8_falcon(compare_name, index=1)
+        assert compare_name['FoundNumberOfFractions'].iloc[1] == 9
+
     def test_search_file_mrc_index_1_should_return_file_path(self):
         mrc_file = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_mrc', 'FoilHole_983503_Data_984274_984275_20171201_1435_Fractions.mrc')
         compare_name = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_falcon_mrc', 'FoilHole_983503_Data_984274_984275')
@@ -419,3 +426,12 @@ class TestGetMovie_19k2:
         compare_data = pd.DataFrame({'compare_name': [compare_name, compare_name_2]})
         epu.get_movie__1_9_k2(compare_data, index=1)
         assert compare_data['MicrographMovieNameRaw'].iloc[1] == mrc_file_2
+
+    def test_search_file_mrc_index_1_should_return_9_frames(self):
+        mrc_file = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_9_k2', 'FoilHole_983503_Data_984274_984275_20171201_1435-0000.mrc')
+        mrc_file_2 = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_9_k2', 'FoilHole_983504_Data_984274_984275_20171201_1435-0000.mrc')
+        compare_name = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_9_k2', 'FoilHole_983503_Data_984274_984275')
+        compare_name_2 = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_9_k2', 'FoilHole_983504_Data_984274_984275')
+        compare_data = pd.DataFrame({'compare_name': [compare_name, compare_name_2]})
+        epu.get_movie__1_9_k2(compare_data, index=1)
+        assert compare_data['FoundNumberOfFractions'].iloc[1] == 9
