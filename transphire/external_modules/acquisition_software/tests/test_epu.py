@@ -19,6 +19,8 @@
 
 import os
 
+import hyperspy.api as hs
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -288,7 +290,23 @@ class TestGetMovie_18k2:
         compare_name_data = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_k2', 'FoilHole_983503_Data_984274_984275')
         compare_name = pd.DataFrame({'compare_name': compare_name_data, 'OutputStackFolder': output_file}, index=[0])
         epu.get_movie__1_8_k2(compare_name)
-        assert compare_name['MicrographMovieNameRaw'].iloc[0] == mrc_file
+        assert compare_name['MicrographMovieNameRaw'].iloc[0] == f'{output_file}_Fractions.mrc'
+
+
+    def test_output_file_should_have_9_entries(self, tmpdir):
+        output_file = tmpdir.join('test_output_file_should_have_9_entries')
+        compare_name_data = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_k2', 'FoilHole_983503_Data_984274_984275')
+        compare_name = pd.DataFrame({'compare_name': compare_name_data, 'OutputStackFolder': output_file}, index=[0])
+        epu.get_movie__1_8_k2(compare_name)
+        assert hs.load(f'{output_file}_Fractions.mrc').axes_manager[0].size == 9
+
+
+    def test_first_data_entry_is_same_as_first_original_data(self, tmpdir):
+        output_file = tmpdir.join('test_first_data_entry_is_same_as_first_original_data')
+        compare_name_data = os.path.join(THIS_DIR, INPUT_TEST_FOLDER, 'epu_1_8_k2', 'FoilHole_983503_Data_984274_984275')
+        compare_name = pd.DataFrame({'compare_name': compare_name_data, 'OutputStackFolder': output_file}, index=[0])
+        epu.get_movie__1_8_k2(compare_name)
+        assert np.array_equal(hs.load(f'{output_file}_Fractions.mrc').data[0], hs.load(f'{compare_name_data}_20171201_1435-1.mrc').data[0])
 
 
 class TestGetNumberOfFrames_18k2:

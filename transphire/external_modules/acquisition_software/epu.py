@@ -227,6 +227,7 @@ def get_movie__1_8_k2(data_frame: pd.DataFrame) -> None:
     data_arrays: typing.List[np.ndarray]
     first_fraction_file: hs._signals.signal2d.Signal2D
     nx: int
+    output_array: np.ndarray
 
     fraction_files = [
         entry
@@ -244,13 +245,14 @@ def get_movie__1_8_k2(data_frame: pd.DataFrame) -> None:
     first_fraction_file = hs.load(fraction_files[0])
     assert first_fraction_file.axes_manager[0].size == 1
     nx = first_fraction_file.axes_manager[1].size
-    output_array = np.empty((data_frame['FoundNumberOfFractions'].iloc[0], nx, nx))
+    output_array = np.empty((data_frame['FoundNumberOfFractions'].iloc[0], nx, nx), dtype=np.float32)
+    output_array[0] = first_fraction_file.data[0]
 
-    for file_name in fraction_files[1:]:
-        hs.load
+    for idx, file_name in enumerate(fraction_files[1:], 1):
+        output_array[idx] = hs.load(file_name).data[0]
 
-    with mrcfile.open(fraction_file) as write:
-        pass
+    with mrcfile.new(fraction_file) as file_name:
+        file_name.set_data(output_array)
 
     return None
 
