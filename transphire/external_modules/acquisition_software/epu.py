@@ -21,8 +21,9 @@ import glob
 import re
 import typing
 
-import numpy as np
-import mrcfile
+import numpy as np # type: ignore
+import mrcfile # type: ignore
+import hyperspy # type: ignore
 import hyperspy.api as hs # type: ignore
 import pandas as pd # type: ignore
 import transphire_transform as tt # type: ignore
@@ -138,27 +139,44 @@ def get_meta_data__1_8(data_frame: pd.DataFrame, index: int) -> None:
 
     data_list = []
     if 'MicrographNameXmlRaw' in data_frame:
-        data_list.append(tt.load_xml(file_name=data_frame['MicrographNameXmlRaw'].iloc[index], level_dict=get_xml_keys()))
-        data_list.append(extract_gridsquare_and_spotid__1_8(data_frame['MicrographNameXmlRaw'].iloc[index]))
+        data_list.append(
+            tt.load_xml(
+                file_name=data_frame['MicrographNameXmlRaw'].iloc[index],
+                level_dict=get_xml_keys()
+                )
+            )
+        data_list.append(
+            extract_gridsquare_and_spotid__1_8(data_frame['MicrographNameXmlRaw'].iloc[index])
+            )
     elif 'MicrographNameJpgRaw' in data_frame:
-        data_list.append(extract_gridsquare_and_spotid__1_8(data_frame['MicrographNameJpgRaw'].iloc[index]))
+        data_list.append(
+            extract_gridsquare_and_spotid__1_8(data_frame['MicrographNameJpgRaw'].iloc[index])
+            )
     elif 'MicrographNameMovieRaw' in data_frame:
-        data_list.append(extract_gridsquare_and_spotid__1_8(data_frame['MicrographNameMovieRaw'].iloc[index]))
+        data_list.append(
+            extract_gridsquare_and_spotid__1_8(data_frame['MicrographNameMovieRaw'].iloc[index])
+            )
     elif 'MicrographNameMrcKriosRaw' in data_frame:
-        data_list.append(extract_gridsquare_and_spotid__1_8(data_frame['MicrographNameMrcKriosRaw'].iloc[index]))
+        data_list.append(
+            extract_gridsquare_and_spotid__1_8(data_frame['MicrographNameMrcKriosRaw'].iloc[index])
+            )
     elif 'MicrographNameGainRaw' in data_frame:
-        data_list.append(extract_gridsquare_and_spotid__1_8(data_frame['MicrographNameGainRaw'].iloc[index]))
+        data_list.append(
+            extract_gridsquare_and_spotid__1_8(data_frame['MicrographNameGainRaw'].iloc[index])
+            )
     elif 'MicrographNameFrameXmlRaw' in data_frame:
-        data_list.append(extract_gridsquare_and_spotid__1_8(data_frame['MicrographNameFrameXmlRaw'].iloc[index]))
+        data_list.append(
+            extract_gridsquare_and_spotid__1_8(data_frame['MicrographNameFrameXmlRaw'].iloc[index])
+            )
 
     for frame in data_list:
         for name in frame:
             data_frame.at[index, name] = frame[name].iloc[0]
-            if not isinstance(frame[name].iloc[0], type(data_frame[name].iloc[index])):
-                if isinstance(frame[name].iloc[0], np.integer):
-                    data_frame[name] = data_frame[name].fillna(np.nan_to_num(-np.inf)).astype(type(frame[name].iloc[0]), copy=False)
-                else:
-                    data_frame[name] = data_frame[name].astype(type(frame[name].iloc[0]), copy=False)
+            if isinstance(frame[name].iloc[0], np.integer):
+                data_frame[name] = data_frame[name].fillna(np.nan_to_num(-np.inf)).astype(
+                    type(frame[name].iloc[0]),
+                    copy=False
+                    )
     return None
 
 
@@ -230,10 +248,9 @@ def get_movie__1_8_k2(data_frame: pd.DataFrame, index: int) -> None:
     """
     fraction_files: typing.List[str]
     fraction_file: str
-    write: mrcfile.MrcFile
-    data_arrays: typing.List[np.ndarray]
-    first_fraction_file: hs._signals.signal2d.Signal2D
-    nx: int
+    mrc_file: mrcfile.mrcfile.MrcFile
+    first_fraction_file: hyperspy._signals.signal2d.Signal2D # pylint: disable=protected-access
+    micrograph_size: int
     output_array: np.ndarray
 
     convert = lambda text: int(text) if text.isdigit() else text
@@ -250,24 +267,33 @@ def get_movie__1_8_k2(data_frame: pd.DataFrame, index: int) -> None:
     get_number_of_frames__1_8_k2(frames_list=fraction_files, data_frame=data_frame, index=index)
     assert 'FoundNumberOfFractions' in data_frame.columns.values
 
-    data_arrays = []
-
     first_fraction_file = hs.load(fraction_files[0])
     assert first_fraction_file.axes_manager[0].size == 1
-    nx = first_fraction_file.axes_manager[1].size
-    output_array = np.empty((data_frame['FoundNumberOfFractions'].iloc[index].astype(int), nx, nx), dtype=np.float32)
+    micrograph_size = first_fraction_file.axes_manager[1].size
+    output_array = np.empty(
+        (
+            data_frame['FoundNumberOfFractions'].iloc[index].astype(int),
+            micrograph_size,
+            micrograph_size
+            ),
+        dtype=np.float32
+        )
     output_array[0] = first_fraction_file.data[0]
 
     for idx, file_name in enumerate(fraction_files[1:], 1):
         output_array[idx] = hs.load(file_name).data[0]
 
-    with mrcfile.new(fraction_file) as file_name:
-        file_name.set_data(output_array)
+    with mrcfile.new(fraction_file) as mrc_file:
+        mrc_file.set_data(output_array)
 
     return None
 
 
-def get_number_of_frames__1_8_k2(frames_list: typing.List[str], data_frame: pd.DataFrame, index: int) -> None:
+def get_number_of_frames__1_8_k2(
+        frames_list: typing.List[str],
+        data_frame: pd.DataFrame,
+        index: int
+    ) -> None:
     """
     Extract the number of frames of the movie.
 
@@ -280,5 +306,7 @@ def get_number_of_frames__1_8_k2(frames_list: typing.List[str], data_frame: pd.D
     """
     data_frame.at[index, 'FoundNumberOfFractions'] = len(frames_list)
     if not isinstance(data_frame['FoundNumberOfFractions'].iloc[index], np.integer):
-        data_frame['FoundNumberOfFractions'] = data_frame['FoundNumberOfFractions'].fillna(np.nan_to_num(-np.inf)).astype(np.int64, copy=False)
+        data_frame['FoundNumberOfFractions'] = data_frame['FoundNumberOfFractions'].fillna(
+            np.nan_to_num(-np.inf)
+            ).astype(np.int64, copy=False)
     return None
