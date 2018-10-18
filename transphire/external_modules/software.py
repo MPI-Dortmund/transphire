@@ -80,6 +80,11 @@ def load_software(
                     'get_copy_command': epu.get_copy_command__1_8,
                     'get_movie': epu.get_movie__1_8_k2,
                     },
+                '1.9': {
+                    'get_meta_data': epu.get_meta_data__1_8,
+                    'get_copy_command': epu.get_copy_command__1_8,
+                    'get_movie': epu.get_movie__1_9_k2,
+                    },
                 },
             },
         }

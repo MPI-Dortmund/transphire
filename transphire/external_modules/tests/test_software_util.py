@@ -57,7 +57,7 @@ class TestLoadSoftware_k218:
         assert software.load_software('get_meta_data', 'EPU', 'K2', '1.9') == epu.get_meta_data__1_8
 
     def test_load_software_get_movie_19_returns_epus(self):
-        assert software.load_software('get_movie', 'EPU', 'K2', '1.9') == epu.get_movie__1_8_k2
+        assert software.load_software('get_movie', 'EPU', 'K2', '1.9') == epu.get_movie__1_9_k2
 
     def test_load_software_get_copy_command_19_returns_epus(self):
         assert software.load_software('get_copy_command', 'EPU', 'K2', '1.9') == epu.get_copy_command__1_8

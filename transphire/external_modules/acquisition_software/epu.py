@@ -248,7 +248,7 @@ def get_movie__1_8_falcon(data_frame: pd.DataFrame, index: int) -> None:
 
     fraction_file = [
         entry
-        for entry in glob.glob(f'{data_frame["compare_name"].iloc[0]}*_Fractions.*')
+        for entry in glob.glob(f'{data_frame["compare_name"].iloc[index]}*_Fractions.*')
         if '.xml' not in entry
         ]
     assert len(fraction_file) == 1
@@ -280,11 +280,11 @@ def get_movie__1_8_k2(data_frame: pd.DataFrame, index: int) -> None:
     alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
     fraction_files = [
         entry
-        for entry in sorted(glob.glob(f'{data_frame["compare_name"].iloc[0]}*-*'), key=alphanum_key)
+        for entry in sorted(glob.glob(f'{data_frame["compare_name"].iloc[index]}*-*'), key=alphanum_key)
         if '.xml' not in entry
         ]
 
-    fraction_file = f'{data_frame["OutputStackFolder"].iloc[0]}_Fractions.mrc'
+    fraction_file = f'{data_frame["OutputStackFolder"].iloc[index]}_Fractions.mrc'
     data_frame['MicrographMovieNameRaw'] = fraction_file
 
     get_number_of_frames__1_8_k2(frames_list=fraction_files, data_frame=data_frame, index=index)
@@ -310,3 +310,32 @@ def get_movie__1_8_k2(data_frame: pd.DataFrame, index: int) -> None:
         mrc_file.set_data(output_array)
 
     return None
+
+
+def get_movie__1_9_k2(data_frame: pd.DataFrame, index: int) -> None:
+    """
+    Find the fractions for K2 camera EPU version 1.9
+
+    Arguments:
+    data_frame - Data frame containing part of the name that is used for comparison
+    index - Index of the dataframe
+
+    Returns:
+    None
+    """
+    fraction_file: typing.List[str]
+
+    fraction_file = [
+        entry
+        for entry in glob.glob(f'{data_frame["compare_name"].iloc[index]}*-*')
+        if '.xml' not in entry
+        and 'gain-ref' not in entry
+        ]
+    assert len(fraction_file) == 1
+    data_frame.at[index, 'MicrographMovieNameRaw'] = fraction_file[0]
+    # Stores data in the FoundNumberOfFractions entry
+    get_number_of_frames__1_8_falcon(data_frame=data_frame, index=index)
+    assert 'FoundNumberOfFractions' in data_frame
+    return None
+
+
