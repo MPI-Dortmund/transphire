@@ -435,3 +435,9 @@ class TestGetMovie_19k2:
         compare_data = pd.DataFrame({'compare_name': [compare_name, compare_name_2]})
         epu.get_movie__1_9_k2(compare_data, index=1)
         assert compare_data['FoundNumberOfFractions'].iloc[1] == 9
+
+
+class TestGetPattern_18:
+
+    def test_calling_functions_returns_pattern(self):
+        assert epu.get_pattern__1_8() == r'.*FoilHole_[0-9]+_Data_[0-9]+_[0-9]+_[0-9]+_[0-9]+.*'

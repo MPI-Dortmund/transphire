@@ -32,6 +32,19 @@ import transphire_transform as tt # type: ignore
 from ... import utils
 
 
+def get_pattern__1_8() -> str:
+    """
+    Return the pattern for the files to find the frames.
+
+    Arguments:
+    None
+
+    Returns:
+    Pattern string
+    """
+    return r'.*FoilHole_[0-9]+_Data_[0-9]+_[0-9]+_[0-9]+_[0-9]+.*'
+
+
 def get_xml_keys() -> typing.Dict[str, typing.Dict[str, typing.List[str]]]:
     """
     Get the xml keys to find the related objects.
@@ -330,7 +343,7 @@ def get_movie__1_9_k2(data_frame: pd.DataFrame, index: int) -> None:
         entry
         for entry in glob.glob(f'{data_frame["compare_name"].iloc[index]}*-*')
         if '.xml' not in entry
-        and 'gain' not in os.path.basename(entry)
+        and 'gain-ref' not in os.path.basename(entry)
         ]
     assert len(fraction_file) == 1
     data_frame.at[index, 'MicrographMovieNameRaw'] = fraction_file[0]
