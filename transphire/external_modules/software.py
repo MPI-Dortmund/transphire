@@ -71,22 +71,19 @@ def load_software(
                 '1.8': {
                     'get_meta_data': epu.get_meta_data__1_8,
                     'get_copy_command': epu.get_copy_command__1_8,
-                    'get_movie': epu.get_movie__1_8_falcon,
-                    'get_pattern': epu.get_pattern__1_8,
+                    'get_all_files': epu.get_all_files__1_8_falcon,
                     },
                 },
             'K2': {
                 '1.8': {
                     'get_meta_data': epu.get_meta_data__1_8,
                     'get_copy_command': epu.get_copy_command__1_8,
-                    'get_movie': epu.get_movie__1_8_k2,
-                    'get_pattern': epu.get_pattern__1_8,
+                    'get_all_files': epu.get_all_files__1_8_k2,
                     },
                 '1.9': {
                     'get_meta_data': epu.get_meta_data__1_8,
                     'get_copy_command': epu.get_copy_command__1_8,
-                    'get_movie': epu.get_movie__1_9_k2,
-                    'get_pattern': epu.get_pattern__1_8,
+                    'get_all_files': epu.get_all_files__1_9_k2,
                     },
                 },
             },

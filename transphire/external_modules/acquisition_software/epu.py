@@ -21,6 +21,7 @@ import glob
 import os
 import re
 import typing
+import difflib
 
 import numpy as np # type: ignore
 import mrcfile # type: ignore
@@ -31,18 +32,9 @@ import transphire_transform as tt # type: ignore
 
 from ... import utils
 
-
-def get_pattern__1_8() -> str:
-    """
-    Return the pattern for the files to find the frames.
-
-    Arguments:
-    None
-
-    Returns:
-    Pattern string
-    """
-    return r'.*FoilHole_[0-9]+_Data_[0-9]+_[0-9]+_[0-9]+_[0-9]+.*'
+print("DELETE ME")
+pd.set_option('display.max_columns', None)
+pd.set_option('display.max_colwidth', -1)
 
 
 def get_xml_keys() -> typing.Dict[str, typing.Dict[str, typing.List[str]]]:
@@ -152,35 +144,35 @@ def get_meta_data__1_8(data_frame: pd.DataFrame, index: int) -> None:
     data_list: typing.List[pd.DataFrame]
 
     data_list = []
-    if 'MicrographNameXmlRaw' in data_frame:
+    if 'Find_MicrographNameXml' in data_frame:
         data_list.append(
             tt.load_xml(
-                file_name=data_frame['MicrographNameXmlRaw'].iloc[index],
+                file_name=data_frame['Find_MicrographNameXml'].iloc[index],
                 level_dict=get_xml_keys()
                 )
             )
         data_list.append(
-            extract_gridsquare_and_spotid__1_8(data_frame['MicrographNameXmlRaw'].iloc[index])
+            extract_gridsquare_and_spotid__1_8(data_frame['Find_MicrographNameXml'].iloc[index])
             )
-    elif 'MicrographNameJpgRaw' in data_frame:
+    elif 'Find_MicrographNameJpg' in data_frame:
         data_list.append(
-            extract_gridsquare_and_spotid__1_8(data_frame['MicrographNameJpgRaw'].iloc[index])
+            extract_gridsquare_and_spotid__1_8(data_frame['Find_MicrographNameJpg'].iloc[index])
             )
-    elif 'MicrographNameMovieRaw' in data_frame:
+    elif 'Find_MicrographNameMovie' in data_frame:
         data_list.append(
-            extract_gridsquare_and_spotid__1_8(data_frame['MicrographNameMovieRaw'].iloc[index])
+            extract_gridsquare_and_spotid__1_8(data_frame['Find_MicrographNameMovie'].iloc[index])
             )
-    elif 'MicrographNameMrcKriosRaw' in data_frame:
+    elif 'Find_MicrographNameMrcKrios' in data_frame:
         data_list.append(
-            extract_gridsquare_and_spotid__1_8(data_frame['MicrographNameMrcKriosRaw'].iloc[index])
+            extract_gridsquare_and_spotid__1_8(data_frame['Find_MicrographNameMrcKrios'].iloc[index])
             )
-    elif 'MicrographNameGainRaw' in data_frame:
+    elif 'Find_MicrographNameGain' in data_frame:
         data_list.append(
-            extract_gridsquare_and_spotid__1_8(data_frame['MicrographNameGainRaw'].iloc[index])
+            extract_gridsquare_and_spotid__1_8(data_frame['Find_MicrographNameGain'].iloc[index])
             )
-    elif 'MicrographNameFrameXmlRaw' in data_frame:
+    elif 'Find_MicrographNameFrameXml' in data_frame:
         data_list.append(
-            extract_gridsquare_and_spotid__1_8(data_frame['MicrographNameFrameXmlRaw'].iloc[index])
+            extract_gridsquare_and_spotid__1_8(data_frame['Find_MicrographNameFrameXml'].iloc[index])
             )
 
     for frame in data_list:
@@ -207,19 +199,104 @@ def get_copy_command__1_8() -> typing.Callable[..., typing.Any]:
     return utils.copy
 
 
+def get_pattern__1_8_falcon() -> typing.Dict[str, str]:
+    """
+    Return the pattern for the files to find the frames.
+
+    Arguments:
+    None
+
+    Returns:
+    Pattern string
+    """
+    output_dict: typing.Dict[str, str]
+
+    output_dict = {
+        'Find_MicrographNameMovie': \
+            r'.*FoilHole_[0-9]+_Data_[0-9]+_[0-9]+_[0-9]+_[0-9]+_Fractions\..*',
+        'Find_MicrographNameXml': \
+            r'.*FoilHole_[0-9]+_Data_[0-9]+_[0-9]+_[0-9]+_[0-9]+.xml',
+        'Find_MicrographNameJpg': \
+            r'.*FoilHole_[0-9]+_Data_[0-9]+_[0-9]+_[0-9]+_[0-9]+.jpg',
+        'Find_MicrographNameMrcKrios': \
+            r'.*FoilHole_[0-9]+_Data_[0-9]+_[0-9]+_[0-9]+_[0-9]+.mrc',
+        'Find_MicrographNameFrameXml': \
+            r'.*FoilHole_[0-9]+_Data_[0-9]+_[0-9]+_[0-9]+_[0-9]+_Fractions.xml',
+        'CompareName': \
+            r'(?P<COMPARE_NAME>.*FoilHole_[0-9]+_Data_[0-9]+_[0-9]+).*',
+        }
+    return output_dict
+
+
+def get_pattern__1_8_k2() -> typing.Dict[str, str]:
+    """
+    Return the pattern for the files to find the frames.
+
+    Arguments:
+    None
+
+    Returns:
+    Pattern string
+    """
+    output_dict: typing.Dict[str, str]
+
+    output_dict = {
+        'Find_MicrographNameMovie': \
+            r'.*FoilHole_[0-9]+_Data_[0-9]+_[0-9]+_[0-9]+_[0-9]+-\..*',
+        'Find_MicrographNameXml': \
+            r'.*FoilHole_[0-9]+_Data_[0-9]+_[0-9]+_[0-9]+_[0-9]+.xml',
+        'Find_MicrographNameJpg': \
+            r'.*FoilHole_[0-9]+_Data_[0-9]+_[0-9]+_[0-9]+_[0-9]+.jpg',
+        'Find_MicrographNameMrcKrios': \
+            r'.*FoilHole_[0-9]+_Data_[0-9]+_[0-9]+_[0-9]+_[0-9]+.mrc',
+        'CompareName': \
+            r'(?P<COMPARE_NAME>.*FoilHole_[0-9]+_Data_[0-9]+_[0-9]+).*',
+        }
+    return output_dict
+
+
+def get_pattern__1_9_k2() -> typing.Dict[str, str]:
+    """
+    Return the pattern for the files to find the frames.
+
+    Arguments:
+    None
+
+    Returns:
+    Pattern string dictionary
+    """
+    output_dict: typing.Dict[str, str]
+
+    output_dict = {
+        'Find_MicrographNameMovie': \
+            r'.*FoilHole_[0-9]+_Data_[0-9]+_[0-9]+_[0-9]+_[0-9]+-[0-9]+\..*',
+        'Find_MicrographNameXml': \
+            r'.*FoilHole_[0-9]+_Data_[0-9]+_[0-9]+_[0-9]+_[0-9]+.xml',
+        'Find_MicrographNameJpg': \
+            r'.*FoilHole_[0-9]+_Data_[0-9]+_[0-9]+_[0-9]+_[0-9]+.jpg',
+        'Find_MicrographNameMrcKrios': \
+            r'.*FoilHole_[0-9]+_Data_[0-9]+_[0-9]+_[0-9]+_[0-9]+.mrc',
+        'Find_MicrographNameGain': \
+            r'.*FoilHole_[0-9]+_Data_[0-9]+_[0-9]+_[0-9]+_[0-9]+-gain-ref\..*',
+        'CompareName': \
+            r'(?P<COMPARE_NAME>.*FoilHole_[0-9]+_Data_[0-9]+_[0-9]+).*',
+        }
+    return output_dict
+
+
 def get_number_of_frames__1_8_falcon(data_frame: pd.DataFrame, index: int) -> None:
     """
     Extract the number of frames of the movie.
 
     Arguments:
-    data_frame - Pandas data frame containing the MicrographMovieNameRaw
+    data_frame - Pandas data frame containing the Find_MicrographNameMovie
 
     Returns:
     None, Modified in-place
     """
     mic_name: str
 
-    mic_name = data_frame['MicrographMovieNameRaw'].iloc[index]
+    mic_name = data_frame['Find_MicrographNameMovie'].iloc[index]
     data_frame['FoundNumberOfFractions'] = hs.load(mic_name).axes_manager[0].size
     return None
 
@@ -247,7 +324,7 @@ def get_number_of_frames__1_8_k2(
     return None
 
 
-def get_movie__1_8_falcon(data_frame: pd.DataFrame, index: int) -> None:
+def get_all_files__1_8_falcon(data_frame: pd.DataFrame, index: int) -> None:
     """
     Find the fractions for falcon EPU version 1.8
 
@@ -266,14 +343,14 @@ def get_movie__1_8_falcon(data_frame: pd.DataFrame, index: int) -> None:
         if '.xml' not in entry
         ]
     assert len(fraction_file) == 1
-    data_frame.at[index, 'MicrographMovieNameRaw'] = fraction_file[0]
+    data_frame.at[index, 'Find_MicrographNameMovie'] = fraction_file[0]
     # Stores data in the FoundNumberOfFractions entry
     get_number_of_frames__1_8_falcon(data_frame=data_frame, index=index)
     assert 'FoundNumberOfFractions' in data_frame
     return None
 
 
-def get_movie__1_8_k2(data_frame: pd.DataFrame, index: int) -> None:
+def get_all_files__1_8_k2(data_frame: pd.DataFrame, index: int) -> None:
     """
     Find the fractions for k2 EPU version 1.8
 
@@ -299,7 +376,7 @@ def get_movie__1_8_k2(data_frame: pd.DataFrame, index: int) -> None:
         ]
 
     fraction_file = f'{data_frame["OutputStackFolder"].iloc[index]}_Fractions.mrc'
-    data_frame['MicrographMovieNameRaw'] = fraction_file
+    data_frame['Find_MicrographNameMovie'] = fraction_file
 
     get_number_of_frames__1_8_k2(frames_list=fraction_files, data_frame=data_frame, index=index)
     assert 'FoundNumberOfFractions' in data_frame.columns.values
@@ -326,28 +403,72 @@ def get_movie__1_8_k2(data_frame: pd.DataFrame, index: int) -> None:
     return None
 
 
-def get_movie__1_9_k2(data_frame: pd.DataFrame, index: int) -> None:
+def find_new_index(data_frame: pd.DataFrame) -> int:
+    """
+    Find the next index in the pandas data frame.
+
+    Arguments:
+    data_frame - DataFrame containing the information.
+
+    Returns:
+    next index
+    """
+    index: int
+
+    try:
+        index = data_frame['Find_MicrographNameMovie'].index[
+            data_frame['Find_MicrographNameMovie'].apply(pd.isnull)
+            ][0]
+    except KeyError:
+        index = 0
+
+    return index
+
+
+def get_all_files__1_9_k2(data_frame: pd.DataFrame, data_settings: pd.Series) -> None:
     """
     Find the fractions for K2 camera EPU version 1.9
 
     Arguments:
-    data_frame - Data frame containing part of the name that is used for comparison
-    index - Index of the dataframe
+    data_frame - Data frame containing load information.
 
     Returns:
     None
     """
-    fraction_file: typing.List[str]
+    file_list: typing.List[str]
+    unique_list: typing.List[str]
+    patterns: typing.Dict[str, str]
+    file_match: typing.Optional[typing.Match[str]]
+    new_data_frame: pd.DataFrame
+    dropped_data_frame: pd.DataFrame
+    next_idx: int
 
-    fraction_file = [
-        entry
-        for entry in glob.glob(f'{data_frame["compare_name"].iloc[index]}*-*')
-        if '.xml' not in entry
-        and 'gain-ref' not in os.path.basename(entry)
-        ]
-    assert len(fraction_file) == 1
-    data_frame.at[index, 'MicrographMovieNameRaw'] = fraction_file[0]
-    # Stores data in the FoundNumberOfFractions entry
-    get_number_of_frames__1_8_falcon(data_frame=data_frame, index=index)
-    assert 'FoundNumberOfFractions' in data_frame
-    return None
+    file_list = []
+    for start_directory in [data_settings['DirectoryFrames'], data_settings['DirectoryMeta']]:
+        for root, dirs, files in os.walk(start_directory):
+            for file_name in files:
+                if os.path.realpath(os.path.join(root, file_name)) not in file_list:
+                    file_list.append(os.path.realpath(os.path.join(root, file_name)))
+
+    patterns = get_pattern__1_9_k2()
+    file_match = re.compile(patterns['CompareName'])
+    unique_list = list(set(list([
+        os.path.basename(file_match.match(entry).group('COMPARE_NAME'))
+        for entry in file_list
+        if file_match.match(entry)
+        ])))
+
+    next_idx = find_new_index(data_frame)
+    new_data_frame = pd.DataFrame({}, index=range(next_idx, next_idx+len(unique_list)))
+    for idx, entry in enumerate(sorted(unique_list)):
+        for file_name in file_list:
+            if entry in file_name:
+                for key, value in patterns.items():
+                    if re.match(value, file_name) and key.startswith('Find_'):
+                        new_data_frame.at[idx, key] = file_name
+
+    dropped_data_frame = new_data_frame[~pd.isnull(new_data_frame).any(1)]
+    for idx, row in dropped_data_frame.iterrows():
+        for name, value in row.items():
+            data_frame.at[next_idx, name] = value
+        next_idx += 1
