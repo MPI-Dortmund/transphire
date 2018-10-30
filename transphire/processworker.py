@@ -207,6 +207,8 @@ class ProcessWorker(QObject):
                         'full_backup': False,
                         'full_hdd': False,
                         'unknown_error': False,
+                        'queue_list': [],
+                        'queue_list_time': 0,
                         'queue_lock': QMutex(),
                         'save_lock': QMutex(),
                         'count_lock': QMutex(),

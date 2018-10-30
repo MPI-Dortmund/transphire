@@ -191,7 +191,7 @@ def create_cryolo_v1_1_0_command(
     command.append('{0}'.format(settings['Path'][picking_name]))
 
     command.append('-i')
-    command.append('{0}'.format(file_input))
+    command.append('{0}'.format(' '.join(file_input)))
     command.append('-o')
     command.append('{0}'.format(file_output))
     command.append('--write_empty')
@@ -249,7 +249,7 @@ def create_cryolo_v1_0_4_command(
     command.append('{0}'.format(settings['Path'][picking_name]))
 
     command.append('-i')
-    command.append('{0}'.format(file_input))
+    command.append('{0}'.format(' '.join(file_input)))
     command.append('-o')
     command.append('{0}'.format(file_output))
     command.append('--write_empty')

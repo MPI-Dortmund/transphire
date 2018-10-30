@@ -2466,9 +2466,13 @@ class ProcessThread(QThread):
             command=command
             )
 
+        self.shared_dict_typ['queue_list'].append([file_input)
+        if time.time() - self.shared_dict_typ['queue_list_time'] < 30:
+            return None
+
         # Create the command for picking
         command, check_files, block_gpu, gpu_list = tup.get_picking_command(
-            file_input=file_input,
+            file_input=self.shared_dict_typ['queue_list'],
             new_name=self.settings['picking_folder'],
             settings=self.settings,
             queue_com=self.queue_com,
@@ -2597,6 +2601,8 @@ class ProcessThread(QThread):
                             self.add_to_queue(aim=aim_name, root_name=log_file)
                 else:
                     pass
+
+        self.shared_dict_typ['queue_list_time'] = time.time()
 
     def run_compress(self, root_name):
         """
