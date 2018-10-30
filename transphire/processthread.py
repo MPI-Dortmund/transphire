@@ -550,6 +550,7 @@ class ProcessThread(QThread):
         """
         self.queue_lock.lock()
         error = False
+        dummy = False
         try:
             if self.queue.empty():
                 self.queue_com['status'].put([
@@ -561,7 +562,12 @@ class ProcessThread(QThread):
                     self.name,
                     '#ffc14d'
                     ])
-                error = True
+                if not self.shared_dict_typ['queue_list']:
+                    error = True
+                elif time.time() - self.shared_dict_typ['queue_list_time'] > 30:
+                    dummy = True
+                else:
+                    error = True
             else:
                 pass
         except Exception:
@@ -576,22 +582,25 @@ class ProcessThread(QThread):
             pass
 
         # Get new file
-        self.queue_lock.lock()
-        try:
-            self.queue_com['status'].put([
-                'Running',
-                [
-                    self.queue.qsize(),
-                    self.shared_dict_typ['file_number']
-                    ],
-                self.name,
-                'lightgreen'
-                ])
-            root_name = self.remove_from_queue()
-        except Exception:
-            return None
-        finally:
-            self.queue_lock.unlock()
+        if dummy:
+            root_name = 'None'
+        else:
+            self.queue_lock.lock()
+            try:
+                self.queue_com['status'].put([
+                    'Running',
+                    [
+                        self.queue.qsize(),
+                        self.shared_dict_typ['file_number']
+                        ],
+                    self.name,
+                    'lightgreen'
+                    ])
+                root_name = self.remove_from_queue()
+            except Exception:
+                return None
+            finally:
+                self.queue_lock.unlock()
 
         # Set for every process a method and the right lost_connection name
         method_dict = {
@@ -711,11 +720,12 @@ class ProcessThread(QThread):
             if self.typ == 'Import':
                 pass
             else:
-                self.queue_lock.lock()
-                try:
-                    self.shared_dict_typ['file_number'] += 1
-                finally:
-                    self.queue_lock.unlock()
+                if not dummy:
+                    self.queue_lock.lock()
+                    try:
+                        self.shared_dict_typ['file_number'] += 1
+                    finally:
+                        self.queue_lock.unlock()
 
     def check_queue_files(self, root_name):
         if self.settings['Copy']['Delete stack after compression?'] == 'True':
@@ -2425,14 +2435,18 @@ class ProcessThread(QThread):
         None
         """
 
+        if root_name is 'None':
+            root_name = self.shared_dict_typ['queue_list'][-1]
         # New name; Splitis file_sum, file_dw_sum, file_frames
         file_sum, file_dw_sum, file_frames = root_name.split(';;;')
         if file_dw_sum == 'None':
             file_name = os.path.basename(os.path.splitext(file_sum)[0])
             file_use = file_sum
+            use_idx = 0
         else:
             file_name = os.path.basename(os.path.splitext(file_dw_sum)[0])
             file_use = file_dw_sum
+            use_idx = 1
 
         # Create the command for filtering
         command, file_input, check_files, block_gpu, gpu_list = tup.create_filter_command(
@@ -2466,15 +2480,16 @@ class ProcessThread(QThread):
             command=command
             )
 
-        self.queue.lock()
+        self.queue_lock.lock()
         try:
-            self.shared_dict_typ['queue_list'].append(file_input)
+            self.shared_dict_typ['queue_list'].append(root_name)
             if time.time() - self.shared_dict_typ['queue_list_time'] < 30:
                 return None
-            file_use_list = self.shared_dict_typ['queue_list']
+            file_use_list = [entry.split(';;;')[use_idx] for entry in self.shared_dict_typ['queue_list']]
+            file_name_list = [os.path.basename(os.path.splitext(entry.split(';;;')[use_idx])[0]) for entry in self.shared_dict_typ['queue_list']]
             self.shared_dict_typ['queue_list'] = []
         finally:
-            self.queue.unlock()
+            self.queue_lock.unlock()
 
         # Create the command for picking
         command, check_files, block_gpu, gpu_list = tup.get_picking_command(
@@ -2503,110 +2518,111 @@ class ProcessThread(QThread):
         non_zero_list = [err_file, log_file]
         non_zero_list.extend(check_files)
 
-        root_path = os.path.join(os.path.dirname(file_use), file_name)
-        log_files, copied_log_files = tup.find_logfiles(
-            root_path=root_path,
-            file_name=file_name,
-            settings=self.settings,
-            queue_com=self.queue_com,
-            name=self.name
-            )
-
-        tus.check_outputs(
-            zero_list=zero_list,
-            non_zero_list=non_zero_list,
-            exists_list=log_files,
-            folder=self.settings['picking_folder'],
-            command=command
-            )
-        log_files.extend(non_zero_list)
-        log_files.extend(zero_list)
-
-        tup.create_box_jpg(
-            file_name=file_name,
-            settings=self.settings,
-            queue_com=self.queue_com,
-            name=self.name
-            )
-
-        data, data_orig = tu.get_function_dict()[self.settings['Copy']['Picking']]['plot_data'](
-            self.settings['Copy']['Picking'],
-            self.settings['Picking_folder'][self.settings['Copy']['Picking']]
-            )
-
-        warnings, skip_list = tus.check_for_outlier(
-            dict_name='picking',
-            data=data,
-            file_name=file_use,
-            settings=self.settings
-            )
-
-        if skip_list:
-            self.remove_from_translate(os.path.basename(file_use))
-        else:
-            pass
-
-        for warning in skip_list:
-            message = 'The parameter {0} is {1} for file {2}, which is not in the range: {3} to {4} and will be skipped! If this is not the only message, you might consider changing microscope settings!'.format(
-                warning[0],
-                warning[1],
-                file_use,
-                warning[2],
-                warning[3]
+        for file_use, file_name in zip(file_use_list, file_name_list):
+            root_path = os.path.join(os.path.dirname(file_use), file_name)
+            log_files, copied_log_files = tup.find_logfiles(
+                root_path=root_path,
+                file_name=file_name,
+                settings=self.settings,
+                queue_com=self.queue_com,
+                name=self.name
                 )
-            if time.time() - self.time_last_error > 1800:
-                self.queue_com['error'].put(message)
-                self.time_last_error = time.time()
+
+            tus.check_outputs(
+                zero_list=zero_list,
+                non_zero_list=non_zero_list,
+                exists_list=log_files,
+                folder=self.settings['picking_folder'],
+                command=command
+                )
+            log_files.extend(non_zero_list)
+            log_files.extend(zero_list)
+
+            tup.create_box_jpg(
+                file_name=file_name,
+                settings=self.settings,
+                queue_com=self.queue_com,
+                name=self.name
+                )
+
+            data, data_orig = tu.get_function_dict()[self.settings['Copy']['Picking']]['plot_data'](
+                self.settings['Copy']['Picking'],
+                self.settings['Picking_folder'][self.settings['Copy']['Picking']]
+                )
+
+            warnings, skip_list = tus.check_for_outlier(
+                dict_name='picking',
+                data=data,
+                file_name=file_use,
+                settings=self.settings
+                )
+
+            if skip_list:
+                self.remove_from_translate(os.path.basename(file_use))
             else:
                 pass
-            self.queue_com['notification'].put(message)
-            self.write_error(msg=message, root_name=file_use)
 
-        for warning in warnings:
-            message = 'The median of the last {0} values for parameter {1} is {2}, which is not in the range: {3} to {4}! You might consider to adjust microscope settings!'.format(
-                self.settings['Notification']['Nr. of values used for median'],
-                warning[0],
-                warning[1],
-                warning[2],
-                warning[3]
-                )
-            if time.time() - self.time_last_error > 1800:
-                self.queue_com['error'].put(message)
-                self.time_last_error = time.time()
-            else:
-                pass
-            self.queue_com['notification'].put(message)
-            self.write_error(msg=message, root_name=file_use)
-
-        if skip_list:
-            pass
-        else:
-            # Add to queue
-            for aim in self.content_settings['aim']:
-                *compare, aim_name = aim.split(':')
-                var = True
-                for typ in compare:
-                    name = typ.split('!')[-1]
-                    if typ.startswith('!'):
-                        if self.settings['Copy'][name] == 'False':
-                            continue
-                        else:
-                            var = False
-                            break
-                    else:
-                        if not self.settings['Copy'][name] == 'False':
-                            continue
-                        else:
-                            var = False
-                            break
-                if var:
-                    if '!Compress data' in compare or 'Compress data' in compare:
-                        self.add_to_queue(aim=aim_name, root_name=file_frames)
-                    else:
-                        for log_file in log_files:
-                            self.add_to_queue(aim=aim_name, root_name=log_file)
+            for warning in skip_list:
+                message = 'The parameter {0} is {1} for file {2}, which is not in the range: {3} to {4} and will be skipped! If this is not the only message, you might consider changing microscope settings!'.format(
+                    warning[0],
+                    warning[1],
+                    file_use,
+                    warning[2],
+                    warning[3]
+                    )
+                if time.time() - self.time_last_error > 1800:
+                    self.queue_com['error'].put(message)
+                    self.time_last_error = time.time()
                 else:
                     pass
+                self.queue_com['notification'].put(message)
+                self.write_error(msg=message, root_name=file_use)
+
+            for warning in warnings:
+                message = 'The median of the last {0} values for parameter {1} is {2}, which is not in the range: {3} to {4}! You might consider to adjust microscope settings!'.format(
+                    self.settings['Notification']['Nr. of values used for median'],
+                    warning[0],
+                    warning[1],
+                    warning[2],
+                    warning[3]
+                    )
+                if time.time() - self.time_last_error > 1800:
+                    self.queue_com['error'].put(message)
+                    self.time_last_error = time.time()
+                else:
+                    pass
+                self.queue_com['notification'].put(message)
+                self.write_error(msg=message, root_name=file_use)
+
+            if skip_list:
+                pass
+            else:
+                # Add to queue
+                for aim in self.content_settings['aim']:
+                    *compare, aim_name = aim.split(':')
+                    var = True
+                    for typ in compare:
+                        name = typ.split('!')[-1]
+                        if typ.startswith('!'):
+                            if self.settings['Copy'][name] == 'False':
+                                continue
+                            else:
+                                var = False
+                                break
+                        else:
+                            if not self.settings['Copy'][name] == 'False':
+                                continue
+                            else:
+                                var = False
+                                break
+                    if var:
+                        if '!Compress data' in compare or 'Compress data' in compare:
+                            self.add_to_queue(aim=aim_name, root_name=file_frames)
+                        else:
+                            for log_file in log_files:
+                                self.add_to_queue(aim=aim_name, root_name=log_file)
+                    else:
+                        pass
 
         self.shared_dict_typ['queue_list_time'] = time.time()
 
