@@ -2466,13 +2466,19 @@ class ProcessThread(QThread):
             command=command
             )
 
-        self.shared_dict_typ['queue_list'].append([file_input)
-        if time.time() - self.shared_dict_typ['queue_list_time'] < 30:
-            return None
+        self.queue.lock()
+        try:
+            self.shared_dict_typ['queue_list'].append(file_input)
+            if time.time() - self.shared_dict_typ['queue_list_time'] < 30:
+                return None
+            file_use_list = self.shared_dict_typ['queue_list']
+            self.shared_dict_typ['queue_list'] = []
+        finally:
+            self.queue.unlock()
 
         # Create the command for picking
         command, check_files, block_gpu, gpu_list = tup.get_picking_command(
-            file_input=self.shared_dict_typ['queue_list'],
+            file_input=file_use_list,
             new_name=self.settings['picking_folder'],
             settings=self.settings,
             queue_com=self.queue_com,
