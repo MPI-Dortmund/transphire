@@ -151,7 +151,7 @@ class LoadContent(QWidget):
                 widget = QLineEdit(entry[self.idx_values], self)
                 widget.textChanged.connect(self._change_color_to_changed)
             else:
-                raise IOError('{0} not known!'.format(entry[self.idx_type]))
+                raise IOError('{0}: {1} not known!'.format(entry[self.idx_name], entry[self.idx_type]))
 
             exclude_typ_list = [
                 'Mount',

@@ -58,6 +58,7 @@ def copy(file_in, file_out):
     try:
         shutil.copy2(file_in, file_out)
     except PermissionError:
+        print('Error with {0}! Switching to copyfile!'.format(file_in))
         shutil.copyfile(file_in, file_out)
 
 

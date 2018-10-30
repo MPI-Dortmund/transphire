@@ -697,14 +697,17 @@ class ProcessThread(QThread):
                 pass
         else:
             self.remove_from_queue_file(root_name)
+
             self.queue_lock.lock()
             try:
                 self.add_to_queue_file(
                     root_name=root_name,
                     file_name=self.shared_dict['typ'][self.typ]['done_file'],
                     )
+                self.check_queue_files(root_name=root_name)
             finally:
                 self.queue_lock.unlock()
+
             if self.typ == 'Import':
                 pass
             else:
@@ -713,6 +716,32 @@ class ProcessThread(QThread):
                     self.shared_dict_typ['file_number'] += 1
                 finally:
                     self.queue_lock.unlock()
+
+    def check_queue_files(self, root_name):
+        if self.settings['Copy']['Delete stack after compression?'] == 'True':
+            basename = os.path.basename(os.path.splitext(root_name)[0])
+            delete_stack = True
+
+            for key in self.shared_dict['typ']:
+                if key.startswith('Copy_'):
+                    continue
+                with open(self.shared_dict['typ'][key]['save_file']) as read:
+                    if basename in read.read():
+                        delete_stack = False
+
+            if delete_stack:
+                stack_mrc = os.path.join(self.settings['stack_folder'], '{0}.mrc'.format(basename))
+                for key in self.shared_dict['typ']:
+                    if not key.startswith('Copy_'):
+                        continue
+                    with open(self.shared_dict['typ'][key]['save_file']) as read:
+                        if stack_mrc in read.read():
+                            delete_stack = False
+                if delete_stack:
+                    try:
+                        os.remove(stack_mrc)
+                    except:
+                        pass
 
     def write_error(self, msg, root_name):
         """
@@ -2121,7 +2150,12 @@ class ProcessThread(QThread):
         """
         root_name_raw = root_name
         # Split is file_sum, file_dw_sum, file_frames
-        file_sum, file_dw, file_input = root_name.split(';;;')
+        try:
+            file_sum, file_dw, file_input = root_name.split(';;;')
+        except ValueError:
+            file_input = root_name
+            file_sum = root_name
+            file_dw = 'None'
         try:
             if self.settings[self.settings['Copy']['CTF']]['Use movies'] == 'True':
                 root_name, _ = os.path.splitext(file_input)
@@ -2667,8 +2701,6 @@ class ProcessThread(QThread):
 
         if self.settings['compress_folder'] in root_name:
             pass
-        elif self.settings['Copy']['Delete stack after compression?'] == 'True':
-            os.remove(root_name)
         else:
             pass
 
@@ -2749,65 +2781,65 @@ class ProcessThread(QThread):
         True, if ready
         """
         return True
-        if 'Translation_file.txt' in file_out:
-            while True:
-                is_locked = bool(not self.shared_dict['translate_lock'].tryLock())
-                if not is_locked:
-                    self.shared_dict['translate_lock'].unlock()
-                    break
-                else:
-                    QThread.msleep(100)
-        elif 'Translation_file_bad.txt' in file_out:
-            while True:
-                is_locked = bool(not self.shared_dict['translate_lock'].tryLock())
-                if not is_locked:
-                    self.shared_dict['translate_lock'].unlock()
-                    break
-                else:
-                    QThread.msleep(100)
-        elif '_transphire_ctf_partres.txt' in file_out:
-            while True:
-                is_locked = bool(not self.shared_dict['ctf_partres_lock'].tryLock())
-                if not is_locked:
-                    self.shared_dict['ctf_partres_lock'].unlock()
-                    break
-                else:
-                    QThread.msleep(100)
-        elif '_transphire_ctf.star' in file_out:
-            while True:
-                is_locked = bool(not self.shared_dict['ctf_star_lock'].tryLock())
-                if not is_locked:
-                    self.shared_dict['ctf_star_lock'].unlock()
-                    break
-                else:
-                    QThread.msleep(100)
-        elif '_transphire_motion.txt' in file_out:
-            while True:
-                is_locked = bool(not self.shared_dict['motion_txt_lock'].tryLock())
-                if not is_locked:
-                    self.shared_dict['motion_txt_lock'].unlock()
-                    break
-                else:
-                    QThread.msleep(100)
-        elif '_transphire_motion.star' in file_out:
-            while True:
-                is_locked = bool(not self.shared_dict['motion_star_lock'].tryLock())
-                if not is_locked:
-                    self.shared_dict['motion_star_lock'].unlock()
-                    break
-                else:
-                    QThread.msleep(100)
-        elif '_transphire_motion_relion3.star' in file_out:
-            while True:
-                is_locked = bool(not self.shared_dict['motion_star_relion3_lock'].tryLock())
-                if not is_locked:
-                    self.shared_dict['motion_star_relion3_lock'].unlock()
-                    break
-                else:
-                    QThread.msleep(100)
-        else:
-            pass
-        return True
+        #if 'Translation_file.txt' in file_out:
+        #    while True:
+        #        is_locked = bool(not self.shared_dict['translate_lock'].tryLock())
+        #        if not is_locked:
+        #            self.shared_dict['translate_lock'].unlock()
+        #            break
+        #        else:
+        #            QThread.msleep(100)
+        #elif 'Translation_file_bad.txt' in file_out:
+        #    while True:
+        #        is_locked = bool(not self.shared_dict['translate_lock'].tryLock())
+        #        if not is_locked:
+        #            self.shared_dict['translate_lock'].unlock()
+        #            break
+        #        else:
+        #            QThread.msleep(100)
+        #elif '_transphire_ctf_partres.txt' in file_out:
+        #    while True:
+        #        is_locked = bool(not self.shared_dict['ctf_partres_lock'].tryLock())
+        #        if not is_locked:
+        #            self.shared_dict['ctf_partres_lock'].unlock()
+        #            break
+        #        else:
+        #            QThread.msleep(100)
+        #elif '_transphire_ctf.star' in file_out:
+        #    while True:
+        #        is_locked = bool(not self.shared_dict['ctf_star_lock'].tryLock())
+        #        if not is_locked:
+        #            self.shared_dict['ctf_star_lock'].unlock()
+        #            break
+        #        else:
+        #            QThread.msleep(100)
+        #elif '_transphire_motion.txt' in file_out:
+        #    while True:
+        #        is_locked = bool(not self.shared_dict['motion_txt_lock'].tryLock())
+        #        if not is_locked:
+        #            self.shared_dict['motion_txt_lock'].unlock()
+        #            break
+        #        else:
+        #            QThread.msleep(100)
+        #elif '_transphire_motion.star' in file_out:
+        #    while True:
+        #        is_locked = bool(not self.shared_dict['motion_star_lock'].tryLock())
+        #        if not is_locked:
+        #            self.shared_dict['motion_star_lock'].unlock()
+        #            break
+        #        else:
+        #            QThread.msleep(100)
+        #elif '_transphire_motion_relion3.star' in file_out:
+        #    while True:
+        #        is_locked = bool(not self.shared_dict['motion_star_relion3_lock'].tryLock())
+        #        if not is_locked:
+        #            self.shared_dict['motion_star_relion3_lock'].unlock()
+        #            break
+        #        else:
+        #            QThread.msleep(100)
+        #else:
+        #    pass
+        #return True
 
     def copy_as_another_user(self, file_in, file_out):
         """

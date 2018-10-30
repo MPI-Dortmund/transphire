@@ -459,14 +459,14 @@ def default_pipeline():
             int,
             'Find;' +
             'Motion:Motion,' +
+            'CTF_frames:CTF,' +
+            'Compress data:Compress,' +
             'Meta to work:Copy to work:Copy_work,' +
             'Meta to backup:Copy to backup:Copy_backup,' +
             'Meta to HDD:Copy to HDD:Copy_hdd,' +
-            '!Motion:CTF_frames:CTF,' +
-            '!Motion:!CTF_frames:Compress data:Compress,' +
-            '!Motion:!CTF_frames:!Compress data:Frames to work:Copy to work:Copy_work,' +
-            '!Motion:!CTF_frames:!Compress data:Frames to HDD:Copy to HDD:Copy_hdd,' +
-            '!Motion:!CTF_frames:!Compress data:Frames to backup:Copy to backup:Copy_backup',
+            '!Compress data:Frames to work:Copy to work:Copy_work,' +
+            '!Compress data:Frames to HDD:Copy to HDD:Copy_hdd,' +
+            '!Compress data:Frames to backup:Copy to backup:Copy_backup',
             'PLAIN',
             '',
             ],
@@ -475,15 +475,11 @@ def default_pipeline():
             '2',
             int,
             'Motion;' +
+            'CTF_sum:CTF,' +
+            'Picking:Picking,' +
             'Sum to work:Copy to work:Copy_work,' +
             'Sum to HDD:Copy to HDD:Copy_hdd,' +
-            'Sum to backup:Copy to backup:Copy_backup,' +
-            'CTF_sum:CTF,' +
-            'CTF_frames:CTF,' +
-            '!CTF_frames:!CTF_sum:Compress data:Compress,' +
-            '!CTF_frames:!CTF_sum:!Compress data:Frames to work:Copy to work:Copy_work,' +
-            '!CTF_frames:!CTF_sum:!Compress data:Frames to HDD:Copy to HDD:Copy_hdd,' +
-            '!CTF_frames:!CTF_sum:!Compress data:Frames to backup:Copy to backup:Copy_backup',
+            'Sum to backup:Copy to backup:Copy_backup',
             'PLAIN',
             '',
             ],
@@ -494,12 +490,7 @@ def default_pipeline():
             'CTF;' +
             'CTF to work:Copy to work:Copy_work,' +
             'CTF to HDD:Copy to HDD:Copy_hdd,' +
-            'CTF to backup:Copy to backup:Copy_backup,' +
-            'Motion:Picking:Picking,' +
-            '!Picking:Compress data:Compress,' +
-            '!Picking:!Compress data:Frames to work:Copy to work:Copy_work,' +
-            '!Picking:!Compress data:Frames to HDD:Copy to HDD:Copy_hdd,' +
-            '!Picking:!Compress data:Frames to backup:Copy to backup:Copy_backup',
+            'CTF to backup:Copy to backup:Copy_backup',
             'PLAIN',
             '',
             ],
@@ -510,11 +501,7 @@ def default_pipeline():
             'Picking;' +
             'Picking to work:Copy to work:Copy_work,' +
             'Picking to HDD:Copy to HDD:Copy_hdd,' +
-            'Picking to backup:Copy to backup:Copy_backup,' +
-            'Compress data:Compress,' +
-            '!Compress data:Frames to work:Copy to work:Copy_work,' +
-            '!Compress data:Frames to HDD:Copy to HDD:Copy_hdd,' +
-            '!Compress data:Frames to backup:Copy to backup:Copy_backup',
+            'Picking to backup:Copy to backup:Copy_backup',
             'PLAIN',
             '',
             ],
@@ -523,9 +510,9 @@ def default_pipeline():
             '2',
             int,
             'Compress;' +
-            'Frames to backup:Copy to backup:Copy_backup,' +
+            'Frames to work:Copy to work:Copy_work,' +
             'Frames to HDD:Copy to HDD:Copy_hdd,' +
-            'Frames to work:Copy to work:Copy_work',
+            'Frames to backup:Copy to backup:Copy_backup',
             'PLAIN',
             '',
             ],
