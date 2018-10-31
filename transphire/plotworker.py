@@ -47,15 +47,14 @@ class PlotWorker(QObject):
         None
         """
         super(PlotWorker, self).__init__(parent)
-        print('init', self.thread())
         self.settings = []
         self.sig_calculate.connect(self.calculate_array)
 
     def reset_list(self):
         self.settings = []
 
-    @pyqtSlot(str, object, object)
-    def set_settings(self, name, directory_name, settings):
+    @pyqtSlot(str, object, object, str)
+    def set_settings(self, name, directory_name, settings, current_name):
         """
         Set settings for the calculation of the arrays.
 
@@ -66,12 +65,14 @@ class PlotWorker(QObject):
         Returns:
         None
         """
-        self.settings.append([name, directory_name, settings])
-        self.calculate_array_now(
-            name=name,
-            directory_name=directory_name,
-            settings=settings
-            )
+        if name not in ('Later', 'False'):
+            if name == current_name:
+                self.settings.append([name, directory_name, settings])
+            self.calculate_array_now(
+                name=name,
+                directory_name=directory_name,
+                settings=settings
+                )
 
     @pyqtSlot()
     def calculate_array(self):
@@ -81,25 +82,19 @@ class PlotWorker(QObject):
         Returns:
         None
         """
-        print('calc', self.thread())
-        #for name, directory_name, settings in self.settings:
-        #    self.calculate_array_now(
-        #        name=name,
-        #        directory_name=directory_name,
-        #        settings=settings
-        #        )
+        for name, directory_name, settings in self.settings:
+            self.calculate_array_now(
+                name=name,
+                directory_name=directory_name,
+                settings=settings
+                )
 
     def calculate_array_now(self, name, directory_name, settings):
-        if name == 'Later' or name == 'False':
-            data = None
-        else:
-            data, _ = tu.get_function_dict()[name]['plot_data'](
-                name=name,
-                directory_name=directory_name
-                )
-        if data is None:
-            pass
-        elif data.size == 0:
+        data, _ = tu.get_function_dict()[name]['plot_data'](
+            name=name,
+            directory_name=directory_name
+            )
+        if data.size == 0:
             pass
         else:
             self.sig_data.emit(name, data, directory_name, settings)

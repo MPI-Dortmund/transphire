@@ -62,24 +62,39 @@ class PlotWidget(QWidget):
         """
         super(PlotWidget, self).__init__(parent)
 
-        # Variables
-        self.label = label
+        self.color = '#68a3c3'
         self.plot_typ = plot_typ
+        self.line = None
+        self.rects = None
+        self.img = None
+        self.figure, self.axis = plt.subplots()
+        for entry in self.compute_initial_figure():
+            x = entry[0]
+            y = entry[1]
+            self.axis.plot(x, y, color=self.color)
 
-        # Initialise figure
-        self.figure = plt.figure()
-        self.ax1 = self.figure.add_subplot(111)
-        self.compute_initial_figure()
+        canvas = FigureCanvas(self.figure)
+        canvas.setParent(self)
+        toolbar = NavigationToolbar(canvas, self)
+        self.figure.canvas.draw()
 
-        # Create canvas for the figure
-        self.canvas = FigureCanvas(self.figure)
-        self.canvas.setParent(self)
-        self.toolbar = NavigationToolbar(self.canvas, self)
-        self.canvas.draw_idle()
+        if plot_typ == 'values':
+            self.axis.grid()
+            self.axis.set_xlabel('Micrograph ID')
+            self.axis.set_ylabel(label)
+        elif plot_typ == 'histogram':
+            self.axis.grid()
+            self.axis.set_xlabel(label)
+            self.axis.set_ylabel('Nr. of micrographs')
+        elif plot_typ == 'image':
+            self.axis.get_xaxis().set_visible(False)
+            self.axis.get_yaxis().set_visible(False)
+        else:
+            assert False, 'Plot type {0} not known!'.format(plot_typ)
 
         layout_v = QVBoxLayout(self)
         # Add for image plot typ
-        if self.plot_typ == 'image' and self.label == 'image':
+        if plot_typ == 'image' and label == 'image':
             self.data = np.array([])
             self.idx = 0
             self.default_value = 'latest'
@@ -107,11 +122,12 @@ class PlotWidget(QWidget):
             layout_v.addLayout(layout_h)
 
         # Fill layout
-        layout_v.addWidget(self.toolbar)
-        layout_v.addWidget(self.canvas)
+        layout_v.addWidget(toolbar)
+        layout_v.addWidget(canvas)
 
 
-    def compute_corrupted_figure(self, title):
+    @staticmethod
+    def compute_corrupted_figure():
         """
         Compute the corrupted figure shown on startup.
 
@@ -121,18 +137,19 @@ class PlotWidget(QWidget):
         Return:
         None
         """
-        self.ax1.clear()
-        self.ax1.plot([0.5, 0, 0, 0.5], [1, 1, 0, 0], '#68a3c3')
-        self.ax1.plot([1, 1.5, 1.5, 1, 1], [0, 0, 1, 1, 0], '#68a3c3')
-        self.ax1.plot([2, 2, 2.5, 2.5, 2, 2.5], [0, 1, 1, 0.5, 0.5, 0], '#68a3c3')
-        self.ax1.plot([3, 3, 3.5, 3.5, 3, 3.5], [0, 1, 1, 0.5, 0.5, 0], '#68a3c3')
-        self.ax1.plot([4, 4, 4.5, 4.5], [1, 0, 0, 1], '#68a3c3')
-        self.ax1.plot([5, 5, 5.5, 5.5, 5], [0, 1, 1, 0.5, 0.5], '#68a3c3')
-        self.ax1.plot([6, 6.5, 6.25, 6.25], [1, 1, 1, 0], '#68a3c3')
-        self.ax1.set_title(title)
+        coord_list = []
+        coord_list.append([[0.5, 0, 0, 0.5], [1, 1, 0, 0]])
+        coord_list.append([[1, 1.5, 1.5, 1, 1], [0, 0, 1, 1, 0]])
+        coord_list.append([[2, 2, 2.5, 2.5, 2, 2.5], [0, 1, 1, 0.5, 0.5, 0]])
+        coord_list.append([[3, 3, 3.5, 3.5, 3, 3.5], [0, 1, 1, 0.5, 0.5, 0]])
+        coord_list.append([[4, 4, 4.5, 4.5], [1, 0, 0, 1]])
+        coord_list.append([[5, 5, 5.5, 5.5, 5], [0, 1, 1, 0.5, 0.5]])
+        coord_list.append([[6, 6.5, 6.25, 6.25], [1, 1, 1, 0]])
+        return coord_list
 
 
-    def compute_initial_figure(self):
+    @staticmethod
+    def compute_initial_figure():
         """
         Compute the initial figure shown on startup.
 
@@ -142,12 +159,13 @@ class PlotWidget(QWidget):
         Return:
         None
         """
-        self.ax1.clear()
-        self.ax1.plot([0, 0, 0, 0.5, 0.5, 0.5], [0, 1, 0.5, 0.5, 0, 1], '#68a3c3')
-        self.ax1.plot([1.5, 1, 1, 1.5, 1, 1, 1.5], [0, 0, 0.5, 0.5, 0.5, 1, 1], '#68a3c3')
-        self.ax1.plot([2, 2, 2.5], [1, 0, 0], '#68a3c3')
-        self.ax1.plot([3, 3, 3.5], [1, 0, 0], '#68a3c3')
-        self.ax1.plot([4, 4.15, 4.35, 4.5, 4.5, 4.35, 4.15, 4, 4], [0.3, 0, 0, 0.3, 0.6, 1, 1, 0.6, 0.3], '#68a3c3')
+        coord_list = []
+        coord_list.append([[0, 0, 0, 0.5, 0.5, 0.5], [0, 1, 0.5, 0.5, 0, 1]])
+        coord_list.append([[1.5, 1, 1, 1.5, 1, 1, 1.5], [0, 0, 0.5, 0.5, 0.5, 1, 1]])
+        coord_list.append([[2, 2, 2.5], [1, 0, 0]])
+        coord_list.append([[3, 3, 3.5], [1, 0, 0]])
+        coord_list.append([[4, 4.15, 4.35, 4.5, 4.5, 4.35, 4.15, 4, 4], [0.3, 0, 0, 0.3, 0.6, 1, 1, 0.6, 0.3]])
+        return coord_list
 
 
     @pyqtSlot(str, object, str, object)
@@ -164,11 +182,11 @@ class PlotWidget(QWidget):
         Return:
         None
         """
-        if name == 'False':
-            return None
-        elif name == 'Later':
-            return None
-        elif self.plot_typ == 'values' or self.plot_typ == 'histogram':
+        if self.plot_typ == 'values':
+            if self.line is None:
+                self.line, = self.axis.plot([0], [1], color=self.color)
+        return None
+        if self.plot_typ == 'values' or self.plot_typ == 'histogram':
             x_values, y_values, label, title = tu.get_function_dict()[name]['plot'](
                 data=data,
                 settings=settings,
@@ -216,7 +234,8 @@ class PlotWidget(QWidget):
             self.ax1.set_xlabel(x_label)
             self.ax1.set_ylabel(y_label)
             try:
-                self.canvas.draw_idle()
+                pass
+                #self.canvas.draw_idle()
             except RecursionError:
                 import sys
                 print('sys.getrecursionlimit()')
@@ -322,7 +341,7 @@ class PlotWidget(QWidget):
         self.ax1.get_xaxis().set_visible(False)
         self.ax1.get_yaxis().set_visible(False)
         self.ax1.set_title(self.data['file_name'][idx])
-        self.canvas.draw_idle()
+        #self.canvas.draw_idle()
 
     def change_idx(self, typ):
         if typ == 'next':

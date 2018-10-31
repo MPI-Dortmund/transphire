@@ -86,7 +86,6 @@ class MainWindow(QMainWindow):
         None
         """
         super(MainWindow, self).__init__(parent)
-        print('Main', self.thread())
 
         # Ask for sudo password if needed
         self.password = ''
@@ -385,19 +384,19 @@ class MainWindow(QMainWindow):
         self.process_worker.sig_plot_picking.connect(self.plot_worker_picking.set_settings)
 
         self.timer_ctf = QTimer(self)
-        self.timer_ctf.setInterval(60000)
+        self.timer_ctf.setInterval(6000)
         self.timer_ctf.timeout.connect(self.plot_worker_ctf.sig_calculate.emit)
         self.timer_ctf.start()
 
         self.timer_motion = QTimer(self)
-        self.timer_motion.setInterval(60000)
+        self.timer_motion.setInterval(6000)
         self.timer_motion.timeout.connect(self.plot_worker_motion.sig_calculate.emit)
-        QTimer.singleShot(20000, lambda: self.timer_motion.start())
+        QTimer.singleShot(2000, self.timer_motion.start)
 
         self.timer_picking = QTimer(self)
-        self.timer_picking.setInterval(60000)
+        self.timer_picking.setInterval(6000)
         self.timer_picking.timeout.connect(self.plot_worker_picking.sig_calculate.emit)
-        QTimer.singleShot(40000, lambda: self.timer_picking.start())
+        QTimer.singleShot(4000, self.timer_picking.start)
 
         self.mount_thread_list = {}
         for key in self.content['Mount'].content:

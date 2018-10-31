@@ -52,9 +52,9 @@ class ProcessWorker(QObject):
     sig_error = pyqtSignal(str)
     sig_status = pyqtSignal(str, object, str, str)
     sig_notification = pyqtSignal(str)
-    sig_plot_ctf = pyqtSignal(str, object, object)
-    sig_plot_motion = pyqtSignal(str, object, object)
-    sig_plot_picking = pyqtSignal(str, object, object)
+    sig_plot_ctf = pyqtSignal(str, object, object, str)
+    sig_plot_motion = pyqtSignal(str, object, object, str)
+    sig_plot_picking = pyqtSignal(str, object, object, str)
 
     def __init__(self, password, content_process, mount_directory, parent=None):
         """
@@ -147,7 +147,8 @@ class ProcessWorker(QObject):
             self.sig_plot_ctf.emit(
                 entry,
                 self.settings['CTF_folder'][entry],
-                self.settings
+                self.settings,
+                self.settings['Copy']['CTF']
                 )
 
         # Set Motion settings
@@ -160,7 +161,8 @@ class ProcessWorker(QObject):
             self.sig_plot_motion.emit(
                 entry,
                 self.settings['Motion_folder'][entry],
-                self.settings
+                self.settings,
+                self.settings['Copy']['Motion']
                 )
 
         # Set Picking settings
@@ -173,7 +175,8 @@ class ProcessWorker(QObject):
             self.sig_plot_picking.emit(
                 entry,
                 self.settings['Picking_folder'][entry],
-                self.settings
+                self.settings,
+                self.settings['Copy']['Picking']
                 )
 
         typ_dict = {}
