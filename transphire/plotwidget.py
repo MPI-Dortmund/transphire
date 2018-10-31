@@ -219,8 +219,12 @@ class PlotWidget(QWidget):
         if self.x_min > new_x_min or self.x_max < new_x_max:
             if self.x_min > new_x_min:
                 self.x_min = new_x_min - abs(new_x_min*0.1)
+            elif abs(self.x_min) < 0.001 and self.plot_typ == 'values':
+                self.x_min = -0.5
             if self.x_max < new_x_max:
                 self.x_max = new_x_max + abs(new_x_max*0.1)
+            elif abs(self.x_max) < 0.001 and self.plot_typ == 'values':
+                self.x_max = 0.5
             self.axis.set_xlim([self.x_min, self.x_max])
             change = True
         elif new_x_max - new_x_min < 0.001:
@@ -232,8 +236,12 @@ class PlotWidget(QWidget):
         if self.y_min > new_y_min or self.y_max < new_y_max:
             if self.y_min > new_y_min:
                 self.y_min = new_y_min - abs(new_y_min*0.1)
+            elif abs(self.y_min) < 0.001 and self.plot_typ == 'values':
+                self.y_min = -0.5
             if self.y_max < new_y_max:
                 self.y_max = new_y_max + abs(new_y_max*0.1)
+            elif abs(self.y_max) < 0.001 and self.plot_typ == 'values':
+                self.y_max = 0.5
             self.axis.set_ylim([self.y_min, self.y_max])
             change = True
         elif new_y_max - new_y_min < 0.001:
@@ -242,19 +250,7 @@ class PlotWidget(QWidget):
             self.axis.set_ylim([self.y_min, self.y_max])
             change = True
 
-        if self.plot_typ == 'values':
-            self.line.set_data(x_values, y_values)
-            self.axis.draw_artist(self.axis.patch)
-            self.axis.draw_artist(self.line)
-        elif self.plot_typ == 'histogram':
-            [rect.set_height(y1) for rect, y1 in zip(self.rects, y_values)]
-
-        if change:
-            self.figure.canvas.draw()
-
-        self.figure.canvas.update()
-        self.figure.canvas.flush_events()
-
+        return change
 
     @pyqtSlot(str, object, str, object)
     def update_figure(self, name, data, directory_name, settings):
@@ -284,7 +280,7 @@ class PlotWidget(QWidget):
                 x_values = x_values_raw
             elif self.plot_typ == 'histogram':
                 y_values, x_values = np.histogram(y_values_raw)
-            self.prepare_axis(
+            change = self.prepare_axis(
                 np.min(x_values),
                 np.max(x_values),
                 np.min(y_values),
@@ -295,90 +291,22 @@ class PlotWidget(QWidget):
                 y_values
                 )
 
-        return None
-        if self.plot_typ == 'values' or self.plot_typ == 'histogram':
-            x_values, y_values, label, title = tu.get_function_dict()[name]['plot'](
-                data=data,
-                settings=settings,
-                label=self.label,
-                )
-            idx_nan = np.isnan(y_values)
-            x_values = x_values[~idx_nan]
-            y_values = y_values[~idx_nan]
-
-            color = '#68a3c3'
-
-            self.ax1.clear()
-            title_list = [title]
-            if idx_nan.any():
-                title_list.append(
-                    '{0} entries not valid due to NAN'.format(idx_nan.sum())
-                    )
-
             if self.plot_typ == 'values':
-                x_label = 'Micrograph ID'
-                y_label = label
-                self.ax1.plot(x_values, y_values, '.', color=color)
+                self.line.set_data(x_values, y_values)
+                self.axis.draw_artist(self.axis.patch)
+                self.axis.draw_artist(self.line)
             elif self.plot_typ == 'histogram':
-                x_label = label
-                y_label = 'Nr. of micrographs'
-                if np.max(y_values) - np.min(y_values) < 0.001:
-                    self.ax1.hist(y_values, 1)
-                    self.ax1.set_xlim([np.max(y_values)-1, np.min(y_values)+1])
-                elif title == 'Resolution limit':
-                    if np.max(y_values) > 20:
-                        self.ax1.hist(y_values[y_values <= 20], 100, color=color)
-                        title_list.append('{0} micrographs out of range (0,20)'.format(
-                            y_values[y_values > 20].shape[0]
-                            ))
-                    else:
-                        self.ax1.hist(y_values, 100, color=color)
-                else:
-                    self.ax1.hist(y_values, 100, color=color)
-            else:
-                print('Plotwidget - ', self.plot_typ, ' is not known!!!')
-                return None
+                [rect.set_height(y1) for rect, y1 in zip(self.rects, y_values)]
 
-            self.ax1.grid()
-            self.ax1.set_title('\n'.join(title_list))
-            self.ax1.set_xlabel(x_label)
-            self.ax1.set_ylabel(y_label)
-            try:
-                pass
-                #self.canvas.draw_idle()
-            except RecursionError:
-                import sys
-                print('sys.getrecursionlimit()')
-                print(sys.getrecursionlimit())
-                print('self.plot_typ')
-                print(self.plot_typ)
-                print('label')
-                print(label)
-                print('x_label')
-                print(x_label)
-                print('y_label')
-                print(y_label)
-                print('directory_name')
-                print(directory_name)
-                print('title')
-                print(title)
-                print('x_values')
-                print(x_values)
-                print('len x_values')
-                print(len(x_values))
-                print('y_values')
-                print(y_values)
-                print('len y_values')
-                print(len(y_values))
-                print('COULD NOT DRAW!!!')
-                print('Please contact the TranSHPIRE authors!!!')
-                print('Restarting TranSPHIRE will fix this issue.')
-                return None
+            if change:
+                self.figure.canvas.draw()
+            self.figure.canvas.update()
+            self.figure.canvas.flush_events()
 
             output_name = os.path.join(
                 directory_name,
                 '{0}_{1}.png'.format(
-                    self.label,
+                    self.plot_label,
                     self.plot_typ
                     )
                 )
@@ -420,10 +348,9 @@ class PlotWidget(QWidget):
                 self.show_image()
             else:
                 pass
-
         else:
-            print('Plotwidget - ', self.plot_typ, ' is not known!!!')
-            return None
+            raise ValueError('PlotWidget - {0} not known!'.format(self.plot_typ))
+
 
     @pyqtSlot()
     def show_image(self):
@@ -437,21 +364,33 @@ class PlotWidget(QWidget):
         else:
             idx = self.idx-1
 
-        self.ax1.clear()
+        title = self.data['file_name'][idx]
+        jpg_data = self.data['object'][idx]
         if self.data['object'][idx] is None:
             try:
                 jpg_data = imageio.imread(self.data['image'][idx])
             except Exception as e:
                 print('Error loading image: {0} -- Message: {1}'.format(self.data['image'][idx], str(e)))
-                self.compute_corrupted_figure(title=self.data['file_name'][idx])
+                self.axis.clear()
+                for entry in self.compute_corrupted_figure():
+                    x = entry[0]
+                    y = entry[1]
+                    self.axis.plot(x, y, color=self.color)
+                self.img = None
             else:
-                self.ax1.imshow(jpg_data)
+                if self.img is None:
+                    self.img = self.axis.imshow(jpg_data)
+                else:
+                    self.img.set_data(jpg_data)
         else:
-                self.ax1.imshow(self.data['object'][idx])
-        self.ax1.get_xaxis().set_visible(False)
-        self.ax1.get_yaxis().set_visible(False)
-        self.ax1.set_title(self.data['file_name'][idx])
-        #self.canvas.draw_idle()
+            if self.img is None:
+                self.img = self.axis.imshow(jpg_data)
+            else:
+                self.img.set_data(jpg_data)
+        self.axis.set_title(title)
+        self.figure.canvas.draw()
+        self.figure.canvas.update()
+        self.figure.canvas.flush_events()
 
     def change_idx(self, typ):
         if typ == 'next':
@@ -505,5 +444,7 @@ class PlotWidget(QWidget):
                 self.next_button.setEnabled(True)
         else:
             pass
+        self.combo_box.blockSignals(True)
         self.combo_box.setCurrentIndex(self.idx)
+        self.combo_box.blockSignals(False)
         self.show_image()

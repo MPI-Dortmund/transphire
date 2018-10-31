@@ -86,10 +86,6 @@ class PlotWorker(QObject):
         Returns:
         None
         """
-        try:
-            print(self.running, self.settings[0][0])
-        except:
-            print(self.running, self.settings)
         if self.running:
             return None
         for name, directory_name, settings in self.settings:
