@@ -320,7 +320,7 @@ class PlotWidget(QWidget):
 
             #if change:
             #    self.figure.canvas.draw()
-            self.figure.canvas.update()
+            #self.figure.canvas.update()
             self.figure.canvas.flush_events()
 
             output_name = os.path.join(
@@ -409,7 +409,7 @@ class PlotWidget(QWidget):
                 self.img.set_data(jpg_data)
         self.axis.set_title(title)
         #self.figure.canvas.draw()
-        self.figure.canvas.update()
+        #self.figure.canvas.update()
         self.figure.canvas.flush_events()
 
     def change_idx(self, typ):
