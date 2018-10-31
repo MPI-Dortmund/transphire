@@ -181,7 +181,9 @@ class MainWindow(QMainWindow):
         self.mount_calculation_df = None
         self.thread_mount = None
         self.thread_process = None
-        self.thread_plot = None
+        self.thread_plot_ctf = None
+        self.thread_plot_motion = None
+        self.thread_plot_picking = None
         self.mount_thread_list = None
 
         # Fill GUI
@@ -885,12 +887,14 @@ class MainWindow(QMainWindow):
         settings['Monitor'] = monitor
         # Load settings to pass them to the working threads
         error_list = []
-        skip_list = [
-            'Mount',
-            'Notification_widget',
-            'Path',
-            'Frames'
+        check_list = [
+            'General',
+            'Notification'
             ]
+        for setting in self.content['Copy'].get_settings():
+            for value in setting.values():
+                if isinstance(value, str) and value not in ('False', 'Later', 'True'):
+                    check_list.append(value)
         for key in self.content:
             try:
                 settings_widget = self.content[key].get_settings()
@@ -913,11 +917,11 @@ class MainWindow(QMainWindow):
                 skip_name_list = tu.get_function_dict()[key]['allow_empty']
 
             for entry in settings_widget:
-                if key not in skip_list:
+                if key in check_list:
                     for name in entry:
                         if not entry[name] and name not in skip_name_list:
                             error_list.append(
-                                '{0}:{1} is not allowed to be emtpy!'.format(
+                                '{0}:{1} is not allowed to be empty!'.format(
                                     key,
                                     name
                                     )

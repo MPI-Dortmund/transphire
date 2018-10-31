@@ -111,6 +111,7 @@ class ProcessThread(QThread):
             self.later = bool(self.settings['Copy'][self.typ] == 'Later')
         except KeyError:
             self.later = False
+
         try:
             self.user = self.settings['{0}_user'.format(self.typ)]
         except KeyError:
@@ -1341,8 +1342,8 @@ class ProcessThread(QThread):
                         var = False
                         break
             if var:
-                if '!Compress data' in compare or \
-                        'Compress data' in compare or \
+                if '!Compress' in compare or \
+                        'Compress' in compare or \
                         'Motion' in compare or \
                         'CTF_frames' in compare:
                     self.add_to_queue(aim=aim_name, root_name=new_stack)
@@ -2111,12 +2112,12 @@ class ProcessThread(QThread):
                         sum_files = queue_dict[motion_idx]['sum']
                         log_files = queue_dict[motion_idx]['log']
                         sum_dw_files = queue_dict[motion_idx]['sum_dw']
-                        if '!Compress data' in compare:
+                        if '!Compress' in compare:
                             if motion_idx == 0:
                                 self.add_to_queue(aim=aim_name, root_name=file_input)
                             else:
                                 pass
-                        elif 'Compress data' in compare:
+                        elif 'Compress' in compare:
                             if motion_idx == 0:
                                 self.add_to_queue(aim=aim_name, root_name=file_input)
                             else:
@@ -2415,7 +2416,7 @@ class ProcessThread(QThread):
                             var = False
                             break
                 if var:
-                    if '!Compress data' in compare or 'Compress data' in compare:
+                    if '!Compress' in compare or 'Compress' in compare:
                         self.add_to_queue(aim=aim_name, root_name=file_input)
                     elif 'Picking' in compare:
                         self.add_to_queue(aim=aim_name, root_name=root_name_raw)
@@ -2616,7 +2617,7 @@ class ProcessThread(QThread):
                                 var = False
                                 break
                     if var:
-                        if '!Compress data' in compare or 'Compress data' in compare:
+                        if '!Compress' in compare or 'Compress' in compare:
                             self.add_to_queue(aim=aim_name, root_name=file_frames)
                         else:
                             for log_file in log_files:

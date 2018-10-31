@@ -460,13 +460,13 @@ def default_pipeline():
             'Find;' +
             'Motion:Motion,' +
             'CTF_frames:CTF,' +
-            'Compress data:Compress,' +
+            'Compress:Compress,' +
             'Meta to work:Copy to work:Copy_work,' +
             'Meta to backup:Copy to backup:Copy_backup,' +
             'Meta to HDD:Copy to HDD:Copy_hdd,' +
-            '!Compress data:Frames to work:Copy to work:Copy_work,' +
-            '!Compress data:Frames to HDD:Copy to HDD:Copy_hdd,' +
-            '!Compress data:Frames to backup:Copy to backup:Copy_backup',
+            '!Compress:Frames to work:Copy to work:Copy_work,' +
+            '!Compress:Frames to HDD:Copy to HDD:Copy_hdd,' +
+            '!Compress:Frames to backup:Copy to backup:Copy_backup',
             'PLAIN',
             '',
             ],
@@ -833,7 +833,7 @@ def default_copy(settings_folder):
         ['Motion', programs_motion, bool, '', 'COMBO', 'Main'],
         ['CTF', programs_ctf, bool, '', 'COMBO', 'Main'],
         ['Picking', programs_picking, bool, '', 'COMBO', 'Main'],
-        ['Compress data', ['True', 'Later', 'False'], bool, '', 'COMBO', 'Main'],
+        ['Compress', ['True', 'Later', 'False'], bool, '', 'COMBO', 'Main'],
         ['Session to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced'],
         ['Session to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced'],
         ['Session to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced'],

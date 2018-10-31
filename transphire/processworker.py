@@ -469,7 +469,7 @@ class ProcessWorker(QObject):
             self.settings['Copy']['CTF_sum'] = 'False'
 
         # Set Compress settings
-        if self.settings['Copy']['Compress data'] != 'False':
+        if self.settings['Copy']['Compress'] != 'False':
             folder_list.append('compress_folder')
             use_threads_list.append('Compress')
         else:
@@ -651,7 +651,7 @@ class ProcessWorker(QObject):
         else:
             pass
 
-        if self.settings['Copy']['Compress data'] == 'True':
+        if self.settings['Copy']['Compress'] == 'True':
             check_files.append('IMOD mrc2tif')
         else:
             pass
