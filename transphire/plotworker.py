@@ -47,6 +47,7 @@ class PlotWorker(QObject):
         None
         """
         super(PlotWorker, self).__init__(parent)
+        print('init', self.thread())
         self.settings = []
         self.sig_calculate.connect(self.calculate_array)
 
@@ -80,12 +81,13 @@ class PlotWorker(QObject):
         Returns:
         None
         """
-        for name, directory_name, settings in self.settings:
-            self.calculate_array_now(
-                name=name,
-                directory_name=directory_name,
-                settings=settings
-                )
+        print('calc', self.thread())
+        #for name, directory_name, settings in self.settings:
+        #    self.calculate_array_now(
+        #        name=name,
+        #        directory_name=directory_name,
+        #        settings=settings
+        #        )
 
     def calculate_array_now(self, name, directory_name, settings):
         if name == 'Later' or name == 'False':

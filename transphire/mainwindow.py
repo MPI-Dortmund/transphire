@@ -86,6 +86,7 @@ class MainWindow(QMainWindow):
         None
         """
         super(MainWindow, self).__init__(parent)
+        print('Main', self.thread())
 
         # Ask for sudo password if needed
         self.password = ''

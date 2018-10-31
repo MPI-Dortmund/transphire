@@ -67,15 +67,15 @@ class PlotWidget(QWidget):
         self.plot_typ = plot_typ
 
         # Initialise figure
-        self.figure, self.ax = plt.subplots()
-        color = '#68a3c3'
-        self.line, = self.ax.plot(color=color)
+        self.figure = plt.figure()
+        self.ax1 = self.figure.add_subplot(111)
         self.compute_initial_figure()
 
         # Create canvas for the figure
         self.canvas = FigureCanvas(self.figure)
         self.canvas.setParent(self)
         self.toolbar = NavigationToolbar(self.canvas, self)
+        self.canvas.draw_idle()
 
         layout_v = QVBoxLayout(self)
         # Add for image plot typ
@@ -121,26 +121,16 @@ class PlotWidget(QWidget):
         Return:
         None
         """
-        '#68a3c3'
-        x_list = []
-        y_list = []
-        x_list.extend([0.5, 0, 0, 0.5])
-        y_list.extend([1, 1, 0, 0])
-        x_list.extend([1, 1.5, 1.5, 1, 1])
-        y_list.extend([0, 0, 1, 1, 0])
-        x_list.extend([2, 2, 2.5, 2.5, 2, 2.5])
-        y_list.extend([0, 1, 1, 0.5, 0.5, 0])
-        x_list.extend([3, 3, 3.5, 3.5, 3, 3.5])
-        y_list.extend([0, 1, 1, 0.5, 0.5, 0])
-        x_list.extend([4, 4, 4.5, 4.5])
-        y_list.extend([1, 0, 0, 1])
-        x_list.extend([5, 5, 5.5, 5.5, 5])
-        y_list.extend([0, 1, 1, 0.5, 0.5])
-        x_list.extend([6, 6.5, 6.25, 6.25])
-        y_list.extend([1, 1, 1, 0])
-        self.line.set_xdata(x_list)
-        self.line.set_ydata(y_list)
-        self.figure.canvas.draw()
+        self.ax1.clear()
+        self.ax1.plot([0.5, 0, 0, 0.5], [1, 1, 0, 0], '#68a3c3')
+        self.ax1.plot([1, 1.5, 1.5, 1, 1], [0, 0, 1, 1, 0], '#68a3c3')
+        self.ax1.plot([2, 2, 2.5, 2.5, 2, 2.5], [0, 1, 1, 0.5, 0.5, 0], '#68a3c3')
+        self.ax1.plot([3, 3, 3.5, 3.5, 3, 3.5], [0, 1, 1, 0.5, 0.5, 0], '#68a3c3')
+        self.ax1.plot([4, 4, 4.5, 4.5], [1, 0, 0, 1], '#68a3c3')
+        self.ax1.plot([5, 5, 5.5, 5.5, 5], [0, 1, 1, 0.5, 0.5], '#68a3c3')
+        self.ax1.plot([6, 6.5, 6.25, 6.25], [1, 1, 1, 0], '#68a3c3')
+        self.ax1.set_title(title)
+
 
     def compute_initial_figure(self):
         """
@@ -152,21 +142,12 @@ class PlotWidget(QWidget):
         Return:
         None
         """
-        x_list = []
-        y_list = []
-        x_list.extend([0, 0, 0, 0.5, 0.5, 0.5])
-        y_list.extend([0, 1, 0.5, 0.5, 0, 1])
-        x_list.extend([1.5, 1, 1, 1.5, 1, 1, 1.5])
-        y_list.extend([0, 0, 0.5, 0.5, 0.5, 1, 1])
-        x_list.extend([2, 2, 2.5])
-        y_list.extend([1, 0, 0])
-        x_list.extend([3, 3, 3.5])
-        y_list.extend([1, 0, 0])
-        x_list.extend([4, 4.15, 4.35, 4.5, 4.5, 4.35, 4.15, 4, 4])
-        y_list.extend([0.3, 0, 0, 0.3, 0.6, 1, 1, 0.6, 0.3])
-        self.line.set_xdata(x_list)
-        self.line.set_ydata(y_list)
-        self.figure.canvas.draw()
+        self.ax1.clear()
+        self.ax1.plot([0, 0, 0, 0.5, 0.5, 0.5], [0, 1, 0.5, 0.5, 0, 1], '#68a3c3')
+        self.ax1.plot([1.5, 1, 1, 1.5, 1, 1, 1.5], [0, 0, 0.5, 0.5, 0.5, 1, 1], '#68a3c3')
+        self.ax1.plot([2, 2, 2.5], [1, 0, 0], '#68a3c3')
+        self.ax1.plot([3, 3, 3.5], [1, 0, 0], '#68a3c3')
+        self.ax1.plot([4, 4.15, 4.35, 4.5, 4.5, 4.35, 4.15, 4, 4], [0.3, 0, 0, 0.3, 0.6, 1, 1, 0.6, 0.3], '#68a3c3')
 
 
     @pyqtSlot(str, object, str, object)
@@ -234,6 +215,36 @@ class PlotWidget(QWidget):
             self.ax1.set_title('\n'.join(title_list))
             self.ax1.set_xlabel(x_label)
             self.ax1.set_ylabel(y_label)
+            try:
+                self.canvas.draw_idle()
+            except RecursionError:
+                import sys
+                print('sys.getrecursionlimit()')
+                print(sys.getrecursionlimit())
+                print('self.plot_typ')
+                print(self.plot_typ)
+                print('label')
+                print(label)
+                print('x_label')
+                print(x_label)
+                print('y_label')
+                print(y_label)
+                print('directory_name')
+                print(directory_name)
+                print('title')
+                print(title)
+                print('x_values')
+                print(x_values)
+                print('len x_values')
+                print(len(x_values))
+                print('y_values')
+                print(y_values)
+                print('len y_values')
+                print(len(y_values))
+                print('COULD NOT DRAW!!!')
+                print('Please contact the TranSHPIRE authors!!!')
+                print('Restarting TranSPHIRE will fix this issue.')
+                return None
 
             output_name = os.path.join(
                 directory_name,
@@ -311,6 +322,7 @@ class PlotWidget(QWidget):
         self.ax1.get_xaxis().set_visible(False)
         self.ax1.get_yaxis().set_visible(False)
         self.ax1.set_title(self.data['file_name'][idx])
+        self.canvas.draw_idle()
 
     def change_idx(self, typ):
         if typ == 'next':
