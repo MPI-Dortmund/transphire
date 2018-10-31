@@ -71,10 +71,10 @@ class PlotWidget(QWidget):
         self.color = '#68a3c3'
         self.plot_label = label
         self.plot_typ = plot_typ
-        self.x_min = 0
-        self.x_max = 0
-        self.y_min = 0
-        self.y_max = 0
+        self.x_min = None
+        self.x_max = None
+        self.y_min = None
+        self.y_max = None
         self.title = None
         self.label = None
         self.line = None
@@ -181,6 +181,16 @@ class PlotWidget(QWidget):
         ):
         change = False
 
+        if self.x_min is None and self.x_max is None:
+            self.x_min = new_x_min - 0.5
+            self.x_max = new_x_max + 0.5
+            change = True
+
+        if self.y_min is None and self.y_max is None:
+            self.y_min = new_y_min - 0.5
+            self.y_max = new_y_max + 0.5
+            change = True
+
         if self.plot_typ == 'values':
             if self.line is None:
                 # dummy plot to get the line
@@ -188,6 +198,8 @@ class PlotWidget(QWidget):
                 self.line, = self.axis.plot([0], [1], '.', color=self.color)
                 self.axis.grid()
                 self.axis.set_xlabel('Micrograph ID')
+                self.axis.set_xlim([self.x_min, self.x_max])
+                self.axis.set_ylim([self.y_min, self.y_max])
                 change = True
             if self.label is None:
                 self.label = new_label
@@ -196,6 +208,7 @@ class PlotWidget(QWidget):
             if self.title is None:
                 self.axis.set_title(new_title)
                 change = True
+
         elif self.plot_typ == 'histogram':
             if self.x_min > new_x_min or self.x_max < new_x_max or self.line is None:
                 self.axis.clear()
@@ -207,6 +220,8 @@ class PlotWidget(QWidget):
                         )
                 self.axis.grid()
                 self.axis.set_ylabel('Nr. of micrographs')
+                self.axis.set_xlim([self.x_min, self.x_max])
+                self.axis.set_ylim([self.y_min, self.y_max])
                 change = True
             if self.label is None:
                 self.label = new_label
@@ -216,37 +231,42 @@ class PlotWidget(QWidget):
                 self.axis.set_title(new_title)
                 change = True
 
-        if self.x_min > new_x_min or self.x_max < new_x_max:
+        if new_x_max - new_x_min < 0.001:
+            self.x_min = new_x_min - 0.5
+            self.x_max = new_x_max + 0.5
+            self.axis.set_xlim([self.x_min, self.x_max])
+            change = True
+
+        elif self.x_min > new_x_min or self.x_max < new_x_max:
             if self.x_min > new_x_min:
                 self.x_min = new_x_min - abs(new_x_min*0.1)
             elif abs(self.x_min) < 0.001 and self.plot_typ == 'values':
                 self.x_min = -0.5
+
             if self.x_max < new_x_max:
                 self.x_max = new_x_max + abs(new_x_max*0.1)
             elif abs(self.x_max) < 0.001 and self.plot_typ == 'values':
                 self.x_max = 0.5
             self.axis.set_xlim([self.x_min, self.x_max])
             change = True
-        elif new_x_max - new_x_min < 0.001:
-            self.x_min = new_x_min - 1
-            self.x_max = new_x_max + 1
-            self.axis.set_xlim([self.x_min, self.x_max])
+
+
+        if new_y_max - new_y_min < 0.001:
+            self.y_min = new_y_min - 0.5
+            self.y_max = new_y_max + 0.5
+            self.axis.set_ylim([self.y_min, self.y_max])
             change = True
 
-        if self.y_min > new_y_min or self.y_max < new_y_max:
+        elif self.y_min > new_y_min or self.y_max < new_y_max:
             if self.y_min > new_y_min:
                 self.y_min = new_y_min - abs(new_y_min*0.1)
             elif abs(self.y_min) < 0.001 and self.plot_typ == 'values':
                 self.y_min = -0.5
+
             if self.y_max < new_y_max:
                 self.y_max = new_y_max + abs(new_y_max*0.1)
             elif abs(self.y_max) < 0.001 and self.plot_typ == 'values':
                 self.y_max = 0.5
-            self.axis.set_ylim([self.y_min, self.y_max])
-            change = True
-        elif new_y_max - new_y_min < 0.001:
-            self.y_min = new_y_min - 1
-            self.y_max = new_y_max + 1
             self.axis.set_ylim([self.y_min, self.y_max])
             change = True
 
@@ -298,8 +318,8 @@ class PlotWidget(QWidget):
             elif self.plot_typ == 'histogram':
                 [rect.set_height(y1) for rect, y1 in zip(self.rects, y_values)]
 
-            if change:
-                self.figure.canvas.draw()
+            #if change:
+            #    self.figure.canvas.draw()
             self.figure.canvas.update()
             self.figure.canvas.flush_events()
 
@@ -388,7 +408,7 @@ class PlotWidget(QWidget):
             else:
                 self.img.set_data(jpg_data)
         self.axis.set_title(title)
-        self.figure.canvas.draw()
+        #self.figure.canvas.draw()
         self.figure.canvas.update()
         self.figure.canvas.flush_events()
 
