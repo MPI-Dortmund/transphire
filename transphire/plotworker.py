@@ -49,6 +49,7 @@ class PlotWorker(QObject):
         super(PlotWorker, self).__init__(parent)
         self.settings = []
         self.sig_calculate.connect(self.calculate_array)
+        self.running = False
 
     def reset_list(self):
         self.settings = []
@@ -74,6 +75,9 @@ class PlotWorker(QObject):
                 settings=settings
                 )
 
+    def reset_running(self):
+        self.running = False
+
     @pyqtSlot()
     def calculate_array(self):
         """
@@ -82,7 +86,14 @@ class PlotWorker(QObject):
         Returns:
         None
         """
+        try:
+            print(self.running, self.settings[0][0])
+        except:
+            print(self.running, self.settings)
+        if self.running:
+            return None
         for name, directory_name, settings in self.settings:
+            self.running = True
             self.calculate_array_now(
                 name=name,
                 directory_name=directory_name,

@@ -16,10 +16,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 try:
-    from PyQt4.QtCore import pyqtSlot, Qt, QEvent
+    from PyQt4.QtCore import pyqtSlot, Qt, QEvent, pyqtSignal
     from PyQt4.QtGui import QMainWindow, QDockWidget, QTabWidget
 except ImportError:
-    from PyQt5.QtCore import pyqtSlot, Qt, QEvent
+    from PyQt5.QtCore import pyqtSlot, Qt, QEvent, pyqtSignal
     from PyQt5.QtWidgets import QMainWindow, QDockWidget, QTabWidget
 from transphire.plotwidget import PlotWidget
 
@@ -31,6 +31,7 @@ class PlotContainer(QMainWindow):
     Inherits:
     QMainWindow
     """
+    sig_update_done = pyqtSignal()
 
     def __init__(self, content, plot_labels, plot_name, plot_worker_ctf, plot_worker_motion, plot_worker_picking, plot_type, *args, parent=None, **kwargs):
         """
@@ -108,6 +109,7 @@ class PlotContainer(QMainWindow):
                     directory_name=directory_name,
                     settings=settings
                     )
+            self.sig_update_done.emit()
         else:
             pass
 

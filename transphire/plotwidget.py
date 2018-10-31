@@ -19,17 +19,23 @@ import os
 import warnings
 import imageio
 import numpy as np
+import matplotlib
+matplotlib.use('QT5Agg')
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_qt4agg import (
-    FigureCanvasQTAgg as FigureCanvas,
-    NavigationToolbar2QT as NavigationToolbar
-    )
 try:
     from PyQt4.QtGui import QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QPushButton
     from PyQt4.QtCore import pyqtSlot
+    from matplotlib.backends.backend_qt4agg import (
+        FigureCanvasQTAgg as FigureCanvas,
+        NavigationToolbar2QT as NavigationToolbar
+        )
 except ImportError:
     from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QPushButton
     from PyQt5.QtCore import pyqtSlot
+    from matplotlib.backends.backend_qt5agg import (
+        FigureCanvasQTAgg as FigureCanvas,
+        NavigationToolbar2QT as NavigationToolbar
+        )
 from transphire import transphire_utils as tu
 warnings.filterwarnings('ignore')
 
@@ -63,7 +69,14 @@ class PlotWidget(QWidget):
         super(PlotWidget, self).__init__(parent)
 
         self.color = '#68a3c3'
+        self.plot_label = label
         self.plot_typ = plot_typ
+        self.x_min = 0
+        self.x_max = 0
+        self.y_min = 0
+        self.y_max = 0
+        self.title = None
+        self.label = None
         self.line = None
         self.rects = None
         self.img = None
@@ -78,19 +91,9 @@ class PlotWidget(QWidget):
         toolbar = NavigationToolbar(canvas, self)
         self.figure.canvas.draw()
 
-        if plot_typ == 'values':
-            self.axis.grid()
-            self.axis.set_xlabel('Micrograph ID')
-            self.axis.set_ylabel(label)
-        elif plot_typ == 'histogram':
-            self.axis.grid()
-            self.axis.set_xlabel(label)
-            self.axis.set_ylabel('Nr. of micrographs')
-        elif plot_typ == 'image':
+        if plot_typ == 'image':
             self.axis.get_xaxis().set_visible(False)
             self.axis.get_yaxis().set_visible(False)
-        else:
-            assert False, 'Plot type {0} not known!'.format(plot_typ)
 
         layout_v = QVBoxLayout(self)
         # Add for image plot typ
@@ -125,7 +128,6 @@ class PlotWidget(QWidget):
         layout_v.addWidget(toolbar)
         layout_v.addWidget(canvas)
 
-
     @staticmethod
     def compute_corrupted_figure():
         """
@@ -147,7 +149,6 @@ class PlotWidget(QWidget):
         coord_list.append([[6, 6.5, 6.25, 6.25], [1, 1, 1, 0]])
         return coord_list
 
-
     @staticmethod
     def compute_initial_figure():
         """
@@ -167,6 +168,93 @@ class PlotWidget(QWidget):
         coord_list.append([[4, 4.15, 4.35, 4.5, 4.5, 4.35, 4.15, 4, 4], [0.3, 0, 0, 0.3, 0.6, 1, 1, 0.6, 0.3]])
         return coord_list
 
+    def prepare_axis(
+            self,
+            new_x_min,
+            new_x_max,
+            new_y_min,
+            new_y_max,
+            new_label,
+            new_title,
+            x_values,
+            y_values
+        ):
+        change = False
+
+        if self.plot_typ == 'values':
+            if self.line is None:
+                # dummy plot to get the line
+                self.axis.clear()
+                self.line, = self.axis.plot([0], [1], '.', color=self.color)
+                self.axis.grid()
+                self.axis.set_xlabel('Micrograph ID')
+                change = True
+            if self.label is None:
+                self.label = new_label
+                self.axis.set_ylabel(self.label)
+                change = True
+            if self.title is None:
+                self.axis.set_title(new_title)
+                change = True
+        elif self.plot_typ == 'histogram':
+            if self.x_min > new_x_min or self.x_max < new_x_max or self.line is None:
+                self.axis.clear()
+                self.rects = self.axis.bar(
+                        x_values[:-1],
+                        y_values,
+                        facecolor=self.color,
+                        edgecolor='k'
+                        )
+                self.axis.grid()
+                self.axis.set_ylabel('Nr. of micrographs')
+                change = True
+            if self.label is None:
+                self.label = new_label
+                self.axis.set_xlabel(self.label)
+                change = True
+            if self.title is None:
+                self.axis.set_title(new_title)
+                change = True
+
+        if self.x_min > new_x_min or self.x_max < new_x_max:
+            if self.x_min > new_x_min:
+                self.x_min = new_x_min - abs(new_x_min*0.1)
+            if self.x_max < new_x_max:
+                self.x_max = new_x_max + abs(new_x_max*0.1)
+            self.axis.set_xlim([self.x_min, self.x_max])
+            change = True
+        elif new_x_max - new_x_min < 0.001:
+            self.x_min = new_x_min - 1
+            self.x_max = new_x_max + 1
+            self.axis.set_xlim([self.x_min, self.x_max])
+            change = True
+
+        if self.y_min > new_y_min or self.y_max < new_y_max:
+            if self.y_min > new_y_min:
+                self.y_min = new_y_min - abs(new_y_min*0.1)
+            if self.y_max < new_y_max:
+                self.y_max = new_y_max + abs(new_y_max*0.1)
+            self.axis.set_ylim([self.y_min, self.y_max])
+            change = True
+        elif new_y_max - new_y_min < 0.001:
+            self.y_min = new_y_min - 1
+            self.y_max = new_y_max + 1
+            self.axis.set_ylim([self.y_min, self.y_max])
+            change = True
+
+        if self.plot_typ == 'values':
+            self.line.set_data(x_values, y_values)
+            self.axis.draw_artist(self.axis.patch)
+            self.axis.draw_artist(self.line)
+        elif self.plot_typ == 'histogram':
+            [rect.set_height(y1) for rect, y1 in zip(self.rects, y_values)]
+
+        if change:
+            self.figure.canvas.draw()
+
+        self.figure.canvas.update()
+        self.figure.canvas.flush_events()
+
 
     @pyqtSlot(str, object, str, object)
     def update_figure(self, name, data, directory_name, settings):
@@ -182,9 +270,31 @@ class PlotWidget(QWidget):
         Return:
         None
         """
-        if self.plot_typ == 'values':
-            if self.line is None:
-                self.line, = self.axis.plot([0], [1], color=self.color)
+        if self.plot_typ == 'values' or self.plot_typ == 'histogram':
+            x_values, y_values, label, title = tu.get_function_dict()[name]['plot'](
+                data=data,
+                settings=settings,
+                label=self.plot_label,
+                )
+            idx_nan = np.isnan(y_values)
+            x_values_raw = x_values[~idx_nan]
+            y_values_raw = y_values[~idx_nan]
+            if self.plot_typ == 'values':
+                y_values = y_values_raw
+                x_values = x_values_raw
+            elif self.plot_typ == 'histogram':
+                y_values, x_values = np.histogram(y_values_raw)
+            self.prepare_axis(
+                np.min(x_values),
+                np.max(x_values),
+                np.min(y_values),
+                np.max(y_values),
+                label,
+                title,
+                x_values,
+                y_values
+                )
+
         return None
         if self.plot_typ == 'values' or self.plot_typ == 'histogram':
             x_values, y_values, label, title = tu.get_function_dict()[name]['plot'](
