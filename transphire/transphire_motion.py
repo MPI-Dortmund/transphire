@@ -20,6 +20,9 @@ import os
 import re
 import collections as co
 import numpy as np
+import mrcfile as mrc
+import matplotlib.image as mi
+import scipy.fftpack as fft
 from transphire import transphire_utils as tu
 
 
@@ -625,3 +628,44 @@ def create_export_data(export_data, lines):
         else:
             row_string.append('{0:s}'.format(value))
     lines.append('{0}\n'.format('\t'.join(row_string)))
+
+
+def rebin(arr, new_shape):
+    shape = (new_shape[0], arr.shape[0] // new_shape[0],
+             new_shape[1], arr.shape[1] // new_shape[1])
+    return arr.reshape(shape).mean(-1).mean(1)
+
+
+def create_jpg_file(input_file, settings):
+    file_name = tu.get_name(input_file)
+
+    tu.mkdir_p(os.path.join(settings['motion_folder'], 'jpg'))
+    tu.mkdir_p(os.path.join(settings['motion_folder'], 'jpg_2'))
+
+    jpg_file = os.path.join(settings['motion_folder'], 'jpg', '{0}.jpg'.format(file_name))
+    jpg_file_2 = os.path.join(settings['motion_folder'], 'jpg_2', '{0}.jpg'.format(file_name))
+
+    try:
+        with mrc.open(input_file) as mrc_file:
+            input_data = mrc_file.data
+    except ValueError:
+        with mrc.open(input_file, 'r+', permissive=True) as mrc_file:
+            mrc_file.header.map = mrc.constants.MAP_ID
+        with mrc.open(input_file) as mrc_file:
+            input_data = mrc_file.data
+
+    original_shape = 4096
+    bin_shape = 512
+    ratio = original_shape / bin_shape
+    pad_x = original_shape - input_data.shape[0]
+    pad_y = original_shape - input_data.shape[1]
+
+    input_data = np.pad(input_data, ((0, pad_x), (0, pad_y)), mode='median')
+    shape = (bin_shape, bin_shape)
+    output_data = rebin(input_data, shape)[:-int(1+pad_x//ratio), :-int(1+pad_y//ratio)]
+    mi.imsave(jpg_file, output_data, cmap='gist_gray')
+
+    pw = np.abs(np.fft.fftshift(np.fft.fft2(input_data - np.mean(input_data))))**2
+    output_data = np.clip(pw, 0, 2*np.median(pw))
+    output_data = rebin(output_data, shape)
+    mi.imsave(jpg_file_2, output_data, cmap='gist_gray')

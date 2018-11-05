@@ -805,3 +805,50 @@ def shift_to_contrast(phase_shift):
     """
     return np.tan(np.radians(phase_shift)) / \
         np.sqrt(1.0 + np.tan(np.radians(phase_shift))**2) * 100.0
+
+
+def create_jpg_file(input_ctf_file, input_mrc_file, settings):
+    file_name = tu.get_name(input_file)
+
+    tu.mkdir_p(os.path.join(settings['ctf_folder'], 'jpg'))
+    tu.mkdir_p(os.path.join(settings['ctf_folder'], 'jpg_2'))
+    tu.mkdir_p(os.path.join(settings['ctf_folder'], 'jpg_3'))
+
+    jpg_file = os.path.join(settings['ctf_folder'], 'jpg', '{0}.jpg'.format(file_name))
+    jpg_file_2 = os.path.join(settings['ctf_folder'], 'jpg_2', '{0}.jpg'.format(file_name))
+    jpg_file_3 = os.path.join(settings['ctf_folder'], 'jpg_3', '{0}.jpg'.format(file_name))
+
+    if input_mrc_file:
+        try:
+            with mrc.open(input_mrc_file) as mrc_file:
+                input_data = mrc_file.data
+        except ValueError:
+            with mrc.open(input_mrc_file, 'r+', permissive=True) as mrc_file:
+                mrc_file.header.map = mrc.constants.MAP_ID
+            with mrc.open(input_mrc_file) as mrc_file:
+                input_data = mrc_file.data
+
+        original_shape = 4096
+        bin_shape = 512
+        ratio = original_shape / bin_shape
+        pad_x = original_shape - input_data.shape[0]
+        pad_y = original_shape - input_data.shape[1]
+
+        input_data = np.pad(input_data, ((0, pad_x), (0, pad_y)), mode='median')
+        shape = (bin_shape, bin_shape)
+        output_data = rebin(input_data, shape)[:-int(1+pad_x//ratio), :-int(1+pad_y//ratio)]
+        mi.imsave(jpg_file, output_data, cmap='gist_gray')
+
+    if input_ctf_file:
+        try:
+            with mrc.open(input_ctf_file) as mrc_file:
+                input_data = mrc_file.data
+        except ValueError:
+            with mrc.open(input_ctf_file, 'r+', permissive=True) as mrc_file:
+                mrc_file.header.map = mrc.constants.MAP_ID
+            with mrc.open(input_ctf_file) as mrc_file:
+                input_data = mrc_file.data
+
+        shape = (512, 512)
+        output_data = rebin(input_data, shape)
+        mi.imsave(jpg_file, output_data, cmap='gist_gray')

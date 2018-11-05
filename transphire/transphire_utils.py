@@ -43,6 +43,10 @@ from transphire import transphire_plot as tp
 from transphire import transphire_import as ti
 
 
+def get_name(name):
+    return os.path.basename(os.path.splitext(name)[0])
+
+
 def copy(file_in, file_out):
     """
     Copy file_in to a new location.
