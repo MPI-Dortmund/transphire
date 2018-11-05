@@ -79,23 +79,13 @@ class PlotWidget(QWidget):
         self.label = None
         self.line = None
         self.rects = None
-        self.img = None
-        self.figure, self.axis = plt.subplots()
-        for entry in self.compute_initial_figure():
-            x = entry[0]
-            y = entry[1]
-            self.axis.plot(x, y, color=self.color)
-
-        canvas = FigureCanvas(self.figure)
-        canvas.setParent(self)
-        toolbar = NavigationToolbar(canvas, self)
-        self.figure.canvas.draw()
-
-        if plot_typ == 'image':
-            self.axis.get_xaxis().set_visible(False)
-            self.axis.get_yaxis().set_visible(False)
+        self.img = []
+        self.figure = []
+        self.axis = []
 
         layout_v = QVBoxLayout(self)
+        self.layout_canvas = QHBoxLayout()
+
         # Add for image plot typ
         if plot_typ == 'image' and label == 'image':
             self.data = np.array([])
@@ -106,27 +96,64 @@ class PlotWidget(QWidget):
             self.combo_box = QComboBox(self)
             self.combo_box.addItems([self.default_value])
             self.combo_box.currentIndexChanged.connect(lambda: self.change_idx('combo'))
+
             layout_h.addWidget(self.combo_box)
             self.prev_button = QPushButton('Prev', self)
             self.prev_button.setObjectName('frame')
             self.prev_button.clicked.connect(lambda: self.change_idx('prev'))
             self.prev_button.setEnabled(False)
+
             layout_h.addWidget(self.prev_button)
             self.next_button = QPushButton('Next', self)
             self.next_button.setObjectName('frame')
             self.next_button.clicked.connect(lambda: self.change_idx('next'))
             self.next_button.setEnabled(False)
+
             layout_h.addWidget(self.next_button)
             self.reset_button = QPushButton(self.default_value, self)
             self.reset_button.setObjectName('frame')
             self.reset_button.clicked.connect(lambda: self.change_idx('reset'))
+
             layout_h.addWidget(self.reset_button)
             layout_h.addStretch(1)
             layout_v.addLayout(layout_h)
 
-        # Fill layout
-        layout_v.addWidget(toolbar)
-        layout_v.addWidget(canvas)
+        layout_v.addLayout(self.layout_canvas)
+        self.add_canvas()
+
+    def add_canvas(self):
+        """
+        Add a canvas to the interface
+
+        Arguments:
+        None
+
+        Returns:
+        None
+        """
+        canvas_layout = QVBoxLayout()
+        figure, axis = plt.subplots()
+        self.figure.append(figure)
+        self.axis.append(axis)
+
+        for entry in self.compute_initial_figure():
+            x = entry[0]
+            y = entry[1]
+            axis.plot(x, y, color=self.color)
+
+        canvas = FigureCanvas(figure)
+        canvas.setParent(self)
+        toolbar = NavigationToolbar(canvas, self)
+        figure.canvas.draw()
+
+        canvas_layout.addWidget(toolbar)
+        canvas_layout.addWidget(canvas)
+        self.layout_canvas.addLayout(canvas_layout)
+
+        if self.plot_typ == 'image':
+            axis.get_xaxis().set_visible(False)
+            axis.get_yaxis().set_visible(False)
+            self.img.append(None)
 
     @staticmethod
     def compute_corrupted_figure():
@@ -179,6 +206,7 @@ class PlotWidget(QWidget):
             x_values,
             y_values
         ):
+        axis = self.axis[0]
         change = False
 
         if self.x_min is None and self.x_max is None:
@@ -194,47 +222,47 @@ class PlotWidget(QWidget):
         if self.plot_typ == 'values':
             if self.line is None:
                 # dummy plot to get the line
-                self.axis.clear()
-                self.line, = self.axis.plot([0], [1], '.', color=self.color)
-                self.axis.grid()
-                self.axis.set_xlabel('Micrograph ID')
-                self.axis.set_xlim([self.x_min, self.x_max])
-                self.axis.set_ylim([self.y_min, self.y_max])
+                axis.clear()
+                self.line, = axis.plot([0], [1], '.', color=self.color)
+                axis.grid()
+                axis.set_xlabel('Micrograph ID')
+                axis.set_xlim([self.x_min, self.x_max])
+                axis.set_ylim([self.y_min, self.y_max])
                 change = True
             if self.label is None:
                 self.label = new_label
-                self.axis.set_ylabel(self.label)
+                axis.set_ylabel(self.label)
                 change = True
             if self.title is None:
-                self.axis.set_title(new_title)
+                axis.set_title(new_title)
                 change = True
 
         elif self.plot_typ == 'histogram':
             if self.x_min > new_x_min or self.x_max < new_x_max or self.line is None:
-                self.axis.clear()
-                self.rects = self.axis.bar(
+                axis.clear()
+                self.rects = axis.bar(
                         x_values[:-1],
                         y_values,
                         facecolor=self.color,
                         edgecolor='k'
                         )
-                self.axis.grid()
-                self.axis.set_ylabel('Nr. of micrographs')
-                self.axis.set_xlim([self.x_min, self.x_max])
-                self.axis.set_ylim([self.y_min, self.y_max])
+                axis.grid()
+                axis.set_ylabel('Nr. of micrographs')
+                axis.set_xlim([self.x_min, self.x_max])
+                axis.set_ylim([self.y_min, self.y_max])
                 change = True
             if self.label is None:
                 self.label = new_label
-                self.axis.set_xlabel(self.label)
+                axis.set_xlabel(self.label)
                 change = True
             if self.title is None:
-                self.axis.set_title(new_title)
+                axis.set_title(new_title)
                 change = True
 
         if new_x_max - new_x_min < 0.001:
             self.x_min = new_x_min - 0.5
             self.x_max = new_x_max + 0.5
-            self.axis.set_xlim([self.x_min, self.x_max])
+            axis.set_xlim([self.x_min, self.x_max])
             change = True
 
         elif self.x_min > new_x_min or self.x_max < new_x_max:
@@ -247,14 +275,14 @@ class PlotWidget(QWidget):
                 self.x_max = new_x_max + abs(new_x_max*0.1)
             elif abs(self.x_max) < 0.001 and self.plot_typ == 'values':
                 self.x_max = 0.5
-            self.axis.set_xlim([self.x_min, self.x_max])
+            axis.set_xlim([self.x_min, self.x_max])
             change = True
 
 
         if new_y_max - new_y_min < 0.001:
             self.y_min = new_y_min - 0.5
             self.y_max = new_y_max + 0.5
-            self.axis.set_ylim([self.y_min, self.y_max])
+            axis.set_ylim([self.y_min, self.y_max])
             change = True
 
         elif self.y_min > new_y_min or self.y_max < new_y_max:
@@ -267,7 +295,7 @@ class PlotWidget(QWidget):
                 self.y_max = new_y_max + abs(new_y_max*0.1)
             elif abs(self.y_max) < 0.001 and self.plot_typ == 'values':
                 self.y_max = 0.5
-            self.axis.set_ylim([self.y_min, self.y_max])
+            axis.set_ylim([self.y_min, self.y_max])
             change = True
 
         return change
@@ -313,15 +341,15 @@ class PlotWidget(QWidget):
 
             if self.plot_typ == 'values':
                 self.line.set_data(x_values, y_values)
-                self.axis.draw_artist(self.axis.patch)
-                self.axis.draw_artist(self.line)
+                self.axis[0].draw_artist(self.axis[0].patch)
+                self.axis[0].draw_artist(self.line)
             elif self.plot_typ == 'histogram':
                 [rect.set_height(y1) for rect, y1 in zip(self.rects, y_values)]
 
             #if change:
             #    self.figure.canvas.draw()
             #self.figure.canvas.update()
-            self.figure.canvas.flush_events()
+            self.figure[0].canvas.flush_events()
 
             output_name = os.path.join(
                 directory_name,
@@ -331,7 +359,7 @@ class PlotWidget(QWidget):
                     )
                 )
             try:
-                self.figure.savefig(output_name.replace(' ', '_'))
+                self.figure[0].savefig(output_name.replace(' ', '_'))
             except RuntimeError:
                 pass
             except FileNotFoundError:
@@ -344,7 +372,7 @@ class PlotWidget(QWidget):
             self.combo_box.blockSignals(True)
             self.combo_box.clear()
             files = [self.default_value]
-            files.extend(self.data['file_name'].tolist())
+            files.extend([os.path.basename(os.path.splitext(entry)[0]) for entry in self.data['file_name'].tolist()])
             self.combo_box.addItems(files)
 
             self.idx = max(0, self.combo_box.findText(current_text))
@@ -371,7 +399,6 @@ class PlotWidget(QWidget):
         else:
             raise ValueError('PlotWidget - {0} not known!'.format(self.plot_typ))
 
-
     @pyqtSlot()
     def show_image(self):
         if self.data.shape[0] == 0:
@@ -384,35 +411,34 @@ class PlotWidget(QWidget):
         else:
             idx = self.idx-1
 
-        title = self.data['file_name'][idx]
-        jpg_data = self.data['object'][idx]
-        if self.data['object'][idx] is None:
+        jpg_files = self.data['image'][idx].split(';;;')
+        if len(jpg_files) != len(self.img):
+            for _ in range(len(jpg_files) - len(self.img)):
+                self.add_canvas()
+
+        for idx, jpg_name in enumerate(jpg_files):
+            title = os.path.basename(os.path.splitext(jpg_name)[0])
             try:
-                jpg_data = imageio.imread(self.data['image'][idx])
+                jpg_data = imageio.imread(jpg_name)
             except Exception as e:
-                print('Error loading image: {0} -- Message: {1}'.format(self.data['image'][idx], str(e)))
-                self.axis.clear()
+                print('Error loading image: {0} -- Message: {1}'.format(jpg_name, str(e)))
+                self.axis[idx].clear()
                 for entry in self.compute_corrupted_figure():
                     x = entry[0]
                     y = entry[1]
-                    self.axis.plot(x, y, color=self.color)
-                self.img = None
+                    self.axis[idx].plot(x, y, color=self.color)
+                self.img[idx] = None
             else:
-                if self.img is None:
-                    self.img = self.axis.imshow(jpg_data)
+                if self.img[idx] is None:
+                    self.img[idx] = self.axis[idx].imshow(jpg_data)
                 else:
-                    self.img.set_data(jpg_data)
-        else:
-            if self.img is None:
-                self.img = self.axis.imshow(jpg_data)
-            else:
-                self.img.set_data(jpg_data)
-        self.axis.set_title(title)
-        #self.figure.canvas.draw()
-        #self.figure.canvas.update()
-        self.figure.canvas.flush_events()
+                    self.img[idx].set_data(jpg_data)
+            self.axis[idx].set_title(title)
+            self.figure[idx].canvas.draw()
+            self.figure[idx].canvas.update()
+            self.figure[idx].canvas.flush_events()
 
-    def change_idx(self, typ):
+    def check_enabled(self, typ, change=True):
         if typ == 'next':
             if self.idx <= 0 and self.idx >= self.data.shape[0]:
                 self.prev_button.setEnabled(False)
@@ -421,7 +447,9 @@ class PlotWidget(QWidget):
                 self.next_button.setEnabled(False)
             else:
                 self.prev_button.setEnabled(True)
-                self.idx -= 1
+                if change:
+                    self.idx -= 1
+
         elif typ == 'prev':
             if self.idx <= 0 and self.idx >= self.data.shape[0]:
                 self.prev_button.setEnabled(False)
@@ -430,7 +458,9 @@ class PlotWidget(QWidget):
                 self.prev_button.setEnabled(False)
             else:
                 self.next_button.setEnabled(True)
-                self.idx += 1
+                if change:
+                    self.idx += 1
+
         elif typ == 'combo':
             self.idx = self.combo_box.currentIndex()
             if self.idx <= 0 and self.idx >= self.data.shape[0]:
@@ -464,7 +494,11 @@ class PlotWidget(QWidget):
                 self.next_button.setEnabled(True)
         else:
             pass
+
+    def change_idx(self, typ):
+        self.check_enabled(typ=typ)
         self.combo_box.blockSignals(True)
         self.combo_box.setCurrentIndex(self.idx)
         self.combo_box.blockSignals(False)
+        self.check_enabled(typ=typ, change=False)
         self.show_image()

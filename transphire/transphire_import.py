@@ -68,9 +68,15 @@ def get_dtype_dict():
     Dtype dict
     """
     dtype = {}
-    dtype['ctf'] = [
-        ('object', 'O'),
+    dtype['motion'] = [
+        ('overall drift', '<f8'),
+        ('average drift per frame', '<f8'),
+        ('first frame drift', '<f8'),
+        ('average drift per frame without first', '<f8'),
+        ('file_name', '|U1200'),
         ('image', '|U1200'),
+        ]
+    dtype['ctf'] = [
         ('mic_number', '<f8'),
         ('defocus', '<f8'),
         ('defocus_diff', '<f8'),
@@ -78,7 +84,13 @@ def get_dtype_dict():
         ('phase_shift', '<f8'),
         ('cross_corr', '<f8'),
         ('limit', '<f8'),
-        ('file_name', '|U1200')
+        ('file_name', '|U1200'),
+        ('image', '|U1200'),
+        ]
+    dtype['picking'] = [
+        ('particles', '<i8'),
+        ('file_name', '|U1200'),
+        ('image', '|U1200'),
         ]
     dtype['Gctf v1.06'] = [
         ('defocus_1', '<f8'),
@@ -127,15 +139,6 @@ def get_dtype_dict():
         ('limit', '<f8'),
         ('file_name', '|U1200')
         ]
-    dtype['motion'] = [
-        ('object', 'O'),
-        ('image', '|U1200'),
-        ('overall drift', '<f8'),
-        ('average drift per frame', '<f8'),
-        ('first frame drift', '<f8'),
-        ('average drift per frame without first', '<f8'),
-        ('file_name', '|U1200')
-        ]
     dtype['crYOLO v1.0.4'] = [
         ('coord_x', '<f8'),
         ('coord_y', '<f8'),
@@ -155,12 +158,6 @@ def get_dtype_dict():
         ('coord_y', '<f8'),
         ('box_x', '<f8'),
         ('box_y', '<f8'),
-        ('file_name', '|U1200'),
-        ]
-    dtype['picking'] = [
-        ('object', 'O'),
-        ('image', '|U1200'),
-        ('particles', '<i8'),
         ('file_name', '|U1200'),
         ]
     return dtype
@@ -369,11 +366,8 @@ def import_ctffind_v4_1_8(name, directory_name):
             else:
                 continue
 
-    placeholder = '*'
-    useable_files_jpg = [os.path.splitext(os.path.basename(entry))[0] for entry in glob.glob(os.path.join(directory_name, 'jpg', '{0}.jpg'.format(placeholder)))]
-
-    useable_files = [file_name for file_name in sorted(useable_files) if file_name in useable_files_jpg]
-
+    jpg_files = set([os.path.basename(os.path.splitext(entry)[0]) for entry in glob.glob(os.path.join(directory_name, 'jpg', '*.jpg'))])
+    missing_jpg = [entry for entry in useable_files if os.path.splitext(os.path.basename(entry))[0] not in jpg_files]
 
     data = np.zeros(
         len(useable_files),
@@ -438,6 +432,13 @@ def import_ctffind_v4_1_8(name, directory_name):
             else:
                 data[idx][entry] = data_name[entry]
 
+        jpg_name = os.path.join(
+            directory_name,
+            'jpg',
+            '{0}.jpg'.format(os.path.basename(os.path.splitext(file_name)[0]))
+            )
+        data[idx]['image'] = ';;;'.join([jpg_name]*2)
+
     data = np.sort(data, order='file_name')
     data_original = np.sort(data_original, order='file_name')
     return data, data_original
@@ -499,10 +500,8 @@ def import_gctf_v1_06(name, directory_name):
             else:
                 continue
 
-    placeholder = '*'
-    useable_files_jpg = [os.path.splitext(os.path.basename(entry))[0] for entry in glob.glob(os.path.join(directory_name, 'jpg', '{0}.jpg'.format(placeholder)))]
-
-    useable_files = [file_name for file_name in sorted(useable_files) if file_name in useable_files_jpg]
+    jpg_files = set([os.path.basename(os.path.splitext(entry)[0]) for entry in glob.glob(os.path.join(directory_name, 'jpg', '*.jpg'))])
+    missing_jpg = [entry for entry in useable_files if os.path.splitext(os.path.basename(entry))[0] not in jpg_files]
 
     data = np.zeros(
         len(useable_files),
@@ -569,6 +568,13 @@ def import_gctf_v1_06(name, directory_name):
                 except ValueError:
                     data[idx][transphire_name] = 0
 
+        jpg_name = os.path.join(
+            directory_name,
+            'jpg',
+            '{0}.jpg'.format(os.path.basename(os.path.splitext(file_name)[0]))
+            )
+        data[idx]['image'] = jpg_name
+
     data = np.sort(data, order='file_name')
     data_original = np.sort(data_original, order='file_name')
     return data, data_original
@@ -610,6 +616,9 @@ def import_cter_v1_0(name, directory_name):
             else:
                 continue
 
+    jpg_files = set([os.path.basename(os.path.splitext(entry)[0]) for entry in glob.glob(os.path.join(directory_name, 'jpg', '*.jpg'))])
+    missing_jpg = [entry for entry in useable_files if os.path.splitext(os.path.basename(entry))[0] not in jpg_files]
+
     data = np.zeros(
         len(useable_files),
         dtype=get_dtype_dict()['ctf']
@@ -622,11 +631,6 @@ def import_cter_v1_0(name, directory_name):
     data_original = np.atleast_1d(data_original)
     data.fill(0)
     data_original.fill(0)
-
-    placeholder = '*'
-    useable_files_jpg = [os.path.splitext(os.path.basename(entry))[0] for entry in glob.glob(os.path.join(directory_name, 'jpg', '{0}.jpg'.format(placeholder)))]
-
-    useable_files = [file_name for file_name in sorted(useable_files) if file_name in useable_files_jpg]
 
     for idx, file_name in sorted(enumerate(useable_files)):
         try:
@@ -665,6 +669,13 @@ def import_cter_v1_0(name, directory_name):
                 data[idx]['limit'] = 1 / value
             else:
                 continue
+
+        jpg_name = os.path.join(
+            directory_name,
+            'jpg',
+            '{0}.jpg'.format(os.path.basename(os.path.splitext(file_name)[0]))
+            )
+        data[idx]['image'] = jpg_name
 
     data = np.sort(data, order='file_name')
     data_original = np.sort(data_original, order='file_name')
@@ -709,10 +720,8 @@ def import_motion_cor_2_v1_0_0(name, directory_name):
             else:
                 continue
 
-    placeholder = '*'
-    useable_files_jpg = [os.path.splitext(os.path.basename(entry))[0] for entry in glob.glob(os.path.join(directory_name, 'jpg', '{0}.jpg'.format(placeholder)))]
-
-    useable_files = [file_name for file_name in sorted(useable_files) if file_name in useable_files_jpg]
+    jpg_files = set([os.path.basename(os.path.splitext(entry)[0]) for entry in glob.glob(os.path.join(directory_name, 'jpg', '*.jpg'))])
+    missing_jpg = [entry for entry in useable_files if os.path.splitext(os.path.basename(entry))[0] not in jpg_files]
 
     data = np.zeros(
         len(useable_files),
@@ -756,6 +765,13 @@ def import_motion_cor_2_v1_0_0(name, directory_name):
             else:
                 pass
 
+        jpg_name = os.path.join(
+            directory_name,
+            'jpg',
+            '{0}.jpg'.format(os.path.basename(os.path.splitext(file_name)[0]))
+            )
+        data[idx]['image'] = jpg_name
+
     sort_idx = np.argsort(data, order='file_name')
     data = data[sort_idx]
     data_original = np.array(data_original)[sort_idx]
@@ -792,7 +808,7 @@ def import_motion_cor_2_v1_1_0(name, directory_name):
     return data, data_original
 
 
-def import_cryolo_v1_0_5(name, directory_name, image=True):
+def import_cryolo_v1_0_5(name, directory_name):
     """
     Import picking information for crYOLO v1.0.5.
 
@@ -803,10 +819,10 @@ def import_cryolo_v1_0_5(name, directory_name, image=True):
     Return:
     Imported data
     """
-    return import_cryolo_v1_0_4(name, directory_name, image=True)
+    return import_cryolo_v1_0_4(name, directory_name)
 
 
-def import_cryolo_v1_1_0(name, directory_name, image=True):
+def import_cryolo_v1_1_0(name, directory_name):
     """
     Import picking information for crYOLO v1.1.0.
 
@@ -817,10 +833,10 @@ def import_cryolo_v1_1_0(name, directory_name, image=True):
     Return:
     Imported data
     """
-    return import_cryolo_v1_0_4(name, directory_name, image=True)
+    return import_cryolo_v1_0_4(name, directory_name)
 
 
-def import_cryolo_v1_0_4(name, directory_name, image=True):
+def import_cryolo_v1_0_4(name, directory_name):
     """
     Import picking information for crYOLO v1.0.4.
 
@@ -881,21 +897,8 @@ def import_cryolo_v1_0_4(name, directory_name, image=True):
         data[idx]['file_name'] = file_name
         data[idx]['particles'] = size
         data[idx]['image'] = jpg_name
-        data[idx]['object'] = None
 
     data.sort(order='file_name')
-    if image:
-        for i in range(1, 10):
-            try:
-                jpg_data = imageio.imread(data[-i]['image'])
-            except:
-                jpg_data = None
-            try:
-                data[-i]['object'] = jpg_data
-            except:
-                continue
-    else:
-        pass
     data_original = None
 
     data = np.sort(data, order='file_name')
