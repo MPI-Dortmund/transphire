@@ -81,6 +81,49 @@ class ProcessWorker(QObject):
         # Events
         self.sig_start.connect(self.run)
 
+    def emit_plot_signals(self):
+        # Set CTF settings
+        self.settings['CTF_folder'] = {}
+        for entry in self.settings['Copy']['CTF_entries']:
+            self.settings['CTF_folder'][entry] = os.path.join(
+                self.settings['project_folder'],
+                entry.replace(' ', '_')
+                )
+            self.sig_plot_ctf.emit(
+                entry,
+                self.settings['CTF_folder'][entry],
+                self.settings,
+                self.settings['Copy']['CTF']
+                )
+
+        # Set Motion settings
+        self.settings['Motion_folder'] = {}
+        for entry in self.settings['Copy']['Motion_entries']:
+            self.settings['Motion_folder'][entry] = os.path.join(
+                self.settings['project_folder'],
+                entry.replace(' ', '_')
+                )
+            self.sig_plot_motion.emit(
+                entry,
+                self.settings['Motion_folder'][entry],
+                self.settings,
+                self.settings['Copy']['Motion']
+                )
+
+        # Set Picking settings
+        self.settings['Picking_folder'] = {}
+        for entry in self.settings['Copy']['Picking_entries']:
+            self.settings['Picking_folder'][entry] = os.path.join(
+                self.settings['project_folder'],
+                entry.replace(' ', '_')
+                )
+            self.sig_plot_picking.emit(
+                entry,
+                self.settings['Picking_folder'][entry],
+                self.settings,
+                self.settings['Copy']['Picking']
+                )
+
     @pyqtSlot(object)
     def run(self, settings):
         """
@@ -136,48 +179,6 @@ class ProcessWorker(QObject):
             self.settings['Copy_backup_folder'],
             self.settings['Copy']['Copy to backup'].replace(' ', '_')
             )
-
-        # Set CTF settings
-        self.settings['CTF_folder'] = {}
-        for entry in self.settings['Copy']['CTF_entries']:
-            self.settings['CTF_folder'][entry] = os.path.join(
-                self.settings['project_folder'],
-                entry.replace(' ', '_')
-                )
-            self.sig_plot_ctf.emit(
-                entry,
-                self.settings['CTF_folder'][entry],
-                self.settings,
-                self.settings['Copy']['CTF']
-                )
-
-        # Set Motion settings
-        self.settings['Motion_folder'] = {}
-        for entry in self.settings['Copy']['Motion_entries']:
-            self.settings['Motion_folder'][entry] = os.path.join(
-                self.settings['project_folder'],
-                entry.replace(' ', '_')
-                )
-            self.sig_plot_motion.emit(
-                entry,
-                self.settings['Motion_folder'][entry],
-                self.settings,
-                self.settings['Copy']['Motion']
-                )
-
-        # Set Picking settings
-        self.settings['Picking_folder'] = {}
-        for entry in self.settings['Copy']['Picking_entries']:
-            self.settings['Picking_folder'][entry] = os.path.join(
-                self.settings['project_folder'],
-                entry.replace(' ', '_')
-                )
-            self.sig_plot_picking.emit(
-                entry,
-                self.settings['Picking_folder'][entry],
-                self.settings,
-                self.settings['Copy']['Picking']
-                )
 
         typ_dict = {}
         wait_dict = {}
@@ -251,6 +252,7 @@ class ProcessWorker(QObject):
         # Set stop variable to the return value of the pre_check
         if settings['Monitor']:
             self.stop = False
+            self.emit_plot_signals()
             self.run_monitor(
                 typ_dict=typ_dict,
                 queue_com=queue_com,
@@ -502,6 +504,8 @@ class ProcessWorker(QObject):
                 print(str(err))
                 self.sig_error.emit(str(err))
                 return None
+
+        self.emit_plot_signals()
 
         # Fill different dictionarys with process information
         gpu_mutex_dict = dict([(str(idx), [QMutex(), 0]) for idx in range(99)])

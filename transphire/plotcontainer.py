@@ -61,7 +61,7 @@ class PlotContainer(QMainWindow):
             raise Exception('PlotContainer - {0} not known!'.format(plot_type))
 
         self.content = []
-        dock_widgets = []
+        self.dock_widgets = []
         for label in plot_labels:
             label = label[0]
             if label == 'mic_number':
@@ -84,11 +84,11 @@ class PlotContainer(QMainWindow):
             dock_widget.setWidget(widget)
             dock_widget.installEventFilter(self)
             dock_widget.setFeatures(QDockWidget.DockWidgetFloatable | QDockWidget.DockWidgetMovable)
-            dock_widgets.append(dock_widget)
+            self.dock_widgets.append(dock_widget)
             self.addDockWidget(Qt.BottomDockWidgetArea, dock_widget, Qt.Horizontal)
 
-        for idx in range(1, len(dock_widgets)):
-            self.tabifyDockWidget(dock_widgets[0], dock_widgets[idx])
+        for idx in range(1, len(self.dock_widgets)):
+            self.tabifyDockWidget(self.dock_widgets[0], self.dock_widgets[idx])
 
     @pyqtSlot(str, object, str, object)
     def update_figure(self, name, data, directory_name, settings):
@@ -153,6 +153,3 @@ class PlotContainer(QMainWindow):
     def set_visibility(self, visible, name):
         if name == self.plot_name:
             self.parent.content[self.parent_layout].enable_tab(visible)
-
-
-

@@ -59,6 +59,9 @@ class TabDocker(QWidget):
         self.tab_widget = QTabWidget(self)
         layout.addWidget(self.tab_widget)
 
+        self.idx = 0
+        self.widgets = {}
+
     def add_tab(self, widget, name):
         """
         Add a new tab to the TabDocker
@@ -75,6 +78,8 @@ class TabDocker(QWidget):
         else:
             pass
         self.tab_widget.addTab(widget, name)
+        self.widgets[self.idx] = widget
+        self.idx += 1
 
     def count(self):
         """
@@ -205,4 +210,7 @@ class TabDocker(QWidget):
         None
         """
         index = self.parent.content[self.layout].indexOf(self)
-        self.parent.content[self.layout].setTabEnabled(index, visible)
+        if not visible:
+            self.parent.content[self.layout].removeTab(index)
+        else:
+            self.parent.content[self.layout].add_tab(self, self.name)

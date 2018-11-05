@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import os
 try:
     from PyQt4.QtCore import pyqtSignal, QObject, pyqtSlot
 except ImportError:
@@ -102,9 +103,13 @@ class PlotWorker(QObject):
             name=name,
             directory_name=directory_name
             )
+
+        if os.path.isdir(directory_name):
+            self.sig_visible.emit(True, name)
+        else:
+            self.sig_visible.emit(False, name)
+
         if data.size == 0:
             self.running = False
-            self.sig_visible.emit(False, name)
         else:
-            self.sig_visible.emit(True, name)
             self.sig_data.emit(name, data, directory_name, settings)
