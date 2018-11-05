@@ -33,7 +33,7 @@ class PlotContainer(QMainWindow):
     """
     sig_update_done = pyqtSignal()
 
-    def __init__(self, content, plot_labels, plot_name, plot_worker_ctf, plot_worker_motion, plot_worker_picking, plot_type, *args, parent=None, **kwargs):
+    def __init__(self, content, plot_labels, plot_name, plot_worker_ctf, plot_worker_motion, plot_worker_picking, plot_type, layout, *args, parent=None, **kwargs):
         """
         Initialisation of the PlotContainer widget.
 
@@ -46,6 +46,8 @@ class PlotContainer(QMainWindow):
         None
         """
         super(PlotContainer, self).__init__(parent)
+        self.parent_layout = layout
+        self.parent = parent
         self.setCentralWidget(None)
         self.setTabPosition(Qt.TopDockWidgetArea, QTabWidget.North)
         self.plot_name = plot_name
@@ -146,3 +148,11 @@ class PlotContainer(QMainWindow):
                 entry.setEnabled(var)
             else:
                 pass
+
+    @pyqtSlot(bool, str)
+    def set_visibility(self, visible, name):
+        if name == self.plot_name:
+            self.parent.content[self.parent_layout].enable_tab(visible)
+
+
+

@@ -40,6 +40,16 @@ class TabDocker(QWidget):
         None
         """
         super(TabDocker, self).__init__(parent)
+        self.parent = parent
+        try:
+            self.layout = kwargs['layout']
+        except KeyError:
+            self.layout = None
+        try:
+            self.name = kwargs['name']
+        except KeyError:
+            self.name = None
+
         layout_tmp = QVBoxLayout(self)
         self.parent_widget = QWidget(self)
         layout_tmp.addWidget(self.parent_widget)
@@ -168,3 +178,31 @@ class TabDocker(QWidget):
             'East': QTabWidget.East,
             }
         self.tab_widget.setTabPosition(tab_position_dict[position])
+
+    def setTabEnabled(self, index, var):
+        """
+        Disable or enable the tab at index.
+
+        Arguments:
+        index - Index of the tab.
+        var - True to enable, False to disable
+
+        Returns:
+        None
+        """
+        self.tab_widget.setTabEnabled(index, var)
+
+    def enable_tab(self, visible):
+        """
+        Enable or disable the tab.
+
+
+        Arguments:
+        visible - Enable if True, Disable if False
+        name - Name of the tab to disable.
+
+        Returns:
+        None
+        """
+        index = self.parent.content[self.layout].indexOf(self)
+        self.parent.content[self.layout].setTabEnabled(index, visible)

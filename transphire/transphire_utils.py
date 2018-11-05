@@ -874,8 +874,16 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
     QTabBar::pane {{
         border-top: 2px solid #C2C7CB;
         }}
-    QTabBar::tab {{
+    QTabBar::tab::enabled {{
         min-width: 120px;
+        }}
+    QTabBar::tab::disabled {{
+        width: 0;
+        height: 0;
+        margin: 0;
+        padding: 0;
+        border: none;
+        background-color: rgba(0,0,0,0);
         }}
     QMessageBox {{
         background-image: url("{1}");

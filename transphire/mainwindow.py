@@ -599,6 +599,9 @@ class MainWindow(QMainWindow):
                     self.content[key].update_figure
                     )
                 self.content[key].sig_update_done.connect(self.content[key].worker.reset_running)
+                self.content[key].worker.sig_visible.connect(
+                    self.content[key].set_visibility
+                    )
             else:
                 pass
 
