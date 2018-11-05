@@ -559,18 +559,13 @@ def get_content_gui(content):
             'layout': 'Settings',
             },
         {
-            'name': 'Separator',
-            'layout': 'h1',
-            'separator': Separator(typ='vertical', color='black')
-            },
-        {
             'name': 'Status',
             'widget': StatusContainer,
             'content': content['Others'],
             'content_mount': content['Mount'],
             'content_pipeline': content['Pipeline'],
             'content_font': content['Font'],
-            'layout': 'h1',
+            'layout': 'v2',
             },
         {
             'name': 'Plot Motion',
@@ -996,6 +991,24 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
         min-width: {3}
         }}
     QPushButton#notification {{ max-width: {4}; min-width: {4} }}
+    QPushButton#sep {{
+        color: white;
+        background-color: black;
+        border-color: green;
+        border-width: 1px;
+        border-style: inset;
+        padding: 0px;
+        border-radius: 0px
+        }}
+    QPushButton#sep:checked {{
+        color: white;
+        background-color: black;
+        border-color: red;
+        border-width: 1px;
+        border-style: outset;
+        padding: 0px;
+        border-radius: 0px
+        }}
     """.format(
         start_button_width,
         frame_label_width,
