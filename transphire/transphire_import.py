@@ -366,8 +366,8 @@ def import_ctffind_v4_1_8(name, directory_name):
             else:
                 continue
 
-    jpg_files = set([os.path.basename(os.path.splitext(entry)[0]) for entry in glob.glob(os.path.join(directory_name, 'jpg', '*.jpg'))])
-    missing_jpg = [entry for entry in useable_files if os.path.splitext(os.path.basename(entry))[0] not in jpg_files]
+    useable_files_jpg = [os.path.splitext(os.path.basename(entry))[0] for entry in glob.glob(os.path.join(directory_name, 'jpg', '*.jpg'))]
+    useable_files = [file_name for file_name in sorted(useable_files) if file_name in useable_files_jpg]
 
     data = np.zeros(
         len(useable_files),
@@ -500,8 +500,8 @@ def import_gctf_v1_06(name, directory_name):
             else:
                 continue
 
-    jpg_files = set([os.path.basename(os.path.splitext(entry)[0]) for entry in glob.glob(os.path.join(directory_name, 'jpg', '*.jpg'))])
-    missing_jpg = [entry for entry in useable_files if os.path.splitext(os.path.basename(entry))[0] not in jpg_files]
+    useable_files_jpg = [os.path.splitext(os.path.basename(entry))[0] for entry in glob.glob(os.path.join(directory_name, 'jpg', '*.jpg'))]
+    useable_files = [file_name for file_name in sorted(useable_files) if file_name in useable_files_jpg]
 
     data = np.zeros(
         len(useable_files),
@@ -616,8 +616,8 @@ def import_cter_v1_0(name, directory_name):
             else:
                 continue
 
-    jpg_files = set([os.path.basename(os.path.splitext(entry)[0]) for entry in glob.glob(os.path.join(directory_name, 'jpg', '*.jpg'))])
-    missing_jpg = [entry for entry in useable_files if os.path.splitext(os.path.basename(entry))[0] not in jpg_files]
+    useable_files_jpg = [os.path.splitext(os.path.basename(entry))[0] for entry in glob.glob(os.path.join(directory_name, 'jpg', '*.jpg'))]
+    useable_files = [file_name for file_name in sorted(useable_files) if file_name in useable_files_jpg]
 
     data = np.zeros(
         len(useable_files),
@@ -720,8 +720,8 @@ def import_motion_cor_2_v1_0_0(name, directory_name):
             else:
                 continue
 
-    jpg_files = set([os.path.basename(os.path.splitext(entry)[0]) for entry in glob.glob(os.path.join(directory_name, 'jpg', '*.jpg'))])
-    missing_jpg = [entry for entry in useable_files if os.path.splitext(os.path.basename(entry))[0] not in jpg_files]
+    useable_files_jpg = [os.path.splitext(os.path.basename(entry))[0] for entry in glob.glob(os.path.join(directory_name, 'jpg', '*.jpg'))]
+    useable_files = [file_name for file_name in sorted(useable_files) if file_name in useable_files_jpg]
 
     data = np.zeros(
         len(useable_files),
@@ -847,16 +847,14 @@ def import_cryolo_v1_0_4(name, directory_name):
     Return:
     Imported data
     """
-    placeholder = '*'
-
-    box_files = glob.glob(os.path.join(directory_name, '{0}.{1}'.format(placeholder, 'box')))
+    box_files = glob.glob(os.path.join(directory_name, '*.{0}'.format('box')))
     extension = 'box'
     if not box_files:
         extension = 'txt'
-        box_files = glob.glob(os.path.join(directory_name, '{0}.{1}'.format(placeholder, 'txt')))
+        box_files = glob.glob(os.path.join(directory_name, '*.{0}'.format('txt')))
 
     files_box = np.array(box_files)
-    useable_files_box = []
+    useable_files = []
     for file_name in files_box:
         try:
             np.genfromtxt(file_name)
@@ -865,11 +863,10 @@ def import_cryolo_v1_0_4(name, directory_name):
         except IOError:
             continue
         else:
-            useable_files_box.append(os.path.splitext(os.path.basename(file_name))[0])
+            useable_files.append(os.path.splitext(os.path.basename(file_name))[0])
 
-    useable_files_jpg = [os.path.splitext(os.path.basename(entry))[0] for entry in glob.glob(os.path.join(directory_name, 'jpg', '{0}.jpg'.format(placeholder)))]
-
-    useable_files = [file_name for file_name in sorted(useable_files_box) if file_name in useable_files_jpg]
+    useable_files_jpg = [os.path.splitext(os.path.basename(entry))[0] for entry in glob.glob(os.path.join(directory_name, 'jpg', '*.jpg'))]
+    useable_files = [file_name for file_name in sorted(useable_files) if file_name in useable_files_jpg]
 
     data = np.zeros(
         len(useable_files),

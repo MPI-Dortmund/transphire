@@ -372,7 +372,10 @@ class PlotWidget(QWidget):
             self.combo_box.blockSignals(True)
             self.combo_box.clear()
             files = [self.default_value]
-            files.extend([os.path.basename(os.path.splitext(entry)[0]) for entry in self.data['file_name'].tolist()])
+            files.extend([
+                os.path.basename(os.path.splitext(entry)[0])
+                for entry in self.data['file_name'].tolist()
+                ])
             self.combo_box.addItems(files)
 
             self.idx = max(0, self.combo_box.findText(current_text))
