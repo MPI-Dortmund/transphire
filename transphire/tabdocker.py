@@ -59,9 +59,6 @@ class TabDocker(QWidget):
         self.tab_widget = QTabWidget(self)
         layout.addWidget(self.tab_widget)
 
-        self.idx = 0
-        self.widgets = {}
-
     def add_tab(self, widget, name):
         """
         Add a new tab to the TabDocker
@@ -78,8 +75,6 @@ class TabDocker(QWidget):
         else:
             pass
         self.tab_widget.addTab(widget, name)
-        self.widgets[self.idx] = widget
-        self.idx += 1
 
     def count(self):
         """
@@ -183,19 +178,6 @@ class TabDocker(QWidget):
             'East': QTabWidget.East,
             }
         self.tab_widget.setTabPosition(tab_position_dict[position])
-
-    def setTabEnabled(self, index, var):
-        """
-        Disable or enable the tab at index.
-
-        Arguments:
-        index - Index of the tab.
-        var - True to enable, False to disable
-
-        Returns:
-        None
-        """
-        self.tab_widget.setTabEnabled(index, var)
 
     def enable_tab(self, visible):
         """
