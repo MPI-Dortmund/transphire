@@ -69,6 +69,8 @@ def get_dtype_dict():
     """
     dtype = {}
     dtype['ctf'] = [
+        ('object', 'O'),
+        ('image', '|U1200'),
         ('mic_number', '<f8'),
         ('defocus', '<f8'),
         ('defocus_diff', '<f8'),
@@ -126,6 +128,8 @@ def get_dtype_dict():
         ('file_name', '|U1200')
         ]
     dtype['motion'] = [
+        ('object', 'O'),
+        ('image', '|U1200'),
         ('overall drift', '<f8'),
         ('average drift per frame', '<f8'),
         ('first frame drift', '<f8'),
@@ -365,6 +369,12 @@ def import_ctffind_v4_1_8(name, directory_name):
             else:
                 continue
 
+    placeholder = '*'
+    useable_files_jpg = [os.path.splitext(os.path.basename(entry))[0] for entry in glob.glob(os.path.join(directory_name, 'jpg', '{0}.jpg'.format(placeholder)))]
+
+    useable_files = [file_name for file_name in sorted(useable_files) if file_name in useable_files_jpg]
+
+
     data = np.zeros(
         len(useable_files),
         dtype=get_dtype_dict()['ctf']
@@ -489,6 +499,11 @@ def import_gctf_v1_06(name, directory_name):
             else:
                 continue
 
+    placeholder = '*'
+    useable_files_jpg = [os.path.splitext(os.path.basename(entry))[0] for entry in glob.glob(os.path.join(directory_name, 'jpg', '{0}.jpg'.format(placeholder)))]
+
+    useable_files = [file_name for file_name in sorted(useable_files) if file_name in useable_files_jpg]
+
     data = np.zeros(
         len(useable_files),
         dtype=get_dtype_dict()['ctf']
@@ -608,6 +623,11 @@ def import_cter_v1_0(name, directory_name):
     data.fill(0)
     data_original.fill(0)
 
+    placeholder = '*'
+    useable_files_jpg = [os.path.splitext(os.path.basename(entry))[0] for entry in glob.glob(os.path.join(directory_name, 'jpg', '{0}.jpg'.format(placeholder)))]
+
+    useable_files = [file_name for file_name in sorted(useable_files) if file_name in useable_files_jpg]
+
     for idx, file_name in sorted(enumerate(useable_files)):
         try:
             data_name = np.genfromtxt(
@@ -688,6 +708,11 @@ def import_motion_cor_2_v1_0_0(name, directory_name):
                 useable_files.append(file_name)
             else:
                 continue
+
+    placeholder = '*'
+    useable_files_jpg = [os.path.splitext(os.path.basename(entry))[0] for entry in glob.glob(os.path.join(directory_name, 'jpg', '{0}.jpg'.format(placeholder)))]
+
+    useable_files = [file_name for file_name in sorted(useable_files) if file_name in useable_files_jpg]
 
     data = np.zeros(
         len(useable_files),
