@@ -584,98 +584,50 @@ def get_content_gui(content):
             },
         ]
 
-    for motion_content in content_motion:
-        gui_content.append({
-            'name': motion_content,
-            'widget': SettingsContainer,
-            'content': content[motion_content],
-            'layout': 'Motion',
-            })
-        gui_content.append({
-            'name': 'Plot {0}'.format(motion_content),
-            'widget': TabDocker,
-            'layout': 'Plot Motion',
-            })
-        gui_content.append({
-            'name': 'Plot per micrograph',
-            'widget': PlotContainer,
-            'content': 'values',
-            'plot_type': 'motion',
-            'layout': 'Plot {0}'.format(motion_content),
-            })
-        gui_content.append({
-            'name': 'Plot histogram',
-            'widget': PlotContainer,
-            'content': 'histogram',
-            'plot_type': 'motion',
-            'layout': 'Plot {0}'.format(motion_content),
-            })
-    gui_content.append({
-        'name': 'Frames',
-        'widget': FrameContainer,
-        'layout': 'Motion',
-        })
-
-    for ctf_content in content_ctf:
-        gui_content.append({
-            'name': ctf_content,
-            'widget': SettingsContainer,
-            'content': content[ctf_content],
-            'layout': 'CTF',
-            })
-        gui_content.append({
-            'name': 'Plot {0}'.format(ctf_content),
-            'widget': TabDocker,
-            'layout': 'Plot CTF',
-            })
-        gui_content.append({
-            'name': 'Plot per micrograph',
-            'widget': PlotContainer,
-            'content': 'values',
-            'plot_type': 'ctf',
-            'layout': 'Plot {0}'.format(ctf_content),
-            })
-        gui_content.append({
-            'name': 'Plot histogram',
-            'widget': PlotContainer,
-            'content': 'histogram',
-            'plot_type': 'ctf',
-            'layout': 'Plot {0}'.format(ctf_content),
-            })
-
-    for picking_content in content_picking:
-        gui_content.append({
-            'name': picking_content,
-            'widget': SettingsContainer,
-            'content': content[picking_content],
-            'layout': 'Picking',
-            })
-        gui_content.append({
-            'name': 'Plot {0}'.format(picking_content),
-            'widget': TabDocker,
-            'layout': 'Plot Picking',
-            })
-        gui_content.append({
-            'name': 'Show images',
-            'widget': PlotContainer,
-            'content': 'image',
-            'plot_type': 'picking',
-            'layout': 'Plot {0}'.format(picking_content),
-            })
-        gui_content.append({
-            'name': 'Plot per micrograph',
-            'widget': PlotContainer,
-            'content': 'values',
-            'plot_type': 'picking',
-            'layout': 'Plot {0}'.format(picking_content),
-            })
-        gui_content.append({
-            'name': 'Plot histogram',
-            'widget': PlotContainer,
-            'content': 'histogram',
-            'plot_type': 'picking',
-            'layout': 'Plot {0}'.format(picking_content),
-            })
+    all_content = []
+    all_content.append(['Motion', content_motion])
+    all_content.append(['CTF', content_ctf])
+    all_content.append(['Picking', content_picking])
+    for typ, content_typ in all_content:
+        for input_content in content_typ:
+            gui_content.append({
+                'name': input_content,
+                'widget': SettingsContainer,
+                'content': content[input_content],
+                'layout': typ,
+                })
+            gui_content.append({
+                'name': 'Plot {0}'.format(input_content),
+                'widget': TabDocker,
+                'layout': 'Plot {0}'.format(typ),
+                })
+            gui_content.append({
+                'name': 'Show images',
+                'widget': PlotContainer,
+                'content': 'image',
+                'plot_type': typ.lower(),
+                'layout': 'Plot {0}'.format(input_content),
+                })
+            gui_content.append({
+                'name': 'Plot per micrograph',
+                'widget': PlotContainer,
+                'content': 'values',
+                'plot_type': typ.lower(),
+                'layout': 'Plot {0}'.format(input_content),
+                })
+            gui_content.append({
+                'name': 'Plot histogram',
+                'widget': PlotContainer,
+                'content': 'histogram',
+                'plot_type': typ.lower(),
+                'layout': 'Plot {0}'.format(input_content),
+                })
+        if typ == 'Motion':
+            gui_content.append({
+                'name': 'Frames',
+                'widget': FrameContainer,
+                'layout': typ,
+                })
 
     return gui_content
 
