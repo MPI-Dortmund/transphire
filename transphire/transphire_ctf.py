@@ -857,7 +857,6 @@ def create_jpg_file(input_mrc_file, settings, ctf_name):
             input_data = np.sum(input_data, axis=0)
         input_data = input_data - np.min(input_data)
 
-        input_data = np.clip(input_data, 0, 2*np.median(input_data))
         if input_data.shape[0] > 512:
             original_shape = 4096
             bin_shape = 512

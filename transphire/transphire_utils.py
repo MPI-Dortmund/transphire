@@ -44,24 +44,19 @@ from transphire import transphire_plot as tp
 from transphire import transphire_import as ti
 
 
-def find_percent(data):
-    percent = 20
-    print(np.min(data), np.max(data))
-    #tmp = data
-    #max_diff = 1000
-    #tmp = tmp[tmp < np.max(tmp) * (1 - percent / 100)]
-    #tmp = tmp[tmp > np.min(tmp) * (1 + percent / 100)]
-    #while np.abs(np.mean(tmp) - np.median(tmp)) > max_diff:
-    #    percent += 3
-    #    tmp = tmp[tmp < np.max(tmp) * (1 - percent / 100)]
-    #    tmp = tmp[tmp > np.min(tmp) * (1 + percent / 100)]
-    #    if percent > 15:
-    #        percent = 3
-    #        max_diff *= 5
-    #print(percent, max_diff, np.mean(data), np.median(tmp), np.max(data), np.min(data), np.mean(data)-np.median(data), (np.max(data)-np.min(data))*0.01)
-    data[data > np.max(data) * (1 - percent / 100)] = np.mean(data)
-    data[data < np.min(data) * (1 + percent / 100)] = np.mean(data)
-    print(np.min(data), np.max(data))
+def normalize_image(data):
+    values, bins = np.histogram(data, 300)
+    min_idx = np.argmin(values)
+    while values[min_idx] == 0:
+        mask = data < bins[min_idx]
+        values, bins = np.histogram(data[mask], 300)
+        min_idx = np.argmin(values)
+
+    mean = np.mean(data[mask])
+    var = np.sum((data[mask]-mean)**2)
+    std = np.sqrt(var / (data[mask].size - 1))
+    mask_out = data > mean+3*std
+    data[mask_out] = np.mean(data[~mask_out])
     return data
 
 

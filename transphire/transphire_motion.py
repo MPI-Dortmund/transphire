@@ -658,16 +658,10 @@ def create_jpg_file(input_file, settings):
 
     input_data = np.pad(input_data, ((0, pad_x), (0, pad_y)), mode='median')
     shape = (bin_shape, bin_shape)
-    output_data = np.clip(input_data, 0, 2*np.median(input_data))
     output_data = tu.rebin(input_data, shape)[:-int(1+pad_x//ratio), :-int(1+pad_y//ratio)]
     mi.imsave(jpg_file, output_data, cmap='gist_gray')
 
     pw = np.abs(np.fft.fftshift(np.fft.fft2(input_data - np.mean(input_data))))**2
-    output_data = tu.find_percent(pw)
-    print(np.min(output_data), np.max(output_data))
+    output_data = tu.normalize_image(pw)
     output_data = tu.rebin(output_data, shape)
-    import matplotlib.pyplot as plt
-    plt.hist(output_data.flatten(), 100)
-    plt.show()
-    plt.clf()
     mi.imsave(jpg_file_2, output_data, cmap='gist_gray')
