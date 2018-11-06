@@ -858,7 +858,7 @@ def create_jpg_file(input_mrc_file, settings, ctf_name):
         input_data = input_data - np.min(input_data)
 
         input_data = np.clip(input_data, 0, 2*np.median(input_data))
-        if input_data.shape[0] != 512:
+        if input_data.shape[0] > 512:
             original_shape = 4096
             bin_shape = 512
             ratio = original_shape / bin_shape
@@ -886,9 +886,8 @@ def create_jpg_file(input_mrc_file, settings, ctf_name):
             input_data = np.sum(input_data, axis=0)
         input_data = input_data - np.min(input_data)
 
-        input_data = np.clip(input_data, 0, 2*np.median(input_data))
-        if input_data.shape[0] != 512:
-            shape = (512, 512)
+        if input_data.shape[0] > 512*2:
+            shape = (512*2, 512*2)
             output_data = tu.rebin(input_data, shape)
         else:
             output_data = input_data

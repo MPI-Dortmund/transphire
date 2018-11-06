@@ -741,14 +741,14 @@ def import_motion_cor_2_v1_0_0(name, directory_name):
             else:
                 continue
 
-    useable_files_jpg = [
+    useable_files_jpg = set([
         tu.get_name(entry)
         for entry in glob.glob(os.path.join(directory_name, 'jpg*', '*.jpg'))
-        ]
+        ])
     useable_files = [
         file_name
         for file_name in sorted(useable_files)
-        if tu.get_name(file_name) in useable_files_jpg
+        if tu.get_name(tu.get_name(file_name)) in useable_files_jpg
         ]
 
     data = np.zeros(
@@ -796,7 +796,7 @@ def import_motion_cor_2_v1_0_0(name, directory_name):
         jpg_name = os.path.join(
             directory_name,
             'jpg*',
-            '{0}.jpg'.format(os.path.basename(os.path.splitext(file_name)[0]))
+            '{0}.jpg'.format(tu.get_name(tu.get_name(file_name)))
             )
         data[idx]['image'] = ';;;'.join(glob.glob(jpg_name))
 

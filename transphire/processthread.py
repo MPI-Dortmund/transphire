@@ -1950,10 +1950,14 @@ class ProcessThread(QThread):
             else:
                 pass
 
+        try:
+            file_for_jpg = queue_dict[motion_idx]['sum_dw'][0]
+        except IndexError:
+            file_for_jpg = queue_dict[motion_idx]['sum'][0]
+
         tum.create_jpg_file(
             file_for_jpg,
-            self.settings,
-            self.settings['Copy']['Motion'],
+            self.settings
             )
 
         data, data_original = tu.get_function_dict()[self.settings['Copy']['Motion']]['plot_data'](
@@ -2113,11 +2117,6 @@ class ProcessThread(QThread):
                 pass
         else:
             pass
-
-        try:
-            file_for_jpg = queue_dict[motion_idx]['sum_dw'][0]
-        except IndexError:
-            file_for_jpg = queue_dict[motion_idx]['sum'][0]
 
         if skip_list:
             pass

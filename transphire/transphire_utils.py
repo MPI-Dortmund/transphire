@@ -21,6 +21,8 @@ import json
 import sys
 import shutil
 
+import numpy as np
+
 try:
     QT_VERSION = 4
     from PyQt4.QtGui import QFont
@@ -40,6 +42,27 @@ from transphire.tabdocker import TabDocker
 from transphire import transphire_content as tc
 from transphire import transphire_plot as tp
 from transphire import transphire_import as ti
+
+
+def find_percent(data):
+    percent = 20
+    print(np.min(data), np.max(data))
+    #tmp = data
+    #max_diff = 1000
+    #tmp = tmp[tmp < np.max(tmp) * (1 - percent / 100)]
+    #tmp = tmp[tmp > np.min(tmp) * (1 + percent / 100)]
+    #while np.abs(np.mean(tmp) - np.median(tmp)) > max_diff:
+    #    percent += 3
+    #    tmp = tmp[tmp < np.max(tmp) * (1 - percent / 100)]
+    #    tmp = tmp[tmp > np.min(tmp) * (1 + percent / 100)]
+    #    if percent > 15:
+    #        percent = 3
+    #        max_diff *= 5
+    #print(percent, max_diff, np.mean(data), np.median(tmp), np.max(data), np.min(data), np.mean(data)-np.median(data), (np.max(data)-np.min(data))*0.01)
+    data[data > np.max(data) * (1 - percent / 100)] = np.mean(data)
+    data[data < np.min(data) * (1 + percent / 100)] = np.mean(data)
+    print(np.min(data), np.max(data))
+    return data
 
 
 def get_name(name):
