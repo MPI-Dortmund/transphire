@@ -629,12 +629,6 @@ def create_export_data(export_data, lines):
     lines.append('{0}\n'.format('\t'.join(row_string)))
 
 
-def rebin(arr, new_shape):
-    shape = (new_shape[0], arr.shape[0] // new_shape[0],
-             new_shape[1], arr.shape[1] // new_shape[1])
-    return arr.reshape(shape).mean(-1).mean(1)
-
-
 def create_jpg_file(input_file, settings):
     file_name = tu.get_name(input_file)
 
@@ -652,6 +646,9 @@ def create_jpg_file(input_file, settings):
             mrc_file.header.map = mrc.constants.MAP_ID
         with mrc.open(input_file) as mrc_file:
             input_data = mrc_file.data
+    if len(input_data.shape) == 3:
+        input_data = np.sum(input_data, axis=0)
+    input_data = input_data - np.min(input_data)
 
     original_shape = 4096
     bin_shape = 512
@@ -661,10 +658,11 @@ def create_jpg_file(input_file, settings):
 
     input_data = np.pad(input_data, ((0, pad_x), (0, pad_y)), mode='median')
     shape = (bin_shape, bin_shape)
-    output_data = rebin(input_data, shape)[:-int(1+pad_x//ratio), :-int(1+pad_y//ratio)]
+    output_data = np.clip(pw, 0, 2*np.median(pw))
+    output_data = tu.rebin(input_data, shape)[:-int(1+pad_x//ratio), :-int(1+pad_y//ratio)]
     mi.imsave(jpg_file, output_data, cmap='gist_gray')
 
     pw = np.abs(np.fft.fftshift(np.fft.fft2(input_data - np.mean(input_data))))**2
     output_data = np.clip(pw, 0, 2*np.median(pw))
-    output_data = rebin(output_data, shape)
+    output_data = tu.rebin(output_data, shape)
     mi.imsave(jpg_file_2, output_data, cmap='gist_gray')

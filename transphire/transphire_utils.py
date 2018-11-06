@@ -1103,3 +1103,9 @@ def get_style(typ):
         color = 'black'
 
     return 'color: {0}'.format(color)
+
+
+def rebin(arr, new_shape):
+    shape = (new_shape[0], arr.shape[0] // new_shape[0],
+             new_shape[1], arr.shape[1] // new_shape[1])
+    return arr.reshape(shape).mean(-1).mean(1)

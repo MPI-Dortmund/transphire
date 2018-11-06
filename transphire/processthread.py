@@ -1950,6 +1950,12 @@ class ProcessThread(QThread):
             else:
                 pass
 
+        tum.create_jpg_file(
+            file_for_jpg,
+            self.settings,
+            self.settings['Copy']['Motion'],
+            )
+
         data, data_original = tu.get_function_dict()[self.settings['Copy']['Motion']]['plot_data'](
             self.settings['Copy']['Motion'],
             self.settings['Motion_folder'][self.settings['Copy']['Motion']]
@@ -2112,8 +2118,6 @@ class ProcessThread(QThread):
             file_for_jpg = queue_dict[motion_idx]['sum_dw'][0]
         except IndexError:
             file_for_jpg = queue_dict[motion_idx]['sum'][0]
-
-        tum.create_jpg_file(file_for_jpg, self.settings)
 
         if skip_list:
             pass
@@ -2285,6 +2289,12 @@ class ProcessThread(QThread):
         copied_log_files.extend(zero_list)
         copied_log_files = list(set(copied_log_files))
 
+        tuc.create_jpg_file(
+            file_sum,
+            self.settings,
+            self.settings['Copy']['CTF'],
+            )
+
         data, data_orig = tu.get_function_dict()[self.settings['Copy']['CTF']]['plot_data'](
             self.settings['Copy']['CTF'],
             self.settings['ctf_folder']
@@ -2297,7 +2307,7 @@ class ProcessThread(QThread):
                 file_name=file_sum,
                 settings=self.settings
                 )
-        except ValueError:
+        except ValueError as e:
             raise IOError('{0} - Please check, if {0} can be executed outside of TranSPHIRE'.format(self.settings['Copy']['CTF']))
 
         if skip_list:
