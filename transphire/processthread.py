@@ -303,30 +303,40 @@ class ProcessThread(QThread):
                 used_quota = sh.disk_usage(self.settings[folder]).used / 1e12
             except FileNotFoundError:
                 self.stop = True
-                message = ''.join([
-                    '{0} no longer available!\n'.format(
+                message_error = '\n'.join([
+                    '{0} no longer available!'.format(
                         folder.replace('_', ' ')
                         ),
                     '{0} is stopping now!'.format(self.name)
                     ])
+                message_notification = '\n'.join([
+                    'Folder no longer available!',
+                    '{0} is stopping now!'.format(self.name)
+                    ])
                 self.queue_com['notification'].put(
-                    message
+                    message_notification
                     )
                 self.queue_com['error'].put(
-                    message
+                    message_error
                     )
                 return False
             if used_quota > (total_quota * stop):
                 self.stop = True
-                message = ''.join([
+                message_error = '\n'.join([
                     'Less than {0:.1f} Tb free on {1}!'.format(
                         total_quota * (1 - stop),
                         folder.replace('_', ' ')
                         ),
                     '{0} is stopping now!'.format(self.name)
                     ])
-                self.queue_com['notification'].put(message)
-                self.queue_com['error'].put(message)
+                message_notification = '\n'.join([
+                    'Less than {0:.1f} Tb free!'.format(
+                        total_quota * (1 - stop),
+                        ),
+                    '{0} is stopping now!'.format(self.name)
+                    ])
+                self.queue_com['notification'].put(message_notification)
+                self.queue_com['error'].put(message_error)
                 return False
             else:
                 pass
@@ -461,17 +471,21 @@ class ProcessThread(QThread):
                 self.run_software_meta(directory=folder)
             except FileNotFoundError:
                 self.stop = True
-                message = ''.join([
-                    '{0} no longer available!\n'.format(
+                message_notification = '\n'.join([
+                    'Folder no longer available!',
+                    '{0} is stopping now!'.format(self.name)
+                    ])
+                message_error = '\n'.join([
+                    '{0} no longer available!'.format(
                         folder.replace('_', ' ')
                         ),
                     '{0} is stopping now!'.format(self.name)
                     ])
                 self.queue_com['notification'].put(
-                    message
+                    message_notification
                     )
                 self.queue_com['error'].put(
-                    message
+                    message_error
                     )
         else:
             print('No search path specified')
@@ -513,14 +527,18 @@ class ProcessThread(QThread):
                 root_name=''
                 )
             if 'termios.error' not in msg:
-                message = ''.join([
+                message_notification = '\n'.join([
                     'Unknown error occured in {0}!'.format(self.name),
                     'The process will continue, but check the error file!',
-                    '\n{0}'.format(self.shared_dict_typ['error_file'])
                     ])
-                self.queue_com['notification'].put(message)
+                message_error = '\n'.join([
+                    'Unknown error occured in {0}!'.format(self.name),
+                    'The process will continue, but check the error file!',
+                    '{0}'.format(self.shared_dict_typ['error_file'])
+                    ])
+                self.queue_com['notification'].put(message_notification)
                 if time.time() - self.time_last_error > 1800:
-                    self.queue_com['error'].put(message)
+                    self.queue_com['error'].put(message_error)
                     self.time_last_error = time.time()
                 else:
                     pass
@@ -661,14 +679,18 @@ class ProcessThread(QThread):
             msg = tb.format_exc()
             self.write_error(msg=msg, root_name=root_name)
             if 'termios.error' not in msg:
-                message = ''.join([
+                message_notification = '\n'.join([
                     'BlockingIOError occured in {0}!'.format(self.name),
                     'The process will continue, but check the error file!',
-                    '\n{0}'.format(self.shared_dict_typ['error_file'])
                     ])
-                self.queue_com['notification'].put(message)
+                message_error = '\n'.join([
+                    'BlockingIOError occured in {0}!'.format(self.name),
+                    'The process will continue, but check the error file!',
+                    '{0}'.format(self.shared_dict_typ['error_file'])
+                    ])
+                self.queue_com['notification'].put(message_notification)
                 if time.time() - self.time_last_error > 1800:
-                    self.queue_com['error'].put(message)
+                    self.queue_com['error'].put(message_error)
                     self.time_last_error = time.time()
                 else:
                     pass
@@ -691,14 +713,18 @@ class ProcessThread(QThread):
             msg = tb.format_exc()
             self.write_error(msg=msg, root_name=root_name)
             if 'termios.error' not in msg:
-                message = ''.join([
+                message_notification = '\n'.join([
                     'Unknown error occured in {0}!'.format(self.name),
                     'The process will continue, but check the error file!',
-                    '\n{0}'.format(self.shared_dict_typ['error_file'])
                     ])
-                self.queue_com['notification'].put(message)
+                message_error = '\n'.join([
+                    'Unknown error occured in {0}!'.format(self.name),
+                    'The process will continue, but check the error file!',
+                    '{0}'.format(self.shared_dict_typ['error_file'])
+                    ])
+                self.queue_com['notification'].put(message_notification)
                 if time.time() - self.time_last_error > 1800:
-                    self.queue_com['error'].put(message)
+                    self.queue_com['error'].put(message_error)
                     self.time_last_error = time.time()
                 else:
                     pass
@@ -860,7 +886,7 @@ class ProcessThread(QThread):
         if typ == 'Motion':
             message = ''.join([
                 '{0}: An error occured! '.format(self.name),
-                'MotionCor2 crashed or em-transfer is full ',
+                'MotionCor2 crashed or the PC is out of space ',
                 'or SumMove/MotionCor2 path is not specified correctly! ',
                 'MorionCor2 processes stopped! ',
                 'It is possible that the PC needs to be rebooted! ',
@@ -873,14 +899,18 @@ class ProcessThread(QThread):
                 'Please check the error file!'
                 ])
         self.shared_dict_typ[typ] = True
-        message = '{0} ({1}, {2})'.format(
+        message_notification = '{0} ({1}, {2})'.format(
             message,
             self.name,
             self.shared_dict_typ['error_file']
             )
-        self.queue_com['notification'].put(message)
+        message_error = '{0} ({1})'.format(
+            message,
+            self.name,
+            )
+        self.queue_com['notification'].put(message_notification)
         if time.time() - self.time_last_error > 1800:
-            self.queue_com['error'].put(message)
+            self.queue_com['error'].put(message_error)
             self.time_last_error = time.time()
         else:
             pass
@@ -1867,6 +1897,18 @@ class ProcessThread(QThread):
 
             if do_dw:
                 tu.copy(file_dw_pre_move, file_dw_post_move)
+                tus.check_outputs(
+                    zero_list=[],
+                    non_zero_list=[file_dw_post_move],
+                    exists_list=[],
+                    folder=self.settings['motion_folder'],
+                    command='copy'
+                    )
+                try:
+                    os.remove(file_dw_pre_move)
+                except IOError:
+                    self.write_error(msg=tb.format_exc(), root_name=file_dw_pre_move)
+                    raise
             else:
                 pass
 
@@ -1926,31 +1968,10 @@ class ProcessThread(QThread):
             pass
 
         for warning in skip_list:
-            message = 'The parameter {0} is {1} for file {2}, which is not in the range: {3} to {4} and will be skipped! If this is not the only message, you might consider changing microscope settings!'.format(
-                warning[0],
-                warning[1],
-                root_name,
-                warning[2],
-                warning[3]
-                )
-            self.queue_com['notification'].put(message)
-            self.write_error(msg=message, root_name=root_name)
+            self.send_out_of_range_error(warning, root_name, 'skip')
 
         for warning in warnings:
-            message = 'The median of the last {0} values for parameter {1} is {2}, which is not in the range: {3} to {4}! You might consider to adjust microscope settings!'.format(
-                self.settings['Notification']['Nr. of values used for median'],
-                warning[0],
-                warning[1],
-                warning[2],
-                warning[3]
-                )
-            if time.time() - self.time_last_error > 1800:
-                self.queue_com['error'].put(message)
-                self.time_last_error = time.time()
-            else:
-                pass
-            self.queue_com['notification'].put(message)
-            self.write_error(msg=message, root_name=root_name)
+            self.send_out_of_range_error(warning, root_name, 'warning')
 
         mask = np.in1d(
             np.array(
@@ -2285,31 +2306,10 @@ class ProcessThread(QThread):
             pass
 
         for warning in skip_list:
-            message = 'The parameter {0} is {1} for file {2}, which is not in the range: {3} to {4} and will be skipped! If this is not the only message, you might consider changing microscope settings!'.format(
-                warning[0],
-                warning[1],
-                file_sum,
-                warning[2],
-                warning[3]
-                )
-            self.queue_com['notification'].put(message)
-            self.write_error(msg=message, root_name=file_sum)
+            self.send_out_of_range_error(warning, root_name, 'skip')
 
         for warning in warnings:
-            message = 'The median of the last {0} values for parameter {1} is {2}, which is not in the range: {3} to {4}! You might consider to adjust microscope settings!'.format(
-                self.settings['Notification']['Nr. of values used for median'],
-                warning[0],
-                warning[1],
-                warning[2],
-                warning[3]
-                )
-            self.queue_com['notification'].put(message)
-            if time.time() - self.time_last_error > 1800:
-                self.queue_com['error'].put(message)
-                self.time_last_error = time.time()
-            else:
-                pass
-            self.write_error(msg=message, root_name=file_sum)
+            self.send_out_of_range_error(warning, root_name, 'warning')
 
         mask = np.in1d(
             np.array(
@@ -2570,37 +2570,11 @@ class ProcessThread(QThread):
             else:
                 pass
 
-            for warning in skip_list:
-                message = 'The parameter {0} is {1} for file {2}, which is not in the range: {3} to {4} and will be skipped! If this is not the only message, you might consider changing microscope settings!'.format(
-                    warning[0],
-                    warning[1],
-                    file_use,
-                    warning[2],
-                    warning[3]
-                    )
-                if time.time() - self.time_last_error > 1800:
-                    self.queue_com['error'].put(message)
-                    self.time_last_error = time.time()
-                else:
-                    pass
-                self.queue_com['notification'].put(message)
-                self.write_error(msg=message, root_name=file_use)
+        for warning in skip_list:
+            self.send_out_of_range_error(warning, root_name, 'skip')
 
-            for warning in warnings:
-                message = 'The median of the last {0} values for parameter {1} is {2}, which is not in the range: {3} to {4}! You might consider to adjust microscope settings!'.format(
-                    self.settings['Notification']['Nr. of values used for median'],
-                    warning[0],
-                    warning[1],
-                    warning[2],
-                    warning[3]
-                    )
-                if time.time() - self.time_last_error > 1800:
-                    self.queue_com['error'].put(message)
-                    self.time_last_error = time.time()
-                else:
-                    pass
-                self.queue_com['notification'].put(message)
-                self.write_error(msg=message, root_name=file_use)
+        for warning in warnings:
+            self.send_out_of_range_error(warning, root_name, 'warning')
 
             if skip_list:
                 pass
@@ -2990,3 +2964,36 @@ class ProcessThread(QThread):
             pass
 
         return log_file, err_file
+
+    def send_out_of_range_error(self, warning, file_name, error_type):
+        message_const = 'If this is not the only message, you might consider changing microscope settings!'
+
+        if error_type == 'warning':
+            message_notification = '{0}: Subsequent parameters out of range!'.format(self.name)
+            message_error = 'The median of the last {0} values for parameter {1} is {2}, which is not in the range: {3} to {4}!'.format(
+                self.settings['Notification']['Nr. of values used for median'],
+                warning[0],
+                warning[1],
+                warning[2],
+                warning[3]
+                )
+        elif error_type == 'skip':
+            message_notification = '{0}: Parameter out of range!'.format(self.name)
+            message_error = 'The parameter {0} is {1} for file {2}, which is not in the range: {3} to {4} and will be skipped!'.format(
+                warning[0],
+                warning[1],
+                file_name,
+                warning[2],
+                warning[3]
+                )
+        else:
+            assert True
+        message_notification = '\n'.join([message_notification, message_const])
+        message_error = '\n'.join([message_error, message_const])
+        if time.time() - self.time_last_error > 1800:
+            self.queue_com['error'].put(message_error)
+            self.time_last_error = time.time()
+        else:
+            pass
+        self.queue_com['notification'].put(message_notification)
+        self.write_error(msg=message_error, root_name=file_name)

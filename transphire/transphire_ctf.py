@@ -138,6 +138,7 @@ def find_logfiles(root_path, file_name, settings, queue_com, name):
         copied_log_files = []
         exclude_list = [
             '{0}.mrc'.format(root_path),
+            '{0}_DW.mrc'.format(root_path),
             '{0}.log'.format(root_path),
             '{0}.err'.format(root_path),
             ]
