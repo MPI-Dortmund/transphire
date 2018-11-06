@@ -22,7 +22,6 @@ import collections as co
 import numpy as np
 import mrcfile as mrc
 import matplotlib.image as mi
-import scipy.fftpack as fft
 from transphire import transphire_utils as tu
 
 

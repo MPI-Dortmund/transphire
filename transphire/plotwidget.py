@@ -346,9 +346,9 @@ class PlotWidget(QWidget):
             elif self.plot_typ == 'histogram':
                 [rect.set_height(y1) for rect, y1 in zip(self.rects, y_values)]
 
-            #if change:
-            #    self.figure.canvas.draw()
-            #self.figure.canvas.update()
+            if change:
+                self.figure.canvas.draw()
+            self.figure.canvas.update()
             self.figure[0].canvas.flush_events()
 
             output_name = os.path.join(

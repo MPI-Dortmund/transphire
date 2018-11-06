@@ -18,7 +18,6 @@
 import os
 import glob
 import re
-import imageio
 import numpy as np
 from transphire import transphire_utils as tu
 

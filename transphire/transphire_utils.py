@@ -29,7 +29,6 @@ except ImportError:
     from PyQt5.QtGui import QFont
 
 from transphire.messagebox import MessageBox
-from transphire.separator import Separator
 from transphire.mountcontainer import MountContainer
 from transphire.statuscontainer import StatusContainer
 from transphire.settingscontainer import SettingsContainer
