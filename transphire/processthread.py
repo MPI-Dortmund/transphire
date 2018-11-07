@@ -2452,54 +2452,55 @@ class ProcessThread(QThread):
         None
         """
 
-        if root_name is 'None':
-            root_name = self.shared_dict_typ['queue_list'][-1]
-        # New name; Splitis file_sum, file_dw_sum, file_frames
-        file_sum, file_dw_sum, file_frames = root_name.split(';;;')
-        if file_dw_sum == 'None':
-            file_name = os.path.basename(os.path.splitext(file_sum)[0])
-            file_use = file_sum
-            use_idx = 0
+        if root_name == 'None':
+            pass
         else:
-            file_name = os.path.basename(os.path.splitext(file_dw_sum)[0])
-            file_use = file_dw_sum
-            use_idx = 1
+            # New name; Splitis file_sum, file_dw_sum, file_frames
+            file_sum, file_dw_sum, file_frames = root_name.split(';;;')
+            if file_dw_sum == 'None':
+                file_name = os.path.basename(os.path.splitext(file_sum)[0])
+                file_use = file_sum
+                use_idx = 0
+            else:
+                file_name = os.path.basename(os.path.splitext(file_dw_sum)[0])
+                file_use = file_dw_sum
+                use_idx = 1
 
-        # Create the command for filtering
-        command, file_input, check_files, block_gpu, gpu_list = tup.create_filter_command(
-            file_input=file_use,
-            settings=self.settings,
-            )
-
-        # Log files
-        log_prefix = os.path.join(
-                self.settings['picking_folder'],
-                '{0}_filter'.format(file_name)
+            # Create the command for filtering
+            command, file_input, check_files, block_gpu, gpu_list = tup.create_filter_command(
+                file_input=file_use,
+                settings=self.settings,
                 )
 
-        log_file, err_file = self.run_command(
-            command=command,
-            log_prefix=log_prefix,
-            block_gpu=block_gpu,
-            gpu_list=gpu_list,
-            shell=True
-            )
+            # Log files
+            log_prefix = os.path.join(
+                    self.settings['picking_folder'],
+                    '{0}_filter'.format(file_name)
+                    )
 
-        zero_list = [err_file]
-        non_zero_list = [log_file]
-        non_zero_list.extend(check_files)
+            log_file, err_file = self.run_command(
+                command=command,
+                log_prefix=log_prefix,
+                block_gpu=block_gpu,
+                gpu_list=gpu_list,
+                shell=True
+                )
 
-        tus.check_outputs(
-            zero_list=zero_list,
-            non_zero_list=non_zero_list,
-            exists_list=[],
-            folder=self.settings['picking_folder'],
-            command=command
-            )
+            zero_list = [err_file]
+            non_zero_list = [log_file]
+            non_zero_list.extend(check_files)
+
+            tus.check_outputs(
+                zero_list=zero_list,
+                non_zero_list=non_zero_list,
+                exists_list=[],
+                folder=self.settings['picking_folder'],
+                command=command
+                )
+            self.shared_dict_typ['queue_list'].append(root_name)
 
         self.queue_lock.lock()
         try:
-            self.shared_dict_typ['queue_list'].append(root_name)
             if time.time() - self.shared_dict_typ['queue_list_time'] < 30:
                 return None
             file_use_list = [entry.split(';;;')[use_idx] for entry in self.shared_dict_typ['queue_list']]
