@@ -572,6 +572,8 @@ def create_export_data(export_data, lines, maximum_string):
         for name in export_data.dtype.names:
             if name == 'mic_number':
                 continue
+            elif name == 'image':
+                continue
             else:
                 pass
             value = row[name]
