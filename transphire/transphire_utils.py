@@ -45,11 +45,12 @@ from transphire import transphire_import as ti
 
 
 def normalize_image(data):
-    values, bins = np.histogram(data, 300)
+    values, bins = np.histogram(np.abs(data), 300)
     min_idx = np.argmin(values)
+    mask = (data < bins[min_idx]) & (data > -bins[min_idx])
     while values[min_idx] == 0:
-        mask = data < bins[min_idx]
-        values, bins = np.histogram(data[mask], 300)
+        mask = (data < bins[min_idx]) & (data > -bins[min_idx])
+        values, bins = np.histogram(np.abs(data[mask]), 300)
         min_idx = np.argmin(values)
 
     mean = np.mean(data[mask])

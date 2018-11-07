@@ -1988,11 +1988,17 @@ class ProcessThread(QThread):
                 np.char.rsplit(
                     np.array(
                         np.char.rsplit(
-                            data['file_name'],
-                            '/',
+                            np.array(
+                                np.char.rsplit(
+                                    data['file_name'],
+                                    '/',
+                                    1
+                                    ).tolist()
+                                )[:, -1],
+                            '.',
                             1
                             ).tolist()
-                        )[:, -1],
+                        )[:,0],
                     '.',
                     1
                     ).tolist()
@@ -2460,11 +2466,9 @@ class ProcessThread(QThread):
             if file_dw_sum == 'None':
                 file_name = os.path.basename(os.path.splitext(file_sum)[0])
                 file_use = file_sum
-                use_idx = 0
             else:
                 file_name = os.path.basename(os.path.splitext(file_dw_sum)[0])
                 file_use = file_dw_sum
-                use_idx = 1
 
             # Create the command for filtering
             command, file_input, check_files, block_gpu, gpu_list = tup.create_filter_command(
@@ -2503,8 +2507,16 @@ class ProcessThread(QThread):
         try:
             if time.time() - self.shared_dict_typ['queue_list_time'] < 30:
                 return None
-            file_use_list = [entry.split(';;;')[use_idx] for entry in self.shared_dict_typ['queue_list']]
-            file_name_list = [os.path.basename(os.path.splitext(entry.split(';;;')[use_idx])[0]) for entry in self.shared_dict_typ['queue_list']]
+            file_use_list = []
+            file_name_list = []
+            for entry in self.shared_dict_typ['queue_list']:
+                file_sum, file_dw_sum, file_frames = entry.split(';;;')
+                if file_dw_sum == 'None':
+                    file_use_name = file_sum
+                else:
+                    file_use_name = file_dw_sum
+                file_use_list.append(file_use_name)
+                file_name_list.append(tu.get_name(file_use_name))
             self.shared_dict_typ['queue_list'] = []
         finally:
             self.queue_lock.unlock()
@@ -2521,7 +2533,7 @@ class ProcessThread(QThread):
         # Log files
         log_prefix = os.path.join(
                 self.settings['picking_folder'],
-                file_name
+                file_name_list[-1]
                 )
 
         log_file, err_file = self.run_command(

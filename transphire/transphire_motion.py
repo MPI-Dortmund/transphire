@@ -450,7 +450,7 @@ def combine_motion_outputs(
         )
     movie_name = re.search( r'^-(?:InTiff|InMrc)[ ]+([^ ]+)$', data_read, re.MULTILINE).group(1)
 
-    if settings['Copy']['Compress data'] == 'True':
+    if settings['Copy']['Compress'] == 'True':
         movie_name = movie_name.replace(stack_folder, 'Compress')
         movie_name = movie_name.replace('.mrc', '.tiff')
     else:
@@ -647,8 +647,9 @@ def create_jpg_file(input_file, settings):
         with mrc.open(input_file) as mrc_file:
             input_data = mrc_file.data
     if len(input_data.shape) == 3:
-        input_data = np.sum(input_data, axis=0)
-    input_data = input_data - np.min(input_data)
+            input_data = np.sum(input_data, axis=0) / input_data.shape[0]
+    input_data = input_data - np.mean(input_data)
+    input_data = tu.normalize_image(input_data)
 
     original_shape = 4096
     bin_shape = 512
@@ -661,7 +662,7 @@ def create_jpg_file(input_file, settings):
     output_data = tu.rebin(input_data, shape)[:-int(1+pad_x//ratio), :-int(1+pad_y//ratio)]
     mi.imsave(jpg_file, output_data, cmap='gist_gray')
 
-    pw = np.abs(np.fft.fftshift(np.fft.fft2(input_data - np.mean(input_data))))**2
+    pw = np.abs(np.fft.fftshift(np.fft.fft2(input_data)))**2
     output_data = tu.normalize_image(pw)
     output_data = tu.rebin(output_data, shape)
     mi.imsave(jpg_file_2, output_data, cmap='gist_gray')

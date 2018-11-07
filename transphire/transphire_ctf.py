@@ -856,8 +856,9 @@ def create_jpg_file(input_mrc_file, settings, ctf_name):
             with mrc.open(input_mrc_file) as mrc_file:
                 input_data = mrc_file.data
         if len(input_data.shape) == 3:
-            input_data = np.sum(input_data, axis=0)
-        input_data = input_data - np.min(input_data)
+            input_data = np.sum(input_data, axis=0) / input_data.shape[0]
+        input_data = input_data - np.mean(input_data)
+        input_data = tu.normalize_image(input_data)
 
         if input_data.shape[0] > 512:
             original_shape = 4096
@@ -884,8 +885,8 @@ def create_jpg_file(input_mrc_file, settings, ctf_name):
             with mrc.open(input_ctf_file) as mrc_file:
                 input_data = mrc_file.data
         if len(input_data.shape) == 3:
-            input_data = np.sum(input_data, axis=0)
-        input_data = input_data - np.min(input_data)
+            input_data = np.sum(input_data, axis=0) / input_data.shape[0]
+        input_data = input_data - np.mean(input_data)
 
         if input_data.shape[0] > 512*2:
             shape = (512*2, 512*2)
