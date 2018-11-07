@@ -40,7 +40,7 @@ class SettingsWidget(QWidget):
     """
     sig_index_changed = pyqtSignal(str)
 
-    def __init__(self, name, content, parent=None):
+    def __init__(self, name, content, content_others, parent=None):
         """
         Initialise the layout.
 
@@ -64,6 +64,29 @@ class SettingsWidget(QWidget):
         self.name = content[1]['name']
         tooltip = content[1]['tooltip']
         self.dtype = content[1]['dtype']
+
+        if self.name == 'Project name':
+            pattern = None
+            pattern_example = None
+            for entry in content_others:
+                for widget in entry:
+                    for key in widget:
+                        if key == 'Project name pattern':
+                            pattern = widget[key][0]
+                        elif key == 'Project name pattern example':
+                            pattern_example = widget[key][0]
+            add_to_tooltip = [tooltip]
+            if pattern:
+                add_to_tooltip.extend([
+                    'Needs to follow:',
+                    pattern,
+                    ])
+            if pattern_example:
+                add_to_tooltip.extend([
+                    'For example',
+                    pattern_example
+                    ])
+            tooltip = '\n'.join(add_to_tooltip)
 
         if self.typ == 'PLAIN':
             self.edit = QLineEdit(self.name, self)

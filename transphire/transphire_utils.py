@@ -549,6 +549,7 @@ def get_content_gui(content):
             'name': 'General',
             'widget': SettingsContainer,
             'content': content['General'],
+            'content_others': content['Others'],
             'layout': 'Settings',
             },
         {
