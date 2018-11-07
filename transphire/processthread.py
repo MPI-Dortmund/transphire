@@ -250,7 +250,13 @@ class ProcessThread(QThread):
             elif self.typ == 'Meta':
                 self.start_queue_meta()
             else:
-                self.start_queue()
+                self.start_queue(clear_list=False)
+            self.is_running = False
+
+        if self.shared_dict_typ['queue_list']:
+            self.is_running = True
+            if self.typ not in ('Find', 'Meta'):
+                self.start_queue(clear_list=True)
             self.is_running = False
 
         # Print, if stopped
@@ -557,7 +563,7 @@ class ProcessThread(QThread):
                 self.queue_com['error'].put(message)
         QThread.sleep(20)
 
-    def start_queue(self):
+    def start_queue(self, clear_list):
         """
         Start pipeline processes.
 
@@ -571,24 +577,28 @@ class ProcessThread(QThread):
         error = False
         dummy = False
         try:
-            if self.queue.empty():
-                self.queue_com['status'].put([
-                    'Waiting',
-                    [
-                        self.queue.qsize(),
-                        self.shared_dict_typ['file_number']
-                        ],
-                    self.name,
-                    '#ffc14d'
-                    ])
-                if not self.shared_dict_typ['queue_list']:
-                    error = True
-                elif time.time() - self.shared_dict_typ['queue_list_time'] > 30:
-                    dummy = True
-                else:
-                    error = True
+            if clear_list:
+                dummy = True
+                self.shared_dict_typ['queue_list_time'] -= 60
             else:
-                pass
+                if self.queue.empty():
+                    self.queue_com['status'].put([
+                        'Waiting',
+                        [
+                            self.queue.qsize(),
+                            self.shared_dict_typ['file_number']
+                            ],
+                        self.name,
+                        '#ffc14d'
+                        ])
+                    if not self.shared_dict_typ['queue_list']:
+                        error = True
+                    elif time.time() - self.shared_dict_typ['queue_list_time'] > 30:
+                        dummy = True
+                    else:
+                        error = True
+                else:
+                    pass
         except Exception:
             error = True
         finally:
@@ -732,7 +742,7 @@ class ProcessThread(QThread):
             else:
                 pass
         else:
-            self.remove_from_queue_file(root_name)
+            self.remove_from_queue_file(root_name, self.shared_dict_typ['save_file'])
 
             self.queue_lock.lock()
             try:
@@ -915,7 +925,7 @@ class ProcessThread(QThread):
         else:
             pass
 
-    def remove_from_queue_file(self, root_name):
+    def remove_from_queue_file(self, root_name, file_name, lock=True):
         """
         Remove the files from the queue file.
 
@@ -925,11 +935,12 @@ class ProcessThread(QThread):
         Return:
         None
         """
-        self.queue_lock.lock()
+        if lock:
+            self.queue_lock.lock()
         try:
             useable_lines = []
             try:
-                with open(self.shared_dict_typ['save_file'], 'r') as read:
+                with open(file_name, 'r') as read:
                     lines = [line.rstrip() for line in read.readlines()]
             except FileNotFoundError:
                 useable_lines = []
@@ -940,10 +951,11 @@ class ProcessThread(QThread):
                     else:
                         pass
 
-            with open(self.shared_dict_typ['save_file'], 'w') as write:
+            with open(file_name, 'w') as write:
                 write.write('{0}\n'.format('\n'.join(useable_lines)))
         finally:
-            self.queue_lock.unlock()
+            if lock:
+                self.queue_lock.unlock()
 
     def run_software_meta(self, directory):
         """
@@ -2501,7 +2513,15 @@ class ProcessThread(QThread):
                 folder=self.settings['picking_folder'],
                 command=command
                 )
-            self.shared_dict_typ['queue_list'].append(root_name)
+            self.queue_lock.lock()
+            try:
+                self.add_to_queue_file(
+                    root_name=root_name,
+                    file_name=self.shared_dict_typ['list_file'],
+                    )
+                self.shared_dict_typ['queue_list'].append(root_name)
+            finally:
+                self.queue_lock.unlock()
 
         self.queue_lock.lock()
         try:
@@ -2509,6 +2529,7 @@ class ProcessThread(QThread):
                 return None
             file_use_list = []
             file_name_list = []
+            file_queue_list = self.shared_dict_typ['queue_list'][:]
             for entry in self.shared_dict_typ['queue_list']:
                 file_sum, file_dw_sum, file_frames = entry.split(';;;')
                 if file_dw_sum == 'None':
@@ -2628,7 +2649,13 @@ class ProcessThread(QThread):
                     else:
                         pass
 
-        self.shared_dict_typ['queue_list_time'] = time.time()
+        self.queue_lock.lock()
+        try:
+            self.shared_dict_typ['queue_list_time'] = time.time()
+            for entry in file_queue_list:
+                self.remove_from_queue_file(entry, self.shared_dict_typ['list_file'], lock=False)
+        finally:
+            self.queue_lock.unlock()
 
     def run_compress(self, root_name):
         """

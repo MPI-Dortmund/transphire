@@ -219,8 +219,8 @@ class ProcessWorker(QObject):
                         'full_backup': False,
                         'full_hdd': False,
                         'unknown_error': False,
-                        'queue_list': [],
                         'queue_list_time': 0,
+                        'queue_list': [],
                         'queue_lock': QMutex(),
                         'save_lock': QMutex(),
                         'count_lock': QMutex(),
@@ -235,6 +235,9 @@ class ProcessWorker(QObject):
                             self.settings['queue_folder'], key
                             ),
                         'done_file': '{0}/Queue_{1}_done'.format(
+                            self.settings['queue_folder'], key
+                            ),
+                        'list_file': '{0}/Queue_{1}_list'.format(
                             self.settings['queue_folder'], key
                             ),
                         'error_file': '{0}/Queue_{1}_error'.format(
@@ -776,8 +779,10 @@ class ProcessWorker(QObject):
         shared_dict_typ = shared_dict['typ'][key]
         save_file = shared_dict_typ['save_file']
         done_file = shared_dict_typ['done_file']
+        list_file = shared_dict_typ['list_file']
         share_list = shared_dict['share'][share]
         queue = shared_dict['queue'][key]
+        queue_list = shared_dict_typ['queue_list']
 
         if os.path.exists(save_file):
             with open(save_file, 'r') as read:
@@ -808,4 +813,14 @@ class ProcessWorker(QObject):
                     pass
         else:
             with open(done_file, 'w'):
+                pass
+
+        if os.path.exists(list_file):
+            with open(list_file, 'r') as read:
+                lines = [line.rstrip() for line in read.readlines()]
+            for line in lines:
+                if line:
+                    queue_list.append(line)
+        else:
+            with open(list_file, 'w'):
                 pass
