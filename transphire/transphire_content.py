@@ -787,8 +787,9 @@ def default_general():
         ['Rename micrographs', ['True', 'False'], bool, '', 'COMBO', 'Main'],
         ['Rename prefix', '', str, 'Rename micrographs:True', 'PLAIN', 'Main'],
         ['Rename suffix', '', str, 'Rename micrographs:True', 'PLAIN', 'Main'],
-        ['Start number', '0', int, 'Rename micrographs:True', 'PLAIN', 'Main'],
-        ['Estimated mic number', '5000', int, 'Rename micrographs:True', 'PLAIN', 'Main'],
+        ['Increment number', ['True', 'False'], bool, 'Rename micrographs:True', 'COMBO', 'Main'],
+        ['Start number', '0', int, 'Increment number:False', 'PLAIN', 'Main'],
+        ['Estimated mic number', '10000', int, 'Rename micrographs:True', 'PLAIN', 'Main'],
         ['Project directory', '', str, '', 'DIR', 'Advanced'],
         ['Scratch directory', '', str, '', 'DIR', 'Advanced'],
         ]

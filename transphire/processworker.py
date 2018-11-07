@@ -552,19 +552,28 @@ class ProcessWorker(QObject):
                 )
 
             if os.path.exists('{0}.jpg'.format(new_name)):
-                self.stop = True
-                try:
-                    with open(shared_dict['typ']['Import']['number_file'], 'r') as read:
-                        shared_dict['typ']['Import']['file_number'] = int(read.readline())
-                except FileNotFoundError:
-                    shared_dict['typ']['Import']['file_number'] = int(self.settings['General']['Start number'])
-                message = '{0}: File {1} already exists!\n'.format(
-                    'Import',
-                    new_name
-                    ) + \
-                    'Check Startnumber! Last one used: {0}'.format(shared_dict['typ']['Import']['file_number'])
-                queue_com['error'].put(message)
-                queue_com['notification'].put(message)
+                with open(shared_dict['typ']['Import']['number_file'], 'r') as read:
+                    shared_dict['typ']['Import']['file_number'] = int(read.readline())
+                if self.settings['General']['Increment number'] == 'True':
+                    message = '{0}: File {1} already exists!\n'.format(
+                        'Import',
+                        new_name
+                        ) + \
+                        'Last one used: {0} - Continue with {1}'.format(
+                            shared_dict['typ']['Import']['file_number'],
+                            shared_dict['typ']['Import']['file_number']+1
+                            )
+                    queue_com['error'].put(message)
+                    queue_com['notification'].put(message)
+                else:
+                    self.stop = True
+                    message = '{0}: File {1} already exists!\n'.format(
+                        'Import',
+                        new_name
+                        ) + \
+                        'Check Startnumber! Last one used: {0}'.format(shared_dict['typ']['Import']['file_number'])
+                    queue_com['error'].put(message)
+                    queue_com['notification'].put(message)
             else:
                 pass
         else:
