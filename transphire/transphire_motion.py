@@ -635,8 +635,11 @@ def create_jpg_file(input_file, settings):
     tu.mkdir_p(os.path.join(settings['motion_folder'], 'jpg'))
     tu.mkdir_p(os.path.join(settings['motion_folder'], 'jpg_2'))
 
-    jpg_file = os.path.join(settings['motion_folder'], 'jpg', '{0}.jpg'.format(file_name))
+    jpg_file_1 = os.path.join(settings['motion_folder'], 'jpg', '{0}.jpg'.format(file_name))
     jpg_file_2 = os.path.join(settings['motion_folder'], 'jpg_2', '{0}.jpg'.format(file_name))
+
+    arr_1 = None
+    arr_2 = None
 
     try:
         with mrc.open(input_file) as mrc_file:
@@ -660,9 +663,13 @@ def create_jpg_file(input_file, settings):
     input_data = np.pad(input_data, ((0, pad_x), (0, pad_y)), mode='median')
     shape = (bin_shape, bin_shape)
     output_data = tu.rebin(input_data, shape)[:-int(1+pad_x//ratio), :-int(1+pad_y//ratio)]
-    mi.imsave(jpg_file, output_data, cmap='gist_gray')
+    arr_1 = output_data
 
     pw = np.abs(np.fft.fftshift(np.fft.fft2(input_data)))**2
     output_data = tu.normalize_image(pw)
     output_data = tu.rebin(output_data, shape)
-    mi.imsave(jpg_file_2, output_data, cmap='gist_gray')
+    arr_2 = output_data
+    if arr_1 is not None:
+        mi.imsave(jpg_file_1, arr_1, cmap='gist_gray')
+    if arr_2 is not None:
+        mi.imsave(jpg_file_2, arr_2, cmap='gist_gray')

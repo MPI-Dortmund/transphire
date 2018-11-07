@@ -842,9 +842,13 @@ def create_jpg_file(input_mrc_file, settings, ctf_name):
     tu.mkdir_p(os.path.join(settings['ctf_folder'], 'jpg_2'))
     tu.mkdir_p(os.path.join(settings['ctf_folder'], 'jpg_3'))
 
-    jpg_file = os.path.join(settings['ctf_folder'], 'jpg', '{0}.jpg'.format(file_name))
+    jpg_file_1 = os.path.join(settings['ctf_folder'], 'jpg', '{0}.jpg'.format(file_name))
     jpg_file_2 = os.path.join(settings['ctf_folder'], 'jpg_2', '{0}.jpg'.format(file_name))
     jpg_file_3 = os.path.join(settings['ctf_folder'], 'jpg_3', '{0}.jpg'.format(file_name))
+
+    arr_1 = None
+    arr_2 = None
+    arr_3 = None
 
     if input_mrc_file:
         try:
@@ -873,7 +877,7 @@ def create_jpg_file(input_mrc_file, settings, ctf_name):
         else:
             output_data = input_data
 
-        mi.imsave(jpg_file, output_data, cmap='gist_gray')
+        arr_1 = output_data
 
     if input_ctf_file:
         try:
@@ -893,7 +897,7 @@ def create_jpg_file(input_mrc_file, settings, ctf_name):
             output_data = tu.rebin(input_data, shape)
         else:
             output_data = input_data
-        mi.imsave(jpg_file_2, output_data, cmap='gist_gray')
+        arr_2 = output_data
 
     if input_1d_file:
         plot_data = []
@@ -919,8 +923,15 @@ def create_jpg_file(input_mrc_file, settings, ctf_name):
             plot_data.append([data[:,4], 'CTF'])
             plot_data.append([data[:,5], 'CTF_fit'])
 
+        arr_3 = plot_data
+
+    if arr_1 is not None:
+        mi.imsave(jpg_file_1, arr_1, cmap='gist_gray')
+    if arr_2 is not None:
+        mi.imsave(jpg_file_2, arr_2, cmap='gist_gray')
+    if arr_3 is not None:
         fig, ax = plt.subplots()
-        for y_values, label in plot_data:
+        for y_values, label in arr_3:
             ax.plot(x_data, y_values, label=label)
         plt.legend(loc='upper right')
         plt.grid()
