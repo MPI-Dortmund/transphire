@@ -1267,7 +1267,7 @@ class ProcessThread(QThread):
 
         new_stack = '{0}.{1}'.format(
             new_name_stack,
-            self.settings['General']['Output extension']
+            self.settings['Output extension']
             )
 
         command_raw = tus.get_copy_command_for_frames(

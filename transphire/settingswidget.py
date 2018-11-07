@@ -62,6 +62,7 @@ class SettingsWidget(QWidget):
         self.typ = content[1]['typ']
         self.values = content[1]['values']
         self.name = content[1]['name']
+        tooltip = content[1]['tooltip']
         self.dtype = content[1]['dtype']
 
         if self.typ == 'PLAIN':
@@ -105,7 +106,14 @@ class SettingsWidget(QWidget):
         else:
             self.label.setObjectName('setting')
             self.edit.setObjectName('setting')
-        self.edit.setToolTip(self.name)
+        self.label.setToolTip(self.name)
+        if tooltip:
+            final_tooltip = []
+            for line in tooltip.splitlines():
+                final_tooltip.append('\n'.join([line[i:i+30] for i in range(0, len(line), 30)]))
+            self.edit.setToolTip('\n'.join(final_tooltip))
+        else:
+            self.edit.setToolTip(self.name)
         try:
             self.edit.textEdited.connect(
                 lambda: self.edit.setStyleSheet(tu.get_style(typ='unchanged'))

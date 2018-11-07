@@ -139,6 +139,10 @@ class ProcessWorker(QObject):
         self.settings = settings
         content_process = cp.deepcopy(self.content_process)
         self.settings['copy_software_meta'] = True
+        if self.settings['General']['Input extension'] in ('dm4'):
+            self.settings['Output extension'] = 'mrc'
+        else:
+            self.settings['Output extension'] = self.settings['General']['Input extension']
 
         # Set paths
         self.settings['stack_folder'] = os.path.join(

@@ -288,8 +288,12 @@ def message(text):
     Return:
     None
     """
+    final_text = []
+    for line in text.splitlines():
+        final_text.append('\n'.join([line[i:i+30] for i in range(0, len(line), 30)]))
+
     dialog = MessageBox(is_question=False)
-    dialog.setText(None, text)
+    dialog.setText(None, '\n'.join(final_text))
     dialog.exec_()
 
 

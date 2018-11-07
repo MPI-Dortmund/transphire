@@ -87,6 +87,7 @@ class LoadContent(QWidget):
         self.idx_group = 3
         self.idx_type = 4
         self.idx_priority = 5
+        self.idx_tooltip = 6
 
         # Fill content based on typ
         content_function = tu.get_function_dict()[typ]['content']
@@ -190,6 +191,7 @@ class LoadContent(QWidget):
                     'values': entry[self.idx_values],
                     'dtype': entry[self.idx_dtype],
                     'group': entry[self.idx_group],
+                    'tooltip': entry[self.idx_tooltip],
                     }
                 })
         layout_v.addStretch(1)
