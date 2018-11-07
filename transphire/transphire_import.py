@@ -479,10 +479,11 @@ def import_gctf_v1_06(name, directory_name):
     Return:
     Imported data
     """
+    suffix = '_gctf'
     files = np.array(
         [
             entry for entry in glob.glob(
-                '{0}/*_gctf.star'.format(directory_name)
+                '{0}/*{1}.star'.format(directory_name, suffix)
             )
             ],
         dtype=str
@@ -514,7 +515,7 @@ def import_gctf_v1_06(name, directory_name):
     useable_files = [
         file_name
         for file_name in sorted(useable_files)
-        if tu.get_name(file_name) in useable_files_jpg
+        if tu.get_name(tu.get_name(file_name)) in useable_files_jpg
         ]
 
     data = np.zeros(
@@ -585,7 +586,7 @@ def import_gctf_v1_06(name, directory_name):
         jpg_name = os.path.join(
             directory_name,
             'jpg*',
-            '{0}.jpg'.format(os.path.basename(os.path.splitext(file_name)[0]))
+            '{0}.jpg'.format(tu.get_name(tu.get_name(file_name)))
             )
         data[idx]['image'] = ';;;'.join(glob.glob(jpg_name))
 
