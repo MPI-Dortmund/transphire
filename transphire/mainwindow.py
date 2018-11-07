@@ -1067,6 +1067,10 @@ class MainWindow(QMainWindow):
         settings['tar_folder'] = os.path.join(
             settings['project_folder'], 'tar_folder'
             )
+        if not settings['General']['Rename prefix'].endswith('_'):
+            settings['General']['Rename prefix'] = settings['General']['Rename prefix'] + '_'
+        if not settings['General']['Rename suffix'].startswith('_'):
+            settings['General']['Rename suffix'] = '_' + settings['General']['Rename suffix']
         return settings
 
     @pyqtSlot()
