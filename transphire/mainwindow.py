@@ -1064,6 +1064,9 @@ class MainWindow(QMainWindow):
             settings['project_folder'],
             'error'
             )
+        settings['tar_folder'] = os.path.join(
+            settings['project_folder'], 'tar_folder'
+            )
         return settings
 
     @pyqtSlot()
@@ -1079,17 +1082,16 @@ class MainWindow(QMainWindow):
                 text1='Output project folder already exists!',
                 text2='Do you really want to continue the old run?\nType: YES!'
                 )
-            if result:
-                result_session = self.continue_dialog(
-                    text1='Software metafiles',
-                    text2='Software metafiles (Atlas, ...) might be already copied!\n' + \
-                        'Do you want to copy them again?\nType: YES!'
-                    )
-                settings['Copy_software_meta'] = bool(result_session)
-            else:
-                settings['Copy_software_meta'] = True
+            #if result:
+            #    result_session = self.continue_dialog(
+            #        text1='Software metafiles',
+            #        text2='Software metafiles (Atlas, ...) might be already copied!\n' + \
+            #            'Do you want to copy them again?\nType: YES!'
+            #        )
+            #    settings['Copy_software_meta'] = bool(result_session)
+            #else:
+            #    settings['Copy_software_meta'] = True
         else:
-            settings['Copy_software_meta'] = True
             result = True
 
         # Start or stop procedure
@@ -1097,7 +1099,7 @@ class MainWindow(QMainWindow):
             # Create project and settings folder
             for name in [
                     'project_folder', 'settings_folder',
-                    'scratch_folder', 'queue_folder', 'error_folder'
+                    'scratch_folder', 'queue_folder', 'error_folder', 'tar_folder',
                     ]:
                 try:
                     tu.mkdir_p(settings[name])

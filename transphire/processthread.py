@@ -454,7 +454,7 @@ class ProcessThread(QThread):
         Return:
         None
         """
-        if not self.settings['Copy_software_meta']:
+        if not self.settings['copy_software_meta']:
             self.done = True
             return None
         else:
@@ -974,7 +974,7 @@ class ProcessThread(QThread):
             # Add to queue
 
         folder_name = os.path.basename(self.settings['software_meta_folder'])
-        tar_file = '{0}.tar'.format(self.settings['software_meta_folder'])
+        tar_file = self.settings['software_meta_tar']
         with tarfile.open(tar_file, 'w') as tar:
             tar.add(self.settings['software_meta_folder'], arcname=folder_name)
 

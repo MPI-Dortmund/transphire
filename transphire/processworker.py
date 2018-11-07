@@ -138,6 +138,7 @@ class ProcessWorker(QObject):
         # Set settings
         self.settings = settings
         content_process = cp.deepcopy(self.content_process)
+        self.settings['copy_software_meta'] = True
 
         # Set paths
         self.settings['stack_folder'] = os.path.join(
@@ -148,6 +149,9 @@ class ProcessWorker(QObject):
             )
         self.settings['software_meta_folder'] = os.path.join(
             self.settings['project_folder'], 'Software_meta'
+            )
+        self.settings['software_meta_tar'] = os.path.join(
+            self.settings['tar_folder'], 'Software_meta.tar'
             )
         self.settings['motion_folder'] = os.path.join(
             self.settings['motion_folder'],
@@ -767,12 +771,8 @@ class ProcessWorker(QObject):
                 lines = [line.rstrip() for line in read.readlines()]
 
             for line in lines:
-                if self.settings['Copy_software_meta']:
-                    # Dont fill queue for Meta files
-                    if self.settings['software_meta_folder'] in line:
-                        continue
-                    else:
-                        pass
+                if self.settings['software_meta_tar'] in line:
+                    self.settings['copy_software_meta'] = False
                 else:
                     pass
                 if line.startswith(self.settings['project_folder']):
@@ -787,6 +787,12 @@ class ProcessWorker(QObject):
         if os.path.exists(done_file):
             with open(done_file, 'r') as read:
                 shared_dict_typ['file_number'] = len(read.readlines())
+                lines = [line.rstrip() for line in read.readlines()]
+            for line in lines:
+                if self.settings['software_meta_tar'] in line:
+                    self.settings['copy_software_meta'] = False
+                else:
+                    pass
         else:
             with open(done_file, 'w'):
                 pass
