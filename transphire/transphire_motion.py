@@ -657,6 +657,8 @@ def create_jpg_file(input_file, settings):
     original_shape = 4096
     bin_shape = 512
     ratio = original_shape / bin_shape
+    assert ratio.is_integer()
+    ratio = int(ratio)
     pad_x = original_shape - input_data.shape[0]
     pad_y = original_shape - input_data.shape[1]
 
@@ -665,10 +667,28 @@ def create_jpg_file(input_file, settings):
     output_data = tu.rebin(input_data, shape)[:-int(1+pad_x//ratio), :-int(1+pad_y//ratio)]
     arr_1 = output_data
 
-    pw = np.abs(np.fft.fftshift(np.fft.fft2(input_data)))**2
-    output_data = tu.normalize_image(pw)
-    output_data = tu.rebin(output_data, shape)
-    arr_2 = output_data
+    tile_overlap = 512 / 2
+    tile_shape = 512
+    tile_ratio = original_shape / tile_overlap
+    assert tile_ratio.is_integer()
+    tile_ratio = int(tile_ratio)
+    tile_images = []
+    for x_val in range(tile_ratio):
+        if (x_val+1)*tile_shape > original_shape:
+            continue
+        for y_val in range(tile_ratio):
+            if (y_val+1)*tile_shape > original_shape:
+                continue
+            slices = (
+                slice(x_val*tile_shape, (x_val+1)*tile_shape, 1),
+                slice(y_val*tile_shape, (y_val+1)*tile_shape, 1),
+                )
+            pw = np.abs(np.fft.fftshift(np.fft.fft2(input_data[slices])))**2
+            tile_images.append(pw)
+    if tile_images:
+        arr_2 = np.sum(np.array(tile_images) / len(tile_images), axis=0)
+        arr_2 = tu.normalize_image(arr_2, 50)
+        arr_2 = tu.rebin(arr_2, shape)
     if arr_1 is not None:
         mi.imsave(jpg_file_1, arr_1, cmap='gist_gray')
     if arr_2 is not None:

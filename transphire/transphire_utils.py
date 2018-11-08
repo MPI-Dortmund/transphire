@@ -44,20 +44,20 @@ from transphire import transphire_plot as tp
 from transphire import transphire_import as ti
 
 
-def normalize_image(data):
-    values, bins = np.histogram(np.abs(data), 300)
+def normalize_image(data, n_bins=300):
+    values, bins = np.histogram(np.abs(data), n_bins)
     min_idx = np.argmin(values)
     mask = (data < bins[min_idx]) & (data > -bins[min_idx])
     while values[min_idx] == 0:
         mask = (data < bins[min_idx]) & (data > -bins[min_idx])
-        values, bins = np.histogram(np.abs(data[mask]), 300)
+        values, bins = np.histogram(np.abs(data[mask]), n_bins)
         min_idx = np.argmin(values)
 
     mean = np.mean(data[mask])
     var = np.sum((data[mask]-mean)**2)
     std = np.sqrt(var / (data[mask].size - 1))
     mask_out = data > mean+3*std
-    data[mask_out] = np.mean(data[~mask_out])
+    data[mask_out] = np.max(data[~mask_out])
     return data
 
 
@@ -82,6 +82,9 @@ def copy(file_in, file_out):
     except PermissionError:
         print('Error with {0}! Switching to copyfile!'.format(file_in))
         shutil.copyfile(file_in, file_out)
+    umask = os.umask(0)
+    os.umask(umask)
+    os.chmod(file_out, 0o666 & ~umask)
 
 
 def get_function_dict():

@@ -672,7 +672,8 @@ class ProcessThread(QThread):
                 root_name=root_name,
                 )
         except FileNotFoundError as err:
-            self.add_to_queue(aim=self.typ, root_name=root_name)
+            if not dummy:
+                self.add_to_queue(aim=self.typ, root_name=root_name)
             self.write_error(msg=tb.format_exc(), root_name=root_name)
             if 'Check Startnumber' in str(err):
                 pass
@@ -684,7 +685,8 @@ class ProcessThread(QThread):
                     typ='lost_input_frames'
                     )
         except BlockingIOError:
-            self.add_to_queue(aim=self.typ, root_name=root_name)
+            if not dummy:
+                self.add_to_queue(aim=self.typ, root_name=root_name)
             print('!!! BlockingIOError !!! \n')
             msg = tb.format_exc()
             self.write_error(msg=msg, root_name=root_name)
@@ -708,17 +710,20 @@ class ProcessThread(QThread):
             else:
                 pass
         except IOError:
-            self.add_to_queue(aim=self.typ, root_name=root_name)
+            if not dummy:
+                self.add_to_queue(aim=self.typ, root_name=root_name)
             self.write_error(msg=tb.format_exc(), root_name=root_name)
             self.lost_connection(
                 typ=method_dict[self.typ]['lost_connect']
                 )
         except UserWarning:
-            self.add_to_queue(aim=self.typ, root_name=root_name)
+            if not dummy:
+                self.add_to_queue(aim=self.typ, root_name=root_name)
             self.write_error(msg=tb.format_exc(), root_name=root_name)
             self.stop = True
         except Exception:
-            self.add_to_queue(aim=self.typ, root_name=root_name)
+            if not dummy:
+                self.add_to_queue(aim=self.typ, root_name=root_name)
             print('!!! UNKNOWN !!! \n')
             msg = tb.format_exc()
             self.write_error(msg=msg, root_name=root_name)
@@ -742,22 +747,22 @@ class ProcessThread(QThread):
             else:
                 pass
         else:
-            self.remove_from_queue_file(root_name, self.shared_dict_typ['save_file'])
+            if not dummy:
+                self.remove_from_queue_file(root_name, self.shared_dict_typ['save_file'])
 
-            self.queue_lock.lock()
-            try:
-                self.add_to_queue_file(
-                    root_name=root_name,
-                    file_name=self.shared_dict['typ'][self.typ]['done_file'],
-                    )
-                self.check_queue_files(root_name=root_name)
-            finally:
-                self.queue_lock.unlock()
+                self.queue_lock.lock()
+                try:
+                    self.add_to_queue_file(
+                        root_name=root_name,
+                        file_name=self.shared_dict['typ'][self.typ]['done_file'],
+                        )
+                    self.check_queue_files(root_name=root_name)
+                finally:
+                    self.queue_lock.unlock()
 
-            if self.typ == 'Import':
-                pass
-            else:
-                if not dummy:
+                if self.typ == 'Import':
+                    pass
+                else:
                     self.queue_lock.lock()
                     try:
                         self.shared_dict_typ['file_number'] += 1
