@@ -2773,6 +2773,13 @@ class ProcessThread(QThread):
         Returns:
         None
         """
+        dont_tar = False
+        if not self.settings['Copy']['Tar to work'] == 'True' and self.typ == 'Copy_work':
+            dont_tar = True
+        elif not self.settings['Copy']['Tar to backup'] == 'True' and self.typ == 'Copy_backup':
+            dont_tar = True
+        elif not self.settings['Copy']['Tar to HDD'] == 'True' and self.typ == 'Copy_HDD':
+            dont_tar = True
 
         if root_name == 'None':
             self.queue_lock.lock()
@@ -2804,6 +2811,9 @@ class ProcessThread(QThread):
                     )
             finally:
                 self.queue_lock.unlock()
+
+        elif dont_tar:
+            copy_file = root_name
 
         elif self.settings['tar_folder'] in root_name:
             copy_file = root_name

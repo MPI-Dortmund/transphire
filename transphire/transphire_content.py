@@ -860,6 +860,9 @@ def default_copy(settings_folder):
         ['Picking to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the microgaph picking data to the work drive if "Copy to work" is specified.'],
         ['Picking to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the microgaph picking data to the backup drive if "Copy to backup" is specified.'],
         ['Picking to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the microgaph picking data to the HDD drive if "Copy to HDD" is specified.'],
+        ['Tar to work', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Copy the information to work drive in tar format if "Copy to work" is specified.'],
+        ['Tar to backup', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Copy the information to backup drive in tar format if "Copy to backup" is specified.'],
+        ['Tar to HDD', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Copy the information to HDD drive in tar format if "Copy to HDD" is specified.'],
         ['Delete data after import?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Delete the data from the camera computer after the import.'],
         ['Delete stack after compression?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Delete the mrc stack after compression.'],
         ]
