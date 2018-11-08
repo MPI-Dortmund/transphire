@@ -2574,6 +2574,7 @@ class ProcessThread(QThread):
         non_zero_list = [err_file, log_file]
         non_zero_list.extend(check_files)
 
+        export_log_files = []
         for file_use, file_name in zip(file_use_list, file_name_list):
             root_path = os.path.join(os.path.dirname(file_use), file_name)
             log_files, copied_log_files = tup.find_logfiles(
@@ -2616,7 +2617,7 @@ class ProcessThread(QThread):
             if skip_list:
                 self.remove_from_translate(os.path.basename(file_use))
             else:
-                pass
+                export_log_files.extend(log_files)
 
         for warning in skip_list:
             self.send_out_of_range_error(warning, root_name, 'skip')
@@ -2624,35 +2625,32 @@ class ProcessThread(QThread):
         for warning in warnings:
             self.send_out_of_range_error(warning, root_name, 'warning')
 
-            if skip_list:
-                pass
-            else:
-                # Add to queue
-                for aim in self.content_settings['aim']:
-                    *compare, aim_name = aim.split(':')
-                    var = True
-                    for typ in compare:
-                        name = typ.split('!')[-1]
-                        if typ.startswith('!'):
-                            if self.settings['Copy'][name] == 'False':
-                                continue
-                            else:
-                                var = False
-                                break
+        if skip_list:
+            pass
+        else:
+            # Add to queue
+            for aim in self.content_settings['aim']:
+                *compare, aim_name = aim.split(':')
+                var = True
+                for typ in compare:
+                    name = typ.split('!')[-1]
+                    if typ.startswith('!'):
+                        if self.settings['Copy'][name] == 'False':
+                            continue
                         else:
-                            if not self.settings['Copy'][name] == 'False':
-                                continue
-                            else:
-                                var = False
-                                break
-                    if var:
-                        if '!Compress' in compare or 'Compress' in compare:
-                            self.add_to_queue(aim=aim_name, root_name=file_frames)
-                        else:
-                            for log_file in log_files:
-                                self.add_to_queue(aim=aim_name, root_name=log_file)
+                            var = False
+                            break
                     else:
-                        pass
+                        if not self.settings['Copy'][name] == 'False':
+                            continue
+                        else:
+                            var = False
+                            break
+                if var:
+                    for log_file in export_log_files:
+                        self.add_to_queue(aim=aim_name, root_name=log_file)
+                else:
+                    pass
 
         self.queue_lock.lock()
         try:
@@ -2779,12 +2777,30 @@ class ProcessThread(QThread):
         None
         """
         dont_tar = False
-        if not self.settings['Copy']['Tar to work'] == 'True' and self.typ == 'Copy_work':
+        if root_name == 'None':
+            pass
+        elif not self.settings['Copy']['Tar to work'] == 'True' and self.typ == 'Copy_work':
             dont_tar = True
         elif not self.settings['Copy']['Tar to backup'] == 'True' and self.typ == 'Copy_backup':
             dont_tar = True
         elif not self.settings['Copy']['Tar to HDD'] == 'True' and self.typ == 'Copy_HDD':
             dont_tar = True
+        elif root_name.endswith('jpg'):
+            dont_tar = True
+        elif self.settings['tar_folder'] in root_name:
+            dont_tar = True
+        elif os.path.getsize(root_name) > 40 * 1024**2:
+            dont_tar = True
+        elif os.path.realpath(os.path.dirname(root_name)) == \
+                os.path.realpath(self.settings['project_folder']):
+            dont_tar = True
+        else:
+            for entry in self.settings['Copy']['Picking_entries']:
+                if entry.replace(' ', '_') in root_name:
+                    if root_name.endswith('txt'):
+                        dont_tar = True
+                    elif root_name.endswith('box'):
+                        dont_tar = True
 
         if root_name == 'None':
             self.queue_lock.lock()
@@ -2818,16 +2834,6 @@ class ProcessThread(QThread):
                 self.queue_lock.unlock()
 
         elif dont_tar:
-            copy_file = root_name
-
-        elif self.settings['tar_folder'] in root_name:
-            copy_file = root_name
-
-        elif os.path.getsize(root_name) > 40 * 1024**2:
-            copy_file = root_name
-
-        elif os.path.realpath(os.path.dirname(root_name)) == \
-                os.path.realpath(self.settings['project_folder']):
             copy_file = root_name
 
         else:
