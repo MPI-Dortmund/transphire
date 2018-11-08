@@ -16,6 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
+import re
 import glob
 import copy as cp
 import queue as qu
@@ -220,6 +221,7 @@ class ProcessWorker(QObject):
                         'full_hdd': False,
                         'unknown_error': False,
                         'queue_list_time': 0,
+                        'tar_idx': 0,
                         'queue_list': [],
                         'queue_lock': QMutex(),
                         'save_lock': QMutex(),
@@ -823,4 +825,20 @@ class ProcessWorker(QObject):
                     queue_list.append(line)
         else:
             with open(list_file, 'w'):
+                pass
+
+        # Tar index
+        if not queue_list:
+            tar_files = glob.glob(os.path.join(
+                self.settings['tar_folder'],
+                '{0}_*\.tar'.format(key)
+                ))
+            if tar_files:
+                shared_dict_typ['tar_idx'] = max([int(re.match('{0}_([0-9]+)\.tar'.format(key), entry).group(1)) for entry in tar_files]) + 1
+            else:
+                shared_dict_typ['tar_idx'] = 0
+        else:
+            try:
+                shared_dict_typ['tar_idx'] = max([int(re.match('{0}_([0-9]+)\.tar'.format(key), entry).group(1)) for entry in queue_list if re.match('{0}_([0-9]+)\.tar'.format(key), entry)])
+            except ValueError:
                 pass

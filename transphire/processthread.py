@@ -611,25 +611,25 @@ class ProcessThread(QThread):
             pass
 
         # Get new file
-        if dummy:
-            root_name = 'None'
-        else:
-            self.queue_lock.lock()
-            try:
-                self.queue_com['status'].put([
-                    'Running',
-                    [
-                        self.queue.qsize(),
-                        self.shared_dict_typ['file_number']
-                        ],
-                    self.name,
-                    'lightgreen'
-                    ])
+        self.queue_lock.lock()
+        try:
+            self.queue_com['status'].put([
+                'Running',
+                [
+                    self.queue.qsize(),
+                    self.shared_dict_typ['file_number']
+                    ],
+                self.name,
+                'lightgreen'
+                ])
+            if dummy:
+                root_name = 'None'
+            else:
                 root_name = self.remove_from_queue()
-            except Exception:
-                return None
-            finally:
-                self.queue_lock.unlock()
+        except Exception:
+            return None
+        finally:
+            self.queue_lock.unlock()
 
         # Set for every process a method and the right lost_connection name
         method_dict = {
@@ -2324,7 +2324,7 @@ class ProcessThread(QThread):
                 file_name=file_sum,
                 settings=self.settings
                 )
-        except ValueError as e:
+        except ValueError:
             raise IOError('{0} - Please check, if {0} can be executed outside of TranSPHIRE'.format(self.settings['Copy']['CTF']))
 
         if skip_list:
@@ -2774,11 +2774,104 @@ class ProcessThread(QThread):
         None
         """
 
+        if root_name == 'None':
+            self.queue_lock.lock()
+            try:
+                copy_file = [
+                    entry
+                    for entry in self.shared_dict_typ['queue_list']
+                    if self.settings['tar_folder'] in entry
+                    ][0]
+                if not os.path.exists(copy_file):
+                    self.shared_dict_typ['queue_list_time'] = time.time()
+                    return None
+                self.shared_dict_typ['tar_idx'] += 1
+                new_tar_file = os.path.join(
+                    self.settings['tar_folder'],
+                    '{0}_{1:06d}.tar'.format(self.name, self.shared_dict_typ['tar_idx'])
+                    )
+
+                self.shared_dict_typ['queue_list'].remove(copy_file)
+                self.remove_from_queue_file(
+                    copy_file,
+                    self.shared_dict_typ['list_file'],
+                    lock=False
+                    )
+                self.shared_dict_typ['queue_list'].append(new_tar_file)
+                self.add_to_queue_file(
+                    root_name=new_tar_file,
+                    file_name=self.shared_dict_typ['list_file'],
+                    )
+            finally:
+                self.queue_lock.unlock()
+
+        elif self.settings['tar_folder'] in root_name:
+            copy_file = root_name
+
+        elif os.path.getsize(root_name) > 40 * 1024**2:
+            copy_file = root_name
+
+        elif os.path.realpath(os.path.dirname(root_name)) == \
+                os.path.realpath(self.settings['project_folder']):
+            copy_file = root_name
+
+        else:
+            self.queue_lock.lock()
+            try:
+                try:
+                    tar_file = [
+                        entry
+                        for entry in self.shared_dict_typ['queue_list']
+                        if self.settings['tar_folder'] in entry
+                        ][0]
+                except IndexError:
+                    tar_file = os.path.join(
+                        self.settings['tar_folder'],
+                        '{0}_{1:06d}.tar'.format(self.name, self.shared_dict_typ['tar_idx'])
+                        )
+                    self.shared_dict_typ['queue_list'].append(tar_file)
+                    self.add_to_queue_file(
+                        root_name=tar_file,
+                        file_name=self.shared_dict_typ['list_file'],
+                        )
+
+                with tarfile.open(tar_file, 'a') as tar:
+                    tar.add(
+                        root_name,
+                        arcname=os.path.join('..', root_name.replace(self.settings['project_folder'], ''))
+                        )
+
+                if os.path.getsize(tar_file) > 200 * 1024**2:
+                    copy_file = tar_file
+                    self.shared_dict_typ['tar_idx'] += 1
+                    new_tar_file = os.path.join(
+                        self.settings['tar_folder'],
+                        '{0}_{1:06d}.tar'.format(self.name, self.shared_dict_typ['tar_idx'])
+                        )
+
+                    self.shared_dict_typ['queue_list'].remove(copy_file)
+                    self.remove_from_queue_file(
+                        tar_file,
+                        self.shared_dict_typ['list_file'],
+                        lock=False
+                        )
+                    self.shared_dict_typ['queue_list'].append(new_tar_file)
+                    self.add_to_queue_file(
+                        root_name=new_tar_file,
+                        file_name=self.shared_dict_typ['list_file'],
+                        )
+                else:
+                    self.shared_dict_typ['queue_list_time'] = time.time()
+                    return None
+            finally:
+                self.queue_lock.unlock()
+
+
         mount_folder_name = '{0}_folder'.format(self.typ)
         mount_name = self.settings['Copy'][self.typ]
         sudo = self.settings['Mount'][mount_name]['Need sudo for copy?']
         protocol = self.settings['Mount'][mount_name]['Protocol']
-        new_suffix = root_name.replace(
+        new_suffix = copy_file.replace(
             self.settings['General']['Project directory'],
             ''
             )
@@ -2796,7 +2889,7 @@ class ProcessThread(QThread):
                         self.settings[mount_folder_name]
                         )
                     ):
-                if os.path.getsize(root_name) > \
+                if os.path.getsize(copy_file) > \
                         sh.disk_usage(hdd_folder).free:
                     new_name = None
                     continue
@@ -2812,7 +2905,8 @@ class ProcessThread(QThread):
         else:
             new_name = os.path.join(*new_prefix, *new_suffix)
 
-        copy_method(root_name, new_name)
+        copy_method(copy_file, new_name)
+        self.shared_dict_typ['queue_list_time'] = time.time()
 
     def copy_as_user(self, file_in, file_out):
         """

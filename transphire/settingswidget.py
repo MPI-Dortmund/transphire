@@ -133,7 +133,7 @@ class SettingsWidget(QWidget):
         if tooltip:
             final_tooltip = []
             for line in tooltip.splitlines():
-                final_tooltip.append('\n'.join([line[i:i+30] for i in range(0, len(line), 30)]))
+                final_tooltip.append('\n'.join([line[i:i+80] for i in range(0, len(line), 80)]))
             self.edit.setToolTip('\n'.join(final_tooltip))
         else:
             self.edit.setToolTip(self.name)
