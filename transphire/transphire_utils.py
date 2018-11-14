@@ -44,21 +44,33 @@ from transphire import transphire_plot as tp
 from transphire import transphire_import as ti
 
 
-def normalize_image(data, n_bins=300):
-    values, bins = np.histogram(np.abs(data), n_bins)
-    min_idx = np.argmin(values)
-    mask = (data < bins[min_idx]) & (data > -bins[min_idx])
-    while values[min_idx] == 0:
-        mask = (data < bins[min_idx]) & (data > -bins[min_idx])
-        values, bins = np.histogram(np.abs(data[mask]), n_bins)
-        min_idx = np.argmin(values)
+def normalize_image(data, apix, min_res=30, max_res=3, real=True):
+    if real:
+        pass
+    else:
+        box_x = data.shape[0]
+        box_x_half = box_x / 2
+        box_y = data.shape[1]
+        box_y_half = box_y / 2
 
-    mean = np.mean(data[mask])
-    var = np.sum((data[mask]-mean)**2)
-    std = np.sqrt(var / (data[mask].size - 1))
-    mask_out = data > mean+3*std
-    data[mask_out] = np.max(data[~mask_out])
-    return data
+        min_freq = (apix / min_res)**2
+        max_freq = (apix / max_res)**2
+
+        mask = np.ones((arr.shape[0], arr.shape[1]), dtype=bool)
+        for idx_x in range(mask.shape[0]):
+            for idx_y in range(mask.shape[1]):
+                x = (idx_x - box_x_half) / box_x
+                y = (idx_y - box_y_half) / box_y
+                radius = x**2+y**2
+                if radius < min_freq:
+                    mask[idx_x, idx_y] = 0
+                elif np.abs(idx_x - box_x_half) < 3:
+                    mask[idx_x, idx_y] = 0
+                elif np.abs(idx_y - box_y_half) < 3:
+                    mask[idx_x, idx_y] = 0
+        data[~mask] = np.median(data[mask])
+
+    return np.sqrt(data)
 
 
 def get_name(name):
