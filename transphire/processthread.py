@@ -940,18 +940,22 @@ class ProcessThread(QThread):
         Return:
         None
         """
+        if isinstance(root_name, list):
+            root_name = set(root_name)
+        else:
+            root_name = set([root_name])
         if lock:
             self.queue_lock.lock()
         try:
             useable_lines = []
             try:
                 with open(file_name, 'r') as read:
-                    lines = [line.rstrip() for line in read.readlines()]
+                    lines = [line.strip() for line in read.readlines() if line.strip()]
             except FileNotFoundError:
                 useable_lines = []
             else:
                 for line in lines:
-                    if root_name != line:
+                    if line not in root_name:
                         useable_lines.append(line)
                     else:
                         pass
@@ -2525,6 +2529,8 @@ class ProcessThread(QThread):
                 self.shared_dict_typ['queue_list'].append(root_name)
                 if time.time() - self.shared_dict_typ['queue_list_time'] < 30:
                     return None
+                else:
+                    self.shared_dict_typ['queue_list_time'] = time.time()
             finally:
                 self.queue_lock.unlock()
 
@@ -2533,6 +2539,7 @@ class ProcessThread(QThread):
             if time.time() - self.shared_dict_typ['queue_list_time'] < 30:
                 return None
             elif not self.shared_dict_typ['queue_list']:
+                self.shared_dict_typ['queue_list_time'] = time.time()
                 return None
             file_use_list = []
             file_name_list = []
@@ -2655,12 +2662,7 @@ class ProcessThread(QThread):
                 else:
                     pass
 
-        self.queue_lock.lock()
-        try:
-            for entry in file_queue_list:
-                self.remove_from_queue_file(entry, self.shared_dict_typ['list_file'], lock=False)
-        finally:
-            self.queue_lock.unlock()
+        self.remove_from_queue_file(file_queue_list, self.shared_dict_typ['list_file'])
 
     def run_compress(self, root_name):
         """
