@@ -2523,9 +2523,10 @@ class ProcessThread(QThread):
                     file_name=self.shared_dict_typ['list_file'],
                     )
                 self.shared_dict_typ['queue_list'].append(root_name)
+                if time.time() - self.shared_dict_typ['queue_list_time'] < 30:
+                    return None
             finally:
                 self.queue_lock.unlock()
-            return None
 
         self.queue_lock.lock()
         try:
