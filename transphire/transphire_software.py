@@ -922,8 +922,8 @@ def check_for_outlier(dict_name, data, file_name, settings):
     warning_list = []
     skip_list = []
 
-    file_name = os.path.basename(os.path.splitext(file_name)[0])
-    match_file = re.compile(file_name)
+    file_name_match = os.path.basename(os.path.splitext(file_name)[0])
+    match_file = re.compile(file_name_match)
     vmatch = np.vectorize(lambda x:bool(match_file.search(x)))
     mask = vmatch(data['file_name'])
 
@@ -947,7 +947,7 @@ def check_for_outlier(dict_name, data, file_name, settings):
                 warning_high
                 ])
 
-        assert data[mask].shape[0] == 1, data[mask]
+        assert data[mask].shape[0] == 1, [data[mask], file_name, file_name_match]
 
         if float(skip_low) <= data[key][mask][0] and data[key][mask][0] <= float(skip_high):
             pass

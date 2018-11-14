@@ -2554,6 +2554,7 @@ class ProcessThread(QThread):
                 file_name_list.append(tu.get_name(file_use_name))
             self.shared_dict_typ['queue_list'] = []
             self.shared_dict_typ['queue_list_time'] = time.time()
+            QThread.msleep(100)
         finally:
             self.queue_lock.unlock()
 
@@ -2584,6 +2585,11 @@ class ProcessThread(QThread):
         non_zero_list = [err_file, log_file]
         non_zero_list.extend(check_files)
 
+        data, data_orig = tu.get_function_dict()[self.settings['Copy']['Picking']]['plot_data'](
+            self.settings['Copy']['Picking'],
+            self.settings['Picking_folder'][self.settings['Copy']['Picking']]
+            )
+
         export_log_files = []
         for file_use, file_name in zip(file_use_list, file_name_list):
             root_path = os.path.join(os.path.dirname(file_use), file_name)
@@ -2610,11 +2616,6 @@ class ProcessThread(QThread):
                 settings=self.settings,
                 queue_com=self.queue_com,
                 name=self.name
-                )
-
-            data, data_orig = tu.get_function_dict()[self.settings['Copy']['Picking']]['plot_data'](
-                self.settings['Copy']['Picking'],
-                self.settings['Picking_folder'][self.settings['Copy']['Picking']]
                 )
 
             warnings, skip_list = tus.check_for_outlier(

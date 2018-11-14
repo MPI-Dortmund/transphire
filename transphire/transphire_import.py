@@ -886,21 +886,21 @@ def import_cryolo_v1_0_4(name, directory_name):
     useable_files = []
     for file_name in files_box:
         try:
-            np.genfromtxt(file_name)
+            data_imported = np.genfromtxt(file_name)
         except ValueError:
-            continue
+            useable_files.append([os.path.splitext(os.path.basename(file_name))[0], 0])
         except IOError:
             continue
         else:
-            useable_files.append(os.path.splitext(os.path.basename(file_name))[0])
+            useable_files.append([os.path.splitext(os.path.basename(file_name))[0], data_imported.shape[0]])
 
     useable_files_jpg = [
         tu.get_name(entry)
         for entry in glob.glob(os.path.join(directory_name, 'jpg*', '*.jpg'))
         ]
     useable_files = [
-        file_name
-        for file_name in sorted(useable_files)
+        [file_name, size]
+        for file_name, size in sorted(useable_files)
         if tu.get_name(file_name) in useable_files_jpg
         ]
 
@@ -909,29 +909,25 @@ def import_cryolo_v1_0_4(name, directory_name):
         dtype=get_dtype_dict()['picking']
         )
     data = np.atleast_1d(data)
-    for idx, file_name in enumerate(useable_files):
-        jpg_name = os.path.join(
-            directory_name,
-            'jpg*',
-            '{0}.jpg'.format(file_name)
-            )
-        box_name = os.path.join(directory_name, '{0}.{1}'.format(file_name, extension))
-        try:
-            data_name = np.atleast_1d(np.genfromtxt(
-                box_name,
-                dtype=get_dtype_import_dict()[name]
-                ))
-        except ValueError:
-            size = 0
-        except IOError:
-            continue
-        else:
-            size = data_name.shape[0]
-        data[idx]['file_name'] = file_name
-        data[idx]['particles'] = size
-        data[idx]['image'] = ';;;'.join(glob.glob(jpg_name))
+    file_names = [entry[0] for entry in useable_files]
+    jpgs = sorted([os.path.basename(entry) for entry in glob.glob(os.path.join(directory_name, 'jpg*'))])
+    jpg_names = [';;;'.join([os.path.join(directory_name, jpg_dir_name, '{0}.jpg'.format(entry)) for jpg_dir_name in jpgs]) for entry in file_names]
+    sizes = [entry[1] for entry in useable_files]
+    data['file_name'] = file_names
+    data['particles'] = sizes
+    data['image'] = jpg_names
+    #for idx, entry in enumerate(useable_files):
+    #    file_name = entry[0]
+    #    size = entry[1]
+    #    jpg_name = os.path.join(
+    #        directory_name,
+    #        'jpg*',
+    #        '{0}.jpg'.format(file_name)
+    #        )
+    #    data[idx]['file_name'] = file_name
+    #    data[idx]['particles'] = size
+    #    data[idx]['image'] = ';;;'.join(glob.glob(jpg_name))
 
-    data.sort(order='file_name')
     data_original = None
 
     data = np.sort(data, order='file_name')
