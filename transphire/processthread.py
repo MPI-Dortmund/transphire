@@ -1921,13 +1921,6 @@ class ProcessThread(QThread):
                     folder=self.settings['motion_folder'],
                     command='copy'
                     )
-                try:
-                    os.remove(file_dw_pre_move)
-                except IOError:
-                    self.write_error(msg=tb.format_exc(), root_name=file_dw_pre_move)
-                    raise
-            else:
-                pass
 
             if os.path.realpath(self.settings['scratch_motion_folder']) != \
                     os.path.realpath(self.settings['motion_folder']):
@@ -1956,6 +1949,11 @@ class ProcessThread(QThread):
                     except IOError:
                         self.write_error(msg=tb.format_exc(), root_name=file_entry)
                         raise
+            elif do_dw:
+                try:
+                    os.remove(file_dw_pre_move)
+                except IOError:
+                    pass
             else:
                 pass
 
