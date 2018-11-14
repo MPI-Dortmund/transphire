@@ -2525,10 +2525,13 @@ class ProcessThread(QThread):
                 self.shared_dict_typ['queue_list'].append(root_name)
             finally:
                 self.queue_lock.unlock()
+            return None
 
         self.queue_lock.lock()
         try:
             if time.time() - self.shared_dict_typ['queue_list_time'] < 30:
+                return None
+            elif not self.shared_dict_typ['queue_list']:
                 return None
             file_use_list = []
             file_name_list = []
@@ -2542,6 +2545,7 @@ class ProcessThread(QThread):
                 file_use_list.append(file_use_name)
                 file_name_list.append(tu.get_name(file_use_name))
             self.shared_dict_typ['queue_list'] = []
+            self.shared_dict_typ['queue_list_time'] = time.time()
         finally:
             self.queue_lock.unlock()
 
@@ -2652,7 +2656,6 @@ class ProcessThread(QThread):
 
         self.queue_lock.lock()
         try:
-            self.shared_dict_typ['queue_list_time'] = time.time()
             for entry in file_queue_list:
                 self.remove_from_queue_file(entry, self.shared_dict_typ['list_file'], lock=False)
         finally:
