@@ -688,7 +688,7 @@ def create_jpg_file(input_file, settings):
     if tile_images:
         arr_2 = np.sum(np.array(tile_images) / len(tile_images), axis=0)
         arr_2 = tu.rebin(arr_2, shape)
-        arr_2 = tu.normalize_image(arr_2, real=False)
+        arr_2 = tu.normalize_image(arr_2, apix=float(settings[settings['Copy']['Motion']]['-PixSize']), real=False)
     if arr_1 is not None:
         mi.imsave(jpg_file_1, arr_1, cmap='gist_gray')
     if arr_2 is not None:

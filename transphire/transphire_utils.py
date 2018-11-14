@@ -44,7 +44,7 @@ from transphire import transphire_plot as tp
 from transphire import transphire_import as ti
 
 
-def normalize_image(data, apix, min_res=30, max_res=3, real=True):
+def normalize_image(data, apix=1.0, min_res=30, real=True):
     if real:
         pass
     else:
@@ -54,9 +54,8 @@ def normalize_image(data, apix, min_res=30, max_res=3, real=True):
         box_y_half = box_y / 2
 
         min_freq = (apix / min_res)**2
-        max_freq = (apix / max_res)**2
 
-        mask = np.ones((arr.shape[0], arr.shape[1]), dtype=bool)
+        mask = np.ones((data.shape[0], data.shape[1]), dtype=bool)
         for idx_x in range(mask.shape[0]):
             for idx_y in range(mask.shape[1]):
                 x = (idx_x - box_x_half) / box_x
@@ -64,13 +63,14 @@ def normalize_image(data, apix, min_res=30, max_res=3, real=True):
                 radius = x**2+y**2
                 if radius < min_freq:
                     mask[idx_x, idx_y] = 0
-                elif np.abs(idx_x - box_x_half) < 3:
+                elif np.abs(idx_x - box_x_half) < 0:
                     mask[idx_x, idx_y] = 0
-                elif np.abs(idx_y - box_y_half) < 3:
+                elif np.abs(idx_y - box_y_half) < 0:
                     mask[idx_x, idx_y] = 0
         data[~mask] = np.median(data[mask])
+        data = np.sqrt(data)
 
-    return np.sqrt(data)
+    return data
 
 
 def get_name(name):

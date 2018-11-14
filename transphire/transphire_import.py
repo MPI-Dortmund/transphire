@@ -877,9 +877,7 @@ def import_cryolo_v1_0_4(name, directory_name):
     Imported data
     """
     box_files = glob.glob(os.path.join(directory_name, '*.{0}'.format('box')))
-    extension = 'box'
     if not box_files:
-        extension = 'txt'
         box_files = glob.glob(os.path.join(directory_name, '*.{0}'.format('txt')))
 
     files_box = np.array(box_files)
