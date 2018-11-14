@@ -254,10 +254,15 @@ class ProcessThread(QThread):
             self.is_running = False
 
         if self.shared_dict_typ['queue_list']:
-            self.is_running = True
-            if self.typ not in ('Find', 'Meta'):
-                self.start_queue(clear_list=True)
-            self.is_running = False
+            if self.later:
+                pass
+            elif not self.run_this_thread:
+                pass
+            else:
+                self.is_running = True
+                if self.typ not in ('Find', 'Meta'):
+                    self.start_queue(clear_list=True)
+                self.is_running = False
 
         # Print, if stopped
         self.queue_com['status'].put(['STOPPED', [], self.name, '#ff5c33'])
@@ -2618,6 +2623,12 @@ class ProcessThread(QThread):
                 name=self.name
                 )
 
+        data, data_orig = tu.get_function_dict()[self.settings['Copy']['Picking']]['plot_data'](
+            self.settings['Copy']['Picking'],
+            self.settings['Picking_folder'][self.settings['Copy']['Picking']]
+            )
+
+        for file_use, file_name in zip(file_use_list, file_name_list):
             warnings, skip_list = tus.check_for_outlier(
                 dict_name='picking',
                 data=data,
