@@ -71,11 +71,16 @@ class PlotWorker(QObject):
         if name not in ('Later', 'False'):
             if name == current_name:
                 self.settings.append([name, directory_name, settings])
-            self.calculate_array_now(
-                name=name,
-                directory_name=directory_name,
-                settings=settings
-                )
+            if os.path.isdir(directory_name):
+                self.calculate_array_now(
+                    name=name,
+                    directory_name=directory_name,
+                    settings=settings
+                    )
+                self.sig_visible.emit(True, name)
+            else:
+                self.sig_visible.emit(False, name)
+
 
     def reset_running(self):
         self.running = False
@@ -88,26 +93,20 @@ class PlotWorker(QObject):
         Returns:
         None
         """
-        if self.running:
-            return None
-        for name, directory_name, settings in self.settings:
-            self.running = True
-            self.calculate_array_now(
-                name=name,
-                directory_name=directory_name,
-                settings=settings
-                )
+        if not self.running:
+            for name, directory_name, settings in self.settings:
+                self.running = True
+                self.calculate_array_now(
+                    name=name,
+                    directory_name=directory_name,
+                    settings=settings
+                    )
 
     def calculate_array_now(self, name, directory_name, settings):
         data, _ = tu.get_function_dict()[name]['plot_data'](
             name=name,
             directory_name=directory_name
             )
-
-        if os.path.isdir(directory_name):
-            self.sig_visible.emit(True, name)
-        else:
-            self.sig_visible.emit(False, name)
 
         if data.size == 0:
             self.running = False
