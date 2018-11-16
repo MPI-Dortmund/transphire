@@ -692,6 +692,8 @@ def get_relion_header(names):
         except KeyError:
             if name == 'mic_number':
                 continue
+            elif name == 'image':
+                continue
             else:
                 new_name = name
         header.append('{0} #{1}'.format(new_name, index+1))
