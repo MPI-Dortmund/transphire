@@ -371,8 +371,8 @@ def import_ctffind_v4_1_8(name, directory_name):
         for entry in glob.glob(os.path.join(directory_name, 'jpg*', '*.jpg'))
         ]
     useable_files = [
-        file_name
-        for file_name in sorted(useable_files)
+        [file_name, data_name]
+        for file_name, data_name in sorted(useable_files)
         if tu.get_name(file_name) in useable_files_jpg
         ]
 

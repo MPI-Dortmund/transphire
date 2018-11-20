@@ -79,6 +79,8 @@ class PlotWidget(QWidget):
         self.label = None
         self.line = None
         self.rects = None
+        self.lower_lim = None
+        self.upper_lim = None
         self.img = []
         self.figure = []
         self.axis = []
@@ -218,10 +220,10 @@ class PlotWidget(QWidget):
             new_label,
             new_title,
             x_values,
-            y_values
+            y_values,
+            change,
         ):
         axis = self.axis[0]
-        change = False
 
         if self.x_min is None and self.x_max is None:
             self.x_min = new_x_min - 0.5
@@ -252,18 +254,28 @@ class PlotWidget(QWidget):
                 change = True
 
         elif self.plot_typ == 'histogram':
-            if self.x_min > new_x_min or self.x_max < new_x_max or self.line is None:
+            if self.x_min > new_x_min or self.x_max < new_x_max or self.line is None or change:
                 axis.clear()
                 self.rects = axis.bar(
                         x_values[:-1],
                         y_values,
+                        x_values[1] - x_values[0],
                         facecolor=self.color,
                         edgecolor='k'
                         )
                 axis.grid()
                 axis.set_ylabel('Nr. of micrographs')
-                axis.set_xlim([self.x_min, self.x_max])
-                axis.set_ylim([self.y_min, self.y_max])
+                x_step = (np.max(x_values) - np.min(x_values)) * 0.1
+                axis.set_xlim([np.min(x_values)-x_step, np.max(x_values)+x_step])
+
+                y_step = (np.max(y_values) - np.min(y_values)) * 0.05
+                axis.set_ylim([np.min(y_values), np.max(y_values)+y_step])
+                print(self.plot_label, [np.min(x_values)-x_step, np.max(x_values)+x_step], np.min(x_values), np.max(x_values))
+                for a in self.rects:
+                    print(a)
+                print(x_values)
+                print(y_values)
+                print('')
                 change = True
             if self.label is None:
                 self.label = new_label
@@ -329,14 +341,15 @@ class PlotWidget(QWidget):
         None
         """
         if self.plot_typ == 'values' or self.plot_typ == 'histogram':
-            x_values, y_values, label, title = tu.get_function_dict()[name]['plot'](
+            x_values_raw, y_values_raw, label, title = tu.get_function_dict()[name]['plot'](
                 data=data,
                 settings=settings,
                 label=self.plot_label,
                 )
-            idx_nan = np.isnan(y_values)
-            x_values_raw = x_values[~idx_nan]
-            y_values_raw = y_values[~idx_nan]
+            change = False
+            idx_nan = np.isnan(y_values_raw)
+            x_values_raw = x_values_raw[~idx_nan]
+            y_values_raw = y_values_raw[~idx_nan]
             if self.plot_typ == 'values':
                 y_values = y_values_raw
                 x_values = x_values_raw
@@ -346,11 +359,13 @@ class PlotWidget(QWidget):
                 except ValueError:
                     print('Lower limit value: {0} - Not a valid float! Falling back to -infinity.'.format(self.lower_edit.text()))
                     lower_lim = -np.nan_to_num(np.inf)
+
                 try:
-                    upper_lim = float(self.upper_lim.text())
+                    upper_lim = float(self.upper_edit.text())
                 except ValueError:
                     print('Upper limit value: {0} - Not a valid float! Falling back to infinity.'.format(self.upper_edit.text()))
                     upper_lim = np.nan_to_num(np.inf)
+
                 try:
                     bins = int(self.bin_edit.text())
                 except ValueError:
@@ -360,6 +375,13 @@ class PlotWidget(QWidget):
                 used_y_values = y_values_raw[mask]
                 title = '{0}: {1} out of range {2} to {3}'.format(title, y_values_raw[~mask].shape[0], lower_lim, upper_lim)
                 y_values, x_values = np.histogram(used_y_values, bins)
+
+                if lower_lim != self.lower_lim:
+                    self.lower_lim = lower_lim
+                    change = True
+                if upper_lim != self.upper_lim:
+                    self.upper_lim = upper_lim
+                    change = True
             change = self.prepare_axis(
                 np.min(x_values),
                 np.max(x_values),
@@ -368,7 +390,8 @@ class PlotWidget(QWidget):
                 label,
                 title,
                 x_values,
-                y_values
+                y_values,
+                change,
                 )
 
             if self.plot_typ == 'values':
@@ -376,8 +399,9 @@ class PlotWidget(QWidget):
                 self.axis[0].draw_artist(self.axis[0].patch)
                 self.axis[0].draw_artist(self.line)
             elif self.plot_typ == 'histogram':
-                [rect.set_height(y1) for rect, y1 in zip(self.rects, y_values)]
-                [rect.set_width(np.abs(x_values[idx]-x_values[idx+1])) for idx, rect in enumerate(self.rects)]
+                for idx, entry in enumerate(zip(self.rects, y_values)):
+                    entry[0].set_height(entry[1])
+                    entry[0].set_width(np.abs(x_values[idx]-x_values[idx+1]))
 
             if change:
                 self.figure[0].canvas.draw()
