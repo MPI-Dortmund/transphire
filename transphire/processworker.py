@@ -806,8 +806,8 @@ class ProcessWorker(QObject):
 
         if os.path.exists(done_file):
             with open(done_file, 'r') as read:
-                shared_dict_typ['file_number'] = len(read.readlines())
                 lines = [line.rstrip() for line in read.readlines()]
+                shared_dict_typ['file_number'] = len(lines)
             for line in lines:
                 if self.settings['software_meta_tar'] in line:
                     self.settings['copy_software_meta'] = False
@@ -823,6 +823,10 @@ class ProcessWorker(QObject):
             for line in lines:
                 if line:
                     queue_list.append(line)
+                if self.settings['software_meta_tar'] in line:
+                    self.settings['copy_software_meta'] = False
+                else:
+                    pass
         else:
             with open(list_file, 'w'):
                 pass
