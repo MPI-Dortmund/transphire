@@ -607,15 +607,9 @@ def import_cter_v1_0(name, directory_name):
     Return:
     Imported data
     """
-    files = np.array(
-        [
-            entry for entry in glob.glob('{0}/*/partres.txt'.format(directory_name))
-            ],
-        dtype=str
-        )
 
     useable_files = []
-    for file_name in files:
+    for file_name in sorted(glob.glob('{0}/*/partres.txt'.format(directory_name))):
         try:
             data_name = np.genfromtxt(
                 file_name,
@@ -627,7 +621,7 @@ def import_cter_v1_0(name, directory_name):
             continue
         else:
             if data_name.size > 0:
-                useable_files.append(file_name)
+                useable_files.append([file_name, data_name])
             else:
                 continue
 
@@ -636,8 +630,8 @@ def import_cter_v1_0(name, directory_name):
         for entry in glob.glob(os.path.join(directory_name, 'jpg*', '*.jpg'))
         ]
     useable_files = [
-        file_name
-        for file_name in sorted(useable_files)
+        [file_name, data_name]
+        for file_name, data_name in useable_files
         if os.path.split(os.path.dirname(file_name))[-1] in useable_files_jpg
         ]
 
@@ -654,50 +648,75 @@ def import_cter_v1_0(name, directory_name):
     data.fill(0)
     data_original.fill(0)
 
-    for idx, file_name in sorted(enumerate(useable_files)):
-        try:
-            data_name = np.genfromtxt(
-                file_name,
-                dtype=get_dtype_import_dict()[name],
-                )
-        except IOError:
-            continue
+    file_names_jpg = [os.path.split(os.path.dirname(entry[0]))[-1] for entry in useable_files]
+    jpgs = sorted([os.path.basename(entry) for entry in glob.glob(os.path.join(directory_name, 'jpg*'))])
+    jpg_names = [';;;'.join([os.path.join(directory_name, jpg_dir_name, '{0}.jpg'.format(entry)) for jpg_dir_name in jpgs]) for entry in file_names_jpg]
+
+
+    for dtype_name in data_original.dtype.names:
+        data_original[dtype_name] = [entry[1][dtype_name] for entry in useable_files]
+        if dtype_name == 'defocus':
+            data['defocus'] = [entry[1][dtype_name] * 10000 for entry in useable_files]
+        elif dtype_name == 'astigmatism_amplitude':
+            data['defocus_diff'] = [entry[1][dtype_name] * 10000 for entry in useable_files]
+        elif dtype_name == 'astigmatism_angle':
+            data['astigmatism'] = [45 - entry[1][dtype_name] for entry in useable_files]
+        elif dtype_name == 'phase_shift':
+            data['phase_shift'] = [entry[1][dtype_name] for entry in useable_files]
+        elif dtype_name == 'file_name':
+            data['file_name'] = [entry[1][dtype_name] for entry in useable_files]
+        elif dtype_name == 'standard_deviation_defocus':
+            data['cross_corr'] = [entry[1][dtype_name] for entry in useable_files]
+        elif dtype_name == 'limit_defocus_and_astigmatism':
+            data['limit'] = [1 / entry[1][dtype_name] if entry[1][dtype_name] != 0 else 1 / entry[1]['limit_pixel_error'] for entry in useable_files]
         else:
-            if data_name.size == 0:
-                continue
-            else:
-                pass
+            continue
+    data['image'] = jpg_names
 
-        for entry in data_name.dtype.names:
-            data_original[idx][entry] = data_name[entry]
-            if entry == 'defocus':
-                data[idx][entry] = data_name[entry] * 10000
-            elif entry == 'astigmatism_amplitude':
-                data[idx]['defocus_diff'] = data_name[entry] * 10000
-            elif entry == 'astigmatism_angle':
-                data[idx]['astigmatism'] = 45 - data_name[entry]
-            elif entry == 'phase_shift':
-                data[idx]['phase_shift'] = data_name[entry]
-            elif entry == 'file_name':
-                data[idx]['file_name'] = data_name[entry]
-            elif entry == 'standard_deviation_defocus':
-                data[idx]['cross_corr'] = data_name[entry]
-            elif entry == 'limit_defocus_and_astigmatism':
-                if data_name[entry] == 0:
-                    value = data_name['limit_pixel_error']
-                else:
-                    value = data_name[entry]
+    #for idx, file_name in sorted(enumerate(useable_files)):
+    #    try:
+    #        data_name = np.genfromtxt(
+    #            file_name,
+    #            dtype=get_dtype_import_dict()[name],
+    #            )
+    #    except IOError:
+    #        continue
+    #    else:
+    #        if data_name.size == 0:
+    #            continue
+    #        else:
+    #            pass
 
-                data[idx]['limit'] = 1 / value
-            else:
-                continue
+    #    for entry in data_name.dtype.names:
+    #        data_original[idx][entry] = data_name[entry]
+    #        if entry == 'defocus':
+    #            data[idx][entry] = data_name[entry] * 10000
+    #        elif entry == 'astigmatism_amplitude':
+    #            data[idx]['defocus_diff'] = data_name[entry] * 10000
+    #        elif entry == 'astigmatism_angle':
+    #            data[idx]['astigmatism'] = 45 - data_name[entry]
+    #        elif entry == 'phase_shift':
+    #            data[idx]['phase_shift'] = data_name[entry]
+    #        elif entry == 'file_name':
+    #            data[idx]['file_name'] = data_name[entry]
+    #        elif entry == 'standard_deviation_defocus':
+    #            data[idx]['cross_corr'] = data_name[entry]
+    #        elif entry == 'limit_defocus_and_astigmatism':
+    #            if data_name[entry] == 0:
+    #                value = data_name['limit_pixel_error']
+    #            else:
+    #                value = data_name[entry]
 
-        jpg_name = os.path.join(
-            directory_name,
-            'jpg*',
-            '{0}.jpg'.format(os.path.split(os.path.dirname(file_name))[-1])
-            )
-        data[idx]['image'] = ';;;'.join(glob.glob(jpg_name))
+    #            data[idx]['limit'] = 1 / value
+    #        else:
+    #            continue
+
+    #    jpg_name = os.path.join(
+    #        directory_name,
+    #        'jpg*',
+    #        '{0}.jpg'.format(os.path.split(os.path.dirname(file_name))[-1])
+    #        )
+    #    data[idx]['image'] = ';;;'.join(glob.glob(jpg_name))
 
     data = np.sort(data, order='file_name')
     data_original = np.sort(data_original, order='file_name')
