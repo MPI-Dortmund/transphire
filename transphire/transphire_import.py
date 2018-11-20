@@ -480,17 +480,9 @@ def import_gctf_v1_06(name, directory_name):
     Imported data
     """
     suffix = '_gctf'
-    files = np.array(
-        [
-            entry for entry in glob.glob(
-                '{0}/*{1}.star'.format(directory_name, suffix)
-            )
-            ],
-        dtype=str
-        )
 
     useable_files = []
-    for file_name in files:
+    for file_name in sorted(glob.glob('{0}/*{1}.star'.format(directory_name, suffix))):
         try:
             dtype, max_header = get_header(input_file=file_name)
             data_name = np.genfromtxt(
@@ -504,7 +496,7 @@ def import_gctf_v1_06(name, directory_name):
             continue
         else:
             if data_name.size > 0:
-                useable_files.append(file_name)
+                useable_files.append([file_name, data_name])
             else:
                 continue
 
@@ -513,8 +505,8 @@ def import_gctf_v1_06(name, directory_name):
         for entry in glob.glob(os.path.join(directory_name, 'jpg*', '*.jpg'))
         ]
     useable_files = [
-        file_name
-        for file_name in sorted(useable_files)
+        [file_name, data_name]
+        for file_name, data_name in sorted(useable_files)
         if tu.get_name(tu.get_name(file_name)) in useable_files_jpg
         ]
 
@@ -530,65 +522,90 @@ def import_gctf_v1_06(name, directory_name):
     data_original = np.atleast_1d(data_original)
     data.fill(0)
     data_original.fill(0)
+    if not useable_files:
+        return None, None
+
+    file_names_jpg = [tu.get_name(tu.get_name(entry[0])) for entry in useable_files]
+    jpgs = sorted([os.path.basename(entry) for entry in glob.glob(os.path.join(directory_name, 'jpg*'))])
+    jpg_names = [';;;'.join([os.path.join(directory_name, jpg_dir_name, '{0}.jpg'.format(entry)) for jpg_dir_name in jpgs]) for entry in file_names_jpg]
 
     relion_dict = get_relion_dict()
-    for idx, file_name in enumerate(useable_files):
+    for dtype_name in useable_files[0][1].dtype.names:
         try:
-            dtype, max_header = get_header(input_file=file_name)
-        except ValueError:
-            print('Could not read header of {0}!'.format(file_name))
-            data, data_original =  None, None
-            break
-
-        try:
-            data_name = np.genfromtxt(
-                file_name,
-                dtype=dtype,
-                skip_header=max_header,
-                )
-        except IOError:
+            transphire_name = relion_dict[dtype_name]
+        except KeyError:
             continue
+
+        try:
+            data_original[transphire_name] = np.nan_to_num([entry[1][dtype_name] for entry in useable_files])
+        except ValueError:
+            data_original[transphire_name] = 0
+
+        if transphire_name == 'defocus_1':
+            data['defocus'] = [(entry[1]['_rlnDefocusU']+entry[1]['_rlnDefocusV']) / 2 for entry in useable_files]
+        elif transphire_name == 'defocus_2':
+            data['defocus_diff'] = [entry[1]['_rlnDefocusV']-entry[1]['_rlnDefocusU'] for entry in useable_files]
         else:
-            if data_name.size == 0:
-                continue
-            else:
-                pass
+            data[transphire_name] = np.nan_to_num([entry[1][dtype_name] for entry in useable_files])
+    data['image'] = jpg_names
 
-        for dtype_name in data_name.dtype.names:
-            try:
-                transphire_name = relion_dict[dtype_name]
-            except KeyError:
-                continue
+    #for idx, file_name in enumerate(useable_files):
+    #    try:
+    #        dtype, max_header = get_header(input_file=file_name)
+    #    except ValueError:
+    #        print('Could not read header of {0}!'.format(file_name))
+    #        data, data_original =  None, None
+    #        break
 
-            try:
-                data_original[idx][transphire_name] = np.nan_to_num(data_name[dtype_name])
-            except ValueError:
-                data_original[idx][transphire_name] = 0
+    #    try:
+    #        data_name = np.genfromtxt(
+    #            file_name,
+    #            dtype=dtype,
+    #            skip_header=max_header,
+    #            )
+    #    except IOError:
+    #        continue
+    #    else:
+    #        if data_name.size == 0:
+    #            continue
+    #        else:
+    #            pass
 
-            if transphire_name == 'defocus_1':
-                try:
-                    data[idx]['defocus'] = (
-                        data_name['_rlnDefocusU']+data_name['_rlnDefocusV']
-                        ) / 2
-                except ValueError:
-                    data[idx][transphire_name] = 0
-            elif transphire_name == 'defocus_2':
-                try:
-                    data[idx]['defocus_diff'] = data_name['_rlnDefocusV']-data_name['_rlnDefocusU']
-                except ValueError:
-                    data[idx][transphire_name] = 0
-            else:
-                try:
-                    data[idx][transphire_name] = np.nan_to_num(data_name[dtype_name])
-                except ValueError:
-                    data[idx][transphire_name] = 0
+    #    for dtype_name in data_name.dtype.names:
+    #        try:
+    #            transphire_name = relion_dict[dtype_name]
+    #        except KeyError:
+    #            continue
 
-        jpg_name = os.path.join(
-            directory_name,
-            'jpg*',
-            '{0}.jpg'.format(tu.get_name(tu.get_name(file_name)))
-            )
-        data[idx]['image'] = ';;;'.join(glob.glob(jpg_name))
+    #        try:
+    #            data_original[idx][transphire_name] = np.nan_to_num(data_name[dtype_name])
+    #        except ValueError:
+    #            data_original[idx][transphire_name] = 0
+
+    #        if transphire_name == 'defocus_1':
+    #            try:
+    #                data[idx]['defocus'] = (
+    #                    data_name['_rlnDefocusU']+data_name['_rlnDefocusV']
+    #                    ) / 2
+    #            except ValueError:
+    #                data[idx][transphire_name] = 0
+    #        elif transphire_name == 'defocus_2':
+    #            try:
+    #                data[idx]['defocus_diff'] = data_name['_rlnDefocusV']-data_name['_rlnDefocusU']
+    #            except ValueError:
+    #                data[idx][transphire_name] = 0
+    #        else:
+    #            try:
+    #                data[idx][transphire_name] = np.nan_to_num(data_name[dtype_name])
+    #            except ValueError:
+    #                data[idx][transphire_name] = 0
+
+    #    jpg_name = os.path.join(
+    #        directory_name,
+    #        'jpg*',
+    #        '{0}.jpg'.format(tu.get_name(tu.get_name(file_name)))
+    #        )
+    #    data[idx]['image'] = ';;;'.join(glob.glob(jpg_name))
 
     data = np.sort(data, order='file_name')
     data_original = np.sort(data_original, order='file_name')
