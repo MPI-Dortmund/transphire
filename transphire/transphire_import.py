@@ -343,16 +343,16 @@ def import_ctffind_v4_1_8(name, directory_name):
     Return:
     Imported data
     """
-    files = np.array([
+    files = [
         entry for entry in glob.glob(
-            '{0}/*.txt'.format(directory_name)
-            ) if '_avrot.txt' not in entry and 'transphire' not in entry
-        ], dtype=str)
+        '{0}/*.txt'.format(directory_name)
+        ) if '_avrot.txt' not in entry and 'transphire' not in entry
+        ]
 
     useable_files = []
     for file_name in files:
         try:
-            array = np.genfromtxt(
+            data_name = np.genfromtxt(
                 file_name,
                 dtype=get_dtype_import_dict()[name],
                 )
@@ -361,8 +361,8 @@ def import_ctffind_v4_1_8(name, directory_name):
         except IOError:
             continue
         else:
-            if array.size > 0:
-                useable_files.append(file_name)
+            if data_name.size > 0:
+                useable_files.append([file_name, data_name])
             else:
                 continue
 
@@ -389,62 +389,94 @@ def import_ctffind_v4_1_8(name, directory_name):
     data.fill(0)
     data_original.fill(0)
 
-    for idx, file_name in sorted(enumerate(useable_files)):
+    file_names_jpg = [os.path.basename(os.path.splitext(entry[0])[0]) for entry in useable_files]
+    jpgs = sorted([os.path.basename(entry) for entry in glob.glob(os.path.join(directory_name, 'jpg*'))])
+    jpg_names = [';;;'.join([os.path.join(directory_name, jpg_dir_name, '{0}.jpg'.format(entry)) for jpg_dir_name in jpgs]) for entry in file_names_jpg]
 
-        try:
-            data_name = np.genfromtxt(
-                file_name,
-                dtype=get_dtype_import_dict()[name],
-                )
-        except IOError:
-            continue
-        else:
-            if data_name.size == 0:
-                continue
-            else:
-                pass
+    match_re = re.compile('# Input file: (.*?) ; Number of micrographs: 1')
 
-        data[idx]['file_name'] = file_name
-        input_name = None
-
+    file_names = []
+    for file_name, _ in useable_files:
         with open(file_name, 'r') as read:
-            for line in read.readlines():
-                match_re = re.match('# Input file: (.*?) ; Number of micrographs: 1', line)
-                if match_re is not None:
-                    input_name = match_re.group(1)
-                else:
-                    pass
-        if input_name is None:
-            raise IOError(
-                'Could not read {0} file name! Please contact the TranSPHIRE authors! -- {1}'.format(
-                    name,
-                    file_name
-                    )
-                )
+            content = read.read()
+        file_names.append(match_re.search(content).group(1))
+
+    data_original['file_name'] = file_names
+    data['file_name'] = file_names
+    for dtype_name in data_original.dtype.names:
+        if dtype_name == 'file_name':
+            continue
+        if dtype_name == 'phase_shift':
+            data_original[dtype_name] = [np.degrees(entry[1][dtype_name]) for entry in useable_files]
         else:
-            data_original[idx]['file_name'] = input_name
+            data_original[dtype_name] = [entry[1][dtype_name] for entry in useable_files]
 
-        for entry in data_name.dtype.names:
-            if entry == 'phase_shift':
-                data_original[idx][entry] = np.degrees(data_name[entry])
-            else:
-                data_original[idx][entry] = data_name[entry]
+        if dtype_name == 'defocus_1':
+            data['defocus'] = [(entry[1]['defocus_2'] + entry[1]['defocus_1']) / 2 for entry in useable_files]
+        elif dtype_name == 'defocus_2':
+            data['defocus_diff'] = [entry[1]['defocus_2'] - entry[1]['defocus_1'] for entry in useable_files]
+        elif dtype_name == 'phase_shift':
+            data[dtype_name] = [np.degrees(entry[1][dtype_name]) for entry in useable_files]
+        else:
+            data[dtype_name] = [entry[1][dtype_name] for entry in useable_files]
+    data['image'] = jpg_names
 
-            if entry == 'defocus_1':
-                data[idx]['defocus'] = (data_name['defocus_1']+data_name['defocus_2'])/2
-            elif entry == 'defocus_2':
-                data[idx]['defocus_diff'] = data_name['defocus_2']-data_name['defocus_1']
-            elif entry == 'phase_shift':
-                data[idx][entry] = np.degrees(data_name[entry])
-            else:
-                data[idx][entry] = data_name[entry]
+    #for idx, file_name in sorted(enumerate(useable_files)):
 
-        jpg_name = os.path.join(
-            directory_name,
-            'jpg*',
-            '{0}.jpg'.format(os.path.basename(os.path.splitext(file_name)[0]))
-            )
-        data[idx]['image'] = ';;;'.join(glob.glob(jpg_name))
+    #    try:
+    #        data_name = np.genfromtxt(
+    #            file_name,
+    #            dtype=get_dtype_import_dict()[name],
+    #            )
+    #    except IOError:
+    #        continue
+    #    else:
+    #        if data_name.size == 0:
+    #            continue
+    #        else:
+    #            pass
+
+    #    data[idx]['file_name'] = file_name
+    #    input_name = None
+
+    #    with open(file_name, 'r') as read:
+    #        for line in read.readlines():
+    #            match_re = re.match('# Input file: (.*?) ; Number of micrographs: 1', line)
+    #            if match_re is not None:
+    #                input_name = match_re.group(1)
+    #            else:
+    #                pass
+    #    if input_name is None:
+    #        raise IOError(
+    #            'Could not read {0} file name! Please contact the TranSPHIRE authors! -- {1}'.format(
+    #                name,
+    #                file_name
+    #                )
+    #            )
+    #    else:
+    #        data_original[idx]['file_name'] = input_name
+
+    #    for entry in data_name.dtype.names:
+    #        if entry == 'phase_shift':
+    #            data_original[idx][entry] = np.degrees(data_name[entry])
+    #        else:
+    #            data_original[idx][entry] = data_name[entry]
+
+    #        if entry == 'defocus_1':
+    #            data[idx]['defocus'] = (data_name['defocus_1']+data_name['defocus_2'])/2
+    #        elif entry == 'defocus_2':
+    #            data[idx]['defocus_diff'] = data_name['defocus_2']-data_name['defocus_1']
+    #        elif entry == 'phase_shift':
+    #            data[idx][entry] = np.degrees(data_name[entry])
+    #        else:
+    #            data[idx][entry] = data_name[entry]
+
+    #    jpg_name = os.path.join(
+    #        directory_name,
+    #        'jpg*',
+    #        '{0}.jpg'.format(os.path.basename(os.path.splitext(file_name)[0]))
+    #        )
+    #    data[idx]['image'] = ';;;'.join(glob.glob(jpg_name))
 
     data = np.sort(data, order='file_name')
     data_original = np.sort(data_original, order='file_name')
