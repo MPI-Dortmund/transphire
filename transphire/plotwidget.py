@@ -23,14 +23,14 @@ import matplotlib
 matplotlib.use('QT5Agg')
 import matplotlib.pyplot as plt
 try:
-    from PyQt4.QtGui import QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QPushButton
+    from PyQt4.QtGui import QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QPushButton, QLineEdit, QLabel
     from PyQt4.QtCore import pyqtSlot
     from matplotlib.backends.backend_qt4agg import (
         FigureCanvasQTAgg as FigureCanvas,
         NavigationToolbar2QT as NavigationToolbar
         )
 except ImportError:
-    from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QPushButton
+    from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QPushButton, QLineEdit, QLabel
     from PyQt5.QtCore import pyqtSlot
     from matplotlib.backends.backend_qt5agg import (
         FigureCanvasQTAgg as FigureCanvas,
@@ -115,6 +115,20 @@ class PlotWidget(QWidget):
             self.reset_button.clicked.connect(lambda: self.change_idx('reset'))
 
             layout_h.addWidget(self.reset_button)
+            layout_h.addStretch(1)
+            layout_v.addLayout(layout_h)
+        elif plot_typ == 'histogram':
+            layout_h = QHBoxLayout()
+            self.lower_edit = QLineEdit('-inf', self)
+            self.upper_edit = QLineEdit('inf', self)
+            self.bin_edit = QLineEdit('50', self)
+
+            layout_h.addWidget(QLabel('Lower x', self))
+            layout_h.addWidget(self.lower_edit)
+            layout_h.addWidget(QLabel('Upper x', self))
+            layout_h.addWidget(self.upper_edit)
+            layout_h.addWidget(QLabel('Bins', self))
+            layout_h.addWidget(self.bin_edit)
             layout_h.addStretch(1)
             layout_v.addLayout(layout_h)
 
@@ -327,7 +341,25 @@ class PlotWidget(QWidget):
                 y_values = y_values_raw
                 x_values = x_values_raw
             elif self.plot_typ == 'histogram':
-                y_values, x_values = np.histogram(y_values_raw)
+                try:
+                    lower_lim = float(self.lower_edit.text())
+                except ValueError:
+                    print('Lower limit value: {0} - Not a valid float! Falling back to -infinity.'.format(self.lower_edit.text()))
+                    lower_lim = -np.nan_to_num(np.inf)
+                try:
+                    upper_lim = float(self.upper_lim.text())
+                except ValueError:
+                    print('Upper limit value: {0} - Not a valid float! Falling back to infinity.'.format(self.upper_edit.text()))
+                    upper_lim = np.nan_to_num(np.inf)
+                try:
+                    bins = int(self.bin_edit.text())
+                except ValueError:
+                    print('Bin value: {0} - Not a valid integer! Using 50.'.format(self.bin_edit.text()))
+                    bins = 50
+                mask = (lower_lim < y_values_raw) & (y_values_raw < upper_lim)
+                used_y_values = y_values_raw[mask]
+                title = '{0}: {1} out of range {2} to {3}'.format(title, y_values_raw[~mask].shape[0], lower_lim, upper_lim)
+                y_values, x_values = np.histogram(used_y_values, bins)
             change = self.prepare_axis(
                 np.min(x_values),
                 np.max(x_values),
@@ -345,6 +377,7 @@ class PlotWidget(QWidget):
                 self.axis[0].draw_artist(self.line)
             elif self.plot_typ == 'histogram':
                 [rect.set_height(y1) for rect, y1 in zip(self.rects, y_values)]
+                [rect.set_width(np.abs(x_values[idx]-x_values[idx+1])) for idx, rect in enumerate(self.rects)]
 
             if change:
                 self.figure[0].canvas.draw()
