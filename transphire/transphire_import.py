@@ -699,7 +699,7 @@ def import_cter_v1_0(name, directory_name):
 
     file_names_jpg = [os.path.split(os.path.dirname(entry[0]))[-1] for entry in useable_files]
     jpgs = sorted([os.path.basename(entry) for entry in glob.glob(os.path.join(directory_name, 'jpg*'))])
-    jpg_names = [';;;'.join([os.path.join(directory_name, jpg_dir_name, '{0}.jpg'.format(entry)) for jpg_dir_name in jpgs]) for entry in file_names_jpg]
+    jpg_names = [';;;'.join([os.path.join(directory_name, jpg_dir_name, '{0}.jpg'.format(entry)) for jpg_dir_name in jpgs if os.path.exists(os.path.join(directory_name, jpg_dir_name, '{0}.jpg'.format(entry)))]) for entry in file_names_jpg]
 
 
     for dtype_name in data_original.dtype.names:
