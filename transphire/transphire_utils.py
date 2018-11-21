@@ -686,7 +686,7 @@ def look_and_feel_small(app, font=None):
     Style sheet
     """
     if font is None:
-        font = 15.0
+        font = 5
     else:
         font = float(font)
     font_type = QFont('Verdana', font, 63)
@@ -806,7 +806,11 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
     idx += 1
     status_quota_width = float(default[0][idx]['Status quota'][0])
     idx += 1
+    tab_width = float(default[0][idx]['Tab width'][0])
+    idx += 1
     widget_height = float(default[0][idx]['Widget height'][0])
+    idx += 1
+    tab_height = float(default[0][idx]['Tab height'][0])
 
     font_type = QFont('Verdana', font, 63)
     font_type.setStyleStrategy(QFont.PreferAntialias)
@@ -824,7 +828,9 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
     status_name_width = '{0}px'.format(font * status_name_width * adjust_width)
     status_info_width = '{0}px'.format(font * status_info_width * adjust_width)
     status_quota_width = '{0}px'.format(font * status_quota_width * adjust_width)
+    tab_width = '{0}px'.format(font * tab_width * adjust_width)
     widget_height = '{0}px'.format(font * widget_height * adjust_height)
+    tab_height = '{0}px'.format(font * tab_height * adjust_height)
 
     # Style sheet
     style_widgets = """
@@ -864,7 +870,8 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
         border-top: 2px solid #C2C7CB;
         }}
     QTabBar::tab {{
-        min-width: 120px;
+        max-width: {5};
+        max-height: {6};
         }}
     QMessageBox {{
         background-image: url("{1}");
@@ -882,6 +889,8 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
         'rgba(229, 229, 229, 192)',
         'rgba(229, 229, 229, 120)',
         'rgba(0, 0, 0, 153)',
+        tab_width,
+        tab_height,
         )
 
     button_style = """

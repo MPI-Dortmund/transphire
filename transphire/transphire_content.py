@@ -312,23 +312,25 @@ def default_font():
     Content items as list
     """
     items = [
-        ['Font', '8', float, '', 'PLAIN', '', ''],
+        ['Font', '5', float, '', 'PLAIN', '', ''],
         ['Width adjustment', '1', float, '', 'PLAIN', '', ''],
         ['Height adjustment', '1', float, '', 'PLAIN', '', ''],
-        ['Start button', '14', float, '', 'PLAIN', '', ''],
-        ['Notification edit', '16', float, '', 'PLAIN', '', ''],
-        ['Notification check', '10', float, '', 'PLAIN', '', ''],
-        ['Notification button', '26', float, '', 'PLAIN', '', ''],
-        ['Mount button', '18', float, '', 'PLAIN', '', ''],
+        ['Start button', '25', float, '', 'PLAIN', '', ''],
+        ['Notification edit', '50', float, '', 'PLAIN', '', ''],
+        ['Notification check', '30', float, '', 'PLAIN', '', ''],
+        ['Notification button', '30', float, '', 'PLAIN', '', ''],
+        ['Mount button', '80', float, '', 'PLAIN', '', ''],
         ['Frame entry', '5', float, '', 'PLAIN', '', ''],
         ['Frame button', '8', float, '', 'PLAIN', '', ''],
         ['Frame label', '8', float, '', 'PLAIN', '', ''],
-        ['Setting widget', '22', float, '', 'PLAIN', '', ''],
-        ['Setting widget large', '44', float, '', 'PLAIN', '', ''],
+        ['Setting widget', '50', float, '', 'PLAIN', '', ''],
+        ['Setting widget large', '50', float, '', 'PLAIN', '', ''],
         ['Status name', '12', float, '', 'PLAIN', '', ''],
         ['Status info', '12', float, '', 'PLAIN', '', ''],
         ['Status quota', '12', float, '', 'PLAIN', '', ''],
-        ['Widget height', '1.5', float, '', 'PLAIN', '', ''],
+        ['Tab width', '50', float, '', 'PLAIN', '', ''],
+        ['Widget height', '3', float, '', 'PLAIN', '', ''],
+        ['Tab height', '5', float, '', 'PLAIN', '', ''],
         ]
     return items
 
