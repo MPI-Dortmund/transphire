@@ -940,5 +940,6 @@ def create_jpg_file(input_mrc_file, settings, ctf_name):
             ax.plot(x_data, y_values, label=label)
         plt.legend(loc='upper right')
         plt.grid()
+        plt.ylim([-0.5, 2.5])
         plt.savefig(jpg_file_3, dpi=300)
         plt.close(fig)
