@@ -513,7 +513,10 @@ class PlotWidget(QWidget):
                 else:
                     self.img[idx].set_data(jpg_data)
             self.axis[idx].set_title(title)
-            self.figure[idx].canvas.draw()
+            try:
+                self.figure[idx].canvas.draw()
+            except ValueError:
+                pass
             self.figure[idx].canvas.update()
             self.figure[idx].canvas.flush_events()
 
