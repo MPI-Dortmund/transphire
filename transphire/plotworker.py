@@ -108,7 +108,9 @@ class PlotWorker(QObject):
             directory_name=directory_name
             )
 
-        if data.size == 0:
+        if data is None:
+            self.running = False
+        elif data.size == 0:
             self.running = False
         else:
             self.sig_data.emit(name, data, directory_name, settings)
