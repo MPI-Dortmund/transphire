@@ -238,7 +238,6 @@ class PlotWidget(QWidget):
         if self.plot_typ == 'values':
             if self.line is None:
                 # dummy plot to get the line
-                axis.clear()
                 self.line, = axis.plot([0], [1], '.', color=self.color)
                 axis.grid()
                 axis.set_xlabel('Micrograph ID')
@@ -255,7 +254,6 @@ class PlotWidget(QWidget):
 
         elif self.plot_typ == 'histogram':
             if self.x_min > new_x_min or self.x_max < new_x_max or self.line is None or change:
-                axis.clear()
                 self.rects = axis.bar(
                         x_values[:-1],
                         y_values,
@@ -476,7 +474,6 @@ class PlotWidget(QWidget):
                 jpg_data = imageio.imread(jpg_name)
             except Exception as e:
                 print('Error loading image: {0} -- Message: {1}'.format(jpg_name, str(e)))
-                self.axis[idx].clear()
                 for entry in self.compute_corrupted_figure():
                     x = entry[0]
                     y = entry[1]
