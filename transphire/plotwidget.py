@@ -119,18 +119,27 @@ class PlotWidget(QWidget):
             layout_h.addWidget(self.reset_button)
             layout_h.addStretch(1)
             layout_v.addLayout(layout_h)
-        elif plot_typ == 'histogram':
+        elif plot_typ == 'values' or plot_typ == 'histogram':
+            if plot_typ == 'values':
+                axis_name = 'y'
+            elif plot_typ == 'histogram':
+                axis_name = 'x'
+            else:
+                assert False, axis_name
             layout_h = QHBoxLayout()
             self.lower_edit = QLineEdit('-inf', self)
             self.upper_edit = QLineEdit('inf', self)
             self.bin_edit = QLineEdit('50', self)
 
-            layout_h.addWidget(QLabel('Lower x', self))
+            layout_h.addWidget(QLabel('Lower {0}'.format(axis_name), self))
             layout_h.addWidget(self.lower_edit)
-            layout_h.addWidget(QLabel('Upper x', self))
+            layout_h.addWidget(QLabel('Upper {0}'.format(axis_name), self))
             layout_h.addWidget(self.upper_edit)
-            layout_h.addWidget(QLabel('Bins', self))
-            layout_h.addWidget(self.bin_edit)
+            if plot_typ == 'histogram':
+                layout_h.addWidget(QLabel('Bins', self))
+                layout_h.addWidget(self.bin_edit)
+            else:
+                self.bin_edit.setVisible(False)
             layout_h.addStretch(1)
             layout_v.addLayout(layout_h)
 
@@ -236,7 +245,7 @@ class PlotWidget(QWidget):
             change = True
 
         if self.plot_typ == 'values':
-            if self.line is None:
+            if self.line is None or change:
                 # dummy plot to get the line
                 try:
                     axis.clear()
@@ -245,8 +254,11 @@ class PlotWidget(QWidget):
                 self.line, = axis.plot([0], [1], '.', color=self.color)
                 axis.grid()
                 axis.set_xlabel('Micrograph ID')
-                axis.set_xlim([self.x_min, self.x_max])
-                axis.set_ylim([self.y_min, self.y_max])
+                x_step = (np.max(x_values) - np.min(x_values)) * 0.1
+                axis.set_xlim([np.min(x_values)-x_step, np.max(x_values)+x_step])
+
+                y_step = (np.max(y_values) - np.min(y_values)) * 0.05
+                axis.set_ylim([np.min(y_values), np.max(y_values)+y_step])
                 change = True
             if self.label is None:
                 self.label = new_label
@@ -326,6 +338,27 @@ class PlotWidget(QWidget):
 
         return change
 
+    def get_lower_higher_bin(self):
+        try:
+            lower_lim = float(self.lower_edit.text())
+        except ValueError:
+            print('Lower limit value: {0} - Not a valid float! Falling back to -infinity.'.format(self.lower_edit.text()))
+            lower_lim = -np.nan_to_num(np.inf)
+
+        try:
+            upper_lim = float(self.upper_edit.text())
+        except ValueError:
+            print('Upper limit value: {0} - Not a valid float! Falling back to infinity.'.format(self.upper_edit.text()))
+            upper_lim = np.nan_to_num(np.inf)
+
+        try:
+            bins = int(self.bin_edit.text())
+        except ValueError:
+            print('Bin value: {0} - Not a valid integer! Using 50.'.format(self.bin_edit.text()))
+            bins = 50
+        return lower_lim, upper_lim, bins
+
+
     @pyqtSlot(str, object, str, object)
     def update_figure(self, name, data, directory_name, settings):
         """
@@ -350,38 +383,21 @@ class PlotWidget(QWidget):
             idx_nan = np.isnan(y_values_raw)
             x_values_raw = x_values_raw[~idx_nan]
             y_values_raw = y_values_raw[~idx_nan]
+            lower_lim, upper_lim, bins = self.get_lower_higher_bin()
+            mask = (lower_lim < y_values_raw) & (y_values_raw < upper_lim)
+            title = '{0}: {1} out of range {2} to {3}'.format(title, y_values_raw[~mask].shape[0], lower_lim, upper_lim)
             if self.plot_typ == 'values':
-                y_values = y_values_raw
-                x_values = x_values_raw
+                y_values = y_values_raw[mask]
+                x_values = x_values_raw[mask]
             elif self.plot_typ == 'histogram':
-                try:
-                    lower_lim = float(self.lower_edit.text())
-                except ValueError:
-                    print('Lower limit value: {0} - Not a valid float! Falling back to -infinity.'.format(self.lower_edit.text()))
-                    lower_lim = -np.nan_to_num(np.inf)
+                y_values, x_values = np.histogram(y_values_raw[mask], bins)
 
-                try:
-                    upper_lim = float(self.upper_edit.text())
-                except ValueError:
-                    print('Upper limit value: {0} - Not a valid float! Falling back to infinity.'.format(self.upper_edit.text()))
-                    upper_lim = np.nan_to_num(np.inf)
-
-                try:
-                    bins = int(self.bin_edit.text())
-                except ValueError:
-                    print('Bin value: {0} - Not a valid integer! Using 50.'.format(self.bin_edit.text()))
-                    bins = 50
-                mask = (lower_lim < y_values_raw) & (y_values_raw < upper_lim)
-                used_y_values = y_values_raw[mask]
-                title = '{0}: {1} out of range {2} to {3}'.format(title, y_values_raw[~mask].shape[0], lower_lim, upper_lim)
-                y_values, x_values = np.histogram(used_y_values, bins)
-
-                if lower_lim != self.lower_lim:
-                    self.lower_lim = lower_lim
-                    change = True
-                if upper_lim != self.upper_lim:
-                    self.upper_lim = upper_lim
-                    change = True
+            if lower_lim != self.lower_lim:
+                self.lower_lim = lower_lim
+                change = True
+            if upper_lim != self.upper_lim:
+                self.upper_lim = upper_lim
+                change = True
             change = self.prepare_axis(
                 np.min(x_values),
                 np.max(x_values),
