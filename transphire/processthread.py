@@ -2921,6 +2921,7 @@ class ProcessThread(QThread):
             copy_method = self.copy_as_user
 
         if protocol == 'hdd':
+            new_name = None
             for hdd_folder in glob.glob(
                     '{0}/*'.format(
                         self.settings[mount_folder_name]
