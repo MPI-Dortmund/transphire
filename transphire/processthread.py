@@ -2535,7 +2535,7 @@ class ProcessThread(QThread):
                 if time.time() - self.shared_dict_typ['queue_list_time'] < 30:
                     return None
                 else:
-                    self.shared_dict_typ['queue_list_time'] = time.time()
+                    pass
             finally:
                 self.queue_lock.unlock()
 
