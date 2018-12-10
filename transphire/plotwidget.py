@@ -262,7 +262,7 @@ class PlotWidget(QWidget):
                 axis.set_xlim([np.min(x_values)-x_step, np.max(x_values)+x_step])
 
                 y_step = (np.max(y_values) - np.min(y_values)) * 0.05
-                axis.set_ylim([np.min(y_values), np.max(y_values)+y_step])
+                axis.set_ylim([np.min(y_values)-y_step, np.max(y_values)+y_step])
                 change = True
             if self.label is None:
                 self.label = new_label
@@ -527,6 +527,9 @@ class PlotWidget(QWidget):
                 self.figure[idx].canvas.flush_events()
             except RecursionError:
                 print('Recursion error')
+                pass
+            except ValueError:
+                print('Value error: Please contact the TranSPHIRE authors')
                 pass
 
     def check_enabled(self, typ, change=True):
