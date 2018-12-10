@@ -888,9 +888,9 @@ class MainWindow(QMainWindow):
         self.content['Button'].start_monitor_button.setEnabled(False)
         self.content['Button'].stop_monitor_button.setEnabled(False)
 
-        self.plot_worker_ctf.reset_list()
-        self.plot_worker_motion.reset_list()
-        self.plot_worker_picking.reset_list()
+        self.plot_worker_ctf.sig_reset_list.emit()
+        self.plot_worker_motion.sig_reset_list.emit()
+        self.plot_worker_picking.sig_reset_list.emit()
         if start:
             settings = self.get_start_settings(monitor=True)
             if settings is None:

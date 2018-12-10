@@ -37,6 +37,7 @@ class PlotWorker(QObject):
     sig_data = pyqtSignal(str, object, str, object)
     sig_visible = pyqtSignal(bool, str)
     sig_calculate = pyqtSignal()
+    sig_reset_list = pyqtSignal()
 
     def __init__(self, parent=None):
         """
@@ -51,8 +52,10 @@ class PlotWorker(QObject):
         super(PlotWorker, self).__init__(parent)
         self.settings = []
         self.sig_calculate.connect(self.calculate_array)
+        self.sig_reset_list.connect(self.reset_list)
         self.running = False
 
+    @pyqtSlot()
     def reset_list(self):
         self.settings = []
 
@@ -82,6 +85,7 @@ class PlotWorker(QObject):
                 self.sig_visible.emit(False, name)
 
 
+    @pyqtSlot()
     def reset_running(self):
         self.running = False
 
