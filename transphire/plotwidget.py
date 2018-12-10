@@ -169,7 +169,11 @@ class PlotWidget(QWidget):
         canvas = FigureCanvas(figure)
         canvas.setParent(self)
         toolbar = NavigationToolbar(canvas, self)
-        figure.canvas.draw()
+        try:
+            figure.canvas.draw()
+        except RecursionError:
+            print('Recursion error')
+            pass
 
         canvas_layout.addWidget(toolbar)
         canvas_layout.addWidget(canvas)
@@ -419,10 +423,14 @@ class PlotWidget(QWidget):
                     entry[0].set_height(entry[1])
                     entry[0].set_width(np.abs(x_values[idx]-x_values[idx+1]))
 
-            if change:
-                self.figure[0].canvas.draw()
-            self.figure[0].canvas.update()
-            self.figure[0].canvas.flush_events()
+            try:
+                if change:
+                    self.figure[0].canvas.draw()
+                self.figure[0].canvas.update()
+                self.figure[0].canvas.flush_events()
+            except RecursionError:
+                print('Recursion error')
+                pass
 
             output_name = os.path.join(
                 directory_name,
@@ -513,9 +521,13 @@ class PlotWidget(QWidget):
                 else:
                     self.img[idx].set_data(jpg_data)
             self.axis[idx].set_title(title)
-            self.figure[idx].canvas.draw()
-            self.figure[idx].canvas.update()
-            self.figure[idx].canvas.flush_events()
+            try:
+                self.figure[idx].canvas.draw()
+                self.figure[idx].canvas.update()
+                self.figure[idx].canvas.flush_events()
+            except RecursionError:
+                print('Recursion error')
+                pass
 
     def check_enabled(self, typ, change=True):
         if typ == 'next':
