@@ -94,9 +94,10 @@ def copy(file_in, file_out):
     except PermissionError:
         print('Error with {0}! Switching to copyfile!'.format(file_in))
         shutil.copyfile(file_in, file_out)
-    umask = os.umask(0)
-    os.umask(umask)
-    os.chmod(file_out, 0o666 & ~umask)
+    else:
+        umask = os.umask(0)
+        os.umask(umask)
+        os.chmod(file_out, 0o666 & ~umask)
 
 
 def get_function_dict():
