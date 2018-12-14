@@ -933,6 +933,20 @@ def import_cryolo_v1_1_0(name, directory_name):
     return import_cryolo_v1_0_4(name, directory_name)
 
 
+def import_cryolo_v1_2_1(name, directory_name):
+    """
+    Import picking information for crYOLO v1.1.0.
+
+    Arguments:
+    name - Name of picking program
+    directory_name - Name of the directory to search for files
+
+    Return:
+    Imported data
+    """
+    return import_cryolo_v1_0_4(name, directory_name)
+
+
 def import_cryolo_v1_0_4(name, directory_name):
     """
     Import picking information for crYOLO v1.0.4.
