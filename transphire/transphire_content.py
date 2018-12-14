@@ -21,6 +21,19 @@ from transphire import transphire_utils as tu
 from transphire import transphire_import as ti
 
 
+def default_cryolo_v1_2_1():
+    """
+    Content of crYOLO version 1.2.1
+
+    Arguments:
+    None
+
+    Return:
+    Content items as list
+    """
+    return default_cryolo_v1_1_0()
+
+
 def default_cryolo_v1_1_0():
     """
     Content of crYOLO version 1.1.0
