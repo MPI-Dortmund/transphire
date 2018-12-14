@@ -561,12 +561,13 @@ class ProcessWorker(QObject):
                 )
 
             if os.path.exists('{0}.jpg'.format(new_name)):
+                old_filenumber = shared_dict['typ']['Import']['file_number']
                 with open(shared_dict['typ']['Import']['number_file'], 'r') as read:
                     shared_dict['typ']['Import']['file_number'] = int(read.readline())
                 if self.settings['General']['Increment number'] == 'True':
-                    message = '{0}: File {1} already exists!\n'.format(
+                    message = '{0}: Filenumber {1} already exists!\n'.format(
                         'Import',
-                        new_name
+                        old_filenumber
                         ) + \
                         'Last one used: {0} - Continue with {1}'.format(
                             shared_dict['typ']['Import']['file_number'],
@@ -576,9 +577,9 @@ class ProcessWorker(QObject):
                     queue_com['notification'].put(message)
                 else:
                     self.stop = True
-                    message = '{0}: File {1} already exists!\n'.format(
+                    message = '{0}: Filenumber {1} already exists!\n'.format(
                         'Import',
-                        new_name
+                        old_filenumber
                         ) + \
                         'Check Startnumber! Last one used: {0}'.format(shared_dict['typ']['Import']['file_number'])
                     queue_com['error'].put(message)

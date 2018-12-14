@@ -1281,9 +1281,9 @@ class ProcessThread(QThread):
                 self.shared_dict_typ['file_number'] = int(
                     self.settings['General']['Start number']
                     )
-            message = '{0}: File {1} already exists!\n'.format(
+            message = '{0}: Filenumber {1} already exists!\n'.format(
                 self.name,
-                new_name_meta
+                self.shared_dict_typ['file_number']
                 ) + \
                 'Check Startnumber! Last one used: {0}'.format(self.shared_dict_typ['file_number'])
             self.queue_com['notification'].put(message)
