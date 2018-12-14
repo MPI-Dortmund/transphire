@@ -307,8 +307,11 @@ def create_box_jpg(file_name, settings, queue_com, name):
     bin_value = 4
     if box_data.size > 0:
         if box_file.endswith('.box'):
-            box_data[:, 0] += box_data[:, 2]//2
-            box_data[:, 1] += box_data[:, 3]//2
+            try:
+                box_data[:, 0] += box_data[:, 2]//2
+                box_data[:, 1] += box_data[:, 3]//2
+            except IndexError:
+                pass
         elif box_file.endswith('.txt'):
             pass
         else:
