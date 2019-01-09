@@ -211,6 +211,9 @@ class ProcessThread(QThread):
                 QThread.sleep(10)
                 continue
 
+            if self.shared_dict_typ['delay_error']:
+                QThread.sleep(10)
+
             if self.shared_dict_typ['unknown_error']:
                 time_diff = time.time() - self.time_last
                 if self.typ == 'Find':
@@ -689,6 +692,7 @@ class ProcessThread(QThread):
                 self.lost_connection(
                     typ='lost_input_frames'
                     )
+            self.shared_dict_typ['delay_error'] = True
         except BlockingIOError:
             if not dummy:
                 self.add_to_queue(aim=self.typ, root_name=root_name)
@@ -721,11 +725,13 @@ class ProcessThread(QThread):
             self.lost_connection(
                 typ=method_dict[self.typ]['lost_connect']
                 )
+            self.shared_dict_typ['delay_error'] = True
         except UserWarning:
             if not dummy:
                 self.add_to_queue(aim=self.typ, root_name=root_name)
             self.write_error(msg=tb.format_exc(), root_name=root_name)
             self.stop = True
+            self.shared_dict_typ['delay_error'] = True
         except Exception:
             if not dummy:
                 self.add_to_queue(aim=self.typ, root_name=root_name)
