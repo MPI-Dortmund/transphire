@@ -213,6 +213,7 @@ class ProcessThread(QThread):
 
             if self.shared_dict_typ['delay_error']:
                 QThread.sleep(10)
+                self.shared_dict_typ['delay_error'] = False
 
             if self.shared_dict_typ['unknown_error']:
                 time_diff = time.time() - self.time_last

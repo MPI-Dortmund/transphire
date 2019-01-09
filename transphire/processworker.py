@@ -220,6 +220,7 @@ class ProcessWorker(QObject):
                         'full_backup': False,
                         'full_hdd': False,
                         'unknown_error': False,
+                        'delay_error': False,
                         'queue_list_time': 0,
                         'tar_idx': 0,
                         'queue_list': [],
