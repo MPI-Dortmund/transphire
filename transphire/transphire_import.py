@@ -933,9 +933,23 @@ def import_cryolo_v1_1_0(name, directory_name):
     return import_cryolo_v1_0_4(name, directory_name)
 
 
+def import_cryolo_v1_2_2(name, directory_name):
+    """
+    Import picking information for crYOLO v1.2.2.
+
+    Arguments:
+    name - Name of picking program
+    directory_name - Name of the directory to search for files
+
+    Return:
+    Imported data
+    """
+    return import_cryolo_v1_0_4(name, directory_name, sub_directory='EMAN')
+
+
 def import_cryolo_v1_2_1(name, directory_name):
     """
-    Import picking information for crYOLO v1.1.0.
+    Import picking information for crYOLO v1.2.2.
 
     Arguments:
     name - Name of picking program
@@ -947,7 +961,7 @@ def import_cryolo_v1_2_1(name, directory_name):
     return import_cryolo_v1_0_4(name, directory_name)
 
 
-def import_cryolo_v1_0_4(name, directory_name):
+def import_cryolo_v1_0_4(name, directory_name, sub_directory=''):
     """
     Import picking information for crYOLO v1.0.4.
 
@@ -958,9 +972,9 @@ def import_cryolo_v1_0_4(name, directory_name):
     Return:
     Imported data
     """
-    box_files = glob.glob(os.path.join(directory_name, '*.{0}'.format('box')))
+    box_files = glob.glob(os.path.join(directory_name, sub_directory, '*.{0}'.format('box')))
     if not box_files:
-        box_files = glob.glob(os.path.join(directory_name, '*.{0}'.format('txt')))
+        box_files = glob.glob(os.path.join(directory_name, sub_directory, '*.{0}'.format('txt')))
 
     files_box = np.array(box_files)
     useable_files = []

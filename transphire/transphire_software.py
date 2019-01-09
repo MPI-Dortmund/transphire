@@ -925,7 +925,14 @@ def check_for_outlier(dict_name, data, file_name, settings):
     file_name_match = os.path.basename(os.path.splitext(file_name)[0])
     match_file = re.compile(file_name_match)
     vmatch = np.vectorize(lambda x:bool(match_file.search(x)))
-    mask = vmatch(data['file_name'])
+    try:
+        mask = vmatch(data['file_name'])
+    except ValueError:
+        print('ERROR with file!')
+        print('dict_name', data)
+        print('dict_name', dict_name)
+        print('file_name', file_name)
+        raise
 
     for key in dtype_dict[dict_name]:
         key = key[0]
