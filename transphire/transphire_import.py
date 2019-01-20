@@ -346,7 +346,7 @@ def import_ctffind_v4_1_8(name, directory_name):
     files = [
         entry for entry in glob.glob(
         '{0}/*.txt'.format(directory_name)
-        ) if '_avrot.txt' not in entry and 'transphire' not in entry
+        ) if not entry.endswith('_avrot.txt')
         ]
 
     useable_files = []
