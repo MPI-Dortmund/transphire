@@ -1,4 +1,5 @@
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1436421.svg)](https://doi.org/10.5281/zenodo.1436421)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2546030.svg)](https://doi.org/10.5281/zenodo.2546030)
+
 
 A tutorial is available in the wiki.
 
