@@ -48,6 +48,11 @@ class SettingsContainer(QWidget):
         """
         super(SettingsContainer, self).__init__(parent)
 
+        try:
+            content_others = kwargs['content_others']
+        except KeyError:
+            content_others = None
+
         # TabDocker widget for Main and Advanced
         my_tab_docker = TabDocker(self)
         my_tab_docker.setTabPosition('South')
@@ -108,7 +113,7 @@ class SettingsContainer(QWidget):
                         self.layout_dict['{0}_v'.format(layout_name)].setContentsMargins(0, 0, 0, 0)
                         self.layout_dict[layout_name].addLayout(self.layout_dict['{0}_v'.format(layout_name)])
 
-                    widget = SettingsWidget(content=widget[key], name=name, parent=self)
+                    widget = SettingsWidget(content=widget[key], name=name, content_others=content_others, parent=self)
                     if group:
                         group, state = group.split(':')
                         self.group.setdefault(group, [])

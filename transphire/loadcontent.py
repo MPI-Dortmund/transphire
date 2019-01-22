@@ -87,6 +87,7 @@ class LoadContent(QWidget):
         self.idx_group = 3
         self.idx_type = 4
         self.idx_priority = 5
+        self.idx_tooltip = 6
 
         # Fill content based on typ
         content_function = tu.get_function_dict()[typ]['content']
@@ -151,7 +152,7 @@ class LoadContent(QWidget):
                 widget = QLineEdit(entry[self.idx_values], self)
                 widget.textChanged.connect(self._change_color_to_changed)
             else:
-                raise IOError('{0} not known!'.format(entry[self.idx_type]))
+                raise IOError('{0}: {1} not known!'.format(entry[self.idx_name], entry[self.idx_type]))
 
             exclude_typ_list = [
                 'Mount',
@@ -190,6 +191,7 @@ class LoadContent(QWidget):
                     'values': entry[self.idx_values],
                     'dtype': entry[self.idx_dtype],
                     'group': entry[self.idx_group],
+                    'tooltip': entry[self.idx_tooltip],
                     }
                 })
         layout_v.addStretch(1)

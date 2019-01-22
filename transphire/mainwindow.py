@@ -181,7 +181,9 @@ class MainWindow(QMainWindow):
         self.mount_calculation_df = None
         self.thread_mount = None
         self.thread_process = None
-        self.thread_plot = None
+        self.thread_plot_ctf = None
+        self.thread_plot_motion = None
+        self.thread_plot_picking = None
         self.mount_thread_list = None
 
         # Fill GUI
@@ -225,10 +227,20 @@ class MainWindow(QMainWindow):
             self.thread_process.wait()
             self.thread_process.setParent(None)
 
-        if self.thread_plot is not None:
-            self.thread_plot.quit()
-            self.thread_plot.wait()
-            self.thread_plot.setParent(None)
+        if self.thread_plot_ctf is not None:
+            self.thread_plot_ctf.quit()
+            self.thread_plot_ctf.wait()
+            self.thread_plot_ctf.setParent(None)
+
+        if self.thread_plot_motion is not None:
+            self.thread_plot_motion.quit()
+            self.thread_plot_motion.wait()
+            self.thread_plot_motion.setParent(None)
+
+        if self.thread_plot_picking is not None:
+            self.thread_plot_picking.quit()
+            self.thread_plot_picking.wait()
+            self.thread_plot_picking.setParent(None)
 
         if self.timer_ctf is not None:
             self.timer_ctf.setParent(None)
@@ -372,19 +384,19 @@ class MainWindow(QMainWindow):
         self.process_worker.sig_plot_picking.connect(self.plot_worker_picking.set_settings)
 
         self.timer_ctf = QTimer(self)
-        self.timer_ctf.setInterval(40000)
+        self.timer_ctf.setInterval(30000)
         self.timer_ctf.timeout.connect(self.plot_worker_ctf.sig_calculate.emit)
         self.timer_ctf.start()
 
         self.timer_motion = QTimer(self)
-        self.timer_motion.setInterval(40000)
+        self.timer_motion.setInterval(30000)
         self.timer_motion.timeout.connect(self.plot_worker_motion.sig_calculate.emit)
-        QTimer.singleShot(10000, lambda: self.timer_motion.start())
+        QTimer.singleShot(10000, self.timer_motion.start)
 
         self.timer_picking = QTimer(self)
-        self.timer_picking.setInterval(40000)
+        self.timer_picking.setInterval(30000)
         self.timer_picking.timeout.connect(self.plot_worker_picking.sig_calculate.emit)
-        QTimer.singleShot(20000, lambda: self.timer_picking.start())
+        QTimer.singleShot(20000, self.timer_picking.start)
 
         self.mount_thread_list = {}
         for key in self.content['Mount'].content:
@@ -463,24 +475,66 @@ class MainWindow(QMainWindow):
         None
         """
         # Layout dictionary
+        widget_layout_h2 = QWidget(self)
+        widget_layout_h3 = QWidget(self)
+        widget_layout_h4 = QWidget(self)
+        widget_layout_v1 = QWidget(self)
+        widget_layout_v1_a = QWidget(self)
+        widget_layout_v2 = QWidget(self)
+
         self.layout = {}
         self.layout['h1'] = QHBoxLayout(self.central_widget)
-        self.layout['h2'] = QHBoxLayout()
-        self.layout['h3'] = QHBoxLayout()
-        self.layout['h4'] = QHBoxLayout()
-        self.layout['v'] = QVBoxLayout()
+        self.layout['h2'] = QHBoxLayout(widget_layout_h2)
+        self.layout['h3'] = QHBoxLayout(widget_layout_h3)
+        self.layout['h4'] = QHBoxLayout(widget_layout_h4)
+        self.layout['v1'] = QVBoxLayout(widget_layout_v1)
+        self.layout['v1_a'] = QVBoxLayout(widget_layout_v1_a)
+        self.layout['v2'] = QVBoxLayout(widget_layout_v2)
+
+        self.layout['h2'].setContentsMargins(0, 0, 0, 0)
+        self.layout['h3'].setContentsMargins(0, 0, 0, 0)
+        self.layout['h4'].setContentsMargins(0, 0, 0, 0)
+        self.layout['v1'].setContentsMargins(0, 0, 0, 0)
+        self.layout['v1_a'].setContentsMargins(0, 0, 0, 0)
+        self.layout['v2'].setContentsMargins(0, 0, 0, 0)
+
 
         # Layout architecture
-        self.layout['h1'].addLayout(self.layout['v'], stretch=1)
-        self.layout['v'].addLayout(self.layout['h2'], stretch=0)
-        self.layout['v'].addWidget(
-            Separator(typ='horizontal', color='grey'), stretch=0
+        self.layout['h1'].addWidget(widget_layout_v1, stretch=1)
+        self.layout['h1'].addWidget(
+            Separator(
+                typ='vertical',
+                color='black',
+                left=widget_layout_v1,
+                right=widget_layout_v2,
+                ),
+            stretch=0
             )
-        self.layout['v'].addLayout(self.layout['h3'], stretch=0)
-        self.layout['v'].addWidget(
-            Separator(typ='horizontal', color='grey'), stretch=0
+        self.layout['h1'].addWidget(widget_layout_v2, stretch=0)
+
+        self.layout['v1_a'].addWidget(widget_layout_h2, stretch=0)
+        self.layout['v1_a'].addWidget(
+            Separator(
+                typ='horizontal',
+                color='grey',
+                up=widget_layout_h2,
+                down=widget_layout_h3,
+                ),
+            stretch=0
             )
-        self.layout['v'].addLayout(self.layout['h4'], stretch=1)
+        self.layout['v1_a'].addWidget(widget_layout_h3, stretch=0)
+
+        self.layout['v1'].addWidget(widget_layout_v1_a, stretch=0)
+        self.layout['v1'].addWidget(
+            Separator(
+                typ='horizontal',
+                color='grey',
+                up=widget_layout_v1_a,
+                down=widget_layout_h4,
+                ),
+            stretch=0
+            )
+        self.layout['v1'].addWidget(widget_layout_h4, stretch=1)
 
     def fill_content(self, content_gui):
         """
@@ -585,6 +639,10 @@ class MainWindow(QMainWindow):
                     key == 'Show images':
                 self.content[key].worker.sig_data.connect(
                     self.content[key].update_figure
+                    )
+                self.content[key].sig_update_done.connect(self.content[key].worker.reset_running)
+                self.content[key].worker.sig_visible.connect(
+                    self.content[key].set_visibility
                     )
             else:
                 pass
@@ -830,9 +888,9 @@ class MainWindow(QMainWindow):
         self.content['Button'].start_monitor_button.setEnabled(False)
         self.content['Button'].stop_monitor_button.setEnabled(False)
 
-        self.plot_worker_ctf.reset_list()
-        self.plot_worker_motion.reset_list()
-        self.plot_worker_picking.reset_list()
+        self.plot_worker_ctf.sig_reset_list.emit()
+        self.plot_worker_motion.sig_reset_list.emit()
+        self.plot_worker_picking.sig_reset_list.emit()
         if start:
             settings = self.get_start_settings(monitor=True)
             if settings is None:
@@ -875,12 +933,14 @@ class MainWindow(QMainWindow):
         settings['Monitor'] = monitor
         # Load settings to pass them to the working threads
         error_list = []
-        skip_list = [
-            'Mount',
-            'Notification_widget',
-            'Path',
-            'Frames'
+        check_list = [
+            'General',
+            'Notification'
             ]
+        for setting in self.content['Copy'].get_settings():
+            for value in setting.values():
+                if isinstance(value, str) and value not in ('False', 'Later', 'True'):
+                    check_list.append(value)
         for key in self.content:
             try:
                 settings_widget = self.content[key].get_settings()
@@ -903,11 +963,11 @@ class MainWindow(QMainWindow):
                 skip_name_list = tu.get_function_dict()[key]['allow_empty']
 
             for entry in settings_widget:
-                if key not in skip_list:
+                if key in check_list:
                     for name in entry:
                         if not entry[name] and name not in skip_name_list:
                             error_list.append(
-                                '{0}:{1} is not allowed to be emtpy!'.format(
+                                '{0}:{1} is not allowed to be empty!'.format(
                                     key,
                                     name
                                     )
@@ -1004,6 +1064,9 @@ class MainWindow(QMainWindow):
             settings['project_folder'],
             'error'
             )
+        settings['tar_folder'] = os.path.join(
+            settings['project_folder'], 'tar_folder'
+            )
         return settings
 
     @pyqtSlot()
@@ -1019,17 +1082,16 @@ class MainWindow(QMainWindow):
                 text1='Output project folder already exists!',
                 text2='Do you really want to continue the old run?\nType: YES!'
                 )
-            if result:
-                result_session = self.continue_dialog(
-                    text1='Software metafiles',
-                    text2='Software metafiles (Atlas, ...) might be already copied!\n' + \
-                        'Do you want to copy them again?\nType: YES!'
-                    )
-                settings['Copy_software_meta'] = bool(result_session)
-            else:
-                settings['Copy_software_meta'] = True
+            #if result:
+            #    result_session = self.continue_dialog(
+            #        text1='Software metafiles',
+            #        text2='Software metafiles (Atlas, ...) might be already copied!\n' + \
+            #            'Do you want to copy them again?\nType: YES!'
+            #        )
+            #    settings['Copy_software_meta'] = bool(result_session)
+            #else:
+            #    settings['Copy_software_meta'] = True
         else:
-            settings['Copy_software_meta'] = True
             result = True
 
         # Start or stop procedure
@@ -1037,7 +1099,7 @@ class MainWindow(QMainWindow):
             # Create project and settings folder
             for name in [
                     'project_folder', 'settings_folder',
-                    'scratch_folder', 'queue_folder', 'error_folder'
+                    'scratch_folder', 'queue_folder', 'error_folder', 'tar_folder',
                     ]:
                 try:
                     tu.mkdir_p(settings[name])

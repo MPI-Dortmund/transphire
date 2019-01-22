@@ -8,7 +8,7 @@ with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setuptools.setup(
     name='transphire',
-    version='1.4.19',
+    version='1.4.25',
     description='Automated post data aquisition processing tool',
     long_description=long_description,
     url='https://github.com/mstabrin/transphire',
@@ -29,6 +29,7 @@ setuptools.setup(
         'cython>=0.28.0,<0.29.0',
         'telepot>=12.0,<13.0',
         'imageio>=2.3.0,<2.4.0',
+        'mrcfile',
         ],
     classifiers = (
         'Programming Language :: Python :: 3.6',

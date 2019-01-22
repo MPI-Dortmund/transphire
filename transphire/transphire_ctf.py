@@ -20,7 +20,11 @@ import glob
 import os
 import shutil
 import numpy as np
+import mrcfile as mrc
+import matplotlib.image as mi
+import matplotlib.pyplot as plt
 from transphire import transphire_import as ti
+from transphire import transphire_utils as tu
 
 
 def get_ctf_command(file_sum, file_input, new_name, settings, queue_com, name):
@@ -138,6 +142,7 @@ def find_logfiles(root_path, file_name, settings, queue_com, name):
         copied_log_files = []
         exclude_list = [
             '{0}.mrc'.format(root_path),
+            '{0}_DW.mrc'.format(root_path),
             '{0}.log'.format(root_path),
             '{0}.err'.format(root_path),
             ]
@@ -567,6 +572,8 @@ def create_export_data(export_data, lines, maximum_string):
         for name in export_data.dtype.names:
             if name == 'mic_number':
                 continue
+            elif name == 'image':
+                continue
             else:
                 pass
             value = row[name]
@@ -684,6 +691,8 @@ def get_relion_header(names):
             new_name = transphire_dict[name]
         except KeyError:
             if name == 'mic_number':
+                continue
+            elif name == 'image':
                 continue
             else:
                 new_name = name
@@ -805,3 +814,132 @@ def shift_to_contrast(phase_shift):
     """
     return np.tan(np.radians(phase_shift)) / \
         np.sqrt(1.0 + np.tan(np.radians(phase_shift))**2) * 100.0
+
+
+def create_jpg_file(input_mrc_file, settings, ctf_name):
+    file_name = tu.get_name(input_mrc_file)
+    input_ctf_file = None
+    input_1d_file = None
+    if 'CTFFIND' in ctf_name:
+        input_ctf_file = os.path.join(settings['ctf_folder'], '{0}.mrc'.format(file_name))
+        input_1d_file = os.path.join(settings['ctf_folder'], '{0}_avrot.txt'.format(file_name))
+    elif 'Gctf' in ctf_name:
+        input_ctf_file = os.path.join(settings['ctf_folder'], '{0}.ctf'.format(file_name))
+        input_1d_file = os.path.join(settings['ctf_folder'], '{0}_EPA.log'.format(file_name))
+    elif 'CTER' in ctf_name:
+        input_1d_file = os.path.join(settings['ctf_folder'], file_name, 'pwrot', '{0}_rotinf.txt'.format(file_name))
+
+    try:
+        if not os.path.exists(input_ctf_file):
+            input_ctf_file = None
+    except TypeError:
+            input_ctf_file = None
+    try:
+        if not os.path.exists(input_1d_file):
+            input_1d_file = None
+    except TypeError:
+        input_1d_file = None
+
+    tu.mkdir_p(os.path.join(settings['ctf_folder'], 'jpg'))
+    tu.mkdir_p(os.path.join(settings['ctf_folder'], 'jpg_2'))
+    tu.mkdir_p(os.path.join(settings['ctf_folder'], 'jpg_3'))
+
+    jpg_file_1 = os.path.join(settings['ctf_folder'], 'jpg', '{0}.jpg'.format(file_name))
+    jpg_file_2 = os.path.join(settings['ctf_folder'], 'jpg_2', '{0}.jpg'.format(file_name))
+    jpg_file_3 = os.path.join(settings['ctf_folder'], 'jpg_3', '{0}.jpg'.format(file_name))
+
+    arr_1 = None
+    arr_2 = None
+    arr_3 = None
+
+    if input_mrc_file:
+        try:
+            with mrc.open(input_mrc_file) as mrc_file:
+                input_data = mrc_file.data
+        except ValueError:
+            with mrc.open(input_mrc_file, 'r+', permissive=True) as mrc_file:
+                mrc_file.header.map = mrc.constants.MAP_ID
+            with mrc.open(input_mrc_file) as mrc_file:
+                input_data = mrc_file.data
+        if len(input_data.shape) == 3:
+            input_data = np.sum(input_data, axis=0) / input_data.shape[0]
+        input_data = input_data - np.mean(input_data)
+        input_data = tu.normalize_image(input_data)
+
+        if input_data.shape[0] > 512:
+            if input_data.shape[0] > 4096:
+                original_shape = 4096*2
+            else:
+                original_shape = 4096
+            bin_shape = 512
+            ratio = original_shape / bin_shape
+            pad_x = original_shape - input_data.shape[0]
+            pad_y = original_shape - input_data.shape[1]
+            shape = (bin_shape, bin_shape)
+            input_data = np.pad(input_data, ((0, pad_x), (0, pad_y)), mode='median')
+            shape = (bin_shape, bin_shape)
+            output_data = tu.rebin(input_data, shape)[:-int(1+pad_x//ratio), :-int(1+pad_y//ratio)]
+        else:
+            output_data = input_data
+
+        arr_1 = output_data
+
+    if input_ctf_file:
+        try:
+            with mrc.open(input_ctf_file) as mrc_file:
+                input_data = mrc_file.data
+        except ValueError:
+            with mrc.open(input_ctf_file, 'r+', permissive=True) as mrc_file:
+                mrc_file.header.map = mrc.constants.MAP_ID
+            with mrc.open(input_ctf_file) as mrc_file:
+                input_data = mrc_file.data
+        if len(input_data.shape) == 3:
+            input_data = np.sum(input_data, axis=0) / input_data.shape[0]
+        input_data = input_data - np.mean(input_data)
+
+        if input_data.shape[0] > 512*2:
+            shape = (512*2, 512*2)
+            output_data = tu.rebin(input_data, shape)
+        else:
+            output_data = input_data
+        arr_2 = output_data
+
+    if input_1d_file:
+        plot_data = []
+        if 'CTFFIND' in ctf_name:
+            data = np.genfromtxt(input_1d_file)
+            x_data = data[0]
+            plot_data.append([data[1], 'CTF_no_astig'])
+            plot_data.append([data[2], 'CTF'])
+            plot_data.append([data[3], 'CTF_fit'])
+            plot_data.append([data[4], 'CCC'])
+            plot_data.append([data[5], '2sigma'])
+        elif 'Gctf' in ctf_name:
+            data = np.genfromtxt(input_1d_file, skip_header=1)
+            x_data = 1/data[:,0]
+            plot_data.append([data[:,1], 'CTF'])
+            plot_data.append([data[:,3], 'EPA_BG'])
+            plot_data.append([data[:,4], 'CCC'])
+        elif 'CTER' in ctf_name:
+            data = np.genfromtxt(input_1d_file)
+            x_data = data[:,1]
+            plot_data.append([data[:,2], 'CTF_no_astig'])
+            plot_data.append([data[:,3], 'CTF_no_astig_fit'])
+            plot_data.append([data[:,4], 'CTF'])
+            plot_data.append([data[:,5], 'CTF_fit'])
+
+        arr_3 = plot_data
+
+    if arr_1 is not None:
+        mi.imsave(jpg_file_1, arr_1, cmap='gist_gray')
+    if arr_2 is not None:
+        mi.imsave(jpg_file_2, arr_2, cmap='gist_gray')
+    if arr_3 is not None:
+        fig, ax = plt.subplots()
+        for y_values, label in arr_3:
+            ax.plot(x_data, y_values, label=label)
+        plt.legend(loc='upper right')
+        plt.grid()
+        plt.ylim([-0.5, 2.5])
+        plt.savefig(jpg_file_3, dpi=300)
+        plt.close(fig)

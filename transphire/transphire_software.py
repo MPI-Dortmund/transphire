@@ -39,7 +39,7 @@ def extract_time_and_grid_information(root_name, settings, queue_com, name):
     hole_number, spot1_number, spot2_number, date, time
     """
     message = None
-    if settings['General']['Software'] == 'EPU 1.8':
+    if settings['General']['Software'] == 'EPU >1.8':
 
         if settings['General']['Camera'] == 'Falcon2' \
                 or settings['General']['Camera'] == 'Falcon3' \
@@ -59,7 +59,7 @@ def extract_time_and_grid_information(root_name, settings, queue_com, name):
                 'Please contact the TranSPHIRE authors!'
                 ])
 
-    elif settings['General']['Software'] == 'EPU 1.9':
+    elif settings['General']['Software'] == 'EPU >1.9':
 
         if settings['General']['Camera'] == 'Falcon2' \
                 or settings['General']['Camera'] == 'Falcon3' \
@@ -118,7 +118,7 @@ def find_frames(frames_root, compare_name, settings, queue_com, name, write_erro
     True if the function was successful.
     """
     message = None
-    if settings['General']['Software'] == 'EPU 1.8':
+    if settings['General']['Software'] == 'EPU >1.8':
 
         ####
         #
@@ -177,7 +177,7 @@ def find_frames(frames_root, compare_name, settings, queue_com, name, write_erro
 
             if settings['General']['Camera'] == 'K2':
                 message = '\n'.join([
-                    'Stack and K2 is not supported in EPU 1.8 version',
+                    'Stack and K2 is not supported in EPU >1.8 version',
                     'Please contact the TranSPHIRE authors!'
                     ])
 
@@ -243,7 +243,7 @@ def find_frames(frames_root, compare_name, settings, queue_com, name, write_erro
                 'Please contact the TranSPHIRE authors!'
                 ])
 
-    elif settings['General']['Software'] == 'EPU 1.9':
+    elif settings['General']['Software'] == 'EPU >1.9':
 
         ####
         #
@@ -451,7 +451,7 @@ def find_related_frames_to_jpg(frames_root, root_name, settings, queue_com, name
     name - Name of the process
     """
     message = None
-    if settings['General']['Software'] == 'EPU 1.8':
+    if settings['General']['Software'] == 'EPU >1.8':
 
         ####
         #
@@ -463,7 +463,7 @@ def find_related_frames_to_jpg(frames_root, root_name, settings, queue_com, name
 
             if settings['General']['Camera'] == 'K2':
                 message = '\n'.join([
-                    'Stack and K2 is not supported in EPU 1.8 version',
+                    'Stack and K2 is not supported in EPU >1.8 version',
                     'Please contact the TranSPHIRE authors!'
                     ])
 
@@ -527,7 +527,7 @@ def find_related_frames_to_jpg(frames_root, root_name, settings, queue_com, name
                 'Please contact the TranSPHIRE authors!'
                 ])
 
-    elif settings['General']['Software'] == 'EPU 1.9':
+    elif settings['General']['Software'] == 'EPU >1.9':
 
         ####
         #
@@ -634,7 +634,7 @@ def get_copy_command_for_frames(settings, queue_com, name):
     Command to use for copy.
     """
     message = None
-    if settings['General']['Software'] == 'EPU 1.8':
+    if settings['General']['Software'] == 'EPU >1.8':
 
         ####
         #
@@ -646,7 +646,7 @@ def get_copy_command_for_frames(settings, queue_com, name):
 
             if settings['General']['Camera'] == 'K2':
                 message = '\n'.join([
-                    'Stack and K2 is not supported in EPU 1.8 version',
+                    'Stack and K2 is not supported in EPU >1.8 version',
                     'Please contact the TranSPHIRE authors!'
                     ])
 
@@ -698,7 +698,7 @@ def get_copy_command_for_frames(settings, queue_com, name):
                 'Please contact the TranSPHIRE authors!'
                 ])
 
-    elif settings['General']['Software'] == 'EPU 1.9':
+    elif settings['General']['Software'] == 'EPU >1.9':
 
         ####
         #
@@ -735,14 +735,14 @@ def get_copy_command_for_frames(settings, queue_com, name):
 
             if settings['General']['Camera'] == 'K2':
                 message = '\n'.join([
-                    'Frames and K22 is not supported in EPU 1.9',
+                    'Frames and K22 is not supported in EPU >1.9',
                     'Please contact the TranSPHIRE authors!'
                     ])
 
             elif settings['General']['Camera'] == 'Falcon2' or \
                     settings['General']['Camera'] == 'Falcon3':
                 message = '\n'.join([
-                    'Frames and Falcon2/Falcon3 is not supported n EPU 1.9',
+                    'Frames and Falcon2/Falcon3 is not supported n EPU >1.9',
                     'Please contact the TranSPHIRE authors!'
                     ])
 
@@ -789,7 +789,7 @@ def find_all_files(root_name, compare_name_frames, compare_name_meta, settings, 
     list of files related to root_name.
     """
     message = None
-    if settings['General']['Software'] == 'EPU 1.8':
+    if settings['General']['Software'] == 'EPU >1.8':
 
         if settings['General']['Camera'] == 'K2':
             meta_files = glob.glob('{0}.*'.format(root_name))
@@ -811,7 +811,7 @@ def find_all_files(root_name, compare_name_frames, compare_name_meta, settings, 
                 'Please contact the TranSPHIRE authors!'
                 ])
 
-    elif settings['General']['Software'] == 'EPU 1.9':
+    elif settings['General']['Software'] == 'EPU >1.9':
 
         if settings['General']['Camera'] == 'K2':
             meta_files = glob.glob('{0}*'.format(compare_name_meta))
@@ -922,10 +922,17 @@ def check_for_outlier(dict_name, data, file_name, settings):
     warning_list = []
     skip_list = []
 
-    file_name = os.path.basename(os.path.splitext(file_name)[0])
-    match_file = re.compile(file_name)
+    file_name_match = os.path.basename(os.path.splitext(file_name)[0])
+    match_file = re.compile(file_name_match)
     vmatch = np.vectorize(lambda x:bool(match_file.search(x)))
-    mask = vmatch(data['file_name'])
+    try:
+        mask = vmatch(data['file_name'])
+    except ValueError:
+        print('ERROR with file!')
+        print('dict_name', data)
+        print('dict_name', dict_name)
+        print('file_name', file_name)
+        raise
 
     for key in dtype_dict[dict_name]:
         key = key[0]
@@ -947,7 +954,7 @@ def check_for_outlier(dict_name, data, file_name, settings):
                 warning_high
                 ])
 
-        assert data[mask].shape[0] == 1, data[mask]
+        assert data[mask].shape[0] == 1, [data[mask], file_name, file_name_match, data['file_name']]
 
         if float(skip_low) <= data[key][mask][0] and data[key][mask][0] <= float(skip_high):
             pass

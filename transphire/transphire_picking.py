@@ -53,7 +53,9 @@ def get_picking_command(file_input, new_name, settings, queue_com, name):
         block_gpu = True
         gpu_list = gpu.split()
 
-    elif picking_name == 'crYOLO v1.1.0':
+    elif picking_name == 'crYOLO v1.1.0' or \
+            picking_name == 'crYOLO v1.2.1' or \
+            picking_name == 'crYOLO v1.2.2':
         command, gpu = create_cryolo_v1_1_0_command(
             picking_name=picking_name,
             file_input=file_input,
@@ -100,8 +102,12 @@ def find_logfiles(root_path, file_name, settings, queue_com, name):
     copied_log_files = None
     picking_name = settings['Copy']['Picking']
     picking_root_path = os.path.join(settings['picking_folder'], file_name)
-    if picking_name == 'crYOLO v1.0.4' or \
-            picking_name == 'crYOLO v1.0.5':
+    if picking_name == 'crYOLO v1.2.2':
+        copied_log_files = ['{0}.box'.format(os.path.join(os.path.dirname(picking_root_path), 'EMAN', os.path.basename(picking_root_path)))]
+        log_files = copied_log_files
+    elif picking_name == 'crYOLO v1.0.4' or \
+            picking_name == 'crYOLO v1.0.5' or \
+            picking_name == 'crYOLO v1.2.1':
         copied_log_files = ['{0}.box'.format(picking_root_path)]
         log_files = copied_log_files
 
@@ -191,7 +197,7 @@ def create_cryolo_v1_1_0_command(
     command.append('{0}'.format(settings['Path'][picking_name]))
 
     command.append('-i')
-    command.append('{0}'.format(file_input))
+    command.append('{0}'.format(' '.join(file_input)))
     command.append('-o')
     command.append('{0}'.format(file_output))
     command.append('--write_empty')
@@ -249,7 +255,7 @@ def create_cryolo_v1_0_4_command(
     command.append('{0}'.format(settings['Path'][picking_name]))
 
     command.append('-i')
-    command.append('{0}'.format(file_input))
+    command.append('{0}'.format(' '.join(file_input)))
     command.append('-o')
     command.append('{0}'.format(file_output))
     command.append('--write_empty')
@@ -305,8 +311,11 @@ def create_box_jpg(file_name, settings, queue_com, name):
     bin_value = 4
     if box_data.size > 0:
         if box_file.endswith('.box'):
-            box_data[:, 0] += box_data[:, 2]//2
-            box_data[:, 1] += box_data[:, 3]//2
+            try:
+                box_data[:, 0] += box_data[:, 2]//2
+                box_data[:, 1] += box_data[:, 3]//2
+            except IndexError:
+                pass
         elif box_file.endswith('.txt'):
             pass
         else:

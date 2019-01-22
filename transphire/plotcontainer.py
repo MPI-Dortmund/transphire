@@ -16,10 +16,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 try:
-    from PyQt4.QtCore import pyqtSlot, Qt, QEvent
+    from PyQt4.QtCore import pyqtSlot, Qt, QEvent, pyqtSignal
     from PyQt4.QtGui import QMainWindow, QDockWidget, QTabWidget
 except ImportError:
-    from PyQt5.QtCore import pyqtSlot, Qt, QEvent
+    from PyQt5.QtCore import pyqtSlot, Qt, QEvent, pyqtSignal
     from PyQt5.QtWidgets import QMainWindow, QDockWidget, QTabWidget
 from transphire.plotwidget import PlotWidget
 
@@ -31,8 +31,9 @@ class PlotContainer(QMainWindow):
     Inherits:
     QMainWindow
     """
+    sig_update_done = pyqtSignal()
 
-    def __init__(self, content, plot_labels, plot_name, plot_worker_ctf, plot_worker_motion, plot_worker_picking, plot_type, *args, parent=None, **kwargs):
+    def __init__(self, name, content, plot_labels, plot_name, plot_worker_ctf, plot_worker_motion, plot_worker_picking, plot_type, layout, *args, parent=None, **kwargs):
         """
         Initialisation of the PlotContainer widget.
 
@@ -45,9 +46,13 @@ class PlotContainer(QMainWindow):
         None
         """
         super(PlotContainer, self).__init__(parent)
+        self.parent_layout = layout
+        self.parent = parent
         self.setCentralWidget(None)
         self.setTabPosition(Qt.TopDockWidgetArea, QTabWidget.North)
         self.plot_name = plot_name
+        self.name = name
+
         if plot_type == 'ctf':
             self.worker = plot_worker_ctf
         elif plot_type == 'motion':
@@ -58,7 +63,7 @@ class PlotContainer(QMainWindow):
             raise Exception('PlotContainer - {0} not known!'.format(plot_type))
 
         self.content = []
-        dock_widgets = []
+        self.dock_widgets = []
         for label in plot_labels:
             label = label[0]
             if label == 'mic_number':
@@ -81,11 +86,12 @@ class PlotContainer(QMainWindow):
             dock_widget.setWidget(widget)
             dock_widget.installEventFilter(self)
             dock_widget.setFeatures(QDockWidget.DockWidgetFloatable | QDockWidget.DockWidgetMovable)
-            dock_widgets.append(dock_widget)
+            self.dock_widgets.append(dock_widget)
             self.addDockWidget(Qt.BottomDockWidgetArea, dock_widget, Qt.Horizontal)
 
-        for idx in range(1, len(dock_widgets)):
-            self.tabifyDockWidget(dock_widgets[0], dock_widgets[idx])
+        for idx in range(1, len(self.dock_widgets)):
+            self.tabifyDockWidget(self.dock_widgets[0], self.dock_widgets[idx])
+        self.tabifiedDockWidgetActivated.connect(self.synchronize_tabs)
 
     @pyqtSlot(str, object, str, object)
     def update_figure(self, name, data, directory_name, settings):
@@ -108,6 +114,7 @@ class PlotContainer(QMainWindow):
                     directory_name=directory_name,
                     settings=settings
                     )
+            self.sig_update_done.emit()
         else:
             pass
 
@@ -144,3 +151,46 @@ class PlotContainer(QMainWindow):
                 entry.setEnabled(var)
             else:
                 pass
+
+    def activate_tab(self, name):
+        """
+        Activate the tab with the name: name.
+
+        Arguments:
+        name - Name of the activation
+
+        Returns:
+        None
+        """
+        for widget in self.dock_widgets:
+            if widget.windowTitle() == name:
+                widget.show()
+                widget.raise_()
+                break
+
+    @pyqtSlot(bool, str)
+    def set_visibility(self, visible, name):
+        if name == self.plot_name:
+            self.parent.content[self.parent_layout].enable_tab(visible)
+
+    def synchronize_tabs(self, widget):
+        compare_name = widget.windowTitle()
+        aim_docker = self.parent.content[self.parent_layout]
+        aim_index = None
+
+        for idx in range(aim_docker.count()):
+            tab_text = aim_docker.tabText(idx)
+            if self.name == 'Plot per micrograph':
+                if tab_text == 'Plot histogram':
+                    aim_index = idx
+                    break
+            elif self.name == 'Plot histogram':
+                if tab_text == 'Plot per micrograph':
+                    aim_index = idx
+                    break
+            else:
+                pass
+
+        assert aim_index is not None
+        aim_container = aim_docker.widget(aim_index)
+        aim_container.activate_tab(compare_name)

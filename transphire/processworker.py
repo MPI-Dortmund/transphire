@@ -16,6 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
+import re
 import glob
 import copy as cp
 import queue as qu
@@ -52,9 +53,9 @@ class ProcessWorker(QObject):
     sig_error = pyqtSignal(str)
     sig_status = pyqtSignal(str, object, str, str)
     sig_notification = pyqtSignal(str)
-    sig_plot_ctf = pyqtSignal(str, object, object)
-    sig_plot_motion = pyqtSignal(str, object, object)
-    sig_plot_picking = pyqtSignal(str, object, object)
+    sig_plot_ctf = pyqtSignal(str, object, object, str)
+    sig_plot_motion = pyqtSignal(str, object, object, str)
+    sig_plot_picking = pyqtSignal(str, object, object, str)
 
     def __init__(self, password, content_process, mount_directory, parent=None):
         """
@@ -81,6 +82,49 @@ class ProcessWorker(QObject):
         # Events
         self.sig_start.connect(self.run)
 
+    def emit_plot_signals(self):
+        # Set CTF settings
+        self.settings['CTF_folder'] = {}
+        for entry in self.settings['Copy']['CTF_entries']:
+            self.settings['CTF_folder'][entry] = os.path.join(
+                self.settings['project_folder'],
+                entry.replace(' ', '_')
+                )
+            self.sig_plot_ctf.emit(
+                entry,
+                self.settings['CTF_folder'][entry],
+                self.settings,
+                self.settings['Copy']['CTF']
+                )
+
+        # Set Motion settings
+        self.settings['Motion_folder'] = {}
+        for entry in self.settings['Copy']['Motion_entries']:
+            self.settings['Motion_folder'][entry] = os.path.join(
+                self.settings['project_folder'],
+                entry.replace(' ', '_')
+                )
+            self.sig_plot_motion.emit(
+                entry,
+                self.settings['Motion_folder'][entry],
+                self.settings,
+                self.settings['Copy']['Motion']
+                )
+
+        # Set Picking settings
+        self.settings['Picking_folder'] = {}
+        for entry in self.settings['Copy']['Picking_entries']:
+            self.settings['Picking_folder'][entry] = os.path.join(
+                self.settings['project_folder'],
+                entry.replace(' ', '_')
+                )
+            self.sig_plot_picking.emit(
+                entry,
+                self.settings['Picking_folder'][entry],
+                self.settings,
+                self.settings['Copy']['Picking']
+                )
+
     @pyqtSlot(object)
     def run(self, settings):
         """
@@ -95,6 +139,11 @@ class ProcessWorker(QObject):
         # Set settings
         self.settings = settings
         content_process = cp.deepcopy(self.content_process)
+        self.settings['copy_software_meta'] = True
+        if self.settings['General']['Input extension'] in ('dm4'):
+            self.settings['Output extension'] = 'mrc'
+        else:
+            self.settings['Output extension'] = self.settings['General']['Input extension']
 
         # Set paths
         self.settings['stack_folder'] = os.path.join(
@@ -105,6 +154,9 @@ class ProcessWorker(QObject):
             )
         self.settings['software_meta_folder'] = os.path.join(
             self.settings['project_folder'], 'Software_meta'
+            )
+        self.settings['software_meta_tar'] = os.path.join(
+            self.settings['tar_folder'], 'Software_meta.tar'
             )
         self.settings['motion_folder'] = os.path.join(
             self.settings['motion_folder'],
@@ -137,45 +189,6 @@ class ProcessWorker(QObject):
             self.settings['Copy']['Copy to backup'].replace(' ', '_')
             )
 
-        # Set CTF settings
-        self.settings['CTF_folder'] = {}
-        for entry in self.settings['Copy']['CTF_entries']:
-            self.settings['CTF_folder'][entry] = os.path.join(
-                self.settings['project_folder'],
-                entry.replace(' ', '_')
-                )
-            self.sig_plot_ctf.emit(
-                entry,
-                self.settings['CTF_folder'][entry],
-                self.settings
-                )
-
-        # Set Motion settings
-        self.settings['Motion_folder'] = {}
-        for entry in self.settings['Copy']['Motion_entries']:
-            self.settings['Motion_folder'][entry] = os.path.join(
-                self.settings['project_folder'],
-                entry.replace(' ', '_')
-                )
-            self.sig_plot_motion.emit(
-                entry,
-                self.settings['Motion_folder'][entry],
-                self.settings
-                )
-
-        # Set Picking settings
-        self.settings['Picking_folder'] = {}
-        for entry in self.settings['Copy']['Picking_entries']:
-            self.settings['Picking_folder'][entry] = os.path.join(
-                self.settings['project_folder'],
-                entry.replace(' ', '_')
-                )
-            self.sig_plot_picking.emit(
-                entry,
-                self.settings['Picking_folder'][entry],
-                self.settings
-                )
-
         typ_dict = {}
         wait_dict = {}
         share_dict = {}
@@ -207,6 +220,10 @@ class ProcessWorker(QObject):
                         'full_backup': False,
                         'full_hdd': False,
                         'unknown_error': False,
+                        'delay_error': False,
+                        'queue_list_time': 0,
+                        'tar_idx': 0,
+                        'queue_list': [],
                         'queue_lock': QMutex(),
                         'save_lock': QMutex(),
                         'count_lock': QMutex(),
@@ -221,6 +238,9 @@ class ProcessWorker(QObject):
                             self.settings['queue_folder'], key
                             ),
                         'done_file': '{0}/Queue_{1}_done'.format(
+                            self.settings['queue_folder'], key
+                            ),
+                        'list_file': '{0}/Queue_{1}_list'.format(
                             self.settings['queue_folder'], key
                             ),
                         'error_file': '{0}/Queue_{1}_error'.format(
@@ -246,6 +266,7 @@ class ProcessWorker(QObject):
         # Set stop variable to the return value of the pre_check
         if settings['Monitor']:
             self.stop = False
+            self.emit_plot_signals()
             self.run_monitor(
                 typ_dict=typ_dict,
                 queue_com=queue_com,
@@ -467,7 +488,7 @@ class ProcessWorker(QObject):
             self.settings['Copy']['CTF_sum'] = 'False'
 
         # Set Compress settings
-        if self.settings['Copy']['Compress data'] != 'False':
+        if self.settings['Copy']['Compress'] != 'False':
             folder_list.append('compress_folder')
             use_threads_list.append('Compress')
         else:
@@ -497,6 +518,8 @@ class ProcessWorker(QObject):
                 print(str(err))
                 self.sig_error.emit(str(err))
                 return None
+
+        self.emit_plot_signals()
 
         # Fill different dictionarys with process information
         gpu_mutex_dict = dict([(str(idx), [QMutex(), 0]) for idx in range(99)])
@@ -539,19 +562,29 @@ class ProcessWorker(QObject):
                 )
 
             if os.path.exists('{0}.jpg'.format(new_name)):
-                self.stop = True
-                try:
-                    with open(shared_dict['typ']['Import']['number_file'], 'r') as read:
-                        shared_dict['typ']['Import']['file_number'] = int(read.readline())
-                except FileNotFoundError:
-                    shared_dict['typ']['Import']['file_number'] = int(self.settings['General']['Start number'])
-                message = '{0}: File {1} already exists!\n'.format(
-                    'Import',
-                    new_name
-                    ) + \
-                    'Check Startnumber! Last one used: {0}'.format(shared_dict['typ']['Import']['file_number'])
-                queue_com['error'].put(message)
-                queue_com['notification'].put(message)
+                old_filenumber = shared_dict['typ']['Import']['file_number']
+                with open(shared_dict['typ']['Import']['number_file'], 'r') as read:
+                    shared_dict['typ']['Import']['file_number'] = int(read.readline())
+                if self.settings['General']['Increment number'] == 'True':
+                    message = '{0}: Filenumber {1} already exists!\n'.format(
+                        'Import',
+                        old_filenumber
+                        ) + \
+                        'Last one used: {0} - Continue with {1}'.format(
+                            shared_dict['typ']['Import']['file_number'],
+                            shared_dict['typ']['Import']['file_number']+1
+                            )
+                    queue_com['error'].put(message)
+                    queue_com['notification'].put(message)
+                else:
+                    self.stop = True
+                    message = '{0}: Filenumber {1} already exists!\n'.format(
+                        'Import',
+                        old_filenumber
+                        ) + \
+                        'Check Startnumber! Last one used: {0}'.format(shared_dict['typ']['Import']['file_number'])
+                    queue_com['error'].put(message)
+                    queue_com['notification'].put(message)
             else:
                 pass
         else:
@@ -641,7 +674,10 @@ class ProcessWorker(QObject):
         check_files.append('IMOD header')
 
         if self.settings['Copy']['Picking'] == 'crYOLO v1.0.4' or \
-                self.settings['Copy']['Picking'] == 'crYOLO v1.0.5':
+                self.settings['Copy']['Picking'] == 'crYOLO v1.0.5' or \
+                self.settings['Copy']['Picking'] == 'crYOLO v1.1.0' or \
+                self.settings['Copy']['Picking'] == 'crYOLO v1.2.1' or \
+                self.settings['Copy']['Picking'] == 'crYOLO v1.2.2':
             if self.settings[self.settings['Copy']['Picking']]['Filter micrographs'] == 'True':
                 check_files.append('e2proc2d.py')
             else:
@@ -649,7 +685,7 @@ class ProcessWorker(QObject):
         else:
             pass
 
-        if self.settings['Copy']['Compress data'] == 'True':
+        if self.settings['Copy']['Compress'] == 'True':
             check_files.append('IMOD mrc2tif')
         else:
             pass
@@ -750,20 +786,18 @@ class ProcessWorker(QObject):
         shared_dict_typ = shared_dict['typ'][key]
         save_file = shared_dict_typ['save_file']
         done_file = shared_dict_typ['done_file']
+        list_file = shared_dict_typ['list_file']
         share_list = shared_dict['share'][share]
         queue = shared_dict['queue'][key]
+        queue_list = shared_dict_typ['queue_list']
 
         if os.path.exists(save_file):
             with open(save_file, 'r') as read:
                 lines = [line.rstrip() for line in read.readlines()]
 
             for line in lines:
-                if self.settings['Copy_software_meta']:
-                    # Dont fill queue for Meta files
-                    if self.settings['software_meta_folder'] in line:
-                        continue
-                    else:
-                        pass
+                if self.settings['software_meta_tar'] in line:
+                    self.settings['copy_software_meta'] = False
                 else:
                     pass
                 if line.startswith(self.settings['project_folder']):
@@ -777,7 +811,43 @@ class ProcessWorker(QObject):
 
         if os.path.exists(done_file):
             with open(done_file, 'r') as read:
-                shared_dict_typ['file_number'] = len(read.readlines())
+                lines = [line.rstrip() for line in read.readlines()]
+                shared_dict_typ['file_number'] = len(lines)
+            for line in lines:
+                if self.settings['software_meta_tar'] in line:
+                    self.settings['copy_software_meta'] = False
+                else:
+                    pass
         else:
             with open(done_file, 'w'):
+                pass
+
+        if os.path.exists(list_file):
+            with open(list_file, 'r') as read:
+                lines = [line.rstrip() for line in read.readlines()]
+            for line in lines:
+                if line:
+                    queue_list.append(line)
+                if self.settings['software_meta_tar'] in line:
+                    self.settings['copy_software_meta'] = False
+                else:
+                    pass
+        else:
+            with open(list_file, 'w'):
+                pass
+
+        # Tar index
+        if not queue_list:
+            tar_files = glob.glob(os.path.join(
+                self.settings['tar_folder'],
+                '{0}_*\.tar'.format(key)
+                ))
+            if tar_files:
+                shared_dict_typ['tar_idx'] = max([int(re.match('{0}_([0-9]+)\.tar'.format(key), entry).group(1)) for entry in tar_files]) + 1
+            else:
+                shared_dict_typ['tar_idx'] = 0
+        else:
+            try:
+                shared_dict_typ['tar_idx'] = max([int(re.match('{0}_([0-9]+)\.tar'.format(key), entry).group(1)) for entry in queue_list if re.match('{0}_([0-9]+)\.tar'.format(key), entry)])
+            except ValueError:
                 pass

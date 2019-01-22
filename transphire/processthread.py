@@ -111,6 +111,7 @@ class ProcessThread(QThread):
             self.later = bool(self.settings['Copy'][self.typ] == 'Later')
         except KeyError:
             self.later = False
+
         try:
             self.user = self.settings['{0}_user'.format(self.typ)]
         except KeyError:
@@ -210,6 +211,10 @@ class ProcessThread(QThread):
                 QThread.sleep(10)
                 continue
 
+            if self.shared_dict_typ['delay_error']:
+                QThread.sleep(10)
+                self.shared_dict_typ['delay_error'] = False
+
             if self.shared_dict_typ['unknown_error']:
                 time_diff = time.time() - self.time_last
                 if self.typ == 'Find':
@@ -249,8 +254,19 @@ class ProcessThread(QThread):
             elif self.typ == 'Meta':
                 self.start_queue_meta()
             else:
-                self.start_queue()
+                self.start_queue(clear_list=False)
             self.is_running = False
+
+        if self.shared_dict_typ['queue_list']:
+            if self.later:
+                pass
+            elif not self.run_this_thread:
+                pass
+            else:
+                self.is_running = True
+                if self.typ not in ('Find', 'Meta'):
+                    self.start_queue(clear_list=True)
+                self.is_running = False
 
         # Print, if stopped
         self.queue_com['status'].put(['STOPPED', [], self.name, '#ff5c33'])
@@ -302,30 +318,40 @@ class ProcessThread(QThread):
                 used_quota = sh.disk_usage(self.settings[folder]).used / 1e12
             except FileNotFoundError:
                 self.stop = True
-                message = ''.join([
-                    '{0} no longer available!\n'.format(
+                message_error = '\n'.join([
+                    '{0} no longer available!'.format(
                         folder.replace('_', ' ')
                         ),
                     '{0} is stopping now!'.format(self.name)
                     ])
+                message_notification = '\n'.join([
+                    'Folder no longer available!',
+                    '{0} is stopping now!'.format(self.name)
+                    ])
                 self.queue_com['notification'].put(
-                    message
+                    message_notification
                     )
                 self.queue_com['error'].put(
-                    message
+                    message_error
                     )
                 return False
             if used_quota > (total_quota * stop):
                 self.stop = True
-                message = ''.join([
+                message_error = '\n'.join([
                     'Less than {0:.1f} Tb free on {1}!'.format(
                         total_quota * (1 - stop),
                         folder.replace('_', ' ')
                         ),
                     '{0} is stopping now!'.format(self.name)
                     ])
-                self.queue_com['notification'].put(message)
-                self.queue_com['error'].put(message)
+                message_notification = '\n'.join([
+                    'Less than {0:.1f} Tb free!'.format(
+                        total_quota * (1 - stop),
+                        ),
+                    '{0} is stopping now!'.format(self.name)
+                    ])
+                self.queue_com['notification'].put(message_notification)
+                self.queue_com['error'].put(message_error)
                 return False
             else:
                 pass
@@ -443,7 +469,7 @@ class ProcessThread(QThread):
         Return:
         None
         """
-        if not self.settings['Copy_software_meta']:
+        if not self.settings['copy_software_meta']:
             self.done = True
             return None
         else:
@@ -460,17 +486,21 @@ class ProcessThread(QThread):
                 self.run_software_meta(directory=folder)
             except FileNotFoundError:
                 self.stop = True
-                message = ''.join([
-                    '{0} no longer available!\n'.format(
+                message_notification = '\n'.join([
+                    'Folder no longer available!',
+                    '{0} is stopping now!'.format(self.name)
+                    ])
+                message_error = '\n'.join([
+                    '{0} no longer available!'.format(
                         folder.replace('_', ' ')
                         ),
                     '{0} is stopping now!'.format(self.name)
                     ])
                 self.queue_com['notification'].put(
-                    message
+                    message_notification
                     )
                 self.queue_com['error'].put(
-                    message
+                    message_error
                     )
         else:
             print('No search path specified')
@@ -512,14 +542,18 @@ class ProcessThread(QThread):
                 root_name=''
                 )
             if 'termios.error' not in msg:
-                message = ''.join([
+                message_notification = '\n'.join([
                     'Unknown error occured in {0}!'.format(self.name),
                     'The process will continue, but check the error file!',
-                    '\n{0}'.format(self.shared_dict_typ['error_file'])
                     ])
-                self.queue_com['notification'].put(message)
+                message_error = '\n'.join([
+                    'Unknown error occured in {0}!'.format(self.name),
+                    'The process will continue, but check the error file!',
+                    '{0}'.format(self.shared_dict_typ['error_file'])
+                    ])
+                self.queue_com['notification'].put(message_notification)
                 if time.time() - self.time_last_error > 1800:
-                    self.queue_com['error'].put(message)
+                    self.queue_com['error'].put(message_error)
                     self.time_last_error = time.time()
                 else:
                     pass
@@ -538,7 +572,7 @@ class ProcessThread(QThread):
                 self.queue_com['error'].put(message)
         QThread.sleep(20)
 
-    def start_queue(self):
+    def start_queue(self, clear_list):
         """
         Start pipeline processes.
 
@@ -550,20 +584,30 @@ class ProcessThread(QThread):
         """
         self.queue_lock.lock()
         error = False
+        dummy = False
         try:
-            if self.queue.empty():
-                self.queue_com['status'].put([
-                    'Waiting',
-                    [
-                        self.queue.qsize(),
-                        self.shared_dict_typ['file_number']
-                        ],
-                    self.name,
-                    '#ffc14d'
-                    ])
-                error = True
+            if clear_list:
+                dummy = True
+                self.shared_dict_typ['queue_list_time'] -= 60
             else:
-                pass
+                if self.queue.empty():
+                    self.queue_com['status'].put([
+                        'Waiting',
+                        [
+                            self.queue.qsize(),
+                            self.shared_dict_typ['file_number']
+                            ],
+                        self.name,
+                        '#ffc14d'
+                        ])
+                    if not self.shared_dict_typ['queue_list']:
+                        error = True
+                    elif time.time() - self.shared_dict_typ['queue_list_time'] > 30:
+                        dummy = True
+                    else:
+                        error = True
+                else:
+                    pass
         except Exception:
             error = True
         finally:
@@ -587,7 +631,10 @@ class ProcessThread(QThread):
                 self.name,
                 'lightgreen'
                 ])
-            root_name = self.remove_from_queue()
+            if dummy:
+                root_name = 'None'
+            else:
+                root_name = self.remove_from_queue()
         except Exception:
             return None
         finally:
@@ -634,7 +681,8 @@ class ProcessThread(QThread):
                 root_name=root_name,
                 )
         except FileNotFoundError as err:
-            self.add_to_queue(aim=self.typ, root_name=root_name)
+            if not dummy:
+                self.add_to_queue(aim=self.typ, root_name=root_name)
             self.write_error(msg=tb.format_exc(), root_name=root_name)
             if 'Check Startnumber' in str(err):
                 pass
@@ -645,20 +693,26 @@ class ProcessThread(QThread):
                 self.lost_connection(
                     typ='lost_input_frames'
                     )
+            self.shared_dict_typ['delay_error'] = True
         except BlockingIOError:
-            self.add_to_queue(aim=self.typ, root_name=root_name)
+            if not dummy:
+                self.add_to_queue(aim=self.typ, root_name=root_name)
             print('!!! BlockingIOError !!! \n')
             msg = tb.format_exc()
             self.write_error(msg=msg, root_name=root_name)
             if 'termios.error' not in msg:
-                message = ''.join([
+                message_notification = '\n'.join([
                     'BlockingIOError occured in {0}!'.format(self.name),
                     'The process will continue, but check the error file!',
-                    '\n{0}'.format(self.shared_dict_typ['error_file'])
                     ])
-                self.queue_com['notification'].put(message)
+                message_error = '\n'.join([
+                    'BlockingIOError occured in {0}!'.format(self.name),
+                    'The process will continue, but check the error file!',
+                    '{0}'.format(self.shared_dict_typ['error_file'])
+                    ])
+                self.queue_com['notification'].put(message_notification)
                 if time.time() - self.time_last_error > 1800:
-                    self.queue_com['error'].put(message)
+                    self.queue_com['error'].put(message_error)
                     self.time_last_error = time.time()
                 else:
                     pass
@@ -666,29 +720,38 @@ class ProcessThread(QThread):
             else:
                 pass
         except IOError:
-            self.add_to_queue(aim=self.typ, root_name=root_name)
+            if not dummy:
+                self.add_to_queue(aim=self.typ, root_name=root_name)
             self.write_error(msg=tb.format_exc(), root_name=root_name)
             self.lost_connection(
                 typ=method_dict[self.typ]['lost_connect']
                 )
+            self.shared_dict_typ['delay_error'] = True
         except UserWarning:
-            self.add_to_queue(aim=self.typ, root_name=root_name)
+            if not dummy:
+                self.add_to_queue(aim=self.typ, root_name=root_name)
             self.write_error(msg=tb.format_exc(), root_name=root_name)
             self.stop = True
+            self.shared_dict_typ['delay_error'] = True
         except Exception:
-            self.add_to_queue(aim=self.typ, root_name=root_name)
+            if not dummy:
+                self.add_to_queue(aim=self.typ, root_name=root_name)
             print('!!! UNKNOWN !!! \n')
             msg = tb.format_exc()
             self.write_error(msg=msg, root_name=root_name)
             if 'termios.error' not in msg:
-                message = ''.join([
+                message_notification = '\n'.join([
                     'Unknown error occured in {0}!'.format(self.name),
                     'The process will continue, but check the error file!',
-                    '\n{0}'.format(self.shared_dict_typ['error_file'])
                     ])
-                self.queue_com['notification'].put(message)
+                message_error = '\n'.join([
+                    'Unknown error occured in {0}!'.format(self.name),
+                    'The process will continue, but check the error file!',
+                    '{0}'.format(self.shared_dict_typ['error_file'])
+                    ])
+                self.queue_com['notification'].put(message_notification)
                 if time.time() - self.time_last_error > 1800:
-                    self.queue_com['error'].put(message)
+                    self.queue_com['error'].put(message_error)
                     self.time_last_error = time.time()
                 else:
                     pass
@@ -696,23 +759,53 @@ class ProcessThread(QThread):
             else:
                 pass
         else:
-            self.remove_from_queue_file(root_name)
-            self.queue_lock.lock()
-            try:
-                self.add_to_queue_file(
-                    root_name=root_name,
-                    file_name=self.shared_dict['typ'][self.typ]['done_file'],
-                    )
-            finally:
-                self.queue_lock.unlock()
-            if self.typ == 'Import':
-                pass
-            else:
+            if not dummy:
+                self.remove_from_queue_file(root_name, self.shared_dict_typ['save_file'])
+
                 self.queue_lock.lock()
                 try:
-                    self.shared_dict_typ['file_number'] += 1
+                    self.add_to_queue_file(
+                        root_name=root_name,
+                        file_name=self.shared_dict['typ'][self.typ]['done_file'],
+                        )
+                    self.check_queue_files(root_name=root_name)
                 finally:
                     self.queue_lock.unlock()
+
+                if self.typ == 'Import':
+                    pass
+                else:
+                    self.queue_lock.lock()
+                    try:
+                        self.shared_dict_typ['file_number'] += 1
+                    finally:
+                        self.queue_lock.unlock()
+
+    def check_queue_files(self, root_name):
+        if self.settings['Copy']['Delete stack after compression?'] == 'True':
+            basename = os.path.basename(os.path.splitext(root_name)[0])
+            delete_stack = True
+
+            for key in self.shared_dict['typ']:
+                if key.startswith('Copy_'):
+                    continue
+                with open(self.shared_dict['typ'][key]['save_file']) as read:
+                    if basename in read.read():
+                        delete_stack = False
+
+            if delete_stack:
+                stack_mrc = os.path.join(self.settings['stack_folder'], '{0}.mrc'.format(basename))
+                for key in self.shared_dict['typ']:
+                    if not key.startswith('Copy_'):
+                        continue
+                    with open(self.shared_dict['typ'][key]['save_file']) as read:
+                        if stack_mrc in read.read():
+                            delete_stack = False
+                if delete_stack:
+                    try:
+                        os.remove(stack_mrc)
+                    except:
+                        pass
 
     def write_error(self, msg, root_name):
         """
@@ -820,7 +913,7 @@ class ProcessThread(QThread):
         if typ == 'Motion':
             message = ''.join([
                 '{0}: An error occured! '.format(self.name),
-                'MotionCor2 crashed or em-transfer is full ',
+                'MotionCor2 crashed or the PC is out of space ',
                 'or SumMove/MotionCor2 path is not specified correctly! ',
                 'MorionCor2 processes stopped! ',
                 'It is possible that the PC needs to be rebooted! ',
@@ -833,19 +926,23 @@ class ProcessThread(QThread):
                 'Please check the error file!'
                 ])
         self.shared_dict_typ[typ] = True
-        message = '{0} ({1}, {2})'.format(
+        message_notification = '{0} ({1}, {2})'.format(
             message,
             self.name,
             self.shared_dict_typ['error_file']
             )
-        self.queue_com['notification'].put(message)
+        message_error = '{0} ({1})'.format(
+            message,
+            self.name,
+            )
+        self.queue_com['notification'].put(message_notification)
         if time.time() - self.time_last_error > 1800:
-            self.queue_com['error'].put(message)
+            self.queue_com['error'].put(message_error)
             self.time_last_error = time.time()
         else:
             pass
 
-    def remove_from_queue_file(self, root_name):
+    def remove_from_queue_file(self, root_name, file_name, lock=True):
         """
         Remove the files from the queue file.
 
@@ -855,25 +952,31 @@ class ProcessThread(QThread):
         Return:
         None
         """
-        self.queue_lock.lock()
+        if isinstance(root_name, list):
+            root_name = set(root_name)
+        else:
+            root_name = set([root_name])
+        if lock:
+            self.queue_lock.lock()
         try:
             useable_lines = []
             try:
-                with open(self.shared_dict_typ['save_file'], 'r') as read:
-                    lines = [line.rstrip() for line in read.readlines()]
+                with open(file_name, 'r') as read:
+                    lines = [line.strip() for line in read.readlines() if line.strip()]
             except FileNotFoundError:
                 useable_lines = []
             else:
                 for line in lines:
-                    if root_name != line:
+                    if line not in root_name:
                         useable_lines.append(line)
                     else:
                         pass
 
-            with open(self.shared_dict_typ['save_file'], 'w') as write:
+            with open(file_name, 'w') as write:
                 write.write('{0}\n'.format('\n'.join(useable_lines)))
         finally:
-            self.queue_lock.unlock()
+            if lock:
+                self.queue_lock.unlock()
 
     def run_software_meta(self, directory):
         """
@@ -904,7 +1007,7 @@ class ProcessThread(QThread):
             # Add to queue
 
         folder_name = os.path.basename(self.settings['software_meta_folder'])
-        tar_file = '{0}.tar'.format(self.settings['software_meta_folder'])
+        tar_file = self.settings['software_meta_tar']
         with tarfile.open(tar_file, 'w') as tar:
             tar.add(self.settings['software_meta_folder'], arcname=folder_name)
 
@@ -1185,9 +1288,9 @@ class ProcessThread(QThread):
                 self.shared_dict_typ['file_number'] = int(
                     self.settings['General']['Start number']
                     )
-            message = '{0}: File {1} already exists!\n'.format(
+            message = '{0}: Filenumber {1} already exists!\n'.format(
                 self.name,
-                new_name_meta
+                self.shared_dict_typ['file_number']
                 ) + \
                 'Check Startnumber! Last one used: {0}'.format(self.shared_dict_typ['file_number'])
             self.queue_com['notification'].put(message)
@@ -1197,7 +1300,7 @@ class ProcessThread(QThread):
 
         new_stack = '{0}.{1}'.format(
             new_name_stack,
-            self.settings['General']['Output extension']
+            self.settings['Output extension']
             )
 
         command_raw = tus.get_copy_command_for_frames(
@@ -1302,8 +1405,8 @@ class ProcessThread(QThread):
                         var = False
                         break
             if var:
-                if '!Compress data' in compare or \
-                        'Compress data' in compare or \
+                if '!Compress' in compare or \
+                        'Compress' in compare or \
                         'Motion' in compare or \
                         'CTF_frames' in compare:
                     self.add_to_queue(aim=aim_name, root_name=new_stack)
@@ -1827,8 +1930,13 @@ class ProcessThread(QThread):
 
             if do_dw:
                 tu.copy(file_dw_pre_move, file_dw_post_move)
-            else:
-                pass
+                tus.check_outputs(
+                    zero_list=[],
+                    non_zero_list=[file_dw_post_move],
+                    exists_list=[],
+                    folder=self.settings['motion_folder'],
+                    command='copy'
+                    )
 
             if os.path.realpath(self.settings['scratch_motion_folder']) != \
                     os.path.realpath(self.settings['motion_folder']):
@@ -1857,6 +1965,11 @@ class ProcessThread(QThread):
                     except IOError:
                         self.write_error(msg=tb.format_exc(), root_name=file_entry)
                         raise
+            elif do_dw:
+                try:
+                    os.remove(file_dw_pre_move)
+                except IOError:
+                    pass
             else:
                 pass
 
@@ -1867,6 +1980,16 @@ class ProcessThread(QThread):
                 queue_dict[motion_idx]['sum_dw'].append(file_dw_post_move)
             else:
                 pass
+
+        try:
+            file_for_jpg = queue_dict[motion_idx]['sum_dw'][0]
+        except IndexError:
+            file_for_jpg = queue_dict[motion_idx]['sum'][0]
+
+        tum.create_jpg_file(
+            file_for_jpg,
+            self.settings
+            )
 
         data, data_original = tu.get_function_dict()[self.settings['Copy']['Motion']]['plot_data'](
             self.settings['Copy']['Motion'],
@@ -1886,42 +2009,27 @@ class ProcessThread(QThread):
             pass
 
         for warning in skip_list:
-            message = 'The parameter {0} is {1} for file {2}, which is not in the range: {3} to {4} and will be skipped! If this is not the only message, you might consider changing microscope settings!'.format(
-                warning[0],
-                warning[1],
-                root_name,
-                warning[2],
-                warning[3]
-                )
-            self.queue_com['notification'].put(message)
-            self.write_error(msg=message, root_name=root_name)
+            self.send_out_of_range_error(warning, root_name, 'skip')
 
         for warning in warnings:
-            message = 'The median of the last {0} values for parameter {1} is {2}, which is not in the range: {3} to {4}! You might consider to adjust microscope settings!'.format(
-                self.settings['Notification']['Nr. of values used for median'],
-                warning[0],
-                warning[1],
-                warning[2],
-                warning[3]
-                )
-            if time.time() - self.time_last_error > 1800:
-                self.queue_com['error'].put(message)
-                self.time_last_error = time.time()
-            else:
-                pass
-            self.queue_com['notification'].put(message)
-            self.write_error(msg=message, root_name=root_name)
+            self.send_out_of_range_error(warning, root_name, 'warning')
 
         mask = np.in1d(
             np.array(
                 np.char.rsplit(
                     np.array(
                         np.char.rsplit(
-                            data['file_name'],
-                            '/',
+                            np.array(
+                                np.char.rsplit(
+                                    data['file_name'],
+                                    '/',
+                                    1
+                                    ).tolist()
+                                )[:, -1],
+                            '.',
                             1
                             ).tolist()
-                        )[:, -1],
+                        )[:,0],
                     '.',
                     1
                     ).tolist()
@@ -2072,12 +2180,12 @@ class ProcessThread(QThread):
                         sum_files = queue_dict[motion_idx]['sum']
                         log_files = queue_dict[motion_idx]['log']
                         sum_dw_files = queue_dict[motion_idx]['sum_dw']
-                        if '!Compress data' in compare:
+                        if '!Compress' in compare:
                             if motion_idx == 0:
                                 self.add_to_queue(aim=aim_name, root_name=file_input)
                             else:
                                 pass
-                        elif 'Compress data' in compare:
+                        elif 'Compress' in compare:
                             if motion_idx == 0:
                                 self.add_to_queue(aim=aim_name, root_name=file_input)
                             else:
@@ -2121,7 +2229,12 @@ class ProcessThread(QThread):
         """
         root_name_raw = root_name
         # Split is file_sum, file_dw_sum, file_frames
-        file_sum, file_dw, file_input = root_name.split(';;;')
+        try:
+            file_sum, file_dw, file_input = root_name.split(';;;')
+        except ValueError:
+            file_input = root_name
+            file_sum = root_name
+            file_dw = 'None'
         try:
             if self.settings[self.settings['Copy']['CTF']]['Use movies'] == 'True':
                 root_name, _ = os.path.splitext(file_input)
@@ -2212,6 +2325,12 @@ class ProcessThread(QThread):
         copied_log_files.extend(zero_list)
         copied_log_files = list(set(copied_log_files))
 
+        tuc.create_jpg_file(
+            file_sum,
+            self.settings,
+            self.settings['Copy']['CTF'],
+            )
+
         data, data_orig = tu.get_function_dict()[self.settings['Copy']['CTF']]['plot_data'](
             self.settings['Copy']['CTF'],
             self.settings['ctf_folder']
@@ -2233,31 +2352,10 @@ class ProcessThread(QThread):
             pass
 
         for warning in skip_list:
-            message = 'The parameter {0} is {1} for file {2}, which is not in the range: {3} to {4} and will be skipped! If this is not the only message, you might consider changing microscope settings!'.format(
-                warning[0],
-                warning[1],
-                file_sum,
-                warning[2],
-                warning[3]
-                )
-            self.queue_com['notification'].put(message)
-            self.write_error(msg=message, root_name=file_sum)
+            self.send_out_of_range_error(warning, root_name, 'skip')
 
         for warning in warnings:
-            message = 'The median of the last {0} values for parameter {1} is {2}, which is not in the range: {3} to {4}! You might consider to adjust microscope settings!'.format(
-                self.settings['Notification']['Nr. of values used for median'],
-                warning[0],
-                warning[1],
-                warning[2],
-                warning[3]
-                )
-            self.queue_com['notification'].put(message)
-            if time.time() - self.time_last_error > 1800:
-                self.queue_com['error'].put(message)
-                self.time_last_error = time.time()
-            else:
-                pass
-            self.write_error(msg=message, root_name=file_sum)
+            self.send_out_of_range_error(warning, root_name, 'warning')
 
         mask = np.in1d(
             np.array(
@@ -2371,7 +2469,7 @@ class ProcessThread(QThread):
                             var = False
                             break
                 if var:
-                    if '!Compress data' in compare or 'Compress data' in compare:
+                    if '!Compress' in compare or 'Compress' in compare:
                         self.add_to_queue(aim=aim_name, root_name=file_input)
                     elif 'Picking' in compare:
                         self.add_to_queue(aim=aim_name, root_name=root_name_raw)
@@ -2391,50 +2489,90 @@ class ProcessThread(QThread):
         None
         """
 
-        # New name; Splitis file_sum, file_dw_sum, file_frames
-        file_sum, file_dw_sum, file_frames = root_name.split(';;;')
-        if file_dw_sum == 'None':
-            file_name = os.path.basename(os.path.splitext(file_sum)[0])
-            file_use = file_sum
+        if root_name == 'None':
+            pass
         else:
-            file_name = os.path.basename(os.path.splitext(file_dw_sum)[0])
-            file_use = file_dw_sum
+            # New name; Splitis file_sum, file_dw_sum, file_frames
+            file_sum, file_dw_sum, file_frames = root_name.split(';;;')
+            if file_dw_sum == 'None':
+                file_name = os.path.basename(os.path.splitext(file_sum)[0])
+                file_use = file_sum
+            else:
+                file_name = os.path.basename(os.path.splitext(file_dw_sum)[0])
+                file_use = file_dw_sum
 
-        # Create the command for filtering
-        command, file_input, check_files, block_gpu, gpu_list = tup.create_filter_command(
-            file_input=file_use,
-            settings=self.settings,
-            )
-
-        # Log files
-        log_prefix = os.path.join(
-                self.settings['picking_folder'],
-                '{0}_filter'.format(file_name)
+            # Create the command for filtering
+            command, file_input, check_files, block_gpu, gpu_list = tup.create_filter_command(
+                file_input=file_use,
+                settings=self.settings,
                 )
 
-        log_file, err_file = self.run_command(
-            command=command,
-            log_prefix=log_prefix,
-            block_gpu=block_gpu,
-            gpu_list=gpu_list,
-            shell=True
-            )
+            # Log files
+            log_prefix = os.path.join(
+                    self.settings['picking_folder'],
+                    '{0}_filter'.format(file_name)
+                    )
 
-        zero_list = [err_file]
-        non_zero_list = [log_file]
-        non_zero_list.extend(check_files)
+            log_file, err_file = self.run_command(
+                command=command,
+                log_prefix=log_prefix,
+                block_gpu=block_gpu,
+                gpu_list=gpu_list,
+                shell=True
+                )
 
-        tus.check_outputs(
-            zero_list=zero_list,
-            non_zero_list=non_zero_list,
-            exists_list=[],
-            folder=self.settings['picking_folder'],
-            command=command
-            )
+            zero_list = [err_file]
+            non_zero_list = [log_file]
+            non_zero_list.extend(check_files)
+
+            tus.check_outputs(
+                zero_list=zero_list,
+                non_zero_list=non_zero_list,
+                exists_list=[],
+                folder=self.settings['picking_folder'],
+                command=command
+                )
+            self.queue_lock.lock()
+            try:
+                self.add_to_queue_file(
+                    root_name=root_name,
+                    file_name=self.shared_dict_typ['list_file'],
+                    )
+                self.shared_dict_typ['queue_list'].append(root_name)
+                if time.time() - self.shared_dict_typ['queue_list_time'] < 30:
+                    return None
+                else:
+                    pass
+            finally:
+                self.queue_lock.unlock()
+
+        self.queue_lock.lock()
+        try:
+            if time.time() - self.shared_dict_typ['queue_list_time'] < 30:
+                return None
+            elif not self.shared_dict_typ['queue_list']:
+                self.shared_dict_typ['queue_list_time'] = time.time()
+                return None
+            file_use_list = []
+            file_name_list = []
+            file_queue_list = self.shared_dict_typ['queue_list'][:]
+            for entry in self.shared_dict_typ['queue_list']:
+                file_sum, file_dw_sum, file_frames = entry.split(';;;')
+                if file_dw_sum == 'None':
+                    file_use_name = file_sum
+                else:
+                    file_use_name = file_dw_sum
+                file_use_list.append(file_use_name)
+                file_name_list.append(tu.get_name(file_use_name))
+            self.shared_dict_typ['queue_list'] = []
+            self.shared_dict_typ['queue_list_time'] = time.time()
+            QThread.msleep(100)
+        finally:
+            self.queue_lock.unlock()
 
         # Create the command for picking
         command, check_files, block_gpu, gpu_list = tup.get_picking_command(
-            file_input=file_input,
+            file_input=file_use_list,
             new_name=self.settings['picking_folder'],
             settings=self.settings,
             queue_com=self.queue_com,
@@ -2444,7 +2582,7 @@ class ProcessThread(QThread):
         # Log files
         log_prefix = os.path.join(
                 self.settings['picking_folder'],
-                file_name
+                file_name_list[-1]
                 )
 
         log_file, err_file = self.run_command(
@@ -2459,80 +2597,62 @@ class ProcessThread(QThread):
         non_zero_list = [err_file, log_file]
         non_zero_list.extend(check_files)
 
-        root_path = os.path.join(os.path.dirname(file_use), file_name)
-        log_files, copied_log_files = tup.find_logfiles(
-            root_path=root_path,
-            file_name=file_name,
-            settings=self.settings,
-            queue_com=self.queue_com,
-            name=self.name
+        data, data_orig = tu.get_function_dict()[self.settings['Copy']['Picking']]['plot_data'](
+            self.settings['Copy']['Picking'],
+            self.settings['Picking_folder'][self.settings['Copy']['Picking']]
             )
 
-        tus.check_outputs(
-            zero_list=zero_list,
-            non_zero_list=non_zero_list,
-            exists_list=log_files,
-            folder=self.settings['picking_folder'],
-            command=command
-            )
-        log_files.extend(non_zero_list)
-        log_files.extend(zero_list)
+        export_log_files = []
+        for file_use, file_name in zip(file_use_list, file_name_list):
+            root_path = os.path.join(os.path.dirname(file_use), file_name)
+            log_files, copied_log_files = tup.find_logfiles(
+                root_path=root_path,
+                file_name=file_name,
+                settings=self.settings,
+                queue_com=self.queue_com,
+                name=self.name
+                )
 
-        tup.create_box_jpg(
-            file_name=file_name,
-            settings=self.settings,
-            queue_com=self.queue_com,
-            name=self.name
-            )
+            tus.check_outputs(
+                zero_list=zero_list,
+                non_zero_list=non_zero_list,
+                exists_list=log_files,
+                folder=self.settings['picking_folder'],
+                command=command
+                )
+            log_files.extend(non_zero_list)
+            log_files.extend(zero_list)
+
+            tup.create_box_jpg(
+                file_name=file_name,
+                settings=self.settings,
+                queue_com=self.queue_com,
+                name=self.name
+                )
 
         data, data_orig = tu.get_function_dict()[self.settings['Copy']['Picking']]['plot_data'](
             self.settings['Copy']['Picking'],
             self.settings['Picking_folder'][self.settings['Copy']['Picking']]
             )
 
-        warnings, skip_list = tus.check_for_outlier(
-            dict_name='picking',
-            data=data,
-            file_name=file_use,
-            settings=self.settings
-            )
+        for file_use, file_name in zip(file_use_list, file_name_list):
+            warnings, skip_list = tus.check_for_outlier(
+                dict_name='picking',
+                data=data,
+                file_name=file_use,
+                settings=self.settings
+                )
 
-        if skip_list:
-            self.remove_from_translate(os.path.basename(file_use))
-        else:
-            pass
+            if skip_list:
+                self.remove_from_translate(os.path.basename(file_use))
+            else:
+                export_log_files.extend(log_files)
 
         for warning in skip_list:
-            message = 'The parameter {0} is {1} for file {2}, which is not in the range: {3} to {4} and will be skipped! If this is not the only message, you might consider changing microscope settings!'.format(
-                warning[0],
-                warning[1],
-                file_use,
-                warning[2],
-                warning[3]
-                )
-            if time.time() - self.time_last_error > 1800:
-                self.queue_com['error'].put(message)
-                self.time_last_error = time.time()
-            else:
-                pass
-            self.queue_com['notification'].put(message)
-            self.write_error(msg=message, root_name=file_use)
+            self.send_out_of_range_error(warning, root_name, 'skip')
 
         for warning in warnings:
-            message = 'The median of the last {0} values for parameter {1} is {2}, which is not in the range: {3} to {4}! You might consider to adjust microscope settings!'.format(
-                self.settings['Notification']['Nr. of values used for median'],
-                warning[0],
-                warning[1],
-                warning[2],
-                warning[3]
-                )
-            if time.time() - self.time_last_error > 1800:
-                self.queue_com['error'].put(message)
-                self.time_last_error = time.time()
-            else:
-                pass
-            self.queue_com['notification'].put(message)
-            self.write_error(msg=message, root_name=file_use)
+            self.send_out_of_range_error(warning, root_name, 'warning')
 
         if skip_list:
             pass
@@ -2556,13 +2676,12 @@ class ProcessThread(QThread):
                             var = False
                             break
                 if var:
-                    if '!Compress data' in compare or 'Compress data' in compare:
-                        self.add_to_queue(aim=aim_name, root_name=file_frames)
-                    else:
-                        for log_file in log_files:
-                            self.add_to_queue(aim=aim_name, root_name=log_file)
+                    for log_file in export_log_files:
+                        self.add_to_queue(aim=aim_name, root_name=log_file)
                 else:
                     pass
+
+        self.remove_from_queue_file(file_queue_list, self.shared_dict_typ['list_file'])
 
     def run_compress(self, root_name):
         """
@@ -2667,8 +2786,6 @@ class ProcessThread(QThread):
 
         if self.settings['compress_folder'] in root_name:
             pass
-        elif self.settings['Copy']['Delete stack after compression?'] == 'True':
-            os.remove(root_name)
         else:
             pass
 
@@ -2682,12 +2799,123 @@ class ProcessThread(QThread):
         Returns:
         None
         """
+        dont_tar = False
+        if root_name == 'None':
+            pass
+        elif not self.settings['Copy']['Tar to work'] == 'True' and self.typ == 'Copy_work':
+            dont_tar = True
+        elif not self.settings['Copy']['Tar to backup'] == 'True' and self.typ == 'Copy_backup':
+            dont_tar = True
+        elif not self.settings['Copy']['Tar to HDD'] == 'True' and self.typ == 'Copy_HDD':
+            dont_tar = True
+        elif root_name.endswith('jpg'):
+            dont_tar = True
+        elif self.settings['tar_folder'] in root_name:
+            dont_tar = True
+        elif os.path.getsize(root_name) > 40 * 1024**2:
+            dont_tar = True
+        elif os.path.realpath(os.path.dirname(root_name)) == \
+                os.path.realpath(self.settings['project_folder']):
+            dont_tar = True
+        else:
+            for entry in self.settings['Copy']['Picking_entries']:
+                if entry.replace(' ', '_') in root_name:
+                    if root_name.endswith('txt'):
+                        dont_tar = True
+                    elif root_name.endswith('box'):
+                        dont_tar = True
+
+        if root_name == 'None':
+            self.queue_lock.lock()
+            try:
+                copy_file = [
+                    entry
+                    for entry in self.shared_dict_typ['queue_list']
+                    if self.settings['tar_folder'] in entry
+                    ][0]
+                if not os.path.exists(copy_file):
+                    self.shared_dict_typ['queue_list_time'] = time.time()
+                    return None
+                self.shared_dict_typ['tar_idx'] += 1
+                new_tar_file = os.path.join(
+                    self.settings['tar_folder'],
+                    '{0}_{1:06d}.tar'.format(self.name, self.shared_dict_typ['tar_idx'])
+                    )
+
+                self.shared_dict_typ['queue_list'].remove(copy_file)
+                self.remove_from_queue_file(
+                    copy_file,
+                    self.shared_dict_typ['list_file'],
+                    lock=False
+                    )
+                self.shared_dict_typ['queue_list'].append(new_tar_file)
+                self.add_to_queue_file(
+                    root_name=new_tar_file,
+                    file_name=self.shared_dict_typ['list_file'],
+                    )
+            finally:
+                self.queue_lock.unlock()
+
+        elif dont_tar:
+            copy_file = root_name
+
+        else:
+            self.queue_lock.lock()
+            try:
+                try:
+                    tar_file = [
+                        entry
+                        for entry in self.shared_dict_typ['queue_list']
+                        if self.settings['tar_folder'] in entry
+                        ][0]
+                except IndexError:
+                    tar_file = os.path.join(
+                        self.settings['tar_folder'],
+                        '{0}_{1:06d}.tar'.format(self.name, self.shared_dict_typ['tar_idx'])
+                        )
+                    self.shared_dict_typ['queue_list'].append(tar_file)
+                    self.add_to_queue_file(
+                        root_name=tar_file,
+                        file_name=self.shared_dict_typ['list_file'],
+                        )
+
+                with tarfile.open(tar_file, 'a') as tar:
+                    tar.add(
+                        root_name,
+                        arcname=os.path.join('..', root_name.replace(self.settings['project_folder'], ''))
+                        )
+
+                if os.path.getsize(tar_file) > 200 * 1024**2:
+                    copy_file = tar_file
+                    self.shared_dict_typ['tar_idx'] += 1
+                    new_tar_file = os.path.join(
+                        self.settings['tar_folder'],
+                        '{0}_{1:06d}.tar'.format(self.name, self.shared_dict_typ['tar_idx'])
+                        )
+
+                    self.shared_dict_typ['queue_list'].remove(copy_file)
+                    self.remove_from_queue_file(
+                        tar_file,
+                        self.shared_dict_typ['list_file'],
+                        lock=False
+                        )
+                    self.shared_dict_typ['queue_list'].append(new_tar_file)
+                    self.add_to_queue_file(
+                        root_name=new_tar_file,
+                        file_name=self.shared_dict_typ['list_file'],
+                        )
+                else:
+                    self.shared_dict_typ['queue_list_time'] = time.time()
+                    return None
+            finally:
+                self.queue_lock.unlock()
+
 
         mount_folder_name = '{0}_folder'.format(self.typ)
         mount_name = self.settings['Copy'][self.typ]
         sudo = self.settings['Mount'][mount_name]['Need sudo for copy?']
         protocol = self.settings['Mount'][mount_name]['Protocol']
-        new_suffix = root_name.replace(
+        new_suffix = copy_file.replace(
             self.settings['General']['Project directory'],
             ''
             )
@@ -2700,12 +2928,13 @@ class ProcessThread(QThread):
             copy_method = self.copy_as_user
 
         if protocol == 'hdd':
+            new_name = None
             for hdd_folder in glob.glob(
                     '{0}/*'.format(
                         self.settings[mount_folder_name]
                         )
                     ):
-                if os.path.getsize(root_name) > \
+                if os.path.getsize(copy_file) > \
                         sh.disk_usage(hdd_folder).free:
                     new_name = None
                     continue
@@ -2721,7 +2950,8 @@ class ProcessThread(QThread):
         else:
             new_name = os.path.join(*new_prefix, *new_suffix)
 
-        copy_method(root_name, new_name)
+        copy_method(copy_file, new_name)
+        self.shared_dict_typ['queue_list_time'] = time.time()
 
     def copy_as_user(self, file_in, file_out):
         """
@@ -2749,65 +2979,65 @@ class ProcessThread(QThread):
         True, if ready
         """
         return True
-        if 'Translation_file.txt' in file_out:
-            while True:
-                is_locked = bool(not self.shared_dict['translate_lock'].tryLock())
-                if not is_locked:
-                    self.shared_dict['translate_lock'].unlock()
-                    break
-                else:
-                    QThread.msleep(100)
-        elif 'Translation_file_bad.txt' in file_out:
-            while True:
-                is_locked = bool(not self.shared_dict['translate_lock'].tryLock())
-                if not is_locked:
-                    self.shared_dict['translate_lock'].unlock()
-                    break
-                else:
-                    QThread.msleep(100)
-        elif '_transphire_ctf_partres.txt' in file_out:
-            while True:
-                is_locked = bool(not self.shared_dict['ctf_partres_lock'].tryLock())
-                if not is_locked:
-                    self.shared_dict['ctf_partres_lock'].unlock()
-                    break
-                else:
-                    QThread.msleep(100)
-        elif '_transphire_ctf.star' in file_out:
-            while True:
-                is_locked = bool(not self.shared_dict['ctf_star_lock'].tryLock())
-                if not is_locked:
-                    self.shared_dict['ctf_star_lock'].unlock()
-                    break
-                else:
-                    QThread.msleep(100)
-        elif '_transphire_motion.txt' in file_out:
-            while True:
-                is_locked = bool(not self.shared_dict['motion_txt_lock'].tryLock())
-                if not is_locked:
-                    self.shared_dict['motion_txt_lock'].unlock()
-                    break
-                else:
-                    QThread.msleep(100)
-        elif '_transphire_motion.star' in file_out:
-            while True:
-                is_locked = bool(not self.shared_dict['motion_star_lock'].tryLock())
-                if not is_locked:
-                    self.shared_dict['motion_star_lock'].unlock()
-                    break
-                else:
-                    QThread.msleep(100)
-        elif '_transphire_motion_relion3.star' in file_out:
-            while True:
-                is_locked = bool(not self.shared_dict['motion_star_relion3_lock'].tryLock())
-                if not is_locked:
-                    self.shared_dict['motion_star_relion3_lock'].unlock()
-                    break
-                else:
-                    QThread.msleep(100)
-        else:
-            pass
-        return True
+        #if 'Translation_file.txt' in file_out:
+        #    while True:
+        #        is_locked = bool(not self.shared_dict['translate_lock'].tryLock())
+        #        if not is_locked:
+        #            self.shared_dict['translate_lock'].unlock()
+        #            break
+        #        else:
+        #            QThread.msleep(100)
+        #elif 'Translation_file_bad.txt' in file_out:
+        #    while True:
+        #        is_locked = bool(not self.shared_dict['translate_lock'].tryLock())
+        #        if not is_locked:
+        #            self.shared_dict['translate_lock'].unlock()
+        #            break
+        #        else:
+        #            QThread.msleep(100)
+        #elif '_transphire_ctf_partres.txt' in file_out:
+        #    while True:
+        #        is_locked = bool(not self.shared_dict['ctf_partres_lock'].tryLock())
+        #        if not is_locked:
+        #            self.shared_dict['ctf_partres_lock'].unlock()
+        #            break
+        #        else:
+        #            QThread.msleep(100)
+        #elif '_transphire_ctf.star' in file_out:
+        #    while True:
+        #        is_locked = bool(not self.shared_dict['ctf_star_lock'].tryLock())
+        #        if not is_locked:
+        #            self.shared_dict['ctf_star_lock'].unlock()
+        #            break
+        #        else:
+        #            QThread.msleep(100)
+        #elif '_transphire_motion.txt' in file_out:
+        #    while True:
+        #        is_locked = bool(not self.shared_dict['motion_txt_lock'].tryLock())
+        #        if not is_locked:
+        #            self.shared_dict['motion_txt_lock'].unlock()
+        #            break
+        #        else:
+        #            QThread.msleep(100)
+        #elif '_transphire_motion.star' in file_out:
+        #    while True:
+        #        is_locked = bool(not self.shared_dict['motion_star_lock'].tryLock())
+        #        if not is_locked:
+        #            self.shared_dict['motion_star_lock'].unlock()
+        #            break
+        #        else:
+        #            QThread.msleep(100)
+        #elif '_transphire_motion_relion3.star' in file_out:
+        #    while True:
+        #        is_locked = bool(not self.shared_dict['motion_star_relion3_lock'].tryLock())
+        #        if not is_locked:
+        #            self.shared_dict['motion_star_relion3_lock'].unlock()
+        #            break
+        #        else:
+        #            QThread.msleep(100)
+        #else:
+        #    pass
+        #return True
 
     def copy_as_another_user(self, file_in, file_out):
         """
@@ -2922,3 +3152,36 @@ class ProcessThread(QThread):
             pass
 
         return log_file, err_file
+
+    def send_out_of_range_error(self, warning, file_name, error_type):
+        message_const = 'If this is not the only message, you might consider changing microscope settings!'
+
+        if error_type == 'warning':
+            message_notification = '{0}: Subsequent parameters out of range!'.format(self.name)
+            message_error = 'The median of the last {0} values for parameter {1} is {2}, which is not in the range: {3} to {4}!'.format(
+                self.settings['Notification']['Nr. of values used for median'],
+                warning[0],
+                warning[1],
+                warning[2],
+                warning[3]
+                )
+        elif error_type == 'skip':
+            message_notification = '{0}: Parameter out of range!'.format(self.name)
+            message_error = 'The parameter {0} is {1} for file {2}, which is not in the range: {3} to {4} and will be skipped!'.format(
+                warning[0],
+                warning[1],
+                file_name,
+                warning[2],
+                warning[3]
+                )
+        else:
+            assert True
+        message_notification = '\n'.join([message_notification, message_const])
+        message_error = '\n'.join([message_error, message_const])
+        if time.time() - self.time_last_error > 1800:
+            self.queue_com['error'].put(message_error)
+            self.time_last_error = time.time()
+        else:
+            pass
+        self.queue_com['notification'].put(message_notification)
+        self.write_error(msg=message_error, root_name=file_name)

@@ -20,6 +20,8 @@ import os
 import re
 import collections as co
 import numpy as np
+import mrcfile as mrc
+import matplotlib.image as mi
 from transphire import transphire_utils as tu
 
 
@@ -448,7 +450,7 @@ def combine_motion_outputs(
         )
     movie_name = re.search( r'^-(?:InTiff|InMrc)[ ]+([^ ]+)$', data_read, re.MULTILINE).group(1)
 
-    if settings['Copy']['Compress data'] == 'True':
+    if settings['Copy']['Compress'] == 'True':
         movie_name = movie_name.replace(stack_folder, 'Compress')
         movie_name = movie_name.replace('.mrc', '.tiff')
     else:
@@ -625,3 +627,69 @@ def create_export_data(export_data, lines):
         else:
             row_string.append('{0:s}'.format(value))
     lines.append('{0}\n'.format('\t'.join(row_string)))
+
+
+def create_jpg_file(input_file, settings):
+    file_name = tu.get_name(input_file)
+
+    tu.mkdir_p(os.path.join(settings['motion_folder'], 'jpg'))
+    tu.mkdir_p(os.path.join(settings['motion_folder'], 'jpg_2'))
+
+    jpg_file_1 = os.path.join(settings['motion_folder'], 'jpg', '{0}.jpg'.format(file_name))
+    jpg_file_2 = os.path.join(settings['motion_folder'], 'jpg_2', '{0}.jpg'.format(file_name))
+
+    arr_1 = None
+    arr_2 = None
+
+    try:
+        with mrc.open(input_file) as mrc_file:
+            input_data = mrc_file.data
+    except ValueError:
+        with mrc.open(input_file, 'r+', permissive=True) as mrc_file:
+            mrc_file.header.map = mrc.constants.MAP_ID
+        with mrc.open(input_file) as mrc_file:
+            input_data = mrc_file.data
+    if len(input_data.shape) == 3:
+            input_data = np.sum(input_data, axis=0) / input_data.shape[0]
+    input_data = input_data - np.mean(input_data)
+    input_data = tu.normalize_image(input_data)
+
+    original_shape = 4096
+    bin_shape = 512
+    ratio = original_shape / bin_shape
+    assert ratio.is_integer()
+    ratio = int(ratio)
+    pad_x = original_shape - input_data.shape[0]
+    pad_y = original_shape - input_data.shape[1]
+
+    input_data = np.pad(input_data, ((0, pad_x), (0, pad_y)), mode='median')
+    shape = (bin_shape, bin_shape)
+    output_data = tu.rebin(input_data, shape)[:-int(1+pad_x//ratio), :-int(1+pad_y//ratio)]
+    arr_1 = output_data
+
+    tile_overlap = 512 / 2
+    tile_shape = 512
+    tile_ratio = original_shape / tile_overlap
+    assert tile_ratio.is_integer()
+    tile_ratio = int(tile_ratio)
+    tile_images = []
+    for x_val in range(tile_ratio):
+        if (x_val+1)*tile_shape > original_shape:
+            continue
+        for y_val in range(tile_ratio):
+            if (y_val+1)*tile_shape > original_shape:
+                continue
+            slices = (
+                slice(x_val*tile_shape, (x_val+1)*tile_shape, 1),
+                slice(y_val*tile_shape, (y_val+1)*tile_shape, 1),
+                )
+            pw = np.abs(np.fft.fftshift(np.fft.fft2(input_data[slices])))**2
+            tile_images.append(pw)
+    if tile_images:
+        arr_2 = np.sum(np.array(tile_images) / len(tile_images), axis=0)
+        arr_2 = tu.rebin(arr_2, shape)
+        arr_2 = tu.normalize_image(arr_2, apix=float(settings[settings['Copy']['Motion']]['-PixSize']), real=False)
+    if arr_1 is not None:
+        mi.imsave(jpg_file_1, arr_1, cmap='gist_gray')
+    if arr_2 is not None:
+        mi.imsave(jpg_file_2, arr_2, cmap='gist_gray')

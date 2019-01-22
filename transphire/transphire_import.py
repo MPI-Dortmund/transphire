@@ -18,8 +18,8 @@
 import os
 import glob
 import re
-import imageio
 import numpy as np
+from transphire import transphire_utils as tu
 
 
 def get_header(input_file):
@@ -68,6 +68,14 @@ def get_dtype_dict():
     Dtype dict
     """
     dtype = {}
+    dtype['motion'] = [
+        ('overall drift', '<f8'),
+        ('average drift per frame', '<f8'),
+        ('first frame drift', '<f8'),
+        ('average drift per frame without first', '<f8'),
+        ('file_name', '|U1200'),
+        ('image', '|U1200'),
+        ]
     dtype['ctf'] = [
         ('mic_number', '<f8'),
         ('defocus', '<f8'),
@@ -76,7 +84,13 @@ def get_dtype_dict():
         ('phase_shift', '<f8'),
         ('cross_corr', '<f8'),
         ('limit', '<f8'),
-        ('file_name', '|U1200')
+        ('file_name', '|U1200'),
+        ('image', '|U1200'),
+        ]
+    dtype['picking'] = [
+        ('particles', '<i8'),
+        ('file_name', '|U1200'),
+        ('image', '|U1200'),
         ]
     dtype['Gctf v1.06'] = [
         ('defocus_1', '<f8'),
@@ -125,13 +139,6 @@ def get_dtype_dict():
         ('limit', '<f8'),
         ('file_name', '|U1200')
         ]
-    dtype['motion'] = [
-        ('overall drift', '<f8'),
-        ('average drift per frame', '<f8'),
-        ('first frame drift', '<f8'),
-        ('average drift per frame without first', '<f8'),
-        ('file_name', '|U1200')
-        ]
     dtype['crYOLO v1.0.4'] = [
         ('coord_x', '<f8'),
         ('coord_y', '<f8'),
@@ -151,12 +158,6 @@ def get_dtype_dict():
         ('coord_y', '<f8'),
         ('box_x', '<f8'),
         ('box_y', '<f8'),
-        ('file_name', '|U1200'),
-        ]
-    dtype['picking'] = [
-        ('object', 'O'),
-        ('image', '|U1200'),
-        ('particles', '<i8'),
         ('file_name', '|U1200'),
         ]
     return dtype
@@ -342,16 +343,16 @@ def import_ctffind_v4_1_8(name, directory_name):
     Return:
     Imported data
     """
-    files = np.array([
+    files = [
         entry for entry in glob.glob(
-            '{0}/*.txt'.format(directory_name)
-            ) if '_avrot.txt' not in entry and 'transphire' not in entry
-        ], dtype=str)
+        '{0}/*.txt'.format(directory_name)
+        ) if not entry.endswith('_avrot.txt')
+        ]
 
     useable_files = []
     for file_name in files:
         try:
-            array = np.genfromtxt(
+            data_name = np.genfromtxt(
                 file_name,
                 dtype=get_dtype_import_dict()[name],
                 )
@@ -360,10 +361,20 @@ def import_ctffind_v4_1_8(name, directory_name):
         except IOError:
             continue
         else:
-            if array.size > 0:
-                useable_files.append(file_name)
+            if data_name.size > 0:
+                useable_files.append([file_name, data_name])
             else:
                 continue
+
+    useable_files_jpg = [
+        tu.get_name(entry)
+        for entry in glob.glob(os.path.join(directory_name, 'jpg*', '*.jpg'))
+        ]
+    useable_files = [
+        [file_name, data_name]
+        for file_name, data_name in sorted(useable_files)
+        if tu.get_name(file_name) in useable_files_jpg
+        ]
 
     data = np.zeros(
         len(useable_files),
@@ -378,55 +389,94 @@ def import_ctffind_v4_1_8(name, directory_name):
     data.fill(0)
     data_original.fill(0)
 
-    for idx, file_name in sorted(enumerate(useable_files)):
+    file_names_jpg = [os.path.basename(os.path.splitext(entry[0])[0]) for entry in useable_files]
+    jpgs = sorted([os.path.basename(entry) for entry in glob.glob(os.path.join(directory_name, 'jpg*'))])
+    jpg_names = [';;;'.join([os.path.join(directory_name, jpg_dir_name, '{0}.jpg'.format(entry)) for jpg_dir_name in jpgs]) for entry in file_names_jpg]
 
-        try:
-            data_name = np.genfromtxt(
-                file_name,
-                dtype=get_dtype_import_dict()[name],
-                )
-        except IOError:
-            continue
-        else:
-            if data_name.size == 0:
-                continue
-            else:
-                pass
+    match_re = re.compile('# Input file: (.*?) ; Number of micrographs: 1')
 
-        data[idx]['file_name'] = file_name
-        input_name = None
-
+    file_names = []
+    for file_name, _ in useable_files:
         with open(file_name, 'r') as read:
-            for line in read.readlines():
-                match_re = re.match('# Input file: (.*?) ; Number of micrographs: 1', line)
-                if match_re is not None:
-                    input_name = match_re.group(1)
-                else:
-                    pass
-        if input_name is None:
-            raise IOError(
-                'Could not read {0} file name! Please contact the TranSPHIRE authors! -- {1}'.format(
-                    name,
-                    file_name
-                    )
-                )
+            content = read.read()
+        file_names.append(match_re.search(content).group(1))
+
+    data_original['file_name'] = file_names
+    data['file_name'] = file_names
+    for dtype_name in data_original.dtype.names:
+        if dtype_name == 'file_name':
+            continue
+        if dtype_name == 'phase_shift':
+            data_original[dtype_name] = [np.degrees(entry[1][dtype_name]) for entry in useable_files]
         else:
-            data_original[idx]['file_name'] = input_name
+            data_original[dtype_name] = [entry[1][dtype_name] for entry in useable_files]
 
-        for entry in data_name.dtype.names:
-            if entry == 'phase_shift':
-                data_original[idx][entry] = np.degrees(data_name[entry])
-            else:
-                data_original[idx][entry] = data_name[entry]
+        if dtype_name == 'defocus_1':
+            data['defocus'] = [(entry[1]['defocus_2'] + entry[1]['defocus_1']) / 2 for entry in useable_files]
+        elif dtype_name == 'defocus_2':
+            data['defocus_diff'] = [entry[1]['defocus_2'] - entry[1]['defocus_1'] for entry in useable_files]
+        elif dtype_name == 'phase_shift':
+            data[dtype_name] = [np.degrees(entry[1][dtype_name]) for entry in useable_files]
+        else:
+            data[dtype_name] = [entry[1][dtype_name] for entry in useable_files]
+    data['image'] = jpg_names
 
-            if entry == 'defocus_1':
-                data[idx]['defocus'] = (data_name['defocus_1']+data_name['defocus_2'])/2
-            elif entry == 'defocus_2':
-                data[idx]['defocus_diff'] = data_name['defocus_2']-data_name['defocus_1']
-            elif entry == 'phase_shift':
-                data[idx][entry] = np.degrees(data_name[entry])
-            else:
-                data[idx][entry] = data_name[entry]
+    #for idx, file_name in sorted(enumerate(useable_files)):
+
+    #    try:
+    #        data_name = np.genfromtxt(
+    #            file_name,
+    #            dtype=get_dtype_import_dict()[name],
+    #            )
+    #    except IOError:
+    #        continue
+    #    else:
+    #        if data_name.size == 0:
+    #            continue
+    #        else:
+    #            pass
+
+    #    data[idx]['file_name'] = file_name
+    #    input_name = None
+
+    #    with open(file_name, 'r') as read:
+    #        for line in read.readlines():
+    #            match_re = re.match('# Input file: (.*?) ; Number of micrographs: 1', line)
+    #            if match_re is not None:
+    #                input_name = match_re.group(1)
+    #            else:
+    #                pass
+    #    if input_name is None:
+    #        raise IOError(
+    #            'Could not read {0} file name! Please contact the TranSPHIRE authors! -- {1}'.format(
+    #                name,
+    #                file_name
+    #                )
+    #            )
+    #    else:
+    #        data_original[idx]['file_name'] = input_name
+
+    #    for entry in data_name.dtype.names:
+    #        if entry == 'phase_shift':
+    #            data_original[idx][entry] = np.degrees(data_name[entry])
+    #        else:
+    #            data_original[idx][entry] = data_name[entry]
+
+    #        if entry == 'defocus_1':
+    #            data[idx]['defocus'] = (data_name['defocus_1']+data_name['defocus_2'])/2
+    #        elif entry == 'defocus_2':
+    #            data[idx]['defocus_diff'] = data_name['defocus_2']-data_name['defocus_1']
+    #        elif entry == 'phase_shift':
+    #            data[idx][entry] = np.degrees(data_name[entry])
+    #        else:
+    #            data[idx][entry] = data_name[entry]
+
+    #    jpg_name = os.path.join(
+    #        directory_name,
+    #        'jpg*',
+    #        '{0}.jpg'.format(os.path.basename(os.path.splitext(file_name)[0]))
+    #        )
+    #    data[idx]['image'] = ';;;'.join(glob.glob(jpg_name))
 
     data = np.sort(data, order='file_name')
     data_original = np.sort(data_original, order='file_name')
@@ -461,17 +511,10 @@ def import_gctf_v1_06(name, directory_name):
     Return:
     Imported data
     """
-    files = np.array(
-        [
-            entry for entry in glob.glob(
-                '{0}/*_gctf.star'.format(directory_name)
-            )
-            ],
-        dtype=str
-        )
+    suffix = '_gctf'
 
     useable_files = []
-    for file_name in files:
+    for file_name in sorted(glob.glob('{0}/*{1}.star'.format(directory_name, suffix))):
         try:
             dtype, max_header = get_header(input_file=file_name)
             data_name = np.genfromtxt(
@@ -485,9 +528,19 @@ def import_gctf_v1_06(name, directory_name):
             continue
         else:
             if data_name.size > 0:
-                useable_files.append(file_name)
+                useable_files.append([file_name, data_name])
             else:
                 continue
+
+    useable_files_jpg = [
+        tu.get_name(entry)
+        for entry in glob.glob(os.path.join(directory_name, 'jpg*', '*.jpg'))
+        ]
+    useable_files = [
+        [file_name, data_name]
+        for file_name, data_name in sorted(useable_files)
+        if tu.get_name(tu.get_name(file_name)) in useable_files_jpg
+        ]
 
     data = np.zeros(
         len(useable_files),
@@ -501,58 +554,90 @@ def import_gctf_v1_06(name, directory_name):
     data_original = np.atleast_1d(data_original)
     data.fill(0)
     data_original.fill(0)
+    if not useable_files:
+        return None, None
+
+    file_names_jpg = [tu.get_name(tu.get_name(entry[0])) for entry in useable_files]
+    jpgs = sorted([os.path.basename(entry) for entry in glob.glob(os.path.join(directory_name, 'jpg*'))])
+    jpg_names = [';;;'.join([os.path.join(directory_name, jpg_dir_name, '{0}.jpg'.format(entry)) for jpg_dir_name in jpgs]) for entry in file_names_jpg]
 
     relion_dict = get_relion_dict()
-    for idx, file_name in enumerate(useable_files):
+    for dtype_name in useable_files[0][1].dtype.names:
         try:
-            dtype, max_header = get_header(input_file=file_name)
-        except ValueError:
-            print('Could not read header of {0}!'.format(file_name))
-            data, data_original =  None, None
-            break
-
-        try:
-            data_name = np.genfromtxt(
-                file_name,
-                dtype=dtype,
-                skip_header=max_header,
-                )
-        except IOError:
+            transphire_name = relion_dict[dtype_name]
+        except KeyError:
             continue
+
+        try:
+            data_original[transphire_name] = np.nan_to_num([entry[1][dtype_name] for entry in useable_files])
+        except ValueError:
+            data_original[transphire_name] = 0
+
+        if transphire_name == 'defocus_1':
+            data['defocus'] = [(entry[1]['_rlnDefocusU']+entry[1]['_rlnDefocusV']) / 2 for entry in useable_files]
+        elif transphire_name == 'defocus_2':
+            data['defocus_diff'] = [entry[1]['_rlnDefocusV']-entry[1]['_rlnDefocusU'] for entry in useable_files]
         else:
-            if data_name.size == 0:
-                continue
-            else:
-                pass
+            data[transphire_name] = np.nan_to_num([entry[1][dtype_name] for entry in useable_files])
+    data['image'] = jpg_names
 
-        for dtype_name in data_name.dtype.names:
-            try:
-                transphire_name = relion_dict[dtype_name]
-            except KeyError:
-                continue
+    #for idx, file_name in enumerate(useable_files):
+    #    try:
+    #        dtype, max_header = get_header(input_file=file_name)
+    #    except ValueError:
+    #        print('Could not read header of {0}!'.format(file_name))
+    #        data, data_original =  None, None
+    #        break
 
-            try:
-                data_original[idx][transphire_name] = np.nan_to_num(data_name[dtype_name])
-            except ValueError:
-                data_original[idx][transphire_name] = 0
+    #    try:
+    #        data_name = np.genfromtxt(
+    #            file_name,
+    #            dtype=dtype,
+    #            skip_header=max_header,
+    #            )
+    #    except IOError:
+    #        continue
+    #    else:
+    #        if data_name.size == 0:
+    #            continue
+    #        else:
+    #            pass
 
-            if transphire_name == 'defocus_1':
-                try:
-                    data[idx]['defocus'] = (
-                        data_name['_rlnDefocusU']+data_name['_rlnDefocusV']
-                        ) / 2
-                except ValueError:
-                    data[idx][transphire_name] = 0
-            elif transphire_name == 'defocus_2':
-                try:
-                    data[idx]['defocus_diff'] = data_name['_rlnDefocusV']-data_name['_rlnDefocusU']
-                except ValueError:
-                    data[idx][transphire_name] = 0
-            else:
-                try:
-                    data[idx][transphire_name] = np.nan_to_num(data_name[dtype_name])
-                except ValueError:
-                    data[idx][transphire_name] = 0
+    #    for dtype_name in data_name.dtype.names:
+    #        try:
+    #            transphire_name = relion_dict[dtype_name]
+    #        except KeyError:
+    #            continue
+
+    #        try:
+    #            data_original[idx][transphire_name] = np.nan_to_num(data_name[dtype_name])
+    #        except ValueError:
+    #            data_original[idx][transphire_name] = 0
+
+    #        if transphire_name == 'defocus_1':
+    #            try:
+    #                data[idx]['defocus'] = (
+    #                    data_name['_rlnDefocusU']+data_name['_rlnDefocusV']
+    #                    ) / 2
+    #            except ValueError:
+    #                data[idx][transphire_name] = 0
+    #        elif transphire_name == 'defocus_2':
+    #            try:
+    #                data[idx]['defocus_diff'] = data_name['_rlnDefocusV']-data_name['_rlnDefocusU']
+    #            except ValueError:
+    #                data[idx][transphire_name] = 0
+    #        else:
+    #            try:
+    #                data[idx][transphire_name] = np.nan_to_num(data_name[dtype_name])
+    #            except ValueError:
+    #                data[idx][transphire_name] = 0
+
+    #    jpg_name = os.path.join(
+    #        directory_name,
+    #        'jpg*',
+    #        '{0}.jpg'.format(tu.get_name(tu.get_name(file_name)))
+    #        )
+    #    data[idx]['image'] = ';;;'.join(glob.glob(jpg_name))
 
     data = np.sort(data, order='file_name')
     data_original = np.sort(data_original, order='file_name')
@@ -571,15 +656,9 @@ def import_cter_v1_0(name, directory_name):
     Return:
     Imported data
     """
-    files = np.array(
-        [
-            entry for entry in glob.glob('{0}/*/partres.txt'.format(directory_name))
-            ],
-        dtype=str
-        )
 
     useable_files = []
-    for file_name in files:
+    for file_name in sorted(glob.glob('{0}/*/partres.txt'.format(directory_name))):
         try:
             data_name = np.genfromtxt(
                 file_name,
@@ -591,9 +670,19 @@ def import_cter_v1_0(name, directory_name):
             continue
         else:
             if data_name.size > 0:
-                useable_files.append(file_name)
+                useable_files.append([file_name, data_name])
             else:
                 continue
+
+    useable_files_jpg = [
+        tu.get_name(entry)
+        for entry in glob.glob(os.path.join(directory_name, 'jpg*', '*.jpg'))
+        ]
+    useable_files = [
+        [file_name, data_name]
+        for file_name, data_name in useable_files
+        if os.path.split(os.path.dirname(file_name))[-1] in useable_files_jpg
+        ]
 
     data = np.zeros(
         len(useable_files),
@@ -608,43 +697,75 @@ def import_cter_v1_0(name, directory_name):
     data.fill(0)
     data_original.fill(0)
 
-    for idx, file_name in sorted(enumerate(useable_files)):
-        try:
-            data_name = np.genfromtxt(
-                file_name,
-                dtype=get_dtype_import_dict()[name],
-                )
-        except IOError:
-            continue
+    file_names_jpg = [os.path.split(os.path.dirname(entry[0]))[-1] for entry in useable_files]
+    jpgs = sorted([os.path.basename(entry) for entry in glob.glob(os.path.join(directory_name, 'jpg*'))])
+    jpg_names = [';;;'.join([os.path.join(directory_name, jpg_dir_name, '{0}.jpg'.format(entry)) for jpg_dir_name in jpgs if os.path.exists(os.path.join(directory_name, jpg_dir_name, '{0}.jpg'.format(entry)))]) for entry in file_names_jpg]
+
+
+    for dtype_name in data_original.dtype.names:
+        data_original[dtype_name] = [entry[1][dtype_name] for entry in useable_files]
+        if dtype_name == 'defocus':
+            data['defocus'] = [entry[1][dtype_name] * 10000 for entry in useable_files]
+        elif dtype_name == 'astigmatism_amplitude':
+            data['defocus_diff'] = [entry[1][dtype_name] * 10000 for entry in useable_files]
+        elif dtype_name == 'astigmatism_angle':
+            data['astigmatism'] = [45 - entry[1][dtype_name] for entry in useable_files]
+        elif dtype_name == 'phase_shift':
+            data['phase_shift'] = [entry[1][dtype_name] for entry in useable_files]
+        elif dtype_name == 'file_name':
+            data['file_name'] = [entry[1][dtype_name] for entry in useable_files]
+        elif dtype_name == 'standard_deviation_defocus':
+            data['cross_corr'] = [entry[1][dtype_name] for entry in useable_files]
+        elif dtype_name == 'limit_defocus_and_astigmatism':
+            data['limit'] = [1 / entry[1][dtype_name] if entry[1][dtype_name] != 0 else 1 / entry[1]['limit_pixel_error'] for entry in useable_files]
         else:
-            if data_name.size == 0:
-                continue
-            else:
-                pass
+            continue
+    data['image'] = jpg_names
 
-        for entry in data_name.dtype.names:
-            data_original[idx][entry] = data_name[entry]
-            if entry == 'defocus':
-                data[idx][entry] = data_name[entry] * 10000
-            elif entry == 'astigmatism_amplitude':
-                data[idx]['defocus_diff'] = data_name[entry] * 10000
-            elif entry == 'astigmatism_angle':
-                data[idx]['astigmatism'] = 45 - data_name[entry]
-            elif entry == 'phase_shift':
-                data[idx]['phase_shift'] = data_name[entry]
-            elif entry == 'file_name':
-                data[idx]['file_name'] = data_name[entry]
-            elif entry == 'standard_deviation_defocus':
-                data[idx]['cross_corr'] = data_name[entry]
-            elif entry == 'limit_defocus_and_astigmatism':
-                if data_name[entry] == 0:
-                    value = data_name['limit_pixel_error']
-                else:
-                    value = data_name[entry]
+    #for idx, file_name in sorted(enumerate(useable_files)):
+    #    try:
+    #        data_name = np.genfromtxt(
+    #            file_name,
+    #            dtype=get_dtype_import_dict()[name],
+    #            )
+    #    except IOError:
+    #        continue
+    #    else:
+    #        if data_name.size == 0:
+    #            continue
+    #        else:
+    #            pass
 
-                data[idx]['limit'] = 1 / value
-            else:
-                continue
+    #    for entry in data_name.dtype.names:
+    #        data_original[idx][entry] = data_name[entry]
+    #        if entry == 'defocus':
+    #            data[idx][entry] = data_name[entry] * 10000
+    #        elif entry == 'astigmatism_amplitude':
+    #            data[idx]['defocus_diff'] = data_name[entry] * 10000
+    #        elif entry == 'astigmatism_angle':
+    #            data[idx]['astigmatism'] = 45 - data_name[entry]
+    #        elif entry == 'phase_shift':
+    #            data[idx]['phase_shift'] = data_name[entry]
+    #        elif entry == 'file_name':
+    #            data[idx]['file_name'] = data_name[entry]
+    #        elif entry == 'standard_deviation_defocus':
+    #            data[idx]['cross_corr'] = data_name[entry]
+    #        elif entry == 'limit_defocus_and_astigmatism':
+    #            if data_name[entry] == 0:
+    #                value = data_name['limit_pixel_error']
+    #            else:
+    #                value = data_name[entry]
+
+    #            data[idx]['limit'] = 1 / value
+    #        else:
+    #            continue
+
+    #    jpg_name = os.path.join(
+    #        directory_name,
+    #        'jpg*',
+    #        '{0}.jpg'.format(os.path.split(os.path.dirname(file_name))[-1])
+    #        )
+    #    data[idx]['image'] = ';;;'.join(glob.glob(jpg_name))
 
     data = np.sort(data, order='file_name')
     data_original = np.sort(data_original, order='file_name')
@@ -689,6 +810,16 @@ def import_motion_cor_2_v1_0_0(name, directory_name):
             else:
                 continue
 
+    useable_files_jpg = set([
+        tu.get_name(entry)
+        for entry in glob.glob(os.path.join(directory_name, 'jpg*', '*.jpg'))
+        ])
+    useable_files = [
+        file_name
+        for file_name in sorted(useable_files)
+        if tu.get_name(tu.get_name(file_name)) in useable_files_jpg
+        ]
+
     data = np.zeros(
         len(useable_files),
         dtype=get_dtype_dict()['motion']
@@ -731,6 +862,13 @@ def import_motion_cor_2_v1_0_0(name, directory_name):
             else:
                 pass
 
+        jpg_name = os.path.join(
+            directory_name,
+            'jpg*',
+            '{0}.jpg'.format(tu.get_name(tu.get_name(file_name)))
+            )
+        data[idx]['image'] = ';;;'.join(glob.glob(jpg_name))
+
     sort_idx = np.argsort(data, order='file_name')
     data = data[sort_idx]
     data_original = np.array(data_original)[sort_idx]
@@ -767,7 +905,7 @@ def import_motion_cor_2_v1_1_0(name, directory_name):
     return data, data_original
 
 
-def import_cryolo_v1_0_5(name, directory_name, image=True):
+def import_cryolo_v1_0_5(name, directory_name):
     """
     Import picking information for crYOLO v1.0.5.
 
@@ -778,10 +916,10 @@ def import_cryolo_v1_0_5(name, directory_name, image=True):
     Return:
     Imported data
     """
-    return import_cryolo_v1_0_4(name, directory_name, image=True)
+    return import_cryolo_v1_0_4(name, directory_name)
 
 
-def import_cryolo_v1_1_0(name, directory_name, image=True):
+def import_cryolo_v1_1_0(name, directory_name):
     """
     Import picking information for crYOLO v1.1.0.
 
@@ -792,10 +930,38 @@ def import_cryolo_v1_1_0(name, directory_name, image=True):
     Return:
     Imported data
     """
-    return import_cryolo_v1_0_4(name, directory_name, image=True)
+    return import_cryolo_v1_0_4(name, directory_name)
 
 
-def import_cryolo_v1_0_4(name, directory_name, image=True):
+def import_cryolo_v1_2_2(name, directory_name):
+    """
+    Import picking information for crYOLO v1.2.2.
+
+    Arguments:
+    name - Name of picking program
+    directory_name - Name of the directory to search for files
+
+    Return:
+    Imported data
+    """
+    return import_cryolo_v1_0_4(name, directory_name, sub_directory='EMAN')
+
+
+def import_cryolo_v1_2_1(name, directory_name):
+    """
+    Import picking information for crYOLO v1.2.2.
+
+    Arguments:
+    name - Name of picking program
+    directory_name - Name of the directory to search for files
+
+    Return:
+    Imported data
+    """
+    return import_cryolo_v1_0_4(name, directory_name)
+
+
+def import_cryolo_v1_0_4(name, directory_name, sub_directory=''):
     """
     Import picking information for crYOLO v1.0.4.
 
@@ -806,71 +972,56 @@ def import_cryolo_v1_0_4(name, directory_name, image=True):
     Return:
     Imported data
     """
-    placeholder = '*'
-
-    box_files = glob.glob(os.path.join(directory_name, '{0}.{1}'.format(placeholder, 'box')))
-    extension = 'box'
+    box_files = glob.glob(os.path.join(directory_name, sub_directory, '*.{0}'.format('box')))
     if not box_files:
-        extension = 'txt'
-        box_files = glob.glob(os.path.join(directory_name, '{0}.{1}'.format(placeholder, 'txt')))
+        box_files = glob.glob(os.path.join(directory_name, sub_directory, '*.{0}'.format('txt')))
 
     files_box = np.array(box_files)
-    useable_files_box = []
+    useable_files = []
     for file_name in files_box:
         try:
-            np.genfromtxt(file_name)
+            data_imported = np.genfromtxt(file_name)
         except ValueError:
-            continue
+            useable_files.append([os.path.splitext(os.path.basename(file_name))[0], 0])
         except IOError:
             continue
         else:
-            useable_files_box.append(os.path.splitext(os.path.basename(file_name))[0])
+            useable_files.append([os.path.splitext(os.path.basename(file_name))[0], data_imported.shape[0]])
 
-    useable_files_jpg = [os.path.splitext(os.path.basename(entry))[0] for entry in glob.glob(os.path.join(directory_name, 'jpg', '{0}.jpg'.format(placeholder)))]
-
-    useable_files = [file_name for file_name in sorted(useable_files_box) if file_name in useable_files_jpg]
+    useable_files_jpg = [
+        tu.get_name(entry)
+        for entry in glob.glob(os.path.join(directory_name, 'jpg*', '*.jpg'))
+        ]
+    useable_files = [
+        [file_name, size]
+        for file_name, size in sorted(useable_files)
+        if tu.get_name(file_name) in useable_files_jpg
+        ]
 
     data = np.zeros(
         len(useable_files),
         dtype=get_dtype_dict()['picking']
         )
     data = np.atleast_1d(data)
-    for idx, file_name in enumerate(useable_files):
-        jpg_name = os.path.join(
-            directory_name,
-            'jpg',
-            '{0}.jpg'.format(file_name)
-            )
-        box_name = os.path.join(directory_name, '{0}.{1}'.format(file_name, extension))
-        try:
-            data_name = np.atleast_1d(np.genfromtxt(
-                box_name,
-                dtype=get_dtype_import_dict()[name]
-                ))
-        except ValueError:
-            size = 0
-        except IOError:
-            continue
-        else:
-            size = data_name.shape[0]
-        data[idx]['file_name'] = file_name
-        data[idx]['particles'] = size
-        data[idx]['image'] = jpg_name
-        data[idx]['object'] = None
+    file_names = [entry[0] for entry in useable_files]
+    jpgs = sorted([os.path.basename(entry) for entry in glob.glob(os.path.join(directory_name, 'jpg*'))])
+    jpg_names = [';;;'.join([os.path.join(directory_name, jpg_dir_name, '{0}.jpg'.format(entry)) for jpg_dir_name in jpgs]) for entry in file_names]
+    sizes = [entry[1] for entry in useable_files]
+    data['file_name'] = file_names
+    data['particles'] = sizes
+    data['image'] = jpg_names
+    #for idx, entry in enumerate(useable_files):
+    #    file_name = entry[0]
+    #    size = entry[1]
+    #    jpg_name = os.path.join(
+    #        directory_name,
+    #        'jpg*',
+    #        '{0}.jpg'.format(file_name)
+    #        )
+    #    data[idx]['file_name'] = file_name
+    #    data[idx]['particles'] = size
+    #    data[idx]['image'] = ';;;'.join(glob.glob(jpg_name))
 
-    data.sort(order='file_name')
-    if image:
-        for i in range(1, 10):
-            try:
-                jpg_data = imageio.imread(data[-i]['image'])
-            except:
-                jpg_data = None
-            try:
-                data[-i]['object'] = jpg_data
-            except:
-                continue
-    else:
-        pass
     data_original = None
 
     data = np.sort(data, order='file_name')

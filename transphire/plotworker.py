@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import os
 try:
     from PyQt4.QtCore import pyqtSignal, QObject, pyqtSlot
 except ImportError:
@@ -34,7 +35,9 @@ class PlotWorker(QObject):
     sig_notification - Emitted, if phase plate limit is reached. (text|str)
     """
     sig_data = pyqtSignal(str, object, str, object)
+    sig_visible = pyqtSignal(bool, str)
     sig_calculate = pyqtSignal()
+    sig_reset_list = pyqtSignal()
 
     def __init__(self, parent=None):
         """
@@ -49,12 +52,15 @@ class PlotWorker(QObject):
         super(PlotWorker, self).__init__(parent)
         self.settings = []
         self.sig_calculate.connect(self.calculate_array)
+        self.sig_reset_list.connect(self.reset_list)
+        self.running = False
 
+    @pyqtSlot()
     def reset_list(self):
         self.settings = []
 
-    @pyqtSlot(str, object, object)
-    def set_settings(self, name, directory_name, settings):
+    @pyqtSlot(str, object, object, str)
+    def set_settings(self, name, directory_name, settings, current_name):
         """
         Set settings for the calculation of the arrays.
 
@@ -65,12 +71,23 @@ class PlotWorker(QObject):
         Returns:
         None
         """
-        self.settings.append([name, directory_name, settings])
-        self.calculate_array_now(
-            name=name,
-            directory_name=directory_name,
-            settings=settings
-            )
+        if name not in ('Later', 'False'):
+            if name == current_name:
+                self.settings.append([name, directory_name, settings])
+            if os.path.isdir(directory_name):
+                self.calculate_array_now(
+                    name=name,
+                    directory_name=directory_name,
+                    settings=settings
+                    )
+                self.sig_visible.emit(True, name)
+            else:
+                self.sig_visible.emit(False, name)
+
+
+    @pyqtSlot()
+    def reset_running(self):
+        self.running = False
 
     @pyqtSlot()
     def calculate_array(self):
@@ -80,24 +97,24 @@ class PlotWorker(QObject):
         Returns:
         None
         """
-        for name, directory_name, settings in self.settings:
-            self.calculate_array_now(
-                name=name,
-                directory_name=directory_name,
-                settings=settings
-                )
+        if not self.running:
+            for name, directory_name, settings in self.settings:
+                self.running = True
+                self.calculate_array_now(
+                    name=name,
+                    directory_name=directory_name,
+                    settings=settings
+                    )
 
     def calculate_array_now(self, name, directory_name, settings):
-        if name == 'Later' or name == 'False':
-            data = None
-        else:
-            data, _ = tu.get_function_dict()[name]['plot_data'](
-                name=name,
-                directory_name=directory_name
-                )
+        data, _ = tu.get_function_dict()[name]['plot_data'](
+            name=name,
+            directory_name=directory_name
+            )
+
         if data is None:
-            pass
+            self.running = False
         elif data.size == 0:
-            pass
+            self.running = False
         else:
             self.sig_data.emit(name, data, directory_name, settings)

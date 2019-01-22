@@ -21,6 +21,8 @@ import json
 import sys
 import shutil
 
+import numpy as np
+
 try:
     QT_VERSION = 4
     from PyQt4.QtGui import QFont
@@ -29,7 +31,6 @@ except ImportError:
     from PyQt5.QtGui import QFont
 
 from transphire.messagebox import MessageBox
-from transphire.separator import Separator
 from transphire.mountcontainer import MountContainer
 from transphire.statuscontainer import StatusContainer
 from transphire.settingscontainer import SettingsContainer
@@ -41,6 +42,39 @@ from transphire.tabdocker import TabDocker
 from transphire import transphire_content as tc
 from transphire import transphire_plot as tp
 from transphire import transphire_import as ti
+
+
+def normalize_image(data, apix=1.0, min_res=30, real=True):
+    if real:
+        pass
+    else:
+        box_x = data.shape[0]
+        box_x_half = box_x / 2
+        box_y = data.shape[1]
+        box_y_half = box_y / 2
+
+        min_freq = (apix / min_res)**2
+
+        mask = np.ones((data.shape[0], data.shape[1]), dtype=bool)
+        for idx_x in range(mask.shape[0]):
+            for idx_y in range(mask.shape[1]):
+                x = (idx_x - box_x_half) / box_x
+                y = (idx_y - box_y_half) / box_y
+                radius = x**2+y**2
+                if radius < min_freq:
+                    mask[idx_x, idx_y] = 0
+                elif np.abs(idx_x - box_x_half) < 0:
+                    mask[idx_x, idx_y] = 0
+                elif np.abs(idx_y - box_y_half) < 0:
+                    mask[idx_x, idx_y] = 0
+        data[~mask] = np.median(data[mask])
+        data = np.sqrt(data)
+
+    return data
+
+
+def get_name(name):
+    return os.path.basename(os.path.splitext(name)[0])
 
 
 def copy(file_in, file_out):
@@ -58,7 +92,12 @@ def copy(file_in, file_out):
     try:
         shutil.copy2(file_in, file_out)
     except PermissionError:
+        print('Error with {0}! Switching to copyfile!'.format(file_in))
         shutil.copyfile(file_in, file_out)
+    else:
+        umask = os.umask(0)
+        os.umask(umask)
+        os.chmod(file_out, 0o666 & ~umask)
 
 
 def get_function_dict():
@@ -144,6 +183,14 @@ def get_function_dict():
             'typ': 'picking',
             'allow_empty': [],
             },
+        'crYOLO v1.0.5': {
+            'plot': tp.update_cryolo_v1_0_5,
+            'plot_data': ti.import_cryolo_v1_0_5,
+            'content': tc.default_cryolo_v1_0_5,
+            'executable': True,
+            'typ': 'picking',
+            'allow_empty': [],
+            },
         'crYOLO v1.1.0': {
             'plot': tp.update_cryolo_v1_1_0,
             'plot_data': ti.import_cryolo_v1_1_0,
@@ -152,10 +199,18 @@ def get_function_dict():
             'typ': 'picking',
             'allow_empty': [],
             },
-        'crYOLO v1.0.5': {
-            'plot': tp.update_cryolo_v1_0_5,
-            'plot_data': ti.import_cryolo_v1_0_5,
-            'content': tc.default_cryolo_v1_0_5,
+        'crYOLO v1.2.1': {
+            'plot': tp.update_cryolo_v1_2_1,
+            'plot_data': ti.import_cryolo_v1_2_1,
+            'content': tc.default_cryolo_v1_2_1,
+            'executable': True,
+            'typ': 'picking',
+            'allow_empty': [],
+            },
+        'crYOLO v1.2.2': {
+            'plot': tp.update_cryolo_v1_2_2,
+            'plot_data': ti.import_cryolo_v1_2_2,
+            'content': tc.default_cryolo_v1_2_2,
             'executable': True,
             'typ': 'picking',
             'allow_empty': [],
@@ -265,8 +320,12 @@ def message(text):
     Return:
     None
     """
+    final_text = []
+    for line in text.splitlines():
+        final_text.append('\n'.join([line[i:i+80] for i in range(0, len(line), 80)]))
+
     dialog = MessageBox(is_question=False)
-    dialog.setText(None, text)
+    dialog.setText(None, '\n'.join(final_text))
     dialog.exec_()
 
 
@@ -522,6 +581,7 @@ def get_content_gui(content):
             'name': 'General',
             'widget': SettingsContainer,
             'content': content['General'],
+            'content_others': content['Others'],
             'layout': 'Settings',
             },
         {
@@ -558,18 +618,13 @@ def get_content_gui(content):
             'layout': 'Settings',
             },
         {
-            'name': 'Separator',
-            'layout': 'h1',
-            'separator': Separator(typ='vertical', color='black')
-            },
-        {
             'name': 'Status',
             'widget': StatusContainer,
             'content': content['Others'],
             'content_mount': content['Mount'],
             'content_pipeline': content['Pipeline'],
             'content_font': content['Font'],
-            'layout': 'h1',
+            'layout': 'v2',
             },
         {
             'name': 'Plot Motion',
@@ -588,98 +643,50 @@ def get_content_gui(content):
             },
         ]
 
-    for motion_content in content_motion:
-        gui_content.append({
-            'name': motion_content,
-            'widget': SettingsContainer,
-            'content': content[motion_content],
-            'layout': 'Motion',
-            })
-        gui_content.append({
-            'name': 'Plot {0}'.format(motion_content),
-            'widget': TabDocker,
-            'layout': 'Plot Motion',
-            })
-        gui_content.append({
-            'name': 'Plot per micrograph',
-            'widget': PlotContainer,
-            'content': 'values',
-            'plot_type': 'motion',
-            'layout': 'Plot {0}'.format(motion_content),
-            })
-        gui_content.append({
-            'name': 'Plot histogram',
-            'widget': PlotContainer,
-            'content': 'histogram',
-            'plot_type': 'motion',
-            'layout': 'Plot {0}'.format(motion_content),
-            })
-    gui_content.append({
-        'name': 'Frames',
-        'widget': FrameContainer,
-        'layout': 'Motion',
-        })
-
-    for ctf_content in content_ctf:
-        gui_content.append({
-            'name': ctf_content,
-            'widget': SettingsContainer,
-            'content': content[ctf_content],
-            'layout': 'CTF',
-            })
-        gui_content.append({
-            'name': 'Plot {0}'.format(ctf_content),
-            'widget': TabDocker,
-            'layout': 'Plot CTF',
-            })
-        gui_content.append({
-            'name': 'Plot per micrograph',
-            'widget': PlotContainer,
-            'content': 'values',
-            'plot_type': 'ctf',
-            'layout': 'Plot {0}'.format(ctf_content),
-            })
-        gui_content.append({
-            'name': 'Plot histogram',
-            'widget': PlotContainer,
-            'content': 'histogram',
-            'plot_type': 'ctf',
-            'layout': 'Plot {0}'.format(ctf_content),
-            })
-
-    for picking_content in content_picking:
-        gui_content.append({
-            'name': picking_content,
-            'widget': SettingsContainer,
-            'content': content[picking_content],
-            'layout': 'Picking',
-            })
-        gui_content.append({
-            'name': 'Plot {0}'.format(picking_content),
-            'widget': TabDocker,
-            'layout': 'Plot Picking',
-            })
-        gui_content.append({
-            'name': 'Show images',
-            'widget': PlotContainer,
-            'content': 'image',
-            'plot_type': 'picking',
-            'layout': 'Plot {0}'.format(picking_content),
-            })
-        gui_content.append({
-            'name': 'Plot per micrograph',
-            'widget': PlotContainer,
-            'content': 'values',
-            'plot_type': 'picking',
-            'layout': 'Plot {0}'.format(picking_content),
-            })
-        gui_content.append({
-            'name': 'Plot histogram',
-            'widget': PlotContainer,
-            'content': 'histogram',
-            'plot_type': 'picking',
-            'layout': 'Plot {0}'.format(picking_content),
-            })
+    all_content = []
+    all_content.append(['Motion', content_motion])
+    all_content.append(['CTF', content_ctf])
+    all_content.append(['Picking', content_picking])
+    for typ, content_typ in all_content:
+        for input_content in content_typ:
+            gui_content.append({
+                'name': input_content,
+                'widget': SettingsContainer,
+                'content': content[input_content],
+                'layout': typ,
+                })
+            gui_content.append({
+                'name': 'Plot {0}'.format(input_content),
+                'widget': TabDocker,
+                'layout': 'Plot {0}'.format(typ),
+                })
+            gui_content.append({
+                'name': 'Show images',
+                'widget': PlotContainer,
+                'content': 'image',
+                'plot_type': typ.lower(),
+                'layout': 'Plot {0}'.format(input_content),
+                })
+            gui_content.append({
+                'name': 'Plot per micrograph',
+                'widget': PlotContainer,
+                'content': 'values',
+                'plot_type': typ.lower(),
+                'layout': 'Plot {0}'.format(input_content),
+                })
+            gui_content.append({
+                'name': 'Plot histogram',
+                'widget': PlotContainer,
+                'content': 'histogram',
+                'plot_type': typ.lower(),
+                'layout': 'Plot {0}'.format(input_content),
+                })
+        if typ == 'Motion':
+            gui_content.append({
+                'name': 'Frames',
+                'widget': FrameContainer,
+                'layout': typ,
+                })
 
     return gui_content
 
@@ -696,7 +703,7 @@ def look_and_feel_small(app, font=None):
     Style sheet
     """
     if font is None:
-        font = 15.0
+        font = 5
     else:
         font = float(font)
     font_type = QFont('Verdana', font, 63)
@@ -816,7 +823,11 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
     idx += 1
     status_quota_width = float(default[0][idx]['Status quota'][0])
     idx += 1
+    tab_width = float(default[0][idx]['Tab width'][0])
+    idx += 1
     widget_height = float(default[0][idx]['Widget height'][0])
+    idx += 1
+    tab_height = float(default[0][idx]['Tab height'][0])
 
     font_type = QFont('Verdana', font, 63)
     font_type.setStyleStrategy(QFont.PreferAntialias)
@@ -834,7 +845,9 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
     status_name_width = '{0}px'.format(font * status_name_width * adjust_width)
     status_info_width = '{0}px'.format(font * status_info_width * adjust_width)
     status_quota_width = '{0}px'.format(font * status_quota_width * adjust_width)
+    tab_width = '{0}px'.format(font * tab_width * adjust_width)
     widget_height = '{0}px'.format(font * widget_height * adjust_height)
+    tab_height = '{0}px'.format(font * tab_height * adjust_height)
 
     # Style sheet
     style_widgets = """
@@ -874,7 +887,8 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
         border-top: 2px solid #C2C7CB;
         }}
     QTabBar::tab {{
-        min-width: 120px;
+        max-width: {5};
+        max-height: {6};
         }}
     QMessageBox {{
         background-image: url("{1}");
@@ -892,6 +906,8 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
         'rgba(229, 229, 229, 192)',
         'rgba(229, 229, 229, 120)',
         'rgba(0, 0, 0, 153)',
+        tab_width,
+        tab_height,
         )
 
     button_style = """
@@ -995,6 +1011,24 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
         min-width: {3}
         }}
     QPushButton#notification {{ max-width: {4}; min-width: {4} }}
+    QPushButton#sep {{
+        color: white;
+        background-color: black;
+        border-color: green;
+        border-width: 1px;
+        border-style: inset;
+        padding: 0px;
+        border-radius: 0px
+        }}
+    QPushButton#sep:checked {{
+        color: white;
+        background-color: black;
+        border-color: red;
+        border-width: 1px;
+        border-style: outset;
+        padding: 0px;
+        border-radius: 0px
+        }}
     """.format(
         start_button_width,
         frame_label_width,
@@ -1134,3 +1168,9 @@ def get_style(typ):
         color = 'black'
 
     return 'color: {0}'.format(color)
+
+
+def rebin(arr, new_shape):
+    shape = (new_shape[0], arr.shape[0] // new_shape[0],
+             new_shape[1], arr.shape[1] // new_shape[1])
+    return arr.reshape(shape).mean(-1).mean(1)
