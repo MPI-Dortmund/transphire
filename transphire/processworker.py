@@ -175,7 +175,8 @@ class ProcessWorker(QObject):
             self.settings['Copy']['Picking'].replace(' ', '_')
             )
         self.settings['compress_folder'] = os.path.join(
-            self.settings['compress_folder'], 'Compress'
+            self.settings['compress_folder'],
+            self.settings['Copy']['Compress'].replace(' ', '_')
             )
         self.settings['Copy_hdd_folder'] = os.path.join(
             self.settings['Copy_hdd_folder'], 'HDD'
@@ -668,10 +669,10 @@ class ProcessWorker(QObject):
         """
         error = False
         check_files = []
-        check_files.append(self.settings['Copy']['Motion'])
-        check_files.append(self.settings['Copy']['CTF'])
-        check_files.append(self.settings['Copy']['Picking'])
-        check_files.append('IMOD header')
+        check_files.append(['Path', self.settings['Copy']['Motion']])
+        check_files.append(['Path', self.settings['Copy']['CTF']])
+        check_files.append(['Path', self.settings['Copy']['Picking']])
+        check_files.append(['Path', 'IMOD header'])
 
         if self.settings['Copy']['Picking'] == 'crYOLO v1.0.4' or \
                 self.settings['Copy']['Picking'] == 'crYOLO v1.0.5' or \
@@ -679,26 +680,27 @@ class ProcessWorker(QObject):
                 self.settings['Copy']['Picking'] == 'crYOLO v1.2.1' or \
                 self.settings['Copy']['Picking'] == 'crYOLO v1.2.2':
             if self.settings[self.settings['Copy']['Picking']]['Filter micrographs'] == 'True':
-                check_files.append('e2proc2d.py')
+                check_files.append(['Path', 'e2proc2d.py'])
             else:
                 pass
         else:
             pass
 
-        if self.settings['Copy']['Compress'] == 'True':
-            check_files.append('IMOD mrc2tif')
+        if self.settings['Copy']['Compress'] == 'Compress cmd':
+            check_files.append([self.settings['Copy']['Compress'], '--command_compress_path'])
+            check_files.append([self.settings['Copy']['Compress'], '--command_uncompress_path'])
         else:
             pass
 
         if len(self.settings['motion_frames']) > 1:
-            check_files.append('SumMovie v1.0.2')
+            check_files.append(['Path', 'SumMovie v1.0.2'])
         else:
             pass
 
-        for name in check_files:
+        for typ, name in check_files:
             if name != 'False' and name != 'Later':
                 try:
-                    is_file = os.path.isfile(self.settings['Path'][name])
+                    is_file = os.path.isfile(self.settings[typ][name])
                 except KeyError:
                     self.sig_error.emit(
                         '{0} path not valid or disabled (Advanced, Rare)! Please adjust it!'.format(name)

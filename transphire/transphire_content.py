@@ -35,8 +35,12 @@ def default_compress_command_line():
         ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
         ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
         ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
-        ['--command_compress', 'mrc2tif -c zip ##INPUT## ##OUTPUT##', str, '', 'PLAIN', 'Main', '', 'Command used to compress the data. Use ##INPUT## and ##OUTPUT## as variables for the command.'],
-        ['--command_uncompress', 'tif2mrc ##INPUT## ##OUTPUT##', str, '', 'PLAIN', 'Advanced', '', 'Command used to uncompress the data. Use ##INPUT## and ##OUTPUT## as variables for the command.'],
+        ['--command_compress_path', 'mrc2tif', str, '', 'FILE', 'Main', '', 'Program used to execute compression.'],
+        ['--command_compress_option', '-s -c zip ##INPUT## ##OUTPUT##', str, '', 'PLAIN', 'Main', '', 'Command options used to compress the data. Use ##INPUT## and ##OUTPUT## as variables for the respective files.'],
+        ['--command_compress_extension', 'tiff', str, '', 'PLAIN', 'Main', '', 'Output extension for the compressed files.'],
+        ['--command_uncompress_path', 'tif2mrc', str, '', 'FILE', 'Advanced', '', 'Program used to execute uncompression.'],
+        ['--command_uncompress_option', '##INPUT## ##OUTPUT##', str, '', 'PLAIN', 'Advanced', '', 'Command options used to uncompress the data. Use ##INPUT## and ##OUTPUT## as variables for the respective files.'],
+        ['--command_uncompress_extension', 'mrc', str, '', 'PLAIN', 'Advanced', '', 'Output extension for the uncompressed files.'],
         ]
     return items
 
@@ -918,9 +922,9 @@ def default_copy(settings_folder):
         ['Frames to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the micograph movies to the work drive if "Copy to work" is specified.'],
         ['Frames to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the micograph movies to the backup drive if "Copy to backup" is specified.'],
         ['Frames to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the micograph movies to the HDD drive if "Copy to HDD" is specified.'],
-        ['Compressed to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the compressed micograph movies to the work drive if "Copy to work" is specified.'],
-        ['Compressed to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the compressed micograph movies to the backup drive if "Copy to backup" is specified.'],
-        ['Compressed to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the compressed micograph movies to the HDD drive if "Copy to HDD" is specified.'],
+        ['Compress to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the compressed micograph movies to the work drive if "Copy to work" is specified.'],
+        ['Compress to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the compressed micograph movies to the backup drive if "Copy to backup" is specified.'],
+        ['Compress to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the compressed micograph movies to the HDD drive if "Copy to HDD" is specified.'],
         ['Meta to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the micrograph meta data to the work drive if "Copy to work" is specified.'],
         ['Meta to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the micrograph meta data to the backup drive if "Copy to backup" is specified.'],
         ['Meta to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the micrograph meta data to the HDD drive if "Copy to HDD" is specified.'],
