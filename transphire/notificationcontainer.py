@@ -426,15 +426,29 @@ class NotificationContainer(QWidget):
                         except smtplib.SMTPServerDisconnected:
                             print('Could not send to:', name)
                             continue
+                        except Exception as e:
+                            print('Unknown exception! Could not send to:', name)
+                            continue
+
                         try:
                             server.sendmail(self.sending_email, [email], msg.as_string())
                         except smtplib.SMTPServerDisconnected:
                             print('Could not send to:', name)
                             continue
+                        except smtplib.SMTPRecipientsRefused:
+                            print('Could not send to:', name)
+                            continue
+                        except Exception as e:
+                            print('Unknown exception! Could not send to:', name)
+                            continue
+
                         try:
                             server.quit()
                         except smtplib.SMTPServerDisconnected:
                             print('Could not send to:', name)
+                            continue
+                        except Exception as e:
+                            print('Unknown exception! Could not send to:', name)
                             continue
                     else:
                         pass
