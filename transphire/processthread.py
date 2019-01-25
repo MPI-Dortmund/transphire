@@ -768,9 +768,10 @@ class ProcessThread(QThread):
                         root_name=root_name,
                         file_name=self.shared_dict['typ'][self.typ]['done_file'],
                         )
-                    self.check_queue_files(root_name=root_name)
                 finally:
                     self.queue_lock.unlock()
+
+                self.check_queue_files(root_name=root_name)
 
                 if self.typ == 'Import':
                     pass
@@ -785,61 +786,55 @@ class ProcessThread(QThread):
         if self.settings['Copy']['Compress'] == 'False':
             return
 
+
+        basename = os.path.basename(os.path.splitext(root_name)[0])
+        if self.settings['General']['Input extension'] in ('dm4',):
+            stack_extension = 'mrc'
+        elif self.settings['General']['Input extension'] in ('tiff', 'tif'):
+            return
+        else:
+            stack_extension = self.settings['General']['Input extension']
+
+        stack_file = os.path.join(
+            self.settings['stack_folder'],
+            '{0}.{1}'.format(
+                basename,
+                stack_extension,
+                )
+            )
+        compressed_file = os.path.join(
+            self.settings['compress_folder'],
+            '{0}.{1}'.format(
+                basename,
+                self.settings[self.settings['Copy']['Compress']]['--command_compress_extension'],
+                )
+            )
         options = (
-            'Delete stack after compression?',
-            'Delete compressed stack after copy?',
+            ('Delete stack after compression?', stack_file),
+            ('Delete compressed stack after copy?', compressed_file),
             )
 
-        for idx, option_name in enumerate(options):
-            if self.settings['Copy'][option_name] == 'False':
-                continue
+        delete_stack = True
+        for key in self.shared_dict['typ']:
+            self.shared_dict['typ'][key]['save_lock'].lock()
+            try:
+                for name in ('save_file', 'list_file'):
+                    with open(self.shared_dict['typ'][key][name]) as read:
+                        if compressed_file in read.read():
+                            delete_stack = False
+                        if stack_file in read.read():
+                            delete_stack = False
+            finally:
+                self.shared_dict['typ'][key]['save_lock'].unlock()
 
-            basename = os.path.basename(os.path.splitext(root_name)[0])
-            delete_stack = True
-
-            if self.settings['General']['Input extension'] in ('dm4',):
-                ext = 'mrc'
-            elif self.settings['General']['Input extension'] in ('tiff', 'tif'):
-                continue
-            else:
-                ext = self.settings['General']['Input extension']
-
-            if idx == 0:
-                file_to_delete = os.path.join(
-                    self.settings['stack_folder'],
-                    '{0}.{1}'.format(
-                        basename,
-                        ext,
-                        )
-                    )
-            elif idx == 1:
-                file_to_delete = os.path.join(
-                    self.settings['compress_folder'],
-                    '{0}.{1}'.format(
-                        basename,
-                        self.settings[self.settings['Copy']['Compress']]['--command_compress_extension'],
-                        )
-                    )
-            else:
-                raise TypeError('idx not known: {0}.'.format(idx))
-
-            for key in self.shared_dict['typ']:
-                with open(self.shared_dict['typ'][key]['save_file']) as read:
-                    if basename in read.read():
-                        delete_stack = False
-                    if file_to_delete in read.read():
-                        delete_stack = False
-                with open(self.shared_dict['typ'][key]['list_file']) as read:
-                    if basename in read.read():
-                        delete_stack = False
-                    if file_to_delete in read.read():
-                        delete_stack = False
-
-            if delete_stack:
-                try:
-                    os.remove(file_to_delete)
-                except:
-                    pass
+        print(root_name, delete_stack)
+        if delete_stack:
+            for option, file_to_delete in options:
+                if self.settings['Copy'][option] == 'True':
+                    try:
+                        os.remove(file_to_delete)
+                    except Exception as e:
+                        pass
 
     def write_error(self, msg, root_name):
         """
