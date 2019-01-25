@@ -166,12 +166,13 @@ def create_filter_command(
 
     file_output_jpg = os.path.join(
             settings['picking_folder'],
-            '{0}.jpg'.format(os.path.splitext(os.path.basename(file_input))[0])
+            '{0}.png'.format(os.path.splitext(os.path.basename(file_input))[0])
             )
     command.append('{0}'.format(settings['Path']['e2proc2d.py']))
     command.append('{0}'.format(file_output_tmp))
     command.append('{0}'.format(file_output_jpg))
     command.append('--meanshrink=4')
+    command.append('--outmode=uint8')
 
     check_files = [file_output_tmp, file_output_jpg]
     return ' '.join(command), file_output_tmp, check_files, block_gpu, gpu_list
@@ -301,7 +302,7 @@ def create_box_jpg(file_name, settings, queue_com, name):
     """
     picking_name = settings['Copy']['Picking']
     box_file = find_logfiles(file_name, file_name, settings, queue_com, name)[0][0]
-    jpg_file = os.path.join(settings['picking_folder'], '{0}.jpg'.format(file_name))
+    jpg_file = os.path.join(settings['picking_folder'], '{0}.png'.format(file_name))
     new_jpg_file = os.path.join(settings['picking_folder'], 'jpg', '{0}.jpg'.format(file_name))
     tu.mkdir_p(os.path.join(settings['picking_folder'], 'jpg'))
 

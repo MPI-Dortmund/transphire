@@ -2595,6 +2595,8 @@ class ProcessThread(QThread):
                     file_use_name = file_sum
                 else:
                     file_use_name = file_dw_sum
+                if file_use_name.startswith('./'):
+                    file_use_name = file_use_name[2:]
                 file_use_list.append(file_use_name)
                 file_name_list.append(tu.get_name(file_use_name))
             self.shared_dict_typ['queue_list'] = []
@@ -2635,7 +2637,7 @@ class ProcessThread(QThread):
             self.settings['Picking_folder'][self.settings['Copy']['Picking']]
             )
 
-        export_log_files = []
+        file_logs = []
         for file_use, file_name in zip(file_use_list, file_name_list):
             root_path = os.path.join(os.path.dirname(file_use), file_name)
             log_files, copied_log_files = tup.find_logfiles(
@@ -2662,13 +2664,15 @@ class ProcessThread(QThread):
                 queue_com=self.queue_com,
                 name=self.name
                 )
+            file_logs.append(log_files)
 
         data, data_orig = tu.get_function_dict()[self.settings['Copy']['Picking']]['plot_data'](
             self.settings['Copy']['Picking'],
             self.settings['Picking_folder'][self.settings['Copy']['Picking']]
             )
 
-        for file_use, file_name in zip(file_use_list, file_name_list):
+        export_log_files = []
+        for file_use, file_name, file_log in zip(file_use_list, file_name_list, file_logs):
             warnings, skip_list = tus.check_for_outlier(
                 dict_name='picking',
                 data=data,
@@ -2679,7 +2683,7 @@ class ProcessThread(QThread):
             if skip_list:
                 self.remove_from_translate(os.path.basename(file_use))
             else:
-                export_log_files.extend(log_files)
+                export_log_files.extend(file_log)
 
         for warning in skip_list:
             self.send_out_of_range_error(warning, root_name, 'skip')
@@ -2949,10 +2953,16 @@ class ProcessThread(QThread):
         mount_name = self.settings['Copy'][self.typ]
         sudo = self.settings['Mount'][mount_name]['Need sudo for copy?']
         protocol = self.settings['Mount'][mount_name]['Protocol']
-        new_suffix = copy_file.replace(
-            self.settings['General']['Project directory'],
-            ''
-            )
+        if self.settings['General']['Project directory'] != '.':
+            new_suffix = os.path.join(
+                os.path.dirname(copy_file).replace(
+                    self.settings['General']['Project directory'],
+                    ''
+                    ),
+                os.path.basename(copy_file),
+                )
+        else:
+            new_suffix = copy_file
         new_suffix = new_suffix.split('/')
         new_prefix = os.path.relpath(self.settings[mount_folder_name]).split('/')
 
