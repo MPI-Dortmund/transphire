@@ -827,7 +827,6 @@ class ProcessThread(QThread):
             finally:
                 self.shared_dict['typ'][key]['save_lock'].unlock()
 
-        print(root_name, delete_stack)
         if delete_stack:
             for option, file_to_delete in options:
                 if self.settings['Copy'][option] == 'True':
