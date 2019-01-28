@@ -116,6 +116,7 @@ def get_function_dict():
             'plot_data': ti.import_ctffind_v4_1_10,
             'content': tc.default_ctffind_4_v4_1_10,
             'executable': True,
+            'has_path': True,
             'typ': 'ctf',
             'allow_empty': ['Gain file'],
             },
@@ -124,6 +125,7 @@ def get_function_dict():
             'plot_data': ti.import_ctffind_v4_1_8,
             'content': tc.default_ctffind_4_v4_1_8,
             'executable': True,
+            'has_path': True,
             'typ': 'ctf',
             'allow_empty': ['Gain file'],
             },
@@ -132,6 +134,7 @@ def get_function_dict():
             'plot_data': ti.import_gctf_v1_18,
             'content': tc.default_gctf_v1_18,
             'executable': True,
+            'has_path': True,
             'typ': 'ctf',
             'allow_empty': [],
             },
@@ -140,6 +143,7 @@ def get_function_dict():
             'plot_data': ti.import_gctf_v1_06,
             'content': tc.default_gctf_v1_06,
             'executable': True,
+            'has_path': True,
             'typ': 'ctf',
             'allow_empty': [],
             },
@@ -148,6 +152,7 @@ def get_function_dict():
             'plot_data': ti.import_cter_v1_0,
             'content': tc.default_cter_v1_0,
             'executable': True,
+            'has_path': True,
             'typ': 'ctf',
             'allow_empty': [],
             },
@@ -156,6 +161,7 @@ def get_function_dict():
             'plot_data': ti.import_motion_cor_2_v1_0_0,
             'content': tc.default_motion_cor_2_v1_0_0,
             'executable': True,
+            'has_path': True,
             'typ': 'motion',
             'allow_empty': ['-DefectFile', '-Gain'],
             },
@@ -164,6 +170,7 @@ def get_function_dict():
             'plot_data': ti.import_motion_cor_2_v1_0_5,
             'content': tc.default_motion_cor_2_v1_0_5,
             'executable': True,
+            'has_path': True,
             'typ': 'motion',
             'allow_empty': ['-Dark', '-DefectFile', '-Gain'],
             },
@@ -172,6 +179,7 @@ def get_function_dict():
             'plot_data': ti.import_motion_cor_2_v1_1_0,
             'content': tc.default_motion_cor_2_v1_1_0,
             'executable': True,
+            'has_path': True,
             'typ': 'motion',
             'allow_empty': ['-Dark', '-DefectFile', '-Gain'],
             },
@@ -180,6 +188,7 @@ def get_function_dict():
             'plot_data': ti.import_cryolo_v1_0_4,
             'content': tc.default_cryolo_v1_0_4,
             'executable': True,
+            'has_path': True,
             'typ': 'picking',
             'allow_empty': [],
             },
@@ -188,6 +197,7 @@ def get_function_dict():
             'plot_data': ti.import_cryolo_v1_0_5,
             'content': tc.default_cryolo_v1_0_5,
             'executable': True,
+            'has_path': True,
             'typ': 'picking',
             'allow_empty': [],
             },
@@ -196,6 +206,7 @@ def get_function_dict():
             'plot_data': ti.import_cryolo_v1_1_0,
             'content': tc.default_cryolo_v1_1_0,
             'executable': True,
+            'has_path': True,
             'typ': 'picking',
             'allow_empty': [],
             },
@@ -204,6 +215,7 @@ def get_function_dict():
             'plot_data': ti.import_cryolo_v1_2_1,
             'content': tc.default_cryolo_v1_2_1,
             'executable': True,
+            'has_path': True,
             'typ': 'picking',
             'allow_empty': [],
             },
@@ -212,14 +224,23 @@ def get_function_dict():
             'plot_data': ti.import_cryolo_v1_2_2,
             'content': tc.default_cryolo_v1_2_2,
             'executable': True,
+            'has_path': True,
             'typ': 'picking',
             'allow_empty': [],
+            },
+        'Compress cmd': {
+            'content': tc.default_compress_command_line,
+            'executable': True,
+            'has_path': False,
+            'typ': 'compress',
+            'allow_empty': ['--command_uncompress'],
             },
         'Mount': {
             'plot': None,
             'plot_data': None,
             'content': tc.default_mount,
             'executable': False,
+            'has_path': False,
             'typ': None,
             'allow_empty': [],
             },
@@ -228,6 +249,7 @@ def get_function_dict():
             'plot_data': None,
             'content': tc.default_pipeline,
             'executable': False,
+            'has_path': False,
             'typ': None,
             'allow_empty': [],
             },
@@ -236,6 +258,7 @@ def get_function_dict():
             'plot_data': None,
             'content': tc.default_general,
             'executable': False,
+            'has_path': False,
             'typ': None,
             'allow_empty': ['Rename suffix'],
             },
@@ -244,6 +267,7 @@ def get_function_dict():
             'plot_data': None,
             'content': tc.default_notification,
             'executable': False,
+            'has_path': False,
             'typ': None,
             'allow_empty': [],
             },
@@ -252,6 +276,7 @@ def get_function_dict():
             'plot_data': None,
             'content': tc.default_notification_widget,
             'executable': False,
+            'has_path': False,
             'typ': None,
             'allow_empty': [],
             },
@@ -260,6 +285,7 @@ def get_function_dict():
             'plot_data': None,
             'content': tc.default_others,
             'executable': False,
+            'has_path': False,
             'typ': None,
             'allow_empty': [],
             },
@@ -268,6 +294,7 @@ def get_function_dict():
             'plot_data': None,
             'content': tc.default_font,
             'executable': False,
+            'has_path': False,
             'typ': None,
             'allow_empty': [],
             },
@@ -276,6 +303,7 @@ def get_function_dict():
             'plot_data': None,
             'content': tc.default_copy,
             'executable': False,
+            'has_path': False,
             'typ': None,
             'allow_empty': [],
             },
@@ -284,6 +312,7 @@ def get_function_dict():
             'plot_data': None,
             'content': tc.default_path,
             'executable': False,
+            'has_path': False,
             'typ': None,
             'allow_empty': [],
             },
@@ -413,6 +442,7 @@ def reduce_programs(exclude_set=None):
     content_motion = []
     content_ctf = []
     content_picking = []
+    content_compress = []
     function_dict = get_function_dict()
 
     for key in function_dict:
@@ -425,6 +455,8 @@ def reduce_programs(exclude_set=None):
                 content_ctf.append(key)
             elif function_dict[key]['typ'] == 'picking':
                 content_picking.append(key)
+            elif function_dict[key]['typ'] == 'compress':
+                content_compress.append(key)
             elif function_dict[key]['typ'] is None:
                 print(key, 'is executable, but does not have a typ! Exit here!')
                 sys.exit(1)
@@ -434,7 +466,7 @@ def reduce_programs(exclude_set=None):
         else:
             pass
 
-    return sorted(content_motion), sorted(content_ctf), sorted(content_picking)
+    return sorted(content_motion), sorted(content_ctf), sorted(content_picking), sorted(content_compress)
 
 
 def reduce_copy_entries(exclude_set, content):
@@ -542,7 +574,7 @@ def get_content_gui(content):
     Content as list
     """
 
-    content_motion, content_ctf, content_picking = reduce_programs()
+    content_motion, content_ctf, content_picking, content_compress = reduce_programs()
 
     gui_content = [
         {
@@ -603,6 +635,11 @@ def get_content_gui(content):
             'layout': 'Settings',
             },
         {
+            'name': 'Compress',
+            'widget': TabDocker,
+            'layout': 'Settings',
+            },
+        {
             'name': 'Motion',
             'widget': TabDocker,
             'layout': 'Settings',
@@ -644,6 +681,7 @@ def get_content_gui(content):
         ]
 
     all_content = []
+    all_content.append(['Compress', content_compress])
     all_content.append(['Motion', content_motion])
     all_content.append(['CTF', content_ctf])
     all_content.append(['Picking', content_picking])
@@ -655,32 +693,33 @@ def get_content_gui(content):
                 'content': content[input_content],
                 'layout': typ,
                 })
-            gui_content.append({
-                'name': 'Plot {0}'.format(input_content),
-                'widget': TabDocker,
-                'layout': 'Plot {0}'.format(typ),
-                })
-            gui_content.append({
-                'name': 'Show images',
-                'widget': PlotContainer,
-                'content': 'image',
-                'plot_type': typ.lower(),
-                'layout': 'Plot {0}'.format(input_content),
-                })
-            gui_content.append({
-                'name': 'Plot per micrograph',
-                'widget': PlotContainer,
-                'content': 'values',
-                'plot_type': typ.lower(),
-                'layout': 'Plot {0}'.format(input_content),
-                })
-            gui_content.append({
-                'name': 'Plot histogram',
-                'widget': PlotContainer,
-                'content': 'histogram',
-                'plot_type': typ.lower(),
-                'layout': 'Plot {0}'.format(input_content),
-                })
+            if not input_content.startswith('Compress'):
+                gui_content.append({
+                    'name': 'Plot {0}'.format(input_content),
+                    'widget': TabDocker,
+                    'layout': 'Plot {0}'.format(typ),
+                    })
+                gui_content.append({
+                    'name': 'Show images',
+                    'widget': PlotContainer,
+                    'content': 'image',
+                    'plot_type': typ.lower(),
+                    'layout': 'Plot {0}'.format(input_content),
+                    })
+                gui_content.append({
+                    'name': 'Plot per micrograph',
+                    'widget': PlotContainer,
+                    'content': 'values',
+                    'plot_type': typ.lower(),
+                    'layout': 'Plot {0}'.format(input_content),
+                    })
+                gui_content.append({
+                    'name': 'Plot histogram',
+                    'widget': PlotContainer,
+                    'content': 'histogram',
+                    'plot_type': typ.lower(),
+                    'layout': 'Plot {0}'.format(input_content),
+                    })
         if typ == 'Motion':
             gui_content.append({
                 'name': 'Frames',

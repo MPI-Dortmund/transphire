@@ -75,7 +75,8 @@ class DefaultSettings(QDialog):
                     'Gctf',
                     'CTER',
                     'MotionCor2',
-                    'crYOLO'
+                    'crYOLO',
+                    'Compress cmd',
                     ],
                 TabDocker(self)
                 ],

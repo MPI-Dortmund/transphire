@@ -21,6 +21,30 @@ from transphire import transphire_utils as tu
 from transphire import transphire_import as ti
 
 
+def default_compress_command_line():
+    """
+    Content for compression
+
+    Arguments:
+    None
+
+    Return:
+    Content items as list
+    """
+    items = [
+        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['--command_compress_path', 'mrc2tif', str, '', 'FILE', 'Main', '', 'Program used to execute compression.'],
+        ['--command_compress_option', '-s -c zip ##INPUT## ##OUTPUT##', str, '', 'PLAIN', 'Main', '', 'Command options used to compress the data. Use ##INPUT## and ##OUTPUT## as variables for the respective files.'],
+        ['--command_compress_extension', 'tiff', str, '', 'PLAIN', 'Main', '', 'Output extension for the compressed files.'],
+        ['--command_uncompress_path', 'tif2mrc', str, '', 'FILE', 'Advanced', '', 'Program used to execute uncompression.'],
+        ['--command_uncompress_option', '##INPUT## ##OUTPUT##', str, '', 'PLAIN', 'Advanced', '', 'Command options used to uncompress the data. Use ##INPUT## and ##OUTPUT## as variables for the respective files.'],
+        ['--command_uncompress_extension', 'mrc', str, '', 'PLAIN', 'Advanced', '', 'Output extension for the uncompressed files.'],
+        ]
+    return items
+
+
 def default_cryolo_v1_2_2():
     """
     Content of crYOLO version 1.2.2
@@ -333,7 +357,6 @@ def default_path():
         ['WIDGETS RARE', '8', int, '', 'PLAIN', 'Main', ''],
         ['IMOD header', '', str, '', 'FILE', 'Main', ''],
         ['IMOD newstack', '', str, '', 'FILE', 'Main', ''],
-        ['IMOD mrc2tif', '', str, '', 'FILE', 'Main', ''],
         ['IMOD dm2mrc', '', str, '', 'FILE', 'Main', ''],
         ['e2proc2d.py', '', str, '', 'FILE', 'Main', ''],
         ['SumMovie v1.0.2', '', str, '', 'FILE', 'Main', ''],
@@ -341,7 +364,8 @@ def default_path():
     function_dict = tu.get_function_dict()
     for key in sorted(function_dict.keys()):
         if function_dict[key]['executable']:
-            items.append([key, '', str, '', 'FILE', 'Main', ''])
+            if function_dict[key]['has_path']:
+                items.append([key, '', str, '', 'FILE', 'Main', ''])
         else:
             pass
 
@@ -516,9 +540,9 @@ def default_pipeline():
             'Meta to work:Copy to work:Copy_work,' +
             'Meta to backup:Copy to backup:Copy_backup,' +
             'Meta to HDD:Copy to HDD:Copy_hdd,' +
-            '!Compress:Frames to work:Copy to work:Copy_work,' +
-            '!Compress:Frames to HDD:Copy to HDD:Copy_hdd,' +
-            '!Compress:Frames to backup:Copy to backup:Copy_backup',
+            'Frames to work:Copy to work:Copy_work,' +
+            'Frames to HDD:Copy to HDD:Copy_hdd,' +
+            'Frames to backup:Copy to backup:Copy_backup',
             'PLAIN',
             '',
             ''
@@ -566,9 +590,9 @@ def default_pipeline():
             '2',
             int,
             'Compress;' +
-            'Frames to work:Copy to work:Copy_work,' +
-            'Frames to HDD:Copy to HDD:Copy_hdd,' +
-            'Frames to backup:Copy to backup:Copy_backup',
+            'Compress to work:Copy to work:Copy_work,' +
+            'Compress to HDD:Copy to HDD:Copy_hdd,' +
+            'Compress to backup:Copy to backup:Copy_backup',
             'PLAIN',
             '',
             ''
@@ -867,7 +891,7 @@ def default_copy(settings_folder):
         settings_folder=settings_folder,
         name='Mount'
         )
-    programs_motion, programs_ctf, programs_picking = tu.reduce_programs()
+    programs_motion, programs_ctf, programs_picking, programs_compress = tu.reduce_programs()
 
     copy_work = sorted(mount_dict['Copy_work'])
     copy_backup = sorted(mount_dict['Copy_backup'])
@@ -879,6 +903,7 @@ def default_copy(settings_folder):
     programs_motion.extend(extend_list)
     programs_ctf.extend(extend_list)
     programs_picking.extend(extend_list)
+    programs_compress.extend(extend_list)
 
     items = [
         ['WIDGETS MAIN', '8', int, '', 'PLAIN', '', ''],
@@ -890,13 +915,16 @@ def default_copy(settings_folder):
         ['Motion', programs_motion, bool, '', 'COMBO', 'Main', 'Software for motion correction.'],
         ['CTF', programs_ctf, bool, '', 'COMBO', 'Main', 'Software for CTF estimation.'],
         ['Picking', programs_picking, bool, '', 'COMBO', 'Main', 'Software for particle picking.'],
-        ['Compress', ['True', 'Later', 'False'], bool, '', 'COMBO', 'Main', 'Compress the micrograph movie.'],
+        ['Compress', programs_compress, bool, '', 'COMBO', 'Main', 'Compress the micrograph movie.'],
         ['Session to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the non-micrograph data (EPU session, ...) to the work drive if "Copy to work" is specified.'],
         ['Session to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the non-micrograph data (EPU session, ...) to the backup drive if "Copy to backup" is specified.'],
         ['Session to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the non-micrograph data (EPU session, ...) to the HDD drive if "Copy to HDD" is specified.'],
         ['Frames to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the micograph movies to the work drive if "Copy to work" is specified.'],
         ['Frames to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the micograph movies to the backup drive if "Copy to backup" is specified.'],
         ['Frames to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the micograph movies to the HDD drive if "Copy to HDD" is specified.'],
+        ['Compress to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the compressed micograph movies to the work drive if "Copy to work" is specified.'],
+        ['Compress to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the compressed micograph movies to the backup drive if "Copy to backup" is specified.'],
+        ['Compress to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the compressed micograph movies to the HDD drive if "Copy to HDD" is specified.'],
         ['Meta to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the micrograph meta data to the work drive if "Copy to work" is specified.'],
         ['Meta to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the micrograph meta data to the backup drive if "Copy to backup" is specified.'],
         ['Meta to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the micrograph meta data to the HDD drive if "Copy to HDD" is specified.'],
@@ -914,5 +942,6 @@ def default_copy(settings_folder):
         ['Tar to HDD', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Copy the information to HDD drive in tar format if "Copy to HDD" is specified.'],
         ['Delete data after import?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Delete the data from the camera computer after the import.'],
         ['Delete stack after compression?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Delete the mrc stack after compression.'],
+        ['Delete compressed stack after copy?', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Delete the compressed stack after copying to another location.'],
         ]
     return items

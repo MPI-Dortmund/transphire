@@ -768,9 +768,10 @@ class ProcessThread(QThread):
                         root_name=root_name,
                         file_name=self.shared_dict['typ'][self.typ]['done_file'],
                         )
-                    self.check_queue_files(root_name=root_name)
                 finally:
                     self.queue_lock.unlock()
+
+                self.check_queue_files(root_name=root_name)
 
                 if self.typ == 'Import':
                     pass
@@ -782,29 +783,56 @@ class ProcessThread(QThread):
                         self.queue_lock.unlock()
 
     def check_queue_files(self, root_name):
-        if self.settings['Copy']['Delete stack after compression?'] == 'True':
-            basename = os.path.basename(os.path.splitext(root_name)[0])
-            delete_stack = True
+        if self.settings['Copy']['Compress'] == 'False':
+            return
 
-            for key in self.shared_dict['typ']:
-                if key.startswith('Copy_'):
-                    continue
-                with open(self.shared_dict['typ'][key]['save_file']) as read:
-                    if basename in read.read():
-                        delete_stack = False
 
-            if delete_stack:
-                stack_mrc = os.path.join(self.settings['stack_folder'], '{0}.mrc'.format(basename))
-                for key in self.shared_dict['typ']:
-                    if not key.startswith('Copy_'):
-                        continue
-                    with open(self.shared_dict['typ'][key]['save_file']) as read:
-                        if stack_mrc in read.read():
+        basename = os.path.basename(os.path.splitext(root_name)[0])
+        if self.settings['General']['Input extension'] in ('dm4',):
+            stack_extension = 'mrc'
+        elif self.settings['General']['Input extension'] in ('tiff', 'tif'):
+            return
+        else:
+            stack_extension = self.settings['General']['Input extension']
+
+        stack_file = os.path.join(
+            self.settings['stack_folder'],
+            '{0}.{1}'.format(
+                basename,
+                stack_extension,
+                )
+            )
+        compressed_file = os.path.join(
+            self.settings['compress_folder'],
+            '{0}.{1}'.format(
+                basename,
+                self.settings[self.settings['Copy']['Compress']]['--command_compress_extension'],
+                )
+            )
+        options = (
+            ('Delete stack after compression?', stack_file),
+            ('Delete compressed stack after copy?', compressed_file),
+            )
+
+        delete_stack = True
+        for key in self.shared_dict['typ']:
+            self.shared_dict['typ'][key]['save_lock'].lock()
+            try:
+                for name in ('save_file', 'list_file'):
+                    with open(self.shared_dict['typ'][key][name]) as read:
+                        if compressed_file in read.read():
                             delete_stack = False
-                if delete_stack:
+                        if stack_file in read.read():
+                            delete_stack = False
+            finally:
+                self.shared_dict['typ'][key]['save_lock'].unlock()
+
+        if delete_stack:
+            for option, file_to_delete in options:
+                if self.settings['Copy'][option] == 'True':
                     try:
-                        os.remove(stack_mrc)
-                    except:
+                        os.remove(file_to_delete)
+                    except Exception as e:
                         pass
 
     def write_error(self, msg, root_name):
@@ -1405,8 +1433,7 @@ class ProcessThread(QThread):
                         var = False
                         break
             if var:
-                if '!Compress' in compare or \
-                        'Compress' in compare or \
+                if 'Compress' in compare or \
                         'Motion' in compare or \
                         'CTF_frames' in compare:
                     self.add_to_queue(aim=aim_name, root_name=new_stack)
@@ -2562,6 +2589,8 @@ class ProcessThread(QThread):
                     file_use_name = file_sum
                 else:
                     file_use_name = file_dw_sum
+                if file_use_name.startswith('./'):
+                    file_use_name = file_use_name[2:]
                 file_use_list.append(file_use_name)
                 file_name_list.append(tu.get_name(file_use_name))
             self.shared_dict_typ['queue_list'] = []
@@ -2602,7 +2631,7 @@ class ProcessThread(QThread):
             self.settings['Picking_folder'][self.settings['Copy']['Picking']]
             )
 
-        export_log_files = []
+        file_logs = []
         for file_use, file_name in zip(file_use_list, file_name_list):
             root_path = os.path.join(os.path.dirname(file_use), file_name)
             log_files, copied_log_files = tup.find_logfiles(
@@ -2629,13 +2658,15 @@ class ProcessThread(QThread):
                 queue_com=self.queue_com,
                 name=self.name
                 )
+            file_logs.append(log_files)
 
         data, data_orig = tu.get_function_dict()[self.settings['Copy']['Picking']]['plot_data'](
             self.settings['Copy']['Picking'],
             self.settings['Picking_folder'][self.settings['Copy']['Picking']]
             )
 
-        for file_use, file_name in zip(file_use_list, file_name_list):
+        export_log_files = []
+        for file_use, file_name, file_log in zip(file_use_list, file_name_list, file_logs):
             warnings, skip_list = tus.check_for_outlier(
                 dict_name='picking',
                 data=data,
@@ -2646,7 +2677,7 @@ class ProcessThread(QThread):
             if skip_list:
                 self.remove_from_translate(os.path.basename(file_use))
             else:
-                export_log_files.extend(log_files)
+                export_log_files.extend(file_log)
 
         for warning in skip_list:
             self.send_out_of_range_error(warning, root_name, 'skip')
@@ -2711,35 +2742,41 @@ class ProcessThread(QThread):
                 )
 
         else:
-            # New name
-            new_name = os.path.join(
-                    self.settings['compress_folder'],
-                    '{0}.tiff'.format(new_root_name)
-                    )
-
             # Skip files that are already copied but due to an error are still in the queue
             if not os.path.exists(root_name) and os.path.exists(new_name):
                 print(root_name, ' does not exist anymore, but', new_name, 'does already!')
                 print('Compress - Skip file!')
                 return None
 
+            compress_name = self.settings['Copy']['Compress']
+            compress_settings = self.settings[compress_name]
             # Create the command
-            if extension == '.mrc':
-                command = '{0} -s -c lzw {1} {2}'.format(
-                    self.settings['Path']['IMOD mrc2tif'],
-                    root_name,
-                    new_name
+            if compress_name == 'Compress cmd':
+                new_name = os.path.join(
+                    self.settings['compress_folder'],
+                    '{0}.{1}'.format(
+                        new_root_name,
+                        compress_settings['--command_compress_extension']
+                        )
                     )
-            elif extension == '.tiff' or \
-                    extension == '.tif':
-                command = 'rsync {0} {1}'.format(root_name, new_name)
+
+                compress_options = self.settings[compress_name]['--command_compress_option']
+                compress_options = compress_options.replace(
+                    '##INPUT##',
+                    root_name,
+                    ).replace(
+                        '##OUTPUT##',
+                        new_name,
+                        )
+
+                command = '{0} {1}'.format(
+                    self.settings[compress_name]['--command_compress_path'], 
+                    compress_options,
+                    )
             else:
-                message = '\n'.join([
-                    '{0}: Not known!'.format(extension),
-                    'Please contact the TranSPHIRE authors.'
-                    ])
+                message = 'Unknown compress name: {0}!'.format(compress_name)
                 self.queue_com['error'].put(message)
-                raise IOError(message)
+                raise TypeError(message)
 
             # Log files
             log_file, err_file = self.run_command(
@@ -2747,7 +2784,7 @@ class ProcessThread(QThread):
                 log_prefix=log_prefix,
                 block_gpu=False,
                 gpu_list=[],
-                shell=False
+                shell=True
                 )
 
             tus.check_outputs(
@@ -2783,11 +2820,6 @@ class ProcessThread(QThread):
                 self.add_to_queue(aim=aim_name, root_name=err_file)
             else:
                 pass
-
-        if self.settings['compress_folder'] in root_name:
-            pass
-        else:
-            pass
 
 
     def run_copy_extern(self, root_name):
@@ -2915,10 +2947,16 @@ class ProcessThread(QThread):
         mount_name = self.settings['Copy'][self.typ]
         sudo = self.settings['Mount'][mount_name]['Need sudo for copy?']
         protocol = self.settings['Mount'][mount_name]['Protocol']
-        new_suffix = copy_file.replace(
-            self.settings['General']['Project directory'],
-            ''
-            )
+        if self.settings['General']['Project directory'] != '.':
+            new_suffix = os.path.join(
+                os.path.dirname(copy_file).replace(
+                    self.settings['General']['Project directory'],
+                    ''
+                    ),
+                os.path.basename(copy_file),
+                )
+        else:
+            new_suffix = copy_file
         new_suffix = new_suffix.split('/')
         new_prefix = os.path.relpath(self.settings[mount_folder_name]).split('/')
 

@@ -240,7 +240,10 @@ class MountCalculator(QObject):
                 timeout=4
                 )
         except pe.exceptions.TIMEOUT:
-            print('SSH quota command failed!')
+            print('SSH quota command failed! Mount point might be unavailable.')
+            raise
+        except pe.exceptions.EOF:
+            print('SSH quota command failed! Mount point might be unavailable.')
             raise
 
         if idx == 0:

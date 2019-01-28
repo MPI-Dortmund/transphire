@@ -663,7 +663,7 @@ class MountWorker(QObject):
         None
         """
 
-        if 'hdd' in device_folder or 'HDD' in device_folder:
+        if 'hdd' in device_folder and 'HDD' in device_folder:
             mount_folder = '{0}/{1}/{2}'.format(self.mount_directory, device_folder, device)
         else:
             mount_folder = '{0}/{1}'.format(self.mount_directory, device_folder)
