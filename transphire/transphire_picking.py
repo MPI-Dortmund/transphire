@@ -111,9 +111,9 @@ def find_logfiles(root_path, file_name, settings, queue_com, name):
                 )
         else:
             folder_names = (
-                ('EMAN', 'box'))
-                ('STAR', 'star'))
-                ]
+                ('EMAN', 'box'),
+                ('STAR', 'star'),
+                )
         copied_log_files = []
         for folder_name, ext in folder_names:
             copied_log_files.extend(['{0}.{1}'.format(os.path.join(
