@@ -103,7 +103,26 @@ def find_logfiles(root_path, file_name, settings, queue_com, name):
     picking_name = settings['Copy']['Picking']
     picking_root_path = os.path.join(settings['picking_folder'], file_name)
     if picking_name == 'crYOLO v1.2.2':
-        copied_log_files = ['{0}.box'.format(os.path.join(os.path.dirname(picking_root_path), 'EMAN', os.path.basename(picking_root_path)))]
+        if settings[picking_name]['--filament'] == 'True':
+            folder_names = (
+                ('EMAN_HELIX_SEGMENTED', 'box'),
+                ('EMAN_START_END', 'box'),
+                ('STAR_START_END', 'star'),
+                )
+        else:
+            folder_names = (
+                ('EMAN', 'box'))
+                ('STAR', 'star'))
+                ]
+        copied_log_files = []
+        for folder_name, ext in folder_names:
+            copied_log_files.extend(['{0}.{1}'.format(os.path.join(
+                os.path.dirname(picking_root_path),
+                folder_name,
+                os.path.basename(picking_root_path)
+                ),
+                ext,
+                )])
         log_files = copied_log_files
     elif picking_name == 'crYOLO v1.0.4' or \
             picking_name == 'crYOLO v1.0.5' or \
