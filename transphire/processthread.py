@@ -809,10 +809,6 @@ class ProcessThread(QThread):
                 self.settings[self.settings['Copy']['Compress']]['--command_compress_extension'],
                 )
             )
-        options = (
-            ('Delete stack after compression?', stack_file),
-            ('Delete compressed stack after copy?', compressed_file),
-            )
 
         delete_stack = True
         for key in self.shared_dict['typ']:
@@ -820,14 +816,19 @@ class ProcessThread(QThread):
             try:
                 for name in ('save_file', 'list_file'):
                     with open(self.shared_dict['typ'][key][name]) as read:
-                        if compressed_file in read.read():
-                            delete_stack = False
-                        if stack_file in read.read():
-                            delete_stack = False
+                        reads = read.read()
+                    if compressed_file in reads:
+                        delete_stack = False
+                    if stack_file in reads:
+                        delete_stack = False
             finally:
                 self.shared_dict['typ'][key]['save_lock'].unlock()
 
         if delete_stack:
+            options = (
+                ('Delete stack after compression?', stack_file),
+                ('Delete compressed stack after copy?', compressed_file),
+                )
             for option, file_to_delete in options:
                 if self.settings['Copy'][option] == 'True':
                     try:
@@ -2742,12 +2743,6 @@ class ProcessThread(QThread):
                 )
 
         else:
-            # Skip files that are already copied but due to an error are still in the queue
-            if not os.path.exists(root_name) and os.path.exists(new_name):
-                print(root_name, ' does not exist anymore, but', new_name, 'does already!')
-                print('Compress - Skip file!')
-                return None
-
             compress_name = self.settings['Copy']['Compress']
             compress_settings = self.settings[compress_name]
             # Create the command
@@ -2777,6 +2772,12 @@ class ProcessThread(QThread):
                 message = 'Unknown compress name: {0}!'.format(compress_name)
                 self.queue_com['error'].put(message)
                 raise TypeError(message)
+
+            # Skip files that are already copied but due to an error are still in the queue
+            if not os.path.exists(root_name) and os.path.exists(new_name):
+                print(root_name, ' does not exist anymore, but', new_name, 'does already!')
+                print('Compress - Skip file!')
+                return None
 
             # Log files
             log_file, err_file = self.run_command(

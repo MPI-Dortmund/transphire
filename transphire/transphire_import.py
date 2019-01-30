@@ -944,7 +944,11 @@ def import_cryolo_v1_2_2(name, directory_name):
     Return:
     Imported data
     """
-    return import_cryolo_v1_0_4(name, directory_name, sub_directory='EMAN')
+    return import_cryolo_v1_0_4(
+        name,
+        directory_name,
+        sub_directory=['EMAN', 'EMAN_HELIX_SEGMENTED']
+        )
 
 
 def import_cryolo_v1_2_1(name, directory_name):
@@ -961,7 +965,7 @@ def import_cryolo_v1_2_1(name, directory_name):
     return import_cryolo_v1_0_4(name, directory_name)
 
 
-def import_cryolo_v1_0_4(name, directory_name, sub_directory=''):
+def import_cryolo_v1_0_4(name, directory_name, sub_directory=['']):
     """
     Import picking information for crYOLO v1.0.4.
 
@@ -972,9 +976,20 @@ def import_cryolo_v1_0_4(name, directory_name, sub_directory=''):
     Return:
     Imported data
     """
-    box_files = glob.glob(os.path.join(directory_name, sub_directory, '*.{0}'.format('box')))
-    if not box_files:
-        box_files = glob.glob(os.path.join(directory_name, sub_directory, '*.{0}'.format('txt')))
+    box_files = []
+    for dir_name in sub_directory:
+        is_break = False
+        for ext_name in ('box', 'txt'):
+            box_files = glob.glob(os.path.join(
+                directory_name,
+                dir_name,
+                '*.{0}'.format(ext_name)
+                ))
+            if box_files:
+                is_break = True
+                break
+        if is_break:
+            break
 
     files_box = np.array(box_files)
     useable_files = []
@@ -1010,17 +1025,6 @@ def import_cryolo_v1_0_4(name, directory_name, sub_directory=''):
     data['file_name'] = file_names
     data['particles'] = sizes
     data['image'] = jpg_names
-    #for idx, entry in enumerate(useable_files):
-    #    file_name = entry[0]
-    #    size = entry[1]
-    #    jpg_name = os.path.join(
-    #        directory_name,
-    #        'jpg*',
-    #        '{0}.jpg'.format(file_name)
-    #        )
-    #    data[idx]['file_name'] = file_name
-    #    data[idx]['particles'] = size
-    #    data[idx]['image'] = ';;;'.join(glob.glob(jpg_name))
 
     data_original = None
 
