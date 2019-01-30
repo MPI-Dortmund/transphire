@@ -809,10 +809,6 @@ class ProcessThread(QThread):
                 self.settings[self.settings['Copy']['Compress']]['--command_compress_extension'],
                 )
             )
-        options = (
-            ('Delete stack after compression?', stack_file),
-            ('Delete compressed stack after copy?', compressed_file),
-            )
 
         delete_stack = True
         for key in self.shared_dict['typ']:
@@ -820,14 +816,19 @@ class ProcessThread(QThread):
             try:
                 for name in ('save_file', 'list_file'):
                     with open(self.shared_dict['typ'][key][name]) as read:
-                        if compressed_file in read.read():
-                            delete_stack = False
-                        if stack_file in read.read():
-                            delete_stack = False
+                        reads = read.read()
+                    if compressed_file in reads:
+                        delete_stack = False
+                    if stack_file in reads:
+                        delete_stack = False
             finally:
                 self.shared_dict['typ'][key]['save_lock'].unlock()
 
         if delete_stack:
+            options = (
+                ('Delete stack after compression?', stack_file),
+                ('Delete compressed stack after copy?', compressed_file),
+                )
             for option, file_to_delete in options:
                 if self.settings['Copy'][option] == 'True':
                     try:
