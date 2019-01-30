@@ -2742,12 +2742,6 @@ class ProcessThread(QThread):
                 )
 
         else:
-            # Skip files that are already copied but due to an error are still in the queue
-            if not os.path.exists(root_name) and os.path.exists(new_name):
-                print(root_name, ' does not exist anymore, but', new_name, 'does already!')
-                print('Compress - Skip file!')
-                return None
-
             compress_name = self.settings['Copy']['Compress']
             compress_settings = self.settings[compress_name]
             # Create the command
@@ -2777,6 +2771,12 @@ class ProcessThread(QThread):
                 message = 'Unknown compress name: {0}!'.format(compress_name)
                 self.queue_com['error'].put(message)
                 raise TypeError(message)
+
+            # Skip files that are already copied but due to an error are still in the queue
+            if not os.path.exists(root_name) and os.path.exists(new_name):
+                print(root_name, ' does not exist anymore, but', new_name, 'does already!')
+                print('Compress - Skip file!')
+                return None
 
             # Log files
             log_file, err_file = self.run_command(
