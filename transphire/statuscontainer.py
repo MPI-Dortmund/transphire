@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import os
 try:
     from PyQt4.QtGui import QHBoxLayout, QVBoxLayout, QWidget, QLabel, QImage
     from PyQt4.QtCore import pyqtSlot, pyqtSignal
@@ -139,31 +140,33 @@ class StatusContainer(QWidget):
                         layout_v1.addWidget(self.content[name])
 
         # Add picture
-        if image:
-            qimage = QImage('{0}'.format(image))
-            image_height = float(content_font[0][0]['Font'][0]) * 150 / 10
-            try:
-                image_width = image_height * qimage.width() / qimage.height()
-            except ZeroDivisionError:
-                tu.message('Chosen picture: "{0}" - No longer available!'.format(image))
-            else:
-                pic_label = QLabel(self)
-                pic_label.setObjectName('picture')
-                pic_label.setStyleSheet('border-image: url("{0}")'.format(image))
-                pic_label.setMaximumHeight(image_height)
-                pic_label.setMinimumHeight(image_height)
-                pic_label.setMaximumWidth(image_width)
-                pic_label.setMinimumWidth(image_width)
-
-                layout_image = QHBoxLayout()
-                layout_image.addStretch(1)
-                layout_image.addWidget(pic_label)
-                layout_image.addStretch(1)
-
-                layout_v1.addStretch(1)
-                layout_v1.addLayout(layout_image)
+        if image and os.path.exists(image):
+            pass
         else:
+            image = os.path.join(os.path.dirname(__file__), 'images', 'Transphire.png')
+        qimage = QImage(image)
+
+        image_height = float(content_font[0][0]['Font'][0]) * 150 / 10
+        try:
+            image_width = image_height * qimage.width() / qimage.height()
+        except ZeroDivisionError:
+            tu.message('Chosen picture: "{0}" - No longer available!'.format(image))
+        else:
+            pic_label = QLabel(self)
+            pic_label.setObjectName('picture')
+            pic_label.setStyleSheet('border-image: url("{0}")'.format(image))
+            pic_label.setMaximumHeight(image_height)
+            pic_label.setMinimumHeight(image_height)
+            pic_label.setMaximumWidth(image_width)
+            pic_label.setMinimumWidth(image_width)
+
+            layout_image = QHBoxLayout()
+            layout_image.addStretch(1)
+            layout_image.addWidget(pic_label)
+            layout_image.addStretch(1)
+
             layout_v1.addStretch(1)
+            layout_v1.addLayout(layout_image)
 
         # Reset quota warning
         mount_worker.quota_warning = True
