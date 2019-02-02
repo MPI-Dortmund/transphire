@@ -2298,6 +2298,7 @@ class ProcessThread(QThread):
                             )
                         )
                     file_input = compressed_file_name
+                    file_sum = file_input
                 else:
                     file_input = file_input
                 root_name, _ = os.path.splitext(file_input)

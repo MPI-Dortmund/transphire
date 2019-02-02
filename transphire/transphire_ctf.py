@@ -852,7 +852,7 @@ def create_jpg_file(input_mrc_file, settings, ctf_name):
     arr_2 = None
     arr_3 = None
 
-    if input_mrc_file:
+    if input_mrc_file and os.path.splitext(input_mrc_file)[1] in ('.mrc', '.mrcs'):
         try:
             with mrc.open(input_mrc_file) as mrc_file:
                 input_data = mrc_file.data
