@@ -1726,7 +1726,6 @@ class ProcessThread(QThread):
                     compress_extension
                     )
                 )
-            print(compressed_file_name)
             file_input = compressed_file_name
         else:
             file_input = root_name
@@ -2284,6 +2283,23 @@ class ProcessThread(QThread):
             file_dw = 'None'
         try:
             if self.settings[self.settings['Copy']['CTF']]['Use movies'] == 'True':
+                if not os.path.isfile(file_input):
+                    compress_name = self.settings['Copy']['Compress']
+                    try:
+                        compress_extension = self.settings[compress_name]['--command_compress_extension']
+                    except KeyError:
+                        raise IOError('Compressed file and Stack file does not exist!')
+
+                    compressed_file_name = os.path.join(
+                        self.settings['compress_folder'],
+                        '{0}.{1}'.format(
+                            tu.get_name(root_name[len(self.settings['stack_folder'])+1:]),
+                            compress_extension
+                            )
+                        )
+                    file_input = compressed_file_name
+                else:
+                    file_input = file_input
                 root_name, _ = os.path.splitext(file_input)
             else:
                 root_name, _ = os.path.splitext(file_sum)
