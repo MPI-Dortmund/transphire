@@ -316,7 +316,7 @@ def get_dtype_import_dict():
     return dtype_import
 
 
-def import_ctffind_v4_1_10(name, directory_name):
+def import_ctffind_v4_1_10(name, directory_name, import_name=''):
     """
     Import ctf information for CTFFIND v4.1.10.
     Defocus in angstrom, phase shift in degree.
@@ -328,10 +328,10 @@ def import_ctffind_v4_1_10(name, directory_name):
     Return:
     Imported data
     """
-    return import_ctffind_v4_1_8(name, directory_name)
+    return import_ctffind_v4_1_8(name, directory_name, import_name)
 
 
-def import_ctffind_v4_1_8(name, directory_name):
+def import_ctffind_v4_1_8(name, directory_name, import_name=''):
     """
     Import ctf information for CTFFIND v4.1.8.
     Defocus in angstrom, phase shift in degree.
@@ -345,7 +345,7 @@ def import_ctffind_v4_1_8(name, directory_name):
     """
     files = [
         entry for entry in glob.glob(
-        '{0}/*.txt'.format(directory_name)
+        '{0}/{1}*.txt'.format(directory_name, import_name)
         ) if not entry.endswith('_avrot.txt')
         ]
 
@@ -483,7 +483,7 @@ def import_ctffind_v4_1_8(name, directory_name):
     return data, data_original
 
 
-def import_gctf_v1_18(name, directory_name):
+def import_gctf_v1_18(name, directory_name, import_name=''):
     """
     Import ctf information for Gctf v1.18.
     Defocus in angstrom, phase shift in degree.
@@ -495,11 +495,11 @@ def import_gctf_v1_18(name, directory_name):
     Return:
     Imported data
     """
-    data, data_original = import_gctf_v1_06(name=name, directory_name=directory_name)
+    data, data_original = import_gctf_v1_06(name=name, directory_name=directory_name, import_name=import_name)
     return data, data_original
 
 
-def import_gctf_v1_06(name, directory_name):
+def import_gctf_v1_06(name, directory_name, import_name=''):
     """
     Import ctf information for Gctf v1.06.
     Defocus in angstrom, phase shift in degree.
@@ -514,7 +514,7 @@ def import_gctf_v1_06(name, directory_name):
     suffix = '_gctf'
 
     useable_files = []
-    for file_name in sorted(glob.glob('{0}/*{1}.star'.format(directory_name, suffix))):
+    for file_name in sorted(glob.glob('{0}/{1}*{2}.star'.format(directory_name, import_name, suffix))):
         try:
             dtype, max_header = get_header(input_file=file_name)
             data_name = np.genfromtxt(
@@ -644,7 +644,7 @@ def import_gctf_v1_06(name, directory_name):
     return data, data_original
 
 
-def import_cter_v1_0(name, directory_name):
+def import_cter_v1_0(name, directory_name, import_name=''):
     """
     Import ctf information for CTER v1.0.
     Defocus in angstrom, phase shift in degree.
@@ -658,7 +658,7 @@ def import_cter_v1_0(name, directory_name):
     """
 
     useable_files = []
-    for file_name in sorted(glob.glob('{0}/*/partres.txt'.format(directory_name))):
+    for file_name in sorted(glob.glob('{0}/{1}*/partres.txt'.format(directory_name, import_name))):
         try:
             data_name = np.genfromtxt(
                 file_name,
@@ -772,7 +772,7 @@ def import_cter_v1_0(name, directory_name):
     return data, data_original
 
 
-def import_motion_cor_2_v1_0_0(name, directory_name):
+def import_motion_cor_2_v1_0_0(name, directory_name, import_name=''):
     """
     Import motion information for MotionCor2 v1.0.0.
 
@@ -788,7 +788,7 @@ def import_motion_cor_2_v1_0_0(name, directory_name):
         [
             entry
             for directory_name in directory_names
-            for entry in glob.glob('{0}/*-Full.log'.format(directory_name))
+            for entry in glob.glob('{0}/{1}*-Full.log'.format(directory_name, import_name))
             ],
         dtype=str
         )
@@ -875,7 +875,7 @@ def import_motion_cor_2_v1_0_0(name, directory_name):
     return data, data_original
 
 
-def import_motion_cor_2_v1_0_5(name, directory_name):
+def import_motion_cor_2_v1_0_5(name, directory_name, import_name=''):
     """
     Import motion information for MotionCor2 v1.0.5.
 
@@ -886,11 +886,11 @@ def import_motion_cor_2_v1_0_5(name, directory_name):
     Return:
     Imported data
     """
-    data, data_original = import_motion_cor_2_v1_0_0(name=name, directory_name=directory_name)
+    data, data_original = import_motion_cor_2_v1_0_0(name=name, directory_name=directory_name, import_name=import_name)
     return data, data_original
 
 
-def import_motion_cor_2_v1_1_0(name, directory_name):
+def import_motion_cor_2_v1_1_0(name, directory_name, import_name=''):
     """
     Import motion information for MotionCor2 v1.1.0.
 
@@ -901,11 +901,11 @@ def import_motion_cor_2_v1_1_0(name, directory_name):
     Return:
     Imported data
     """
-    data, data_original = import_motion_cor_2_v1_0_0(name=name, directory_name=directory_name)
+    data, data_original = import_motion_cor_2_v1_0_0(name=name, directory_name=directory_name, import_name=import_name)
     return data, data_original
 
 
-def import_cryolo_v1_0_5(name, directory_name):
+def import_cryolo_v1_0_5(name, directory_name, import_name=''):
     """
     Import picking information for crYOLO v1.0.5.
 
@@ -916,10 +916,10 @@ def import_cryolo_v1_0_5(name, directory_name):
     Return:
     Imported data
     """
-    return import_cryolo_v1_0_4(name, directory_name)
+    return import_cryolo_v1_0_4(name, directory_name, import_name)
 
 
-def import_cryolo_v1_1_0(name, directory_name):
+def import_cryolo_v1_1_0(name, directory_name, import_name=''):
     """
     Import picking information for crYOLO v1.1.0.
 
@@ -930,10 +930,10 @@ def import_cryolo_v1_1_0(name, directory_name):
     Return:
     Imported data
     """
-    return import_cryolo_v1_0_4(name, directory_name)
+    return import_cryolo_v1_0_4(name, directory_name, import_name)
 
 
-def import_cryolo_v1_2_2(name, directory_name):
+def import_cryolo_v1_2_2(name, directory_name, import_name=''):
     """
     Import picking information for crYOLO v1.2.2.
 
@@ -947,11 +947,12 @@ def import_cryolo_v1_2_2(name, directory_name):
     return import_cryolo_v1_0_4(
         name,
         directory_name,
-        sub_directory=['EMAN', 'EMAN_HELIX_SEGMENTED']
+        sub_directory=['EMAN', 'EMAN_HELIX_SEGMENTED'],
+        import_name=import_name,
         )
 
 
-def import_cryolo_v1_2_1(name, directory_name):
+def import_cryolo_v1_2_1(name, directory_name, import_name=''):
     """
     Import picking information for crYOLO v1.2.2.
 
@@ -962,10 +963,10 @@ def import_cryolo_v1_2_1(name, directory_name):
     Return:
     Imported data
     """
-    return import_cryolo_v1_0_4(name, directory_name)
+    return import_cryolo_v1_0_4(name, directory_name, import_name)
 
 
-def import_cryolo_v1_0_4(name, directory_name, sub_directory=['']):
+def import_cryolo_v1_0_4(name, directory_name, sub_directory=None, import_name=''):
     """
     Import picking information for crYOLO v1.0.4.
 
@@ -976,6 +977,8 @@ def import_cryolo_v1_0_4(name, directory_name, sub_directory=['']):
     Return:
     Imported data
     """
+    if sub_directory is None:
+        sub_directory=['']
     box_files = []
     for dir_name in sub_directory:
         is_break = False
@@ -983,7 +986,7 @@ def import_cryolo_v1_0_4(name, directory_name, sub_directory=['']):
             box_files = glob.glob(os.path.join(
                 directory_name,
                 dir_name,
-                '*.{0}'.format(ext_name)
+                '{0}*.{1}'.format(import_name, ext_name)
                 ))
             if box_files:
                 is_break = True

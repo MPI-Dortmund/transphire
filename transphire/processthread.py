@@ -2019,9 +2019,11 @@ class ProcessThread(QThread):
             self.settings
             )
 
+        import_name = tu.get_name(file_for_jpg)
         data, data_original = tu.get_function_dict()[self.settings['Copy']['Motion']]['plot_data'](
             self.settings['Copy']['Motion'],
-            self.settings['Motion_folder'][self.settings['Copy']['Motion']]
+            self.settings['Motion_folder'][self.settings['Copy']['Motion']],
+            import_name
             )
 
         warnings, skip_list = tus.check_for_outlier(
@@ -2359,9 +2361,11 @@ class ProcessThread(QThread):
             self.settings['Copy']['CTF'],
             )
 
+        import_name = tu.get_name(file_sum)
         data, data_orig = tu.get_function_dict()[self.settings['Copy']['CTF']]['plot_data'](
             self.settings['Copy']['CTF'],
-            self.settings['ctf_folder']
+            self.settings['ctf_folder'],
+            import_name
             )
 
         try:
@@ -2627,11 +2631,6 @@ class ProcessThread(QThread):
         non_zero_list = [err_file, log_file]
         non_zero_list.extend(check_files)
 
-        data, data_orig = tu.get_function_dict()[self.settings['Copy']['Picking']]['plot_data'](
-            self.settings['Copy']['Picking'],
-            self.settings['Picking_folder'][self.settings['Copy']['Picking']]
-            )
-
         file_logs = []
         for file_use, file_name in zip(file_use_list, file_name_list):
             root_path = os.path.join(os.path.dirname(file_use), file_name)
@@ -2661,13 +2660,15 @@ class ProcessThread(QThread):
                 )
             file_logs.append(log_files)
 
-        data, data_orig = tu.get_function_dict()[self.settings['Copy']['Picking']]['plot_data'](
-            self.settings['Copy']['Picking'],
-            self.settings['Picking_folder'][self.settings['Copy']['Picking']]
-            )
-
         export_log_files = []
         for file_use, file_name, file_log in zip(file_use_list, file_name_list, file_logs):
+            import_name = tu.get_name(file_use)
+            data, data_orig = tu.get_function_dict()[self.settings['Copy']['Picking']]['plot_data'](
+                self.settings['Copy']['Picking'],
+                self.settings['Picking_folder'][self.settings['Copy']['Picking']],
+                import_name
+                )
+
             warnings, skip_list = tus.check_for_outlier(
                 dict_name='picking',
                 data=data,
