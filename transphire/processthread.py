@@ -2953,7 +2953,7 @@ class ProcessThread(QThread):
                         arcname=os.path.join('..', root_name.replace(self.settings['project_folder'], ''))
                         )
 
-                if os.path.getsize(tar_file) > 200 * 1024**2:
+                if os.path.getsize(tar_file) > float(self.settings['Copy']['Tar size (Gb)']) * 1024**3:
                     copy_file = tar_file
                     self.shared_dict_typ['tar_idx'] += 1
                     new_tar_file = os.path.join(
