@@ -36,7 +36,7 @@ def default_compress_command_line():
         ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
         ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
         ['--command_compress_path', 'mrc2tif', str, '', 'FILE', 'Main', '', 'Program used to execute compression.'],
-        ['--command_compress_option', '-s -c zip ##INPUT## ##OUTPUT##', str, '', 'PLAIN', 'Main', '', 'Command options used to compress the data. Use ##INPUT## and ##OUTPUT## as variables for the respective files.'],
+        ['--command_compress_option', '-s -c lzw ##INPUT## ##OUTPUT##', str, '', 'PLAIN', 'Main', '', 'Command options used to compress the data. Use ##INPUT## and ##OUTPUT## as variables for the respective files.'],
         ['--command_compress_extension', 'tiff', str, '', 'PLAIN', 'Main', '', 'Output extension for the compressed files.'],
         ['--command_uncompress_path', 'tif2mrc', str, '', 'FILE', 'Advanced', '', 'Program used to execute uncompression.'],
         ['--command_uncompress_option', '##INPUT## ##OUTPUT##', str, '', 'PLAIN', 'Advanced', '', 'Command options used to uncompress the data. Use ##INPUT## and ##OUTPUT## as variables for the respective files.'],
