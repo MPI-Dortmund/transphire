@@ -402,17 +402,20 @@ class PlotWidget(QWidget):
             if upper_lim != self.upper_lim:
                 self.upper_lim = upper_lim
                 change = True
-            change = self.prepare_axis(
-                np.min(x_values),
-                np.max(x_values),
-                np.min(y_values),
-                np.max(y_values),
-                label,
-                title,
-                x_values,
-                y_values,
-                change,
-                )
+            try:
+                change = self.prepare_axis(
+                    np.min(x_values),
+                    np.max(x_values),
+                    np.min(y_values),
+                    np.max(y_values),
+                    label,
+                    title,
+                    x_values,
+                    y_values,
+                    change,
+                    )
+            except ValueError:
+                return
 
             if self.plot_typ == 'values':
                 self.line.set_data(x_values, y_values)
