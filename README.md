@@ -1,11 +1,5 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2553388.svg)](https://doi.org/10.5281/zenodo.2553388)
 
-
-A tutorial is available in the wiki.
-
-[Wiki](https://github.com/MPI-Dortmund/transphire/wiki)
-
-
 # Transphire
 
 Cryo-EM on the fly processing pipeline.
