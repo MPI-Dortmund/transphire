@@ -13,7 +13,12 @@ Cryo-EM on the fly processing pipeline.
 If you have any questions contact:  
 markus.stabrin@mpi-dortmund.mpg.de
 
-## External programs
+
+## Installation
+
+TranSPHIRE needs an environment that includes Python version 3.6, QT version 5 and PyQt version 5.
+
+### External programs
 
 To enjoy the full functionaly of TranSPHIRE, install the following programs:
 
@@ -25,9 +30,6 @@ CTFFIND 4.1.8/4.1.10: http://grigoriefflab.janelia.org/ctf
 Gctf 1.06,1.18: https://www.mrc-lmb.cam.ac.uk/kzhang  
 crYOLO 1.0.4/1.0.5/1.1.0: http://sphire.mpg.de  
 
-## Installation
-
-TranSPHIRE needs an environment that includes Python version 3.6, QT version 5 and PyQt version 5.
 
 ### Installation using Anaconda
 
@@ -85,7 +87,10 @@ In the future, you only need to run:
 
 If you want to run TranSPHIRE, fill in the tabs from left to right (General to CTF) and press the Start button.
 
-A more detailed tutorial will be available soon.
+## Getting started
+
+You can find an extensive Tutorial in how to use TranSPHIRE:
+[Getting started with TranSPHIRE](https://github.com/MPI-Dortmund/transphire/wiki/getting-started)
 
 ## FAQ
 
