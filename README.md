@@ -7,40 +7,9 @@ Cryo-EM on the fly processing pipeline.
 If you have any questions contact:  
 markus.stabrin@mpi-dortmund.mpg.de
 
-
 ## Installation
 
 You can find a description how to install TranSPHIRE here: [Installation instructions](https://github.com/MPI-Dortmund/transphire/wiki/Installation)
-
-### Installation using Anaconda
-
-https://www.anaconda.com/download/#linux
-
-Create a new virtual environment
-
-> conda create -n transphire python=3.6 pyqt=5
-
-Activate the environment
-
-> source activate transphire
-
-or
-
-> conda activate transphire
-
-Depending on your installation of anaconda.
-
-Install transphire
-
-> pip install transphire
-
-
-### Installation inside your own environment that matches the requirements
-
-Install transphire
-
-> pip install transphire
-
 
 ## Getting started
 
