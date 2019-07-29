@@ -198,7 +198,7 @@ class LoadContentContainer(QWidget):
 
         try:
             with open(self.file, 'w') as file_w:
-                json.dump(settings, file_w)
+                json.dump(settings, file_w, indent=4)
         except PermissionError:
             tu.message('{0} - Permission denied!\nYou are not allowed to change TranSHPIRE wide settings!\nPlease contact your system administrator'.format(self.file))
         else:
