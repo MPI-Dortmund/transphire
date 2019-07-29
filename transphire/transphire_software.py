@@ -19,9 +19,11 @@
 import glob
 import os
 import re
+import datetime
 import numpy as np
 import traceback as tb
 import pexpect as pe
+from hyperspy.io_plugins.digital_micrograph import DigitalMicrographReader
 from transphire import transphire_import as ti
 
 
@@ -39,11 +41,47 @@ def extract_time_and_grid_information(root_name, settings, queue_com, name):
     hole_number, spot1_number, spot2_number, date, time
     """
     message = None
-    if settings['General']['Software'] == 'EPU >1.8':
+    if settings['General']['Software'] == 'Latitude S':
+        if settings['General']['Camera'] in ('Falcon2', 'Falcon3'):
+            message = '\n'.join([
+                'Frames and Falcon2/Falcon3 is not supported for Software {0}.'.format(
+                    settings['General']['Software']
+                    ),
+                'Please contact the TranSPHIRE authors!'
+                ])
+
+        elif settings['General']['Camera'] in ('K2', 'K3'):
+            search_results = re.search(r'(?P<date>\d{8})_(?P<project>.*)_A(?P<atlas>\d{3})_G(?P<grid>\d{3})_H(?P<hole>\d{3})_D(?P<spot>\d{3})', root_name)
+            grid_number = '{0}_{1}'.format(
+                search_results.group('atlas'),
+                search_results.group('grid')
+                )
+            hole = search_results.group('hole')
+            spot1 = search_results.group('spot')
+            spot2 = ''
+            date = search_results.group('date')
+            with open(root_name, 'rb') as read:
+                reader = DigitalMicrographReader(read)
+                reader.parse_file()
+            time = datetime.datetime.strptime(
+                reader.tags_dict['DataBar']['Acquisition Time'],
+                '%I:%M:%S %p'
+                ).strftime('%H%M%S')
+
+        else:
+            message = '\n'.join([
+                'Camera {0} for Software {1} not known!'.format(
+                    settings['General']['Camera'],
+                    settings['General']['Software']
+                    ),
+                'Please contact the TranSPHIRE authors!'
+                ])
+
+    elif settings['General']['Software'] == 'EPU >1.8':
 
         if settings['General']['Camera'] == 'Falcon2' \
                 or settings['General']['Camera'] == 'Falcon3' \
-                or settings['General']['Camera'] == 'K2':
+                or settings['General']['Camera'] in ('K2', 'K3'):
             *skip, grid, skip, old_file = \
                 os.path.realpath(root_name).split('/')
             grid_number = grid.split('_')[1]
@@ -63,14 +101,14 @@ def extract_time_and_grid_information(root_name, settings, queue_com, name):
 
         if settings['General']['Camera'] == 'Falcon2' \
                 or settings['General']['Camera'] == 'Falcon3' \
-                or settings['General']['Camera'] == 'K2':
+                or settings['General']['Camera'] in ('K2', 'K3'):
             *skip, grid, skip, old_file = \
                 os.path.realpath(root_name).split('/')
             grid_number = grid.split('_')[1]
             *skip, hole, skip, spot1, spot2, date, time = old_file.split('_')
             del skip
 
-        elif settings['General']['Camera'] == 'K2':
+        elif settings['General']['Camera'] in ('K2', 'K3'):
             *skip, grid, skip, old_file = \
                 os.path.realpath(root_name).split('/')
             grid_number = grid.split('_')[1]
@@ -128,7 +166,7 @@ def find_frames(frames_root, compare_name, settings, queue_com, name, write_erro
 
         if settings['General']['Type'] == 'Frames':
 
-            if settings['General']['Camera'] == 'K2':
+            if settings['General']['Camera'] in ('K2', 'K3'):
                 frames = glob.glob(
                     '{0}-*.{1}'.format(
                         frames_root,
@@ -175,9 +213,9 @@ def find_frames(frames_root, compare_name, settings, queue_com, name, write_erro
 
         elif settings['General']['Type'] == 'Stack':
 
-            if settings['General']['Camera'] == 'K2':
+            if settings['General']['Camera'] in ('K2', 'K3'):
                 message = '\n'.join([
-                    'Stack and K2 is not supported in EPU >1.8 version',
+                    'Stack and K2, K3 is not supported in EPU >1.8 version',
                     'Please contact the TranSPHIRE authors!'
                     ])
 
@@ -253,9 +291,9 @@ def find_frames(frames_root, compare_name, settings, queue_com, name, write_erro
 
         if settings['General']['Type'] == 'Frames':
 
-            if settings['General']['Camera'] == 'K2':
+            if settings['General']['Camera'] in ('K2', 'K3'):
                 message = '\n'.join([
-                    'Frames and K2 is not supported for Software {0}.'.format(
+                    'Frames and K2, K3 is not supported for Software {0}.'.format(
                         settings['General']['Software']
                         ),
                     'Please contact the TranSPHIRE authors!'
@@ -288,7 +326,7 @@ def find_frames(frames_root, compare_name, settings, queue_com, name, write_erro
 
         elif settings['General']['Type'] == 'Stack':
 
-            if settings['General']['Camera'] == 'K2':
+            if settings['General']['Camera'] in ('K2', 'K3'):
                 raw_frames = glob.glob(
                     '{0}*-*.{1}'.format(
                         compare_name,
@@ -461,9 +499,9 @@ def find_related_frames_to_jpg(frames_root, root_name, settings, queue_com, name
 
         if settings['General']['Type'] == 'Stack':
 
-            if settings['General']['Camera'] == 'K2':
+            if settings['General']['Camera'] in ('K2', 'K3'):
                 message = '\n'.join([
-                    'Stack and K2 is not supported in EPU >1.8 version',
+                    'Stack and K2, K3 is not supported in EPU >1.8 version',
                     'Please contact the TranSPHIRE authors!'
                     ])
 
@@ -495,7 +533,7 @@ def find_related_frames_to_jpg(frames_root, root_name, settings, queue_com, name
 
         elif settings['General']['Type'] == 'Frames':
 
-            if settings['General']['Camera'] == 'K2':
+            if settings['General']['Camera'] in ('K2', 'K3'):
                 frames = sorted(glob.glob(
                     '{0}-*.{1}'.format(
                         frames_root,
@@ -537,7 +575,7 @@ def find_related_frames_to_jpg(frames_root, root_name, settings, queue_com, name
 
         if settings['General']['Type'] == 'Stack':
 
-            if settings['General']['Camera'] == 'K2':
+            if settings['General']['Camera'] in ('K2', 'K3'):
                 compare_name_frames = frames_root[:-len('_19911213_2019')]
                 compare_name_meta = root_name[:-len('_19911213_2019')]
                 raw_frames = glob.glob('{0}*-*.{1}'.format(
@@ -579,9 +617,9 @@ def find_related_frames_to_jpg(frames_root, root_name, settings, queue_com, name
 
         elif settings['General']['Type'] == 'Frames':
 
-            if settings['General']['Camera'] == 'K2':
+            if settings['General']['Camera'] in ('K2', 'K3'):
                 message = '\n'.join([
-                    'Frames and K2 is not supported',
+                    'Frames and K2, K3 is not supported',
                     'Please contact the TranSPHIRE authors!'
                     ])
 
@@ -644,9 +682,9 @@ def get_copy_command_for_frames(settings, queue_com, name):
 
         if settings['General']['Type'] == 'Stack':
 
-            if settings['General']['Camera'] == 'K2':
+            if settings['General']['Camera'] in ('K2', 'K3'):
                 message = '\n'.join([
-                    'Stack and K2 is not supported in EPU >1.8 version',
+                    'Stack and K2, K3 is not supported in EPU >1.8 version',
                     'Please contact the TranSPHIRE authors!'
                     ])
 
@@ -672,7 +710,7 @@ def get_copy_command_for_frames(settings, queue_com, name):
 
         elif settings['General']['Type'] == 'Frames':
 
-            if settings['General']['Camera'] == 'K2':
+            if settings['General']['Camera'] in ('K2', 'K3'):
                 return settings['Path']['IMOD newstack']
 
             elif settings['General']['Camera'] == 'Falcon2' or \
@@ -708,7 +746,7 @@ def get_copy_command_for_frames(settings, queue_com, name):
 
         if settings['General']['Type'] == 'Stack':
 
-            if settings['General']['Camera'] == 'K2':
+            if settings['General']['Camera'] in ('K2', 'K3'):
                 return 'rsync'
 
             elif settings['General']['Camera'] == 'Falcon2' or \
@@ -733,9 +771,9 @@ def get_copy_command_for_frames(settings, queue_com, name):
 
         elif settings['General']['Type'] == 'Frames':
 
-            if settings['General']['Camera'] == 'K2':
+            if settings['General']['Camera'] in ('K2', 'K3'):
                 message = '\n'.join([
-                    'Frames and K22 is not supported in EPU >1.9',
+                    'Frames and K2, K3 is not supported in EPU >1.9',
                     'Please contact the TranSPHIRE authors!'
                     ])
 
@@ -791,7 +829,7 @@ def find_all_files(root_name, compare_name_frames, compare_name_meta, settings, 
     message = None
     if settings['General']['Software'] == 'EPU >1.8':
 
-        if settings['General']['Camera'] == 'K2':
+        if settings['General']['Camera'] in ('K2', 'K3'):
             meta_files = glob.glob('{0}.*'.format(root_name))
             frame_files = glob.glob('{0}*'.format(compare_name_frames))
             return set(meta_files), set(frame_files)
@@ -813,7 +851,7 @@ def find_all_files(root_name, compare_name_frames, compare_name_meta, settings, 
 
     elif settings['General']['Software'] == 'EPU >1.9':
 
-        if settings['General']['Camera'] == 'K2':
+        if settings['General']['Camera'] in ('K2', 'K3'):
             meta_files = glob.glob('{0}*'.format(compare_name_meta))
             frame_files = glob.glob('{0}*'.format(compare_name_frames))
             return set(meta_files), set(frame_files)
