@@ -1712,7 +1712,23 @@ class ProcessThread(QThread):
         Returns:
         None
         """
-        file_input = root_name
+        if not os.path.isfile(root_name):
+            compress_name = self.settings['Copy']['Compress']
+            try:
+                compress_extension = self.settings[compress_name]['--command_compress_extension']
+            except KeyError:
+                raise IOError('Compressed file and Stack file does not exist!')
+
+            compressed_file_name = os.path.join(
+                self.settings['compress_folder'],
+                '{0}.{1}'.format(
+                    tu.get_name(root_name[len(self.settings['stack_folder'])+1:]),
+                    compress_extension
+                    )
+                )
+            file_input = compressed_file_name
+        else:
+            file_input = root_name
         root_name, _ = os.path.splitext(file_input)
         file_dw_post_move = None
         file_stack = None
@@ -2019,9 +2035,11 @@ class ProcessThread(QThread):
             self.settings
             )
 
+        import_name = tu.get_name(file_for_jpg)
         data, data_original = tu.get_function_dict()[self.settings['Copy']['Motion']]['plot_data'](
             self.settings['Copy']['Motion'],
-            self.settings['Motion_folder'][self.settings['Copy']['Motion']]
+            self.settings['Motion_folder'][self.settings['Copy']['Motion']],
+            import_name
             )
 
         warnings, skip_list = tus.check_for_outlier(
@@ -2265,6 +2283,24 @@ class ProcessThread(QThread):
             file_dw = 'None'
         try:
             if self.settings[self.settings['Copy']['CTF']]['Use movies'] == 'True':
+                if not os.path.isfile(file_input):
+                    compress_name = self.settings['Copy']['Compress']
+                    try:
+                        compress_extension = self.settings[compress_name]['--command_compress_extension']
+                    except KeyError:
+                        raise IOError('Compressed file and Stack file does not exist!')
+
+                    compressed_file_name = os.path.join(
+                        self.settings['compress_folder'],
+                        '{0}.{1}'.format(
+                            tu.get_name(root_name[len(self.settings['stack_folder'])+1:]),
+                            compress_extension
+                            )
+                        )
+                    file_input = compressed_file_name
+                    file_sum = file_input
+                else:
+                    file_input = file_input
                 root_name, _ = os.path.splitext(file_input)
             else:
                 root_name, _ = os.path.splitext(file_sum)
@@ -2359,9 +2395,11 @@ class ProcessThread(QThread):
             self.settings['Copy']['CTF'],
             )
 
+        import_name = tu.get_name(file_sum)
         data, data_orig = tu.get_function_dict()[self.settings['Copy']['CTF']]['plot_data'](
             self.settings['Copy']['CTF'],
-            self.settings['ctf_folder']
+            self.settings['ctf_folder'],
+            import_name
             )
 
         try:
@@ -2627,11 +2665,6 @@ class ProcessThread(QThread):
         non_zero_list = [err_file, log_file]
         non_zero_list.extend(check_files)
 
-        data, data_orig = tu.get_function_dict()[self.settings['Copy']['Picking']]['plot_data'](
-            self.settings['Copy']['Picking'],
-            self.settings['Picking_folder'][self.settings['Copy']['Picking']]
-            )
-
         file_logs = []
         for file_use, file_name in zip(file_use_list, file_name_list):
             root_path = os.path.join(os.path.dirname(file_use), file_name)
@@ -2661,13 +2694,15 @@ class ProcessThread(QThread):
                 )
             file_logs.append(log_files)
 
-        data, data_orig = tu.get_function_dict()[self.settings['Copy']['Picking']]['plot_data'](
-            self.settings['Copy']['Picking'],
-            self.settings['Picking_folder'][self.settings['Copy']['Picking']]
-            )
-
         export_log_files = []
         for file_use, file_name, file_log in zip(file_use_list, file_name_list, file_logs):
+            import_name = tu.get_name(file_use)
+            data, data_orig = tu.get_function_dict()[self.settings['Copy']['Picking']]['plot_data'](
+                self.settings['Copy']['Picking'],
+                self.settings['Picking_folder'][self.settings['Copy']['Picking']],
+                import_name
+                )
+
             warnings, skip_list = tus.check_for_outlier(
                 dict_name='picking',
                 data=data,
@@ -2918,7 +2953,7 @@ class ProcessThread(QThread):
                         arcname=os.path.join('..', root_name.replace(self.settings['project_folder'], ''))
                         )
 
-                if os.path.getsize(tar_file) > 200 * 1024**2:
+                if os.path.getsize(tar_file) > float(self.settings['Copy']['Tar size (Gb)']) * 1024**3:
                     copy_file = tar_file
                     self.shared_dict_typ['tar_idx'] += 1
                     new_tar_file = os.path.join(

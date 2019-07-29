@@ -1264,22 +1264,18 @@ class MainWindow(QMainWindow):
         self.timer_motion.stop()
         self.timer_picking.stop()
 
-        self.thread_mount.quit()
-        self.thread_process.quit()
-        self.thread_plot_ctf.quit()
-        self.thread_plot_motion.quit()
-        self.thread_plot_picking.quit()
+        waiting_thread_list = (
+            self.thread_mount,
+            self.thread_process,
+            self.thread_plot_ctf,
+            self.thread_plot_motion,
+            self.thread_plot_picking,
+            )
 
-        print('Wait for thread mount')
-        self.thread_mount.wait()
-        print('Wait for thread process')
-        self.thread_process.wait()
-        print('Wait for thread ctf')
-        self.thread_plot_ctf.wait()
-        print('Wait for thread motion')
-        self.thread_plot_motion.wait()
-        print('Wait for thread picking')
-        self.thread_plot_picking.wait()
+        print('Wait for threads to exit.')
+        for idx, thread_instance in enumerate(waiting_thread_list):
+            thread_instance.quit()
+            thread_instance.wait()
 
         print('Wait for thread mount')
         for key in self.content['Mount'].content:
