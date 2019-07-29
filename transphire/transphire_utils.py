@@ -16,6 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
+import copy
 import errno
 import json
 import sys
@@ -110,17 +111,8 @@ def get_function_dict():
     Return:
     None
     """
-    function_dict = {
-        'CTFFIND4 v4.1.10': {
-            'plot': tp.update_ctffind_4_v4_1_10,
-            'plot_data': ti.import_ctffind_v4_1_10,
-            'content': tc.default_ctffind_4_v4_1_10,
-            'executable': True,
-            'has_path': True,
-            'typ': 'ctf',
-            'allow_empty': ['Gain file'],
-            },
-        'CTFFIND4 v4.1.8': {
+    function_dict = {}
+    function_dict['CTFFIND4 v4.1.8'] = {
             'plot': tp.update_ctffind_4_v4_1_8,
             'plot_data': ti.import_ctffind_v4_1_8,
             'content': tc.default_ctffind_4_v4_1_8,
@@ -128,35 +120,34 @@ def get_function_dict():
             'has_path': True,
             'typ': 'ctf',
             'allow_empty': ['Gain file'],
-            },
-        'Gctf v1.18': {
-            'plot': tp.update_gctf_v1_18,
-            'plot_data': ti.import_gctf_v1_18,
-            'content': tc.default_gctf_v1_18,
-            'executable': True,
-            'has_path': True,
-            'typ': 'ctf',
-            'allow_empty': [],
-            },
-        'Gctf v1.06': {
-            'plot': tp.update_gctf_v1_06,
+            }
+    function_dict['CTFFIND4 v4.1.10'] = function_dict['CTFFIND v4.1.8']
+    function_dict['CTFFIND4 v4.1.13'] = function_dict['CTFFIND v4.1.8']
+
+    function_dict['Gctf v1.06'] = {
+            'plot': tp.update_ctffind_4_v4_1_8,
             'plot_data': ti.import_gctf_v1_06,
             'content': tc.default_gctf_v1_06,
             'executable': True,
             'has_path': True,
             'typ': 'ctf',
             'allow_empty': [],
-            },
-        'CTER v1.0': {
-            'plot': tp.update_cter_v1_0,
+            }
+    function_dict['Gctf v1.18'] = copy.deepcopy(function_dict['Gctf v1.06'])
+    function_dict['Gctf v1.18']['content'] = tc.default_gctf_v1_18
+
+    function_dict['CTER v1.0'] = {
+            'plot': tp.update_ctffind_4_v4_1_8,
             'plot_data': ti.import_cter_v1_0,
             'content': tc.default_cter_v1_0,
             'executable': True,
             'has_path': True,
             'typ': 'ctf',
             'allow_empty': [],
-            },
-        'MotionCor2 v1.0.0': {
+            }
+    function_dict['CTER v1.2'] = function_dict['CTER v1.0']
+
+    function_dict['MotionCor2 v1.0.0'] = {
             'plot': tp.update_motion_cor_2_v1_0_0,
             'plot_data': ti.import_motion_cor_2_v1_0_0,
             'content': tc.default_motion_cor_2_v1_0_0,
@@ -164,26 +155,15 @@ def get_function_dict():
             'has_path': True,
             'typ': 'motion',
             'allow_empty': ['-DefectFile', '-Gain'],
-            },
-        'MotionCor2 v1.0.5': {
-            'plot': tp.update_motion_cor_2_v1_0_5,
-            'plot_data': ti.import_motion_cor_2_v1_0_5,
-            'content': tc.default_motion_cor_2_v1_0_5,
-            'executable': True,
-            'has_path': True,
-            'typ': 'motion',
-            'allow_empty': ['-Dark', '-DefectFile', '-Gain'],
-            },
-        'MotionCor2 v1.1.0': {
-            'plot': tp.update_motion_cor_2_v1_1_0,
-            'plot_data': ti.import_motion_cor_2_v1_1_0,
-            'content': tc.default_motion_cor_2_v1_1_0,
-            'executable': True,
-            'has_path': True,
-            'typ': 'motion',
-            'allow_empty': ['-Dark', '-DefectFile', '-Gain'],
-            },
-        'crYOLO v1.0.4': {
+            }
+    function_dict['MotionCor2 v1.0.5'] = copy.deepcopy(function_dict['MotionCor2 v1.0.0'])
+    function_dict['MotionCor2 v1.0.5']['content'] = tc.default_motion_cor_2_v1_0_5
+    function_dict['MotionCor2 v1.1.0'] = copy.deepcopy(function_dict['MotionCor2 v1.0.0'])
+    function_dict['MotionCor2 v1.1.0']['content'] = tc.default_motion_cor_2_v1_1_0
+    function_dict['MotionCor2 v1.2.6'] = copy.deepcopy(function_dict['MotionCor2 v1.0.0'])
+    function_dict['MotionCor2 v1.2.6']['content'] = tc.default_motion_cor_2_v1_1_0
+
+    function_dict['crYOLO v1.0.4'] = {
             'plot': tp.update_cryolo_v1_0_4,
             'plot_data': ti.import_cryolo_v1_0_4,
             'content': tc.default_cryolo_v1_0_4,
@@ -191,51 +171,24 @@ def get_function_dict():
             'has_path': True,
             'typ': 'picking',
             'allow_empty': [],
-            },
-        'crYOLO v1.0.5': {
-            'plot': tp.update_cryolo_v1_0_5,
-            'plot_data': ti.import_cryolo_v1_0_5,
-            'content': tc.default_cryolo_v1_0_5,
-            'executable': True,
-            'has_path': True,
-            'typ': 'picking',
-            'allow_empty': [],
-            },
-        'crYOLO v1.1.0': {
-            'plot': tp.update_cryolo_v1_1_0,
-            'plot_data': ti.import_cryolo_v1_1_0,
-            'content': tc.default_cryolo_v1_1_0,
-            'executable': True,
-            'has_path': True,
-            'typ': 'picking',
-            'allow_empty': [],
-            },
-        'crYOLO v1.2.1': {
-            'plot': tp.update_cryolo_v1_2_1,
-            'plot_data': ti.import_cryolo_v1_2_1,
-            'content': tc.default_cryolo_v1_2_1,
-            'executable': True,
-            'has_path': True,
-            'typ': 'picking',
-            'allow_empty': [],
-            },
-        'crYOLO v1.2.2': {
-            'plot': tp.update_cryolo_v1_2_2,
-            'plot_data': ti.import_cryolo_v1_2_2,
-            'content': tc.default_cryolo_v1_2_2,
-            'executable': True,
-            'has_path': True,
-            'typ': 'picking',
-            'allow_empty': [],
-            },
-        'Compress cmd': {
+            }
+    function_dict['crYOLO v1.0.5'] = copy.deepcopy(function_dict['crYOLO v1.0.4'])
+    function_dict['crYOLO v1.1.0'] = copy.deepcopy(function_dict['crYOLO v1.0.4'])
+    function_dict['crYOLO v1.1.0']['content'] = tc.default_cryolo_v1_1_0
+
+    function_dict['crYOLO v1.2.1'] = copy.deepcopy(function_dict['crYOLO v1.0.4'])
+    function_dict['crYOLO v1.2.1']['content'] = tc.default_cryolo_v1_2_1
+    function_dict['crYOLO v1.2.2'] = copy.deepcopy(function_dict['crYOLO v1.2.1'])
+    function_dict['crYOLO v1.4.1'] = copy.deepcopy(function_dict['crYOLO v1.2.1'])
+
+    function_dict['Compress cmd'] = {
             'content': tc.default_compress_command_line,
             'executable': True,
             'has_path': False,
             'typ': 'compress',
             'allow_empty': ['--command_uncompress'],
-            },
-        'Mount': {
+            }
+    function_dict['Mount'] = {
             'plot': None,
             'plot_data': None,
             'content': tc.default_mount,
@@ -243,8 +196,8 @@ def get_function_dict():
             'has_path': False,
             'typ': None,
             'allow_empty': [],
-            },
-        'Pipeline': {
+            }
+    function_dict['Pipeline'] = {
             'plot': None,
             'plot_data': None,
             'content': tc.default_pipeline,
@@ -252,8 +205,8 @@ def get_function_dict():
             'has_path': False,
             'typ': None,
             'allow_empty': [],
-            },
-        'General': {
+            }
+    function_dict['General'] = {
             'plot': None,
             'plot_data': None,
             'content': tc.default_general,
@@ -261,8 +214,8 @@ def get_function_dict():
             'has_path': False,
             'typ': None,
             'allow_empty': ['Rename suffix'],
-            },
-        'Notification': {
+            }
+    function_dict['Notification'] = {
             'plot': None,
             'plot_data': None,
             'content': tc.default_notification,
@@ -270,8 +223,8 @@ def get_function_dict():
             'has_path': False,
             'typ': None,
             'allow_empty': [],
-            },
-        'Notification_widget': {
+            }
+    function_dict['Notification_widget'] = {
             'plot': None,
             'plot_data': None,
             'content': tc.default_notification_widget,
@@ -279,8 +232,8 @@ def get_function_dict():
             'has_path': False,
             'typ': None,
             'allow_empty': [],
-            },
-        'Others': {
+            }
+    function_dict['Others'] = {
             'plot': None,
             'plot_data': None,
             'content': tc.default_others,
@@ -288,8 +241,8 @@ def get_function_dict():
             'has_path': False,
             'typ': None,
             'allow_empty': [],
-            },
-        'Font': {
+            }
+    function_dict['Font'] = {
             'plot': None,
             'plot_data': None,
             'content': tc.default_font,
@@ -297,8 +250,8 @@ def get_function_dict():
             'has_path': False,
             'typ': None,
             'allow_empty': [],
-            },
-        'Copy': {
+            }
+    function_dict['Copy'] = {
             'plot': None,
             'plot_data': None,
             'content': tc.default_copy,
@@ -306,8 +259,8 @@ def get_function_dict():
             'has_path': False,
             'typ': None,
             'allow_empty': [],
-            },
-        'Path': {
+            }
+    function_dict['Path'] = {
             'plot': None,
             'plot_data': None,
             'content': tc.default_path,
@@ -315,8 +268,7 @@ def get_function_dict():
             'has_path': False,
             'typ': None,
             'allow_empty': [],
-            },
-        }
+            }
     return function_dict
 
 

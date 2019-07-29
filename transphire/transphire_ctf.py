@@ -46,9 +46,21 @@ def get_ctf_command(file_sum, file_input, new_name, settings, queue_com, name):
     block_gpu = None
     gpu_list = None
     shell = None
-    if ctf_name == 'CTFFIND4 v4.1.8' or \
-            ctf_name == 'CTFFIND4 v4.1.10':
+    if ctf_name in ('CTFFIND4 v4.1.8', 'CTFFIND4 v4.1.10'):
         command = create_ctffind_4_v4_1_8_command(
+            ctf_name = ctf_name,
+            file_sum=file_sum,
+            file_input=file_input,
+            file_output=new_name,
+            settings=settings
+            )
+        check_files = []
+        block_gpu = False
+        gpu_list = []
+        shell = True
+
+    elif ctf_name in ('CTFFIND4 v4.1.13'):
+        command = create_ctffind_4_v4_1_13_command(
             ctf_name = ctf_name,
             file_sum=file_sum,
             file_input=file_input,
@@ -80,7 +92,7 @@ def get_ctf_command(file_sum, file_input, new_name, settings, queue_com, name):
         gpu_list = gpu.split()
         shell = False
 
-    elif ctf_name == 'CTER v1.0':
+    elif ctf_name in ('CTER v1.0', 'CTER v1.2'):
         output_dir, _ = os.path.splitext(new_name)
         command = create_cter_1_0_command(
             ctf_name=ctf_name,
@@ -129,9 +141,7 @@ def find_logfiles(root_path, file_name, settings, queue_com, name):
     log_files = None
     copied_log_files = None
     ctf_root_path = os.path.join(settings['ctf_folder'], file_name)
-    if settings['Copy']['CTF'] == 'CTFFIND4 v4.1.8' or \
-            settings['Copy']['CTF'] == 'CTFFIND4 v4.1.10' or \
-            settings['Copy']['CTF'] == 'CTER v1.0':
+    if settings['Copy']['CTF'] in ('CTFFIND4 v4.1.8', 'CTFFIND4 v4.1.10', 'CTFFIND4 v4.1.13', 'CTER v1.0', 'CTER v1.2'):
         copied_log_files = []
         recursive_file_search(directory=ctf_root_path, files=copied_log_files)
         log_files = copied_log_files
@@ -295,6 +305,116 @@ def create_cter_1_0_command(
             continue
 
     return ' '.join(command)
+
+def create_ctffind_4_v4_1_13_command(ctf_name, file_sum, file_input, file_output, settings):
+    """Create the ctffind command"""
+    ctf_settings = settings[ctf_name]
+    ctffind_command = []
+    if ctf_settings['Use movies'] == 'True':
+        pass
+    else:
+        file_input = file_sum
+    # Input file
+    ctffind_command.append('{0}'.format(file_input))
+    # Is movie
+    if ctf_settings['Use movies'] == 'True':
+        ctffind_command.append('{0}'.format('yes'))
+        ctffind_command.append('{0}'.format(ctf_settings['Combine frames']))
+    else:
+        pass
+    # Output file
+    ctffind_command.append('{0}'.format(file_output))
+    # Pixel size
+    ctffind_command.append('{0}'.format(ctf_settings['Pixel size']))
+    # Acceleration voltage
+    ctffind_command.append('{0}'.format(ctf_settings['Acceleration voltage']))
+    # Spherical abberation
+    ctffind_command.append('{0}'.format(ctf_settings['Spherical aberration']))
+    # Amplitude contrast
+    ctffind_command.append('{0}'.format(ctf_settings['Amplitude contrast']))
+    # Amplitude spectrum
+    ctffind_command.append('{0}'.format(ctf_settings['Amplitude spectrum']))
+    # Minimum resolution
+    ctffind_command.append('{0}'.format(ctf_settings['Min resolution(A)']))
+    # Maximum resolution
+    ctffind_command.append('{0}'.format(ctf_settings['Max resolution(A)']))
+    # Minimum defocus
+    ctffind_command.append('{0}'.format(ctf_settings['Min defocus(A)']))
+    # Maximum defocus
+    ctffind_command.append('{0}'.format(ctf_settings['Max defocus(A)']))
+    # Defocus step
+    ctffind_command.append('{0}'.format(ctf_settings['Step defocus(A)']))
+    # Do you know astigmatism
+    if ctf_settings['Know astigmatism'] == 'True':
+        ctffind_command.append('{0}'.format('yes'))
+    else:
+        ctffind_command.append('{0}'.format('no'))
+    # Slow or fast
+    if ctf_settings['High accuracy'] == 'True':
+        ctffind_command.append('{0}'.format('yes'))
+    else:
+        ctffind_command.append('{0}'.format('no'))
+    # Astigmatism ctf_settings
+    if ctf_settings['Know astigmatism'] == 'True':
+        ctffind_command.append('{0}'.format(ctf_settings['Astigmatism']))
+        ctffind_command.append('{0}'.format(ctf_settings['Astigmatism angle']))
+    else:
+        if ctf_settings['Restrain astigmatism'] == 'True':
+            ctffind_command.append('{0}'.format('yes'))
+            ctffind_command.append(
+                '{0}'.format(ctf_settings['Expected astigmatism'])
+                )
+        else:
+            ctffind_command.append('{0}'.format('no'))
+    # Phase shift
+    if ctf_settings['Phase shift'] == 'True':
+        ctffind_command.append('{0}'.format('yes'))
+        ctffind_command.append('{0}'.format(ctf_settings['Min phase(rad)']))
+        ctffind_command.append('{0}'.format(ctf_settings['Max phase(rad)']))
+        ctffind_command.append('{0}'.format(ctf_settings['Step phase(rad)']))
+    else:
+        ctffind_command.append('{0}'.format('no'))
+    # Expert ctf_settings
+    ctffind_command.append('{0}'.format('yes'))
+    # Resmaple micrograph
+    if ctf_settings['Resample micrographs'] == 'True':
+        ctffind_command.append('{0}'.format('yes'))
+    else:
+        ctffind_command.append('{0}'.format('no'))
+    # Movie input ctf_settings
+    if ctf_settings['Use movies'] == 'True':
+        # Gain correction
+        if ctf_settings['Movie is gain-corrected?'] == 'True':
+            ctffind_command.append('{0}'.format('yes'))
+        else:
+            ctffind_command.append('{0}'.format('no'))
+            ctffind_command.append('{0}'.format(ctf_settings['Gain file']))
+        # Correct for magnifying distortions
+        if ctf_settings['Correct mag. distort.'] == 'True':
+            ctffind_command.append('{0}'.format('yes'))
+            ctffind_command.append(
+                '{0}'.format(ctf_settings['Mag. dist. angle'])
+                )
+            ctffind_command.append(
+                '{0}'.format(ctf_settings['Mag. dist. major scale'])
+                )
+            ctffind_command.append(
+                '{0}'.format(ctf_settings['Mag. dist. minor scale'])
+                )
+        else:
+            ctffind_command.append('{0}'.format('no'))
+
+    else:
+        pass
+    ctffind_command.append('{0}'.format('no'))
+    ctffind_command.append('{0}'.format(1))
+
+    command = 'echo "{0}" | {1}'.format(
+        '\n'.join(ctffind_command),
+        settings['Path'][ctf_name]
+        )
+    return command
+
 
 def create_ctffind_4_v4_1_8_command(ctf_name, file_sum, file_input, file_output, settings):
     """Create the ctffind command"""
@@ -602,7 +722,7 @@ def to_partres_file(data, ctf_name, ctf_settings, project_folder, ctf_folder, su
     None
     """
 
-    export_dtype = ti.get_dtype_import_dict()['CTER v1.0']
+    export_dtype = ti.get_dtype_import_dict()[ctf_name]
     export_data = np.atleast_1d(np.empty(data.shape[0], dtype=export_dtype))
     constant_settings = set([
         'cs',

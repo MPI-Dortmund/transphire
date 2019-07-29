@@ -45,20 +45,6 @@ def default_compress_command_line():
     return items
 
 
-def default_cryolo_v1_2_2():
-    """
-    Content of crYOLO version 1.2.2
-
-    Arguments:
-    None
-
-    Return:
-    Content items as list
-    """
-    items = default_cryolo_v1_2_1()
-    return items
-
-
 def default_cryolo_v1_2_1():
     """
     Content of crYOLO version 1.2.1
@@ -123,19 +109,6 @@ def default_cryolo_v1_1_0():
         ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT A CRYOLO OPTION. Split the gpu values specified in --gpu to be able to run mutliple crYOLO jobs in parallel.'],
         ]
     return items
-
-
-def default_cryolo_v1_0_5():
-    """
-    Content of crYOLO version 1.0.5
-
-    Arguments:
-    None
-
-    Return:
-    Content items as list
-    """
-    return default_cryolo_v1_0_4()
 
 
 def default_cryolo_v1_0_4():
@@ -602,19 +575,6 @@ def default_pipeline():
         ['Copy_backup', '1', int, 'Copy_backup;', 'PLAIN', '', ''],
         ]
     return items
-
-
-def default_ctffind_4_v4_1_10():
-    """
-    Content of CTFFind version 4.1.10.
-
-    Arguments:
-    None
-
-    Return:
-    Content items as list
-    """
-    return default_ctffind_4_v4_1_8()
 
 
 def default_ctffind_4_v4_1_8():

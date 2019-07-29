@@ -39,9 +39,7 @@ def get_motion_default(settings, motion_frames, queue_com, name):
     """
 
     motion_name = settings['Copy']['Motion']
-    if motion_name == 'MotionCor2 v1.0.0' or \
-            motion_name == 'MotionCor2 v1.0.5' or \
-            motion_name == 'MotionCor2 v1.1.0':
+    if motion_name in ('MotionCor2 v1.0.0', 'MotionCor2 v1.0.5', 'MotionCor2 v1.1.0', 'MotionCor2 v1.2.6'):
         motion_frames['last'] = \
             int(settings['General']['Number of frames']) - \
             int(settings[motion_name]['-Trunc'])
@@ -80,9 +78,7 @@ def get_dw_file_name(output_transfer_scratch, file_name, settings, queue_com, na
     File path of the DW file.
     """
     motion_name = settings['Copy']['Motion']
-    if motion_name == 'MotionCor2 v1.0.0' or \
-            motion_name == 'MotionCor2 v1.0.5' or \
-            motion_name == 'MotionCor2 v1.1.0':
+    if motion_name in ('MotionCor2 v1.0.0', 'MotionCor2 v1.0.5', 'MotionCor2 v1.1.0', 'MotionCor2 v1.2.6'):
         return os.path.join(
             output_transfer_scratch,
             '{0}_DW.mrc'.format(file_name)
@@ -118,9 +114,7 @@ def get_motion_command(file_input, file_output_scratch, file_log_scratch, settin
     command = None
     block_gpu = None
     gpu_list = None
-    if motion_name == 'MotionCor2 v1.0.0' or \
-            motion_name == 'MotionCor2 v1.0.5' or \
-            motion_name == 'MotionCor2 v1.1.0':
+    if motion_name in ('MotionCor2 v1.0.0', 'MotionCor2 v1.0.5', 'MotionCor2 v1.1.0', 'MotionCor2 v1.2.6'):
         command, gpu = create_motion_cor_2_v1_0_0_command(
             motion_name=motion_name,
             file_input=file_input,
@@ -137,7 +131,7 @@ def get_motion_command(file_input, file_output_scratch, file_log_scratch, settin
             block_gpu = False
         elif motion_name == 'MotionCor2 v1.0.5':
             block_gpu = True
-        elif motion_name == 'MotionCor2 v1.1.0':
+        elif motion_name in ('MotionCor2 v1.1.0', 'MotionCor2 v1.2.6'):
             if settings[motion_name]['-GpuMemUsage'] == '0':
                 block_gpu = False
             else:
@@ -300,9 +294,7 @@ def create_sum_movie_v1_0_2_command(
     # Number of frames
 
     motion_name = settings['Copy']['Motion']
-    if motion_name == 'MotionCor2 v1.0.0' or \
-            motion_name == 'MotionCor2 v1.0.5' or \
-            motion_name == 'MotionCor2 v1.1.0':
+    if motion_name in ('MotionCor2 v1.0.0', 'MotionCor2 v1.0.5', 'MotionCor2 v1.1.0', 'MotionCor2 v1.2.6'):
         sum_movie_command.append('{0}'.format(
             int(settings['General']['Number of frames']) -
             int(settings[motion_name]['-Trunc']) -
@@ -332,9 +324,7 @@ def create_sum_movie_v1_0_2_command(
     sum_movie_command.append('{0}'.format(motion_frames['last']))
     # Pixel size
 
-    if motion_name == 'MotionCor2 v1.0.0' or \
-            motion_name == 'MotionCor2 v1.0.5' or \
-            motion_name == 'MotionCor2 v1.1.0':
+    if motion_name in ('MotionCor2 v1.0.0', 'MotionCor2 v1.0.5', 'MotionCor2 v1.1.0', 'MotionCor2 v1.2.6'):
         sum_movie_command.append(
             '{0}'.format(settings[motion_name]['-PixSize'])
             )

@@ -53,9 +53,7 @@ def get_picking_command(file_input, new_name, settings, queue_com, name):
         block_gpu = True
         gpu_list = gpu.split()
 
-    elif picking_name == 'crYOLO v1.1.0' or \
-            picking_name == 'crYOLO v1.2.1' or \
-            picking_name == 'crYOLO v1.2.2':
+    elif picking_name in ('crYOLO v1.1.0', 'crYOLO v1.2.1', 'crYOLO v1.2.2', 'crYOLO v1.4.1'):
         command, gpu = create_cryolo_v1_1_0_command(
             picking_name=picking_name,
             file_input=file_input,
@@ -102,7 +100,7 @@ def find_logfiles(root_path, file_name, settings, queue_com, name):
     copied_log_files = None
     picking_name = settings['Copy']['Picking']
     picking_root_path = os.path.join(settings['picking_folder'], file_name)
-    if picking_name == 'crYOLO v1.2.2':
+    if picking_name in ('crYOLO v1.2.2', 'crYOLO v1.4.1'):
         if settings[picking_name]['--filament'] == 'True':
             folder_names = (
                 ('EMAN_HELIX_SEGMENTED', 'box'),

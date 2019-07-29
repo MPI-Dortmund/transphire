@@ -92,6 +92,7 @@ def get_dtype_dict():
         ('file_name', '|U1200'),
         ('image', '|U1200'),
         ]
+
     dtype['Gctf v1.06'] = [
         ('defocus_1', '<f8'),
         ('defocus_2', '<f8'),
@@ -101,15 +102,8 @@ def get_dtype_dict():
         ('limit', '<f8'),
         ('file_name', '|U1200')
         ]
-    dtype['Gctf v1.18'] = [
-        ('defocus_1', '<f8'),
-        ('defocus_2', '<f8'),
-        ('astigmatism', '<f8'),
-        ('phase_shift', '<f8'),
-        ('cross_corr', '<f8'),
-        ('limit', '<f8'),
-        ('file_name', '|U1200')
-        ]
+    dtype['Gctf v1.18'] = dtype['Gctf v1.06']
+
     dtype['CTER v1.0'] = [
         ('defocus_1', '<f8'),
         ('defocus_2', '<f8'),
@@ -119,16 +113,8 @@ def get_dtype_dict():
         ('limit', '<f8'),
         ('file_name', '|U1200')
         ]
-    dtype['CTFFIND4 v4.1.10'] = [
-        ('mic_number', '<f8'),
-        ('defocus_1', '<f8'),
-        ('defocus_2', '<f8'),
-        ('astigmatism', '<f8'),
-        ('phase_shift', '<f8'),
-        ('cross_corr', '<f8'),
-        ('limit', '<f8'),
-        ('file_name', '|U1200')
-        ]
+    dtype['CTER v1.2'] = dtype['CTER v1.0']
+
     dtype['CTFFIND4 v4.1.8'] = [
         ('mic_number', '<f8'),
         ('defocus_1', '<f8'),
@@ -139,6 +125,9 @@ def get_dtype_dict():
         ('limit', '<f8'),
         ('file_name', '|U1200')
         ]
+    dtype['CTFFIND4 v4.1.10'] = dtype['CTFFIND4 v4.1.8']
+    dtype['CTFFIND4 v4.1.13'] = dtype['CTFFIND4 v4.1.8']
+
     dtype['crYOLO v1.0.4'] = [
         ('coord_x', '<f8'),
         ('coord_y', '<f8'),
@@ -146,20 +135,9 @@ def get_dtype_dict():
         ('box_y', '<f8'),
         ('file_name', '|U1200'),
         ]
-    dtype['crYOLO v1.0.5'] = [
-        ('coord_x', '<f8'),
-        ('coord_y', '<f8'),
-        ('box_x', '<f8'),
-        ('box_y', '<f8'),
-        ('file_name', '|U1200'),
-        ]
-    dtype['crYOLO v1.1.0'] = [
-        ('coord_x', '<f8'),
-        ('coord_y', '<f8'),
-        ('box_x', '<f8'),
-        ('box_y', '<f8'),
-        ('file_name', '|U1200'),
-        ]
+    dtype['crYOLO v1.0.5'] = dtype['crYOLO v1.0.4']
+    dtype['crYOLO v1.1.0'] = dtype['crYOLO v1.0.4']
+    dtype['crYOLO v1.4.1'] = dtype['crYOLO v1.0.4']
     return dtype
 
 
@@ -246,6 +224,8 @@ def get_dtype_import_dict():
         ('phase_shift', '<f8'),
         ('file_name', '|U1200'),
         ]
+    dtype_import['CTER v1.2'] = dtype_import['CTER v1.0']
+
     dtype_import['Gctf v1.06'] = [
         ('defocus_1', '<f8'),
         ('defocus_2', '<f8'),
@@ -254,23 +234,8 @@ def get_dtype_import_dict():
         ('cross_corr', '<f8'),
         ('limit', '<f8')
         ]
-    dtype_import['Gctf v1.18'] = [
-        ('defocus_1', '<f8'),
-        ('defocus_2', '<f8'),
-        ('astigmatism', '<f8'),
-        ('phase_shift', '<f8'),
-        ('cross_corr', '<f8'),
-        ('limit', '<f8')
-        ]
-    dtype_import['CTFFIND4 v4.1.10'] = [
-        ('mic_number', '<f8'),
-        ('defocus_1', '<f8'),
-        ('defocus_2', '<f8'),
-        ('astigmatism', '<f8'),
-        ('phase_shift', '<f8'),
-        ('cross_corr', '<f8'),
-        ('limit', '<f8')
-        ]
+    dtype_import['Gctf v1.18'] = dtype_import['Gctf v1.06']
+
     dtype_import['CTFFIND4 v4.1.8'] = [
         ('mic_number', '<f8'),
         ('defocus_1', '<f8'),
@@ -280,55 +245,28 @@ def get_dtype_import_dict():
         ('cross_corr', '<f8'),
         ('limit', '<f8')
         ]
+    dtype_import['CTFFIND4 v4.1.10'] = dtype_import['CTFFIND4 v4.1.8']
+    dtype_import['CTFFIND4 v4.1.13'] = dtype_import['CTFFIND4 v4.1.8']
+
     dtype_import['MotionCor2 v1.0.0'] = [
         ('frame_number', '<f8'),
         ('shift_x', '<f8'),
         ('shift_y', '<f8')
         ]
-    dtype_import['MotionCor2 v1.0.5'] = [
-        ('frame_number', '<f8'),
-        ('shift_x', '<f8'),
-        ('shift_y', '<f8')
-        ]
-    dtype_import['MotionCor2 v1.1.0'] = [
-        ('frame_number', '<f8'),
-        ('shift_x', '<f8'),
-        ('shift_y', '<f8')
-        ]
+    dtype_import['MotionCor2 v1.0.5'] = dtype_import['MotionCor2 v1.0.0']
+    dtype_import['MotionCor2 v1.1.0'] = dtype_import['MotionCor2 v1.0.0']
+    dtype_import['MotionCor2 v1.2.6'] = dtype_import['MotionCor2 v1.0.0']
+
     dtype_import['crYOLO v1.0.4'] = [
         ('coord_x', '<f8'),
         ('coord_y', '<f8'),
         ('box_x', '<f8'),
         ('box_y', '<f8'),
         ]
-    dtype_import['crYOLO v1.0.5'] = [
-        ('coord_x', '<f8'),
-        ('coord_y', '<f8'),
-        ('box_x', '<f8'),
-        ('box_y', '<f8'),
-        ]
-    dtype_import['crYOLO v1.1.0'] = [
-        ('coord_x', '<f8'),
-        ('coord_y', '<f8'),
-        ('box_x', '<f8'),
-        ('box_y', '<f8'),
-        ]
+    dtype_import['crYOLO v1.0.5'] = dtype_import['crYOLO v1.0.4']
+    dtype_import['crYOLO v1.1.0'] = dtype_import['crYOLO v1.0.4']
+    dtype_import['crYOLO v1.4.1'] = dtype_import['crYOLO v1.0.4']
     return dtype_import
-
-
-def import_ctffind_v4_1_10(name, directory_name, import_name=''):
-    """
-    Import ctf information for CTFFIND v4.1.10.
-    Defocus in angstrom, phase shift in degree.
-
-    Arguments:
-    name - Name of ctf program
-    directory_name - Name of the directory to search for files
-
-    Return:
-    Imported data
-    """
-    return import_ctffind_v4_1_8(name, directory_name, import_name)
 
 
 def import_ctffind_v4_1_8(name, directory_name, import_name=''):
@@ -421,81 +359,8 @@ def import_ctffind_v4_1_8(name, directory_name, import_name=''):
             data[dtype_name] = [entry[1][dtype_name] for entry in useable_files]
     data['image'] = jpg_names
 
-    #for idx, file_name in sorted(enumerate(useable_files)):
-
-    #    try:
-    #        data_name = np.genfromtxt(
-    #            file_name,
-    #            dtype=get_dtype_import_dict()[name],
-    #            )
-    #    except IOError:
-    #        continue
-    #    else:
-    #        if data_name.size == 0:
-    #            continue
-    #        else:
-    #            pass
-
-    #    data[idx]['file_name'] = file_name
-    #    input_name = None
-
-    #    with open(file_name, 'r') as read:
-    #        for line in read.readlines():
-    #            match_re = re.match('# Input file: (.*?) ; Number of micrographs: 1', line)
-    #            if match_re is not None:
-    #                input_name = match_re.group(1)
-    #            else:
-    #                pass
-    #    if input_name is None:
-    #        raise IOError(
-    #            'Could not read {0} file name! Please contact the TranSPHIRE authors! -- {1}'.format(
-    #                name,
-    #                file_name
-    #                )
-    #            )
-    #    else:
-    #        data_original[idx]['file_name'] = input_name
-
-    #    for entry in data_name.dtype.names:
-    #        if entry == 'phase_shift':
-    #            data_original[idx][entry] = np.degrees(data_name[entry])
-    #        else:
-    #            data_original[idx][entry] = data_name[entry]
-
-    #        if entry == 'defocus_1':
-    #            data[idx]['defocus'] = (data_name['defocus_1']+data_name['defocus_2'])/2
-    #        elif entry == 'defocus_2':
-    #            data[idx]['defocus_diff'] = data_name['defocus_2']-data_name['defocus_1']
-    #        elif entry == 'phase_shift':
-    #            data[idx][entry] = np.degrees(data_name[entry])
-    #        else:
-    #            data[idx][entry] = data_name[entry]
-
-    #    jpg_name = os.path.join(
-    #        directory_name,
-    #        'jpg*',
-    #        '{0}.jpg'.format(os.path.basename(os.path.splitext(file_name)[0]))
-    #        )
-    #    data[idx]['image'] = ';;;'.join(glob.glob(jpg_name))
-
     data = np.sort(data, order='file_name')
     data_original = np.sort(data_original, order='file_name')
-    return data, data_original
-
-
-def import_gctf_v1_18(name, directory_name, import_name=''):
-    """
-    Import ctf information for Gctf v1.18.
-    Defocus in angstrom, phase shift in degree.
-
-    Arguments:
-    name - Name of ctf program
-    directory_name - Name of the directory to search for files
-
-    Return:
-    Imported data
-    """
-    data, data_original = import_gctf_v1_06(name=name, directory_name=directory_name, import_name=import_name)
     return data, data_original
 
 
@@ -581,64 +446,6 @@ def import_gctf_v1_06(name, directory_name, import_name=''):
             data[transphire_name] = np.nan_to_num([entry[1][dtype_name] for entry in useable_files])
     data['image'] = jpg_names
 
-    #for idx, file_name in enumerate(useable_files):
-    #    try:
-    #        dtype, max_header = get_header(input_file=file_name)
-    #    except ValueError:
-    #        print('Could not read header of {0}!'.format(file_name))
-    #        data, data_original =  None, None
-    #        break
-
-    #    try:
-    #        data_name = np.genfromtxt(
-    #            file_name,
-    #            dtype=dtype,
-    #            skip_header=max_header,
-    #            )
-    #    except IOError:
-    #        continue
-    #    else:
-    #        if data_name.size == 0:
-    #            continue
-    #        else:
-    #            pass
-
-    #    for dtype_name in data_name.dtype.names:
-    #        try:
-    #            transphire_name = relion_dict[dtype_name]
-    #        except KeyError:
-    #            continue
-
-    #        try:
-    #            data_original[idx][transphire_name] = np.nan_to_num(data_name[dtype_name])
-    #        except ValueError:
-    #            data_original[idx][transphire_name] = 0
-
-    #        if transphire_name == 'defocus_1':
-    #            try:
-    #                data[idx]['defocus'] = (
-    #                    data_name['_rlnDefocusU']+data_name['_rlnDefocusV']
-    #                    ) / 2
-    #            except ValueError:
-    #                data[idx][transphire_name] = 0
-    #        elif transphire_name == 'defocus_2':
-    #            try:
-    #                data[idx]['defocus_diff'] = data_name['_rlnDefocusV']-data_name['_rlnDefocusU']
-    #            except ValueError:
-    #                data[idx][transphire_name] = 0
-    #        else:
-    #            try:
-    #                data[idx][transphire_name] = np.nan_to_num(data_name[dtype_name])
-    #            except ValueError:
-    #                data[idx][transphire_name] = 0
-
-    #    jpg_name = os.path.join(
-    #        directory_name,
-    #        'jpg*',
-    #        '{0}.jpg'.format(tu.get_name(tu.get_name(file_name)))
-    #        )
-    #    data[idx]['image'] = ';;;'.join(glob.glob(jpg_name))
-
     data = np.sort(data, order='file_name')
     data_original = np.sort(data_original, order='file_name')
     return data, data_original
@@ -721,51 +528,6 @@ def import_cter_v1_0(name, directory_name, import_name=''):
         else:
             continue
     data['image'] = jpg_names
-
-    #for idx, file_name in sorted(enumerate(useable_files)):
-    #    try:
-    #        data_name = np.genfromtxt(
-    #            file_name,
-    #            dtype=get_dtype_import_dict()[name],
-    #            )
-    #    except IOError:
-    #        continue
-    #    else:
-    #        if data_name.size == 0:
-    #            continue
-    #        else:
-    #            pass
-
-    #    for entry in data_name.dtype.names:
-    #        data_original[idx][entry] = data_name[entry]
-    #        if entry == 'defocus':
-    #            data[idx][entry] = data_name[entry] * 10000
-    #        elif entry == 'astigmatism_amplitude':
-    #            data[idx]['defocus_diff'] = data_name[entry] * 10000
-    #        elif entry == 'astigmatism_angle':
-    #            data[idx]['astigmatism'] = 45 - data_name[entry]
-    #        elif entry == 'phase_shift':
-    #            data[idx]['phase_shift'] = data_name[entry]
-    #        elif entry == 'file_name':
-    #            data[idx]['file_name'] = data_name[entry]
-    #        elif entry == 'standard_deviation_defocus':
-    #            data[idx]['cross_corr'] = data_name[entry]
-    #        elif entry == 'limit_defocus_and_astigmatism':
-    #            if data_name[entry] == 0:
-    #                value = data_name['limit_pixel_error']
-    #            else:
-    #                value = data_name[entry]
-
-    #            data[idx]['limit'] = 1 / value
-    #        else:
-    #            continue
-
-    #    jpg_name = os.path.join(
-    #        directory_name,
-    #        'jpg*',
-    #        '{0}.jpg'.format(os.path.split(os.path.dirname(file_name))[-1])
-    #        )
-    #    data[idx]['image'] = ';;;'.join(glob.glob(jpg_name))
 
     data = np.sort(data, order='file_name')
     data_original = np.sort(data_original, order='file_name')
@@ -875,64 +637,6 @@ def import_motion_cor_2_v1_0_0(name, directory_name, import_name=''):
     return data, data_original
 
 
-def import_motion_cor_2_v1_0_5(name, directory_name, import_name=''):
-    """
-    Import motion information for MotionCor2 v1.0.5.
-
-    Arguments:
-    name - Name of ctf program
-    directory_name - Name of the directory to search for files
-
-    Return:
-    Imported data
-    """
-    data, data_original = import_motion_cor_2_v1_0_0(name=name, directory_name=directory_name, import_name=import_name)
-    return data, data_original
-
-
-def import_motion_cor_2_v1_1_0(name, directory_name, import_name=''):
-    """
-    Import motion information for MotionCor2 v1.1.0.
-
-    Arguments:
-    name - Name of ctf program
-    directory_name - Name of the directory to search for files
-
-    Return:
-    Imported data
-    """
-    data, data_original = import_motion_cor_2_v1_0_0(name=name, directory_name=directory_name, import_name=import_name)
-    return data, data_original
-
-
-def import_cryolo_v1_0_5(name, directory_name, import_name=''):
-    """
-    Import picking information for crYOLO v1.0.5.
-
-    Arguments:
-    name - Name of picking program
-    directory_name - Name of the directory to search for files
-
-    Return:
-    Imported data
-    """
-    return import_cryolo_v1_0_4(name, directory_name, import_name)
-
-
-def import_cryolo_v1_1_0(name, directory_name, import_name=''):
-    """
-    Import picking information for crYOLO v1.1.0.
-
-    Arguments:
-    name - Name of picking program
-    directory_name - Name of the directory to search for files
-
-    Return:
-    Imported data
-    """
-    return import_cryolo_v1_0_4(name, directory_name, import_name)
-
-
 def import_cryolo_v1_2_2(name, directory_name, import_name=''):
     """
     Import picking information for crYOLO v1.2.2.
@@ -950,20 +654,6 @@ def import_cryolo_v1_2_2(name, directory_name, import_name=''):
         sub_directory=['EMAN', 'EMAN_HELIX_SEGMENTED'],
         import_name=import_name,
         )
-
-
-def import_cryolo_v1_2_1(name, directory_name, import_name=''):
-    """
-    Import picking information for crYOLO v1.2.2.
-
-    Arguments:
-    name - Name of picking program
-    directory_name - Name of the directory to search for files
-
-    Return:
-    Imported data
-    """
-    return import_cryolo_v1_0_4(name, directory_name, import_name)
 
 
 def import_cryolo_v1_0_4(name, directory_name, sub_directory=None, import_name=''):
