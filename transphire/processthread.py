@@ -1163,7 +1163,7 @@ class ProcessThread(QThread):
                     continue
             elif os.path.isfile(entry_dir) and \
                     'Data' in entry_dir and \
-                    entry_dir.endswith('.jpg'):
+                    (entry_dir.endswith('.jpg') or entry_dir.endswith('.gtg')):
                 root_name = entry_dir[:-len('.jpg')]
                 self.shared_dict_typ['bad_lock'].lock()
                 try:
@@ -1178,7 +1178,10 @@ class ProcessThread(QThread):
                     self.settings['General']['Search path meta'],
                     self.settings['General']['Search path frames'],
                     )
-                compare_name = frames_root[:-len('_19911213_2019')]
+                if entry_dir.endswith('.jpg'):
+                    compare_name = frames_root[:-len('_19911213_2019')]
+                else:
+                    compare_name = frames_root
 
                 frames = tus.find_frames(
                     frames_root=frames_root,
@@ -1304,7 +1307,7 @@ class ProcessThread(QThread):
         finally:
             self.shared_dict_typ['count_lock'].unlock()
 
-        if os.path.exists('{0}.jpg'.format(new_name_meta)):
+        if os.path.exists('{0}.jpg'.format(new_name_meta)) or os.path.exists('{0}.gtg'.format(new_name_meta)):
             self.stop = True
             if os.path.exists(self.shared_dict_typ['done_file']):
                 self.queue_lock.lock()
@@ -2876,7 +2879,7 @@ class ProcessThread(QThread):
             dont_tar = True
         elif not self.settings['Copy']['Tar to HDD'] == 'True' and self.typ == 'Copy_HDD':
             dont_tar = True
-        elif root_name.endswith('jpg'):
+        elif root_name.endswith('jpg') or root_name.endswith('gtg'):
             dont_tar = True
         elif self.settings['tar_folder'] in root_name:
             dont_tar = True

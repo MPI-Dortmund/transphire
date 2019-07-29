@@ -44,7 +44,7 @@ def extract_time_and_grid_information(root_name, settings, queue_com, name):
     if settings['General']['Software'] == 'Latitude S':
         if settings['General']['Camera'] in ('Falcon2', 'Falcon3'):
             message = '\n'.join([
-                'Frames and Falcon2/Falcon3 is not supported for Software {0}.'.format(
+                'Falcon2/Falcon3 is not supported for Software {0}.'.format(
                     settings['General']['Software']
                     ),
                 'Please contact the TranSPHIRE authors!'
@@ -156,7 +156,86 @@ def find_frames(frames_root, compare_name, settings, queue_com, name, write_erro
     True if the function was successful.
     """
     message = None
-    if settings['General']['Software'] == 'EPU >1.8':
+    if settings['General']['Software'] == 'Latitude S':
+        if settings['General']['Type'] == 'Frames':
+            message = '\n'.join([
+                'Frames and Falcon2/Falcon3 is not supported for Software {0}.'.format(
+                    settings['General']['Software']
+                    ),
+                'Please contact the TranSPHIRE authors!'
+                ])
+
+        elif settings['General']['Type'] == 'Stack':
+
+            if settings['General']['Camera'] in ('Falcon2', 'Falcon3'):
+                message = '\n'.join([
+                    'Falcon2/Falcon3 is not supported for Software {0}.'.format(
+                        settings['General']['Software']
+                        ),
+                    'Please contact the TranSPHIRE authors!'
+                    ])
+
+            elif settings['General']['Camera'] in ('K2', 'K3'):
+                frames = glob.glob(
+                    '{0}.{1}'.format(
+                        compare_name,
+                        settings['General']['Input extension']
+                        )
+                    )
+
+                if len(frames) != 1:
+                    message = 'File {0} has {1} movie files instead of 1\n'.format(
+                        frames_root,
+                        len(frames)
+                        )
+                    write_error(
+                        msg=message,
+                        root_name=frames_root
+                        )
+                    return None
+                else:
+                    try:
+                        value, checked_nr_frames = check_nr_frames(
+                            frames=frames,
+                            settings=settings
+                            )
+                    except BlockingIOError:
+                        write_error(
+                            msg=tb.format_exc(),
+                            root_name=frames_root
+                            )
+                        return False
+
+                if not value:
+                    message = 'File {0} has {1} frames instead of {2}\n'.format(
+                        frames[0],
+                        checked_nr_frames,
+                        int(settings['General']['Number of frames'])
+                        )
+                    write_error(
+                        msg=message,
+                        root_name=frames_root
+                        )
+                    return None
+                else:
+                    return True
+
+            else:
+                message = '\n'.join([
+                    'Camera {0} for Software {1} not known!'.format(
+                        settings['General']['Camera'],
+                        settings['General']['Software']
+                        ),
+                    'Please contact the TranSPHIRE authors!'
+                    ])
+
+        else:
+            message = '\n'.join([
+                '{0}: Unknown Type!'.format(settings['General']['Type']),
+                'Please contact the TranSPHIRE authors!'
+                ])
+
+    elif settings['General']['Software'] == 'EPU >1.8':
 
         ####
         #
@@ -489,7 +568,50 @@ def find_related_frames_to_jpg(frames_root, root_name, settings, queue_com, name
     name - Name of the process
     """
     message = None
-    if settings['General']['Software'] == 'EPU >1.8':
+    if settings['General']['Software'] == 'Latitude S':
+        if settings['General']['Type'] == 'Frames':
+            message = '\n'.join([
+                'Frames and Falcon2/Falcon3 is not supported for Software {0}.'.format(
+                    settings['General']['Software']
+                    ),
+                'Please contact the TranSPHIRE authors!'
+                ])
+
+        elif settings['General']['Type'] == 'Stack':
+
+            if settings['General']['Camera'] in ('Falcon2', 'Falcon3'):
+                message = '\n'.join([
+                    'Falcon2/Falcon3 is not supported for Software {0}.'.format(
+                        settings['General']['Software']
+                        ),
+                    'Please contact the TranSPHIRE authors!'
+                    ])
+
+            elif settings['General']['Camera'] in ('K2', 'K3'):
+                compare_name_frames = frames_root
+                compare_name_meta = root_name
+                frames = glob.glob('{0}.{1}'.format(
+                    compare_name_frames,
+                    settings['General']['Input extension']
+                    ))
+                return frames, compare_name_frames, compare_name_meta
+
+            else:
+                message = '\n'.join([
+                    'Camera {0} for Software {1} not known!'.format(
+                        settings['General']['Camera'],
+                        settings['General']['Software']
+                        ),
+                    'Please contact the TranSPHIRE authors!'
+                    ])
+
+        else:
+            message = '\n'.join([
+                '{0}: Unknown Type!'.format(settings['General']['Type']),
+                'Please contact the TranSPHIRE authors!'
+                ])
+
+    elif settings['General']['Software'] == 'EPU >1.8':
 
         ####
         #
@@ -672,7 +794,44 @@ def get_copy_command_for_frames(settings, queue_com, name):
     Command to use for copy.
     """
     message = None
-    if settings['General']['Software'] == 'EPU >1.8':
+    if settings['General']['Software'] == 'Latitude S':
+        if settings['General']['Type'] == 'Frames':
+            message = '\n'.join([
+                'Frames and Falcon2/Falcon3 is not supported for Software {0}.'.format(
+                    settings['General']['Software']
+                    ),
+                'Please contact the TranSPHIRE authors!'
+                ])
+
+        elif settings['General']['Type'] == 'Stack':
+
+            if settings['General']['Camera'] in ('Falcon2', 'Falcon3'):
+                message = '\n'.join([
+                    'Falcon2/Falcon3 is not supported for Software {0}.'.format(
+                        settings['General']['Software']
+                        ),
+                    'Please contact the TranSPHIRE authors!'
+                    ])
+
+            elif settings['General']['Camera'] in ('K2', 'K3'):
+                return 'rsync'
+
+            else:
+                message = '\n'.join([
+                    'Camera {0} for Software {1} not known!'.format(
+                        settings['General']['Camera'],
+                        settings['General']['Software']
+                        ),
+                    'Please contact the TranSPHIRE authors!'
+                    ])
+
+        else:
+            message = '\n'.join([
+                '{0}: Unknown Type!'.format(settings['General']['Type']),
+                'Please contact the TranSPHIRE authors!'
+                ])
+
+    elif settings['General']['Software'] == 'EPU >1.8':
 
         ####
         #
@@ -827,7 +986,31 @@ def find_all_files(root_name, compare_name_frames, compare_name_meta, settings, 
     list of files related to root_name.
     """
     message = None
-    if settings['General']['Software'] == 'EPU >1.8':
+    if settings['General']['Software'] == 'Latitude S':
+
+        if settings['General']['Camera'] in ('Falcon2', 'Falcon3'):
+            message = '\n'.join([
+                'Falcon2/Falcon3 is not supported for Software {0}.'.format(
+                    settings['General']['Software']
+                    ),
+                'Please contact the TranSPHIRE authors!'
+                ])
+
+        elif settings['General']['Camera'] in ('K2', 'K3'):
+            meta_files = glob.glob('{0}.*'.format(root_name))
+            frame_files = glob.glob('{0}*'.format(compare_name_frames))
+            return set(meta_files), set(frame_files)
+
+        else:
+            message = '\n'.join([
+                'Camera {0} for Software {1} not known!'.format(
+                    settings['General']['Camera'],
+                    settings['General']['Software']
+                    ),
+                'Please contact the TranSPHIRE authors!'
+                ])
+
+    elif settings['General']['Software'] == 'EPU >1.8':
 
         if settings['General']['Camera'] in ('K2', 'K3'):
             meta_files = glob.glob('{0}.*'.format(root_name))

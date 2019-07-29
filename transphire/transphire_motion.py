@@ -635,8 +635,9 @@ def create_jpg_file(input_file, settings):
         with mrc.open(input_file) as mrc_file:
             input_data = mrc_file.data
     except ValueError:
-        with mrc.open(input_file, 'r+', permissive=True) as mrc_file:
-            mrc_file.header.map = mrc.constants.MAP_ID
+        if os.path.splitext(input_file)[1] in ('.mrc', '.mrcs'):
+            with mrc.open(input_file, 'r+', permissive=True) as mrc_file:
+                mrc_file.header.map = mrc.constants.MAP_ID
         with mrc.open(input_file) as mrc_file:
             input_data = mrc_file.data
     if len(input_data.shape) == 3:
