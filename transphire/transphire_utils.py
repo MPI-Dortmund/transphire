@@ -16,7 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
-import copy
+import copy as copy_mod
 import errno
 import json
 import sys
@@ -121,8 +121,8 @@ def get_function_dict():
             'typ': 'ctf',
             'allow_empty': ['Gain file'],
             }
-    function_dict['CTFFIND4 v4.1.10'] = function_dict['CTFFIND v4.1.8']
-    function_dict['CTFFIND4 v4.1.13'] = function_dict['CTFFIND v4.1.8']
+    function_dict['CTFFIND4 v4.1.10'] = function_dict['CTFFIND4 v4.1.8']
+    function_dict['CTFFIND4 v4.1.13'] = function_dict['CTFFIND4 v4.1.8']
 
     function_dict['Gctf v1.06'] = {
             'plot': tp.update_ctffind_4_v4_1_8,
@@ -133,7 +133,7 @@ def get_function_dict():
             'typ': 'ctf',
             'allow_empty': [],
             }
-    function_dict['Gctf v1.18'] = copy.deepcopy(function_dict['Gctf v1.06'])
+    function_dict['Gctf v1.18'] = copy_mod.deepcopy(function_dict['Gctf v1.06'])
     function_dict['Gctf v1.18']['content'] = tc.default_gctf_v1_18
 
     function_dict['CTER v1.0'] = {
@@ -156,11 +156,11 @@ def get_function_dict():
             'typ': 'motion',
             'allow_empty': ['-DefectFile', '-Gain'],
             }
-    function_dict['MotionCor2 v1.0.5'] = copy.deepcopy(function_dict['MotionCor2 v1.0.0'])
+    function_dict['MotionCor2 v1.0.5'] = copy_mod.deepcopy(function_dict['MotionCor2 v1.0.0'])
     function_dict['MotionCor2 v1.0.5']['content'] = tc.default_motion_cor_2_v1_0_5
-    function_dict['MotionCor2 v1.1.0'] = copy.deepcopy(function_dict['MotionCor2 v1.0.0'])
+    function_dict['MotionCor2 v1.1.0'] = copy_mod.deepcopy(function_dict['MotionCor2 v1.0.0'])
     function_dict['MotionCor2 v1.1.0']['content'] = tc.default_motion_cor_2_v1_1_0
-    function_dict['MotionCor2 v1.2.6'] = copy.deepcopy(function_dict['MotionCor2 v1.0.0'])
+    function_dict['MotionCor2 v1.2.6'] = copy_mod.deepcopy(function_dict['MotionCor2 v1.0.0'])
     function_dict['MotionCor2 v1.2.6']['content'] = tc.default_motion_cor_2_v1_1_0
 
     function_dict['crYOLO v1.0.4'] = {
@@ -172,14 +172,14 @@ def get_function_dict():
             'typ': 'picking',
             'allow_empty': [],
             }
-    function_dict['crYOLO v1.0.5'] = copy.deepcopy(function_dict['crYOLO v1.0.4'])
-    function_dict['crYOLO v1.1.0'] = copy.deepcopy(function_dict['crYOLO v1.0.4'])
+    function_dict['crYOLO v1.0.5'] = copy_mod.deepcopy(function_dict['crYOLO v1.0.4'])
+    function_dict['crYOLO v1.1.0'] = copy_mod.deepcopy(function_dict['crYOLO v1.0.4'])
     function_dict['crYOLO v1.1.0']['content'] = tc.default_cryolo_v1_1_0
 
-    function_dict['crYOLO v1.2.1'] = copy.deepcopy(function_dict['crYOLO v1.0.4'])
+    function_dict['crYOLO v1.2.1'] = copy_mod.deepcopy(function_dict['crYOLO v1.0.4'])
     function_dict['crYOLO v1.2.1']['content'] = tc.default_cryolo_v1_2_1
-    function_dict['crYOLO v1.2.2'] = copy.deepcopy(function_dict['crYOLO v1.2.1'])
-    function_dict['crYOLO v1.4.1'] = copy.deepcopy(function_dict['crYOLO v1.2.1'])
+    function_dict['crYOLO v1.2.2'] = copy_mod.deepcopy(function_dict['crYOLO v1.2.1'])
+    function_dict['crYOLO v1.4.1'] = copy_mod.deepcopy(function_dict['crYOLO v1.2.1'])
 
     function_dict['Compress cmd'] = {
             'content': tc.default_compress_command_line,
