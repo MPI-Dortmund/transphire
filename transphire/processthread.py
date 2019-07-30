@@ -2931,31 +2931,31 @@ class ProcessThread(QThread):
             copy_file = root_name
 
         else:
+            try:
+                tar_file = [
+                    entry
+                    for entry in self.shared_dict_typ['queue_list']
+                    if self.settings['tar_folder'] in entry
+                    ][0]
+            except IndexError:
+                tar_file = os.path.join(
+                    self.settings['tar_folder'],
+                    '{0}_{1:06d}.tar'.format(self.name, self.shared_dict_typ['tar_idx'])
+                    )
+                self.shared_dict_typ['queue_list'].append(tar_file)
+                self.add_to_queue_file(
+                    root_name=tar_file,
+                    file_name=self.shared_dict_typ['list_file'],
+                    )
+
+            with tarfile.open(tar_file, 'a') as tar:
+                tar.add(
+                    root_name,
+                    arcname=os.path.join('..', root_name.replace(self.settings['project_folder'], ''))
+                    )
+
             self.queue_lock.lock()
             try:
-                try:
-                    tar_file = [
-                        entry
-                        for entry in self.shared_dict_typ['queue_list']
-                        if self.settings['tar_folder'] in entry
-                        ][0]
-                except IndexError:
-                    tar_file = os.path.join(
-                        self.settings['tar_folder'],
-                        '{0}_{1:06d}.tar'.format(self.name, self.shared_dict_typ['tar_idx'])
-                        )
-                    self.shared_dict_typ['queue_list'].append(tar_file)
-                    self.add_to_queue_file(
-                        root_name=tar_file,
-                        file_name=self.shared_dict_typ['list_file'],
-                        )
-
-                with tarfile.open(tar_file, 'a') as tar:
-                    tar.add(
-                        root_name,
-                        arcname=os.path.join('..', root_name.replace(self.settings['project_folder'], ''))
-                        )
-
                 if os.path.getsize(tar_file) > float(self.settings['Copy']['Tar size (Gb)']) * 1024**3:
                     copy_file = tar_file
                     self.shared_dict_typ['tar_idx'] += 1
