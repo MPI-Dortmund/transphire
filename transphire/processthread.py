@@ -117,7 +117,7 @@ class ProcessThread(QThread):
         except KeyError:
             self.user = None
 
-        self.queue_com['status'].put(['Starting', [], name, '#fff266'])
+        self.queue_com['status'].put(tu.create_log('Starting', name))
 
     def run(self):
         """
@@ -270,6 +270,7 @@ class ProcessThread(QThread):
 
         # Print, if stopped
         self.queue_com['status'].put(['STOPPED', [], self.name, '#ff5c33'])
+        self.queue_com['log'].put(tu.create_log('Stopped', self.name))
         print(self.name, ': Stopped')
 
     def check_full(self):
@@ -1017,6 +1018,8 @@ class ProcessThread(QThread):
         Return:
         None
         """
+        start_prog = time.time()
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_software_meta start'))
         file_list = []
         file_list = self.recursive_search(
             directory=directory,
@@ -1061,6 +1064,7 @@ class ProcessThread(QThread):
                 self.add_to_queue(aim=aim_name, root_name=tar_file)
             else:
                 pass
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_software_meta stop', time.time() - start_prog))
 
 
     def run_find(self):
@@ -1073,6 +1077,8 @@ class ProcessThread(QThread):
         Return:
         None
         """
+        start_prog = time.time()
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_find start'))
         self.queue_lock.lock()
         file_list = []
         try:
@@ -1128,6 +1134,7 @@ class ProcessThread(QThread):
                         )
                 else:
                     pass
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_find stop', time.time() - start_prog))
 
     def recursive_search(self, directory, file_list, find_meta):
         """
@@ -1233,6 +1240,8 @@ class ProcessThread(QThread):
         Returns:
         None
         """
+        start_prog = time.time()
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_import', root_name, 'start'))
         frames_root = root_name.replace(
             self.settings['General']['Search path meta'],
             self.settings['General']['Search path frames'],
@@ -1463,6 +1472,8 @@ class ProcessThread(QThread):
             self.shared_dict['share'][self.content_settings['group']].remove(root_name)
         finally:
             self.shared_dict['typ'][self.content_settings['group']]['share_lock'].unlock()
+
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_import', root_name, 'stop', time.time() - start_prog))
 
 
     def already_in_translation_file(self, root_name):
@@ -1715,6 +1726,8 @@ class ProcessThread(QThread):
         Returns:
         None
         """
+        start_prog = time.time()
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', root_name, 'start'))
         if not os.path.isfile(root_name):
             compress_name = self.settings['Copy']['Compress']
             try:
@@ -2109,9 +2122,12 @@ class ProcessThread(QThread):
                 sum_file=sum_file,
                 dw_file=dw_file,
                 )
-            output_name_mic = output_combine[0]
-            output_name_star = output_combine[1]
-            output_name_star_relion3 = output_combine[2]
+            output_name_mic = output_combine[5]
+            output_name_star = output_combine[6]
+            output_name_star_relion3 = output_combine[7]
+            output_name_mic_comb = output_combine[0]
+            output_name_star_comb = output_combine[1]
+            output_name_star_relion3_comb = output_combine[2]
             new_gain = output_combine[3]
             new_defect = output_combine[4]
             motion_files = sorted(glob.glob(
@@ -2120,79 +2136,28 @@ class ProcessThread(QThread):
                     )
                 ))
 
-            output_lines = []
-            self.shared_dict['motion_txt_lock'].lock()
-            try:
-                for file_name in motion_files:
-                    with open(file_name, 'r') as read:
-                        output_lines.append(read.readlines()[-1])
-                with open(output_name_mic, 'w') as write:
-                    write.write(''.join(output_lines))
-            finally:
-                self.shared_dict['motion_txt_lock'].unlock()
+            combine_list = [
+                [self.shared_dict['motion_txt_lock'], output_name_mic, output_name_mic_comb],
+                [self.shared_dict['motion_star_lock'], output_name_star, output_name_star_comb],
+                [self.shared_dict['motion_star_relion3_lock'], output_name_star_relion3, output_name_star_relion3_comb],
+                ]
+            for file_lock, in_file, out_file in combine_list:
+                file_lock.lock()
+                try:
+                    with open(in_file, 'r') as read:
+                        if not os.path.exists(out_file):
+                            lines = read.readlines()
+                        else:
+                            lines = read.readlines()[-1]
+                    with open(out_file, 'a+') as write:
+                        write.write(''.join(lines))
+                finally:
+                    file_lock.unlock()
+                self.file_to_distribute(file_name=in_file)
+                self.file_to_distribute(file_name=out_file)
 
-            star_files = sorted(glob.glob(
-                '{0}/*_transphire_motion.star'.format(
-                    os.path.dirname(file_stdout_combine)
-                    )
-                ))
-            header = []
-            self.shared_dict['motion_star_lock'].lock()
-            try:
-                with open(star_files[0], 'r') as read:
-                    header.extend(read.readlines()[:-1])
-                output_lines = []
-                for file_name in star_files:
-                    with open(file_name, 'r') as read:
-                        output_lines.append(read.readlines()[-1])
-                with open(output_name_star, 'w') as write:
-                    write.write(''.join(header))
-                    write.write(''.join(output_lines))
-            finally:
-                self.shared_dict['motion_star_lock'].unlock()
-
-            star_files_relion3 = sorted(glob.glob(
-                '{0}/*_transphire_motion_relion3.star'.format(
-                    os.path.dirname(file_stdout_combine)
-                    )
-                ))
-
-            header = []
-            self.shared_dict['motion_star_relion3_lock'].lock()
-            try:
-                with open(star_files_relion3[0], 'r') as read:
-                    header.extend(read.readlines()[:-1])
-                output_lines = []
-                for file_name in star_files_relion3:
-                    with open(file_name, 'r') as read:
-                        output_lines.append(read.readlines()[-1])
-                with open(output_name_star_relion3, 'w') as write:
-                    write.write(''.join(header))
-                    write.write(''.join(output_lines))
-            finally:
-                self.shared_dict['motion_star_relion3_lock'].unlock()
-
-            star_files_relion3_meta = sorted(glob.glob(
-                '{0}/*_transphire_motion_relion3_meta.star'.format(
-                    os.path.dirname(file_stdout_combine)
-                    )
-                ))
-
-            copy_names = []
-            copy_names.extend(star_files_relion3_meta)
-            copy_names.extend(star_files_relion3)
-            copy_names.extend(star_files)
-            copy_names.extend(motion_files)
-
-            for file_name in copy_names:
-                if not os.path.basename(root_name) in file_name:
-                    continue
-                else:
-                    self.file_to_distribute(file_name=file_name)
-
-            self.file_to_distribute(file_name=output_name_mic)
-            self.file_to_distribute(file_name=output_name_star)
-            self.file_to_distribute(file_name=output_name_star_relion3)
+            star_files_relion3_meta = output_combine[8]
+            self.file_to_distribute(file_name=star_files_relion3_meta)
             if new_gain:
                 self.file_to_distribute(file_name=new_gain)
             else:
@@ -2266,6 +2231,7 @@ class ProcessThread(QThread):
             os.remove(file_stack)
         else:
             pass
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', root_name, 'stop', time.time() - start_prog))
 
     def run_ctf(self, root_name):
         """
@@ -2276,6 +2242,8 @@ class ProcessThread(QThread):
         Returns:
         None
         """
+        start_prog = time.time()
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_ctf', root_name, 'start'))
         root_name_raw = root_name
         # Split is file_sum, file_dw_sum, file_frames
         try:
@@ -2547,6 +2515,7 @@ class ProcessThread(QThread):
                             self.add_to_queue(aim=aim_name, root_name=log_file)
                 else:
                     pass
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_ctf', root_name, 'stop', time.time() - start_prog))
 
     def run_picking(self, root_name):
         """
@@ -2557,6 +2526,8 @@ class ProcessThread(QThread):
         Returns:
         None
         """
+        start_prog = time.time()
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name, 'start'))
 
         if root_name == 'None':
             pass
@@ -2752,6 +2723,7 @@ class ProcessThread(QThread):
                     pass
 
         self.remove_from_queue_file(file_queue_list, self.shared_dict_typ['list_file'])
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name, 'stop', time.time() - start_prog))
 
     def run_compress(self, root_name):
         """
@@ -2762,6 +2734,8 @@ class ProcessThread(QThread):
         Returns:
         None
         """
+        start_prog = time.time()
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_compress', root_name, 'start'))
         new_root_name, extension = os.path.splitext(os.path.basename(root_name))
 
         log_prefix = os.path.join(
@@ -2859,6 +2833,7 @@ class ProcessThread(QThread):
                 self.add_to_queue(aim=aim_name, root_name=err_file)
             else:
                 pass
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_compress', root_name, 'stop', time.time() - start_prog))
 
 
     def run_copy_extern(self, root_name):
@@ -2870,6 +2845,8 @@ class ProcessThread(QThread):
         Returns:
         None
         """
+        start_prog = time.time()
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_copy_extern', root_name, 'start'))
         dont_tar = False
         if root_name == 'None':
             pass
@@ -2879,7 +2856,7 @@ class ProcessThread(QThread):
             dont_tar = True
         elif not self.settings['Copy']['Tar to HDD'] == 'True' and self.typ == 'Copy_HDD':
             dont_tar = True
-        elif root_name.endswith('jpg') or root_name.endswith('gtg'):
+        elif root_name.endswith('jpg'):
             dont_tar = True
         elif self.settings['tar_folder'] in root_name:
             dont_tar = True
@@ -2906,6 +2883,7 @@ class ProcessThread(QThread):
                     ][0]
                 if not os.path.exists(copy_file):
                     self.shared_dict_typ['queue_list_time'] = time.time()
+                    self.queue_com['log'].put(tu.create_log(self.name, 'run_copy_extern', root_name, 'stop early:', time.time() - start_prog))
                     return None
                 self.shared_dict_typ['tar_idx'] += 1
                 new_tar_file = os.path.join(
@@ -2931,28 +2909,32 @@ class ProcessThread(QThread):
             copy_file = root_name
 
         else:
+            self.queue_lock.lock()
             try:
-                tar_file = [
-                    entry
-                    for entry in self.shared_dict_typ['queue_list']
-                    if self.settings['tar_folder'] in entry
-                    ][0]
-            except IndexError:
-                tar_file = os.path.join(
-                    self.settings['tar_folder'],
-                    '{0}_{1:06d}.tar'.format(self.name, self.shared_dict_typ['tar_idx'])
-                    )
-                self.shared_dict_typ['queue_list'].append(tar_file)
-                self.add_to_queue_file(
-                    root_name=tar_file,
-                    file_name=self.shared_dict_typ['list_file'],
-                    )
+                try:
+                    tar_file = [
+                        entry
+                        for entry in self.shared_dict_typ['queue_list']
+                        if self.settings['tar_folder'] in entry
+                        ][0]
+                except IndexError:
+                    tar_file = os.path.join(
+                        self.settings['tar_folder'],
+                        '{0}_{1:06d}.tar'.format(self.name, self.shared_dict_typ['tar_idx'])
+                        )
+                    self.shared_dict_typ['queue_list'].append(tar_file)
+                    self.add_to_queue_file(
+                        root_name=tar_file,
+                        file_name=self.shared_dict_typ['list_file'],
+                        )
+            finally:
+                self.queue_lock.unlock()
 
-            with tarfile.open(tar_file, 'a') as tar:
-                tar.add(
-                    root_name,
-                    arcname=os.path.join('..', root_name.replace(self.settings['project_folder'], ''))
-                    )
+                with tarfile.open(tar_file, 'a') as tar:
+                    tar.add(
+                        root_name,
+                        arcname=os.path.join('..', root_name.replace(self.settings['project_folder'], ''))
+                        )
 
             self.queue_lock.lock()
             try:
@@ -2977,6 +2959,7 @@ class ProcessThread(QThread):
                         )
                 else:
                     self.shared_dict_typ['queue_list_time'] = time.time()
+                    self.queue_com['log'].put(tu.create_log(self.name, 'run_copy_extern', root_name, 'stop early', time.time() - start_prog))
                     return None
             finally:
                 self.queue_lock.unlock()
@@ -3029,6 +3012,7 @@ class ProcessThread(QThread):
 
         copy_method(copy_file, new_name)
         self.shared_dict_typ['queue_list_time'] = time.time()
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_copy_extern', root_name, 'stop', time.time() - start_prog))
 
     def copy_as_user(self, file_in, file_out):
         """

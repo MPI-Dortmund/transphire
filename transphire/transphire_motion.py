@@ -576,7 +576,7 @@ def combine_motion_outputs(
     with open(output_name_star_relion3, 'w') as write:
         write.write('\n'.join(export_lines_star_relion3))
 
-    return output_name_mic_combined, output_name_star_combined, output_name_star_relion3_combined, new_gain, new_defect
+    return output_name_mic_combined, output_name_star_combined, output_name_star_relion3_combined, new_gain, new_defect, output_name_mic, output_name_star, output_name_star_relion3, relion3_meta
 
 
 def get_relion_header(names):

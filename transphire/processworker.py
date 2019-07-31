@@ -259,6 +259,7 @@ class ProcessWorker(QObject):
 
         # Queue communication dictionary
         queue_com = {
+            'log': qu.Queue(),
             'status': qu.Queue(),
             'notification': qu.Queue(),
             'error': qu.Queue(),
@@ -657,6 +658,7 @@ class ProcessWorker(QObject):
                 'white'
                 )
 
+
     def pre_check_programs(self):
         """
         Check, if all programs the user wants to use are available.
@@ -740,6 +742,10 @@ class ProcessWorker(QObject):
                 elif key == 'error':
                     error = queue_com['error'].get()
                     self.sig_error.emit(error)
+                elif key == 'log':
+                    log = queue_com['log'].get()
+                    with open(self.settings['project_folder'], 'a+') as write:
+                        write.write('{0}\n'.format(log))
                 else:
                     print(
                         'Processworker - check_queue:',
@@ -842,14 +848,14 @@ class ProcessWorker(QObject):
         if not queue_list:
             tar_files = glob.glob(os.path.join(
                 self.settings['tar_folder'],
-                '{0}_*\.tar'.format(key)
+                '{0}_*.tar'.format(key)
                 ))
             if tar_files:
-                shared_dict_typ['tar_idx'] = max([int(re.match('{0}_([0-9]+)\.tar'.format(key), entry).group(1)) for entry in tar_files]) + 1
+                shared_dict_typ['tar_idx'] = max([int(re.search('{0}_.*([0-9]{{6}})\.tar'.format(key), entry).group(1)) for entry in tar_files]) + 1
             else:
                 shared_dict_typ['tar_idx'] = 0
         else:
             try:
-                shared_dict_typ['tar_idx'] = max([int(re.match('{0}_([0-9]+)\.tar'.format(key), entry).group(1)) for entry in queue_list if re.match('{0}_([0-9]+)\.tar'.format(key), entry)])
+                shared_dict_typ['tar_idx'] = max([int(re.search('{0}_.*([0-9]{{6}})\.tar'.format(key), entry).group(1)) for entry in queue_list if re.search('{0}_.*([0-9]{{6}})\.tar'.format(key), entry)])
             except ValueError:
                 pass

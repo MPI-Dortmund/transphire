@@ -16,6 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
+import datetime
 import copy as copy_mod
 import errno
 import json
@@ -43,6 +44,11 @@ from transphire.tabdocker import TabDocker
 from transphire import transphire_content as tc
 from transphire import transphire_plot as tp
 from transphire import transphire_import as ti
+
+
+def create_log(*args):
+    time_string = datetime.datetime.now().strftime('%Y/%m/%d - %H:%M:%S')
+    return '{0} => {1}'.format(time_string, ' '.join([str(entry) for entry in args]))
 
 
 def normalize_image(data, apix=1.0, min_res=30, real=True):
