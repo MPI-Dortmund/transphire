@@ -200,7 +200,7 @@ class SettingsContainer(QWidget):
             try:
                 content = self.content[key]
             except KeyError:
-                try:
+                try: # This block has been introduced for backwards compatibility changes.
                     content = self.content[key.replace(' v', ' >=v')]
                 except KeyError:
                     if key == 'CTF_entries':
