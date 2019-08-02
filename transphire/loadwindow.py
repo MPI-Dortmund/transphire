@@ -267,6 +267,8 @@ class DefaultSettings(QDialog):
         content_temp = {}
         for name in setting_names:
             default_file = '{0}/content_{1}.txt'.format(settings_folder, name.replace(' ', '_'))
+            if not os.path.isfile(default_file):
+                default_file = '{0}/content_{1}.txt'.format(settings_folder, name.replace(' ', '_').replace('>=', ''))
             content_temp[name] = LoadContentContainer(
                 typ=name,
                 file_name=default_file,
@@ -295,6 +297,8 @@ class DefaultSettings(QDialog):
         content = {}
         for name in setting_names:
             default_file = '{0}/content_{1}.txt'.format(settings_folder, name.replace(' ', '_'))
+            if not os.path.isfile(default_file):
+                default_file = '{0}/content_{1}.txt'.format(settings_folder, name.replace(' ', '_').replace('>=', ''))
             content[name] = content_temp[name].get_settings()
             if name == 'Mount':
                 continue

@@ -564,7 +564,9 @@ def get_key_names(settings_folder, name):
     Return:
     List of mount names
     """
-    default_file = '{0}/content_{1}.txt'.format(settings_folder, name)
+    default_file = '{0}/content_{1}.txt'.format(settings_folder, name.replace(' ', '_'))
+    if not os.path.isfile(default_file):
+        default_file = '{0}/content_{1}.txt'.format(settings_folder, name.replace(' ', '_').replace('>=', ''))
     try:
         with open(default_file, 'r') as file_r:
             data = json.load(file_r)
