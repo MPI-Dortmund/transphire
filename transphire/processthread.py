@@ -2885,22 +2885,12 @@ class ProcessThread(QThread):
                     self.shared_dict_typ['queue_list_time'] = time.time()
                     self.queue_com['log'].put(tu.create_log(self.name, 'run_copy_extern', root_name, 'stop early:', time.time() - start_prog))
                     return None
-                self.shared_dict_typ['tar_idx'] += 1
-                new_tar_file = os.path.join(
-                    self.settings['tar_folder'],
-                    '{0}_{1:06d}.tar'.format(self.name, self.shared_dict_typ['tar_idx'])
-                    )
 
                 self.shared_dict_typ['queue_list'].remove(copy_file)
                 self.remove_from_queue_file(
                     copy_file,
                     self.shared_dict_typ['list_file'],
                     lock=False
-                    )
-                self.shared_dict_typ['queue_list'].append(new_tar_file)
-                self.add_to_queue_file(
-                    root_name=new_tar_file,
-                    file_name=self.shared_dict_typ['list_file'],
                     )
             finally:
                 self.queue_lock.unlock()
@@ -2927,6 +2917,7 @@ class ProcessThread(QThread):
                         root_name=tar_file,
                         file_name=self.shared_dict_typ['list_file'],
                         )
+                    self.shared_dict_typ['tar_idx'] += 1
             finally:
                 self.queue_lock.unlock()
 
