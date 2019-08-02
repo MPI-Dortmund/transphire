@@ -46,65 +46,66 @@ def get_ctf_command(file_sum, file_input, new_name, settings, queue_com, name):
     block_gpu = None
     gpu_list = None
     shell = None
-    if ctf_name in ('CTFFIND4 v4.1.8', 'CTFFIND4 v4.1.10'):
-        command = create_ctffind_4_v4_1_8_command(
-            ctf_name = ctf_name,
-            file_sum=file_sum,
-            file_input=file_input,
-            file_output=new_name,
-            settings=settings
-            )
-        check_files = []
-        block_gpu = False
-        gpu_list = []
-        shell = True
-
-    elif ctf_name in ('CTFFIND4 v4.1.13'):
-        command = create_ctffind_4_v4_1_13_command(
-            ctf_name = ctf_name,
-            file_sum=file_sum,
-            file_input=file_input,
-            file_output=new_name,
-            settings=settings
-            )
-        check_files = []
-        block_gpu = False
-        gpu_list = []
-        shell = True
-
-    elif ctf_name == 'Gctf v1.06' or \
-            ctf_name == 'Gctf v1.18':
-        command, gpu = create_gctf_v1_06_command(
-            ctf_name=ctf_name,
-            file_sum=file_sum,
-            file_input=file_input,
-            file_output=new_name,
-            settings=settings,
-            name=name
-            )
-        check_files = ['{0}_gctf.star'.format(new_name)]
-        if ctf_name == 'Gctf v1.06':
+    if 'CTFFIND4' in ctf_name:
+        if tu.is_higher_version(ctf_name, '4.1.13'):
+            command = create_ctffind_4_v4_1_13_command(
+                ctf_name = ctf_name,
+                file_sum=file_sum,
+                file_input=file_input,
+                file_output=new_name,
+                settings=settings
+                )
+            check_files = []
             block_gpu = False
-        elif ctf_name == 'Gctf v1.18':
-            block_gpu = True
-        else:
-            assert False
-        gpu_list = gpu.split()
-        shell = False
+            gpu_list = []
+            shell = True
+        elif tu.is_higher_version(ctf_name, '4.1.8'):
+            command = create_ctffind_4_v4_1_8_command(
+                ctf_name = ctf_name,
+                file_sum=file_sum,
+                file_input=file_input,
+                file_output=new_name,
+                settings=settings
+                )
+            check_files = []
+            block_gpu = False
+            gpu_list = []
+            shell = True
 
-    elif ctf_name in ('CTER v1.0', 'CTER v1.2'):
-        output_dir, _ = os.path.splitext(new_name)
-        command = create_cter_1_0_command(
-            ctf_name=ctf_name,
-            file_sum=file_sum,
-            file_input=file_input,
-            output_dir=output_dir,
-            settings=settings
-            )
-        check_files = ['{0}/partres.txt'.format(output_dir)]
-        block_gpu = False
-        gpu_list = []
-        shell = False
+    elif 'Gctf' in ctf_name:
+        if tu.is_higher_version(ctf_name, '1.06'):
+            command, gpu = create_gctf_v1_06_command(
+                ctf_name=ctf_name,
+                file_sum=file_sum,
+                file_input=file_input,
+                file_output=new_name,
+                settings=settings,
+                name=name
+                )
+            check_files = ['{0}_gctf.star'.format(new_name)]
+            if tu.is_higher_version(ctf_name, '1.18'):
+                block_gpu = True
+            elif tu.is_higher_version(ctf_name, '1.06'):
+                block_gpu = False
+            else:
+                assert False
+            gpu_list = gpu.split()
+            shell = False
+
+    elif 'CTER' in ctf_name:
+        if tu.is_higher_version(ctf_name, '1.0'):
+            output_dir, _ = os.path.splitext(new_name)
+            command = create_cter_1_0_command(
+                ctf_name=ctf_name,
+                file_sum=file_sum,
+                file_input=file_input,
+                output_dir=output_dir,
+                settings=settings
+                )
+            check_files = ['{0}/partres.txt'.format(output_dir)]
+            block_gpu = False
+            gpu_list = []
+            shell = False
 
     else:
         message = '\n'.join([
@@ -141,33 +142,41 @@ def find_logfiles(root_path, file_name, settings, queue_com, name):
     log_files = None
     copied_log_files = None
     ctf_root_path = os.path.join(settings['ctf_folder'], file_name)
-    if settings['Copy']['CTF'] in ('CTFFIND4 v4.1.8', 'CTFFIND4 v4.1.10', 'CTFFIND4 v4.1.13', 'CTER v1.0', 'CTER v1.2'):
-        copied_log_files = []
-        recursive_file_search(directory=ctf_root_path, files=copied_log_files)
-        log_files = copied_log_files
+    ctf_name = settings['Copy']['CTF']
+    if 'CTFFIND4' in ctf_name:
+        if tu.is_higher_version(ctf_name, '4.1.8'):
+            copied_log_files = []
+            recursive_file_search(directory=ctf_root_path, files=copied_log_files)
+            log_files = copied_log_files
 
-    elif settings['Copy']['CTF'] == 'Gctf v1.18' or \
-            settings['Copy']['CTF'] == 'Gctf v1.06':
-        log_files = []
-        copied_log_files = []
-        exclude_list = [
-            '{0}.mrc'.format(root_path),
-            '{0}_DW.mrc'.format(root_path),
-            '{0}.log'.format(root_path),
-            '{0}.err'.format(root_path),
-            ]
-        for log_file in glob.glob('{0}*'.format(root_path)):
-            if log_file in exclude_list:
-                continue
-            else:
-                pass
+    elif 'CTER' in ctf_name:
+        if tu.is_higher_version(ctf_name, '1'):
+            copied_log_files = []
+            recursive_file_search(directory=ctf_root_path, files=copied_log_files)
+            log_files = copied_log_files
 
-            new_file = os.path.join(
-                settings['ctf_folder'],
-                os.path.basename(log_file)
-                )
-            log_files.append(log_file)
-            copied_log_files.append(new_file)
+    elif 'Gctf' in ctf_name:
+        if tu.is_higher_version(ctf_name, '1.06'):
+            log_files = []
+            copied_log_files = []
+            exclude_list = [
+                '{0}.mrc'.format(root_path),
+                '{0}_DW.mrc'.format(root_path),
+                '{0}.log'.format(root_path),
+                '{0}.err'.format(root_path),
+                ]
+            for log_file in glob.glob('{0}*'.format(root_path)):
+                if log_file in exclude_list:
+                    continue
+                else:
+                    pass
+
+                new_file = os.path.join(
+                    settings['ctf_folder'],
+                    os.path.basename(log_file)
+                    )
+                log_files.append(log_file)
+                copied_log_files.append(new_file)
 
     else:
         message = '\n'.join([
@@ -940,7 +949,7 @@ def create_jpg_file(input_mrc_file, settings, ctf_name):
     file_name = tu.get_name(input_mrc_file)
     input_ctf_file = None
     input_1d_file = None
-    if 'CTFFIND' in ctf_name:
+    if 'CTFFIND4' in ctf_name:
         input_ctf_file = os.path.join(settings['ctf_folder'], '{0}.mrc'.format(file_name))
         input_1d_file = os.path.join(settings['ctf_folder'], '{0}_avrot.txt'.format(file_name))
     elif 'Gctf' in ctf_name:
@@ -1026,7 +1035,7 @@ def create_jpg_file(input_mrc_file, settings, ctf_name):
 
     if input_1d_file:
         plot_data = []
-        if 'CTFFIND' in ctf_name:
+        if 'CTFFIND4' in ctf_name:
             data = np.genfromtxt(input_1d_file)
             x_data = data[0]
             plot_data.append([data[1], 'CTF_no_astig'])

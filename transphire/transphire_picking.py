@@ -16,6 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import re
 import os
 import imageio
 import numpy as np
@@ -40,9 +41,8 @@ def get_picking_command(file_input, new_name, settings, queue_com, name):
     command = None
     block_gpu = None
     gpu_list = None
-    if picking_name == 'crYOLO v1.0.4' or \
-            picking_name == 'crYOLO v1.0.5':
-        command, gpu = create_cryolo_v1_0_4_command(
+    if tu.is_higher_version(picking_name, '1.1'):
+        command, gpu = create_cryolo_v1_1_0_command(
             picking_name=picking_name,
             file_input=file_input,
             file_output=new_name,
@@ -53,8 +53,8 @@ def get_picking_command(file_input, new_name, settings, queue_com, name):
         block_gpu = True
         gpu_list = gpu.split()
 
-    elif picking_name in ('crYOLO v1.1.0', 'crYOLO v1.2.1', 'crYOLO v1.2.2', 'crYOLO v1.4.1'):
-        command, gpu = create_cryolo_v1_1_0_command(
+    elif tu.is_higher_version(picking_name, '1.0'):
+        command, gpu = create_cryolo_v1_0_4_command(
             picking_name=picking_name,
             file_input=file_input,
             file_output=new_name,
@@ -100,7 +100,7 @@ def find_logfiles(root_path, file_name, settings, queue_com, name):
     copied_log_files = None
     picking_name = settings['Copy']['Picking']
     picking_root_path = os.path.join(settings['picking_folder'], file_name)
-    if picking_name in ('crYOLO v1.2.2', 'crYOLO v1.4.1'):
+    if tu.is_higher_version(picking_name, '1.2.2'):
         if settings[picking_name]['--filament'] == 'True':
             folder_names = (
                 ('EMAN_HELIX_SEGMENTED', 'box'),
@@ -122,17 +122,19 @@ def find_logfiles(root_path, file_name, settings, queue_com, name):
                 ext,
                 )])
         log_files = copied_log_files
-    elif picking_name == 'crYOLO v1.0.4' or \
-            picking_name == 'crYOLO v1.0.5' or \
-            picking_name == 'crYOLO v1.2.1':
+    elif tu.is_higher_version(picking_name, '1.2.1'):
         copied_log_files = ['{0}.box'.format(picking_root_path)]
         log_files = copied_log_files
 
-    elif picking_name == 'crYOLO v1.1.0':
+    elif tu.is_higher_version(picking_name, '1.1.0'):
         if settings[picking_name]['--filament'] == 'True':
             copied_log_files = ['{0}.txt'.format(picking_root_path)]
         else:
             copied_log_files = ['{0}.box'.format(picking_root_path)]
+        log_files = copied_log_files
+
+    elif tu.is_higher_version(picking_name, '1.0.4'):
+        copied_log_files = ['{0}.box'.format(picking_root_path)]
         log_files = copied_log_files
 
     else:

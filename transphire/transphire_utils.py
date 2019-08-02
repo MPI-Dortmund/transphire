@@ -45,11 +45,19 @@ from transphire import transphire_content as tc
 from transphire import transphire_plot as tp
 from transphire import transphire_import as ti
 
+VERSION_RE = re.compile('v([\d.]+)')
 
 def create_log(*args):
     time_string = datetime.datetime.now().strftime('%Y/%m/%d - %H:%M:%S')
     return '{0} => {1}'.format(time_string, ' '.join([str(entry) for entry in args]))
 
+
+def is_higher_version(name, version_ref):
+    version_comp = VERSION_RE.search(name).group(1)
+    version_tuple_comp = tuple([int(entry) for entry in version_comp.split('.')])
+    version_tuple_ref = tuple([int(entry) for entry in version_ref.split('.')])
+    return_value = version_tuple_comp >= version_tuple_ref
+    return return_value
 
 def normalize_image(data, apix=1.0, min_res=30, real=True):
     if real:
