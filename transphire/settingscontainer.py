@@ -200,15 +200,18 @@ class SettingsContainer(QWidget):
             try:
                 content = self.content[key]
             except KeyError:
-                if key == 'CTF_entries':
-                    continue
-                elif key == 'Motion_entries':
-                    continue
-                elif key == 'Picking_entries':
-                    continue
-                else:
-                    print('Content for {0} is disabled.'.format(key))
-                    continue
+                try:
+                    content = self.content[key.replace(' v', ' >=v')]
+                except KeyError:
+                    if key == 'CTF_entries':
+                        continue
+                    elif key == 'Motion_entries':
+                        continue
+                    elif key == 'Picking_entries':
+                        continue
+                    else:
+                        print('Content for {0} is disabled.'.format(key))
+                        continue
 
             try:
                 content.set_settings(settings[key])

@@ -279,4 +279,11 @@ class LoadContentContainer(QWidget):
                     self.tab_widget.setTabText(idx, name)
             else:
                 pass
+            if self.typ == 'Path':
+                for vals in entry:
+                    for key, value in list(vals.items()):
+                        new_key = key.replace(' v', ' >=v')
+                        vals[new_key] = value
+                        vals[new_key][1]['name'] = new_key
+                        del vals[key]
             self.content[idx].set_settings(entry)

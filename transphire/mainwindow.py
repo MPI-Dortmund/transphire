@@ -734,8 +734,12 @@ class MainWindow(QMainWindow):
                 try:
                     self.content[key].set_settings(settings[key])
                 except KeyError:
-                    print('Key', key, 'no longer exists')
-                    continue
+                    try:
+                        new_key = key.replace(' v', ' >=v') # Backwards compatibility
+                        self.content[new_key].set_settings(settings[key])
+                    except KeyError:
+                        print('Key', key, 'no longer exists')
+                        continue
 
     @staticmethod
     def settings_to_dict(settings):
