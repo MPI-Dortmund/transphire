@@ -731,7 +731,9 @@ def to_partres_file(data, ctf_name, ctf_settings, project_folder, ctf_folder, su
     None
     """
 
-    export_dtype = ti.get_dtype_import_dict()[ctf_name]
+
+    dtype_import_dict_name = tu.find_best_match(ctf_name, ti.get_dtype_import_dict())
+    export_dtype = ti.get_dtype_import_dict()[dtype_import_dict_name]
     export_data = np.atleast_1d(np.empty(data.shape[0], dtype=export_dtype))
     constant_settings = set([
         'cs',

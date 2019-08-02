@@ -1155,6 +1155,7 @@ def check_for_outlier(dict_name, data, file_name, settings):
         print('file_name', file_name)
         raise
 
+    dtype_dict_name = tu.find_best_match(dict_name, dtype_dict)
     for key in dtype_dict[dict_name]:
         key = key[0]
 
