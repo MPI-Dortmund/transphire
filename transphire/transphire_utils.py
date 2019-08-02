@@ -45,7 +45,7 @@ from transphire import transphire_content as tc
 from transphire import transphire_plot as tp
 from transphire import transphire_import as ti
 
-VERSION_RE = re.compile('v([\d.]+)')
+VERSION_RE = re.compile('(.*) v([\d.]+)')
 
 
 def create_log(*args):
@@ -59,6 +59,33 @@ def create_log(*args):
     """
     time_string = datetime.datetime.now().strftime('%Y/%m/%d - %H:%M:%S')
     return '{0} => {1}'.format(time_string, ' '.join([str(entry) for entry in args]))
+
+
+def find_best_match(name, dictionary):
+    """
+    Find the best matching version key in a dictionary.
+    Raises an assertion error it the return_key is not valid.
+
+    name - Name of the current version.
+    dictionary - Dictionary to find the best matching version.
+
+    Returns:
+    The best matching version Key.
+    """
+    prog_name, _ = VERSION_RE.search(name).groups()
+    valid_versions = [
+        tuple([int(num) for num in VERSION_RE.search(entry).group(2).split('.')])
+        for entry in dictionary.keys()
+        if prog_name in entry
+        ]
+    return_key = None
+    for version in reversed(sorted(valid_versions)):
+        version_string = '.'.join([str(entry) for entry in version])
+        if is_higher_version(name, version_string):
+            return_key = '{0} v{1}'.format(prog_name, version_string)
+            break
+    assert return_key is not None, (name, dictionary)
+    return return_key
 
 
 def is_higher_version(name, version_ref):
@@ -75,7 +102,7 @@ def is_higher_version(name, version_ref):
     Returns:
     True if the version is larger than the reference version
     """
-    version_comp = VERSION_RE.search(name).group(1)
+    version_comp = VERSION_RE.search(name).group(2)
     version_tuple_comp = tuple([int(entry) for entry in version_comp.split('.')])
     version_tuple_ref = tuple([int(entry) for entry in version_ref.split('.')])
     return_value = version_tuple_comp >= version_tuple_ref

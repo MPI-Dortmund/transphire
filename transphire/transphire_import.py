@@ -102,7 +102,6 @@ def get_dtype_dict():
         ('limit', '<f8'),
         ('file_name', '|U1200')
         ]
-    dtype['Gctf v1.18'] = dtype['Gctf v1.06']
 
     dtype['CTER v1.0'] = [
         ('defocus_1', '<f8'),
@@ -113,7 +112,6 @@ def get_dtype_dict():
         ('limit', '<f8'),
         ('file_name', '|U1200')
         ]
-    dtype['CTER v1.2'] = dtype['CTER v1.0']
 
     dtype['CTFFIND4 v4.1.8'] = [
         ('mic_number', '<f8'),
@@ -125,8 +123,6 @@ def get_dtype_dict():
         ('limit', '<f8'),
         ('file_name', '|U1200')
         ]
-    dtype['CTFFIND4 v4.1.10'] = dtype['CTFFIND4 v4.1.8']
-    dtype['CTFFIND4 v4.1.13'] = dtype['CTFFIND4 v4.1.8']
 
     dtype['crYOLO v1.0.4'] = [
         ('coord_x', '<f8'),
@@ -135,9 +131,6 @@ def get_dtype_dict():
         ('box_y', '<f8'),
         ('file_name', '|U1200'),
         ]
-    dtype['crYOLO v1.0.5'] = dtype['crYOLO v1.0.4']
-    dtype['crYOLO v1.1.0'] = dtype['crYOLO v1.0.4']
-    dtype['crYOLO v1.4.1'] = dtype['crYOLO v1.0.4']
     return dtype
 
 
@@ -224,7 +217,6 @@ def get_dtype_import_dict():
         ('phase_shift', '<f8'),
         ('file_name', '|U1200'),
         ]
-    dtype_import['CTER v1.2'] = dtype_import['CTER v1.0']
 
     dtype_import['Gctf v1.06'] = [
         ('defocus_1', '<f8'),
@@ -234,7 +226,6 @@ def get_dtype_import_dict():
         ('cross_corr', '<f8'),
         ('limit', '<f8')
         ]
-    dtype_import['Gctf v1.18'] = dtype_import['Gctf v1.06']
 
     dtype_import['CTFFIND4 v4.1.8'] = [
         ('mic_number', '<f8'),
@@ -245,17 +236,12 @@ def get_dtype_import_dict():
         ('cross_corr', '<f8'),
         ('limit', '<f8')
         ]
-    dtype_import['CTFFIND4 v4.1.10'] = dtype_import['CTFFIND4 v4.1.8']
-    dtype_import['CTFFIND4 v4.1.13'] = dtype_import['CTFFIND4 v4.1.8']
 
     dtype_import['MotionCor2 v1.0.0'] = [
         ('frame_number', '<f8'),
         ('shift_x', '<f8'),
         ('shift_y', '<f8')
         ]
-    dtype_import['MotionCor2 v1.0.5'] = dtype_import['MotionCor2 v1.0.0']
-    dtype_import['MotionCor2 v1.1.0'] = dtype_import['MotionCor2 v1.0.0']
-    dtype_import['MotionCor2 v1.2.6'] = dtype_import['MotionCor2 v1.0.0']
 
     dtype_import['crYOLO v1.0.4'] = [
         ('coord_x', '<f8'),
@@ -263,9 +249,6 @@ def get_dtype_import_dict():
         ('box_x', '<f8'),
         ('box_y', '<f8'),
         ]
-    dtype_import['crYOLO v1.0.5'] = dtype_import['crYOLO v1.0.4']
-    dtype_import['crYOLO v1.1.0'] = dtype_import['crYOLO v1.0.4']
-    dtype_import['crYOLO v1.4.1'] = dtype_import['crYOLO v1.0.4']
     return dtype_import
 
 
@@ -281,6 +264,8 @@ def import_ctffind_v4_1_8(name, directory_name, import_name=''):
     Return:
     Imported data
     """
+    dtype_import_dict_name = tu.find_best_match(name, get_dtype_import_dict())
+    dtype_dict_name = tu.find_best_match(name, get_dtype_dict())
     files = [
         entry for entry in glob.glob(
         '{0}/{1}*.txt'.format(directory_name, import_name)
@@ -292,7 +277,7 @@ def import_ctffind_v4_1_8(name, directory_name, import_name=''):
         try:
             data_name = np.genfromtxt(
                 file_name,
-                dtype=get_dtype_import_dict()[name],
+                dtype=get_dtype_import_dict()[dtype_import_dict_name],
                 )
         except ValueError:
             continue
@@ -320,7 +305,7 @@ def import_ctffind_v4_1_8(name, directory_name, import_name=''):
         )
     data_original = np.zeros(
         len(useable_files),
-        dtype=get_dtype_dict()[name]
+        dtype=get_dtype_dict()[dtype_dict_name]
         )
     data = np.atleast_1d(data)
     data_original = np.atleast_1d(data_original)
@@ -377,6 +362,8 @@ def import_gctf_v1_06(name, directory_name, import_name=''):
     Imported data
     """
     suffix = '_gctf'
+    dtype_import_dict_name = tu.find_best_match(name, get_dtype_import_dict())
+    dtype_dict_name = tu.find_best_match(name, get_dtype_dict())
 
     useable_files = []
     for file_name in sorted(glob.glob('{0}/{1}*{2}.star'.format(directory_name, import_name, suffix))):
@@ -413,7 +400,7 @@ def import_gctf_v1_06(name, directory_name, import_name=''):
         )
     data_original = np.zeros(
         len(useable_files),
-        dtype=get_dtype_dict()[name]
+        dtype=get_dtype_dict()[dtype_dict_name]
         )
     data = np.atleast_1d(data)
     data_original = np.atleast_1d(data_original)
@@ -463,13 +450,15 @@ def import_cter_v1_0(name, directory_name, import_name=''):
     Return:
     Imported data
     """
+    dtype_import_dict_name = tu.find_best_match(name, get_dtype_import_dict())
+    dtype_dict_name = tu.find_best_match(name, get_dtype_dict())
 
     useable_files = []
     for file_name in sorted(glob.glob('{0}/{1}*/partres.txt'.format(directory_name, import_name))):
         try:
             data_name = np.genfromtxt(
                 file_name,
-                dtype=get_dtype_import_dict()[name],
+                dtype=get_dtype_import_dict()[dtype_import_dict_name],
                 )
         except ValueError:
             continue
@@ -497,7 +486,7 @@ def import_cter_v1_0(name, directory_name, import_name=''):
         )
     data_original = np.zeros(
         len(useable_files),
-        dtype=get_dtype_import_dict()[name]
+        dtype=get_dtype_import_dict()[dtype_dict_name]
         )
     data = np.atleast_1d(data)
     data_original = np.atleast_1d(data_original)
@@ -545,6 +534,9 @@ def import_motion_cor_2_v1_0_0(name, directory_name, import_name=''):
     Return:
     Imported data
     """
+    dtype_import_dict_name = tu.find_best_match(name, get_dtype_import_dict())
+    dtype_dict_name = tu.find_best_match(name, get_dtype_dict())
+
     directory_names = glob.glob('{0}/*_with_DW_log'.format(directory_name))
     files = np.array(
         [
@@ -560,7 +552,7 @@ def import_motion_cor_2_v1_0_0(name, directory_name, import_name=''):
         try:
             array = np.genfromtxt(
                 file_name,
-                dtype=get_dtype_import_dict()[name]
+                dtype=get_dtype_import_dict()[dtype_import_dict_name]
                 )
         except ValueError:
             continue
@@ -592,7 +584,7 @@ def import_motion_cor_2_v1_0_0(name, directory_name, import_name=''):
         try:
             data_name = np.genfromtxt(
                 file_name,
-                dtype=get_dtype_import_dict()[name]
+                dtype=get_dtype_import_dict()[dtype_dict_name]
                 )
         except IOError:
             continue
@@ -667,6 +659,7 @@ def import_cryolo_v1_0_4(name, directory_name, sub_directory=None, import_name='
     Return:
     Imported data
     """
+
     if sub_directory is None:
         sub_directory=['']
     box_files = []
