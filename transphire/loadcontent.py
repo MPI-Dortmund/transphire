@@ -100,7 +100,7 @@ class LoadContent(QWidget):
                 pass
             else:
                 self.setEnabled(False)
-        elif typ == 'Copy':
+        elif typ in ('Copy', 'Others'):
             items = content_function(settings_folder=settings_folder)
         else:
             items = content_function()

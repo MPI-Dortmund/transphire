@@ -16,6 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import glob
 import os
 from transphire import transphire_utils as tu
 from transphire import transphire_import as ti
@@ -379,7 +380,7 @@ def default_font():
     return items
 
 
-def default_others():
+def default_others(settings_folder):
     """
     Content of Status tab.
 
@@ -390,7 +391,10 @@ def default_others():
     Content items as list
     """
     file_name = os.path.join(os.path.dirname(__file__), 'images', 'Transphire.png')
+    templates = ['(None)']
+    templates.extend(sorted([os.path.basename(entry) for entry in glob.glob(os.path.join(settings_folder, '*')) if os.path.isdir(entry)]))
     items = [
+        ['Default template', templates, str, '', 'COMBO', '', 'Image used in the lower right corner of TranSPHIRE.'],
         ['Image', file_name, str, '', 'FILE', '', 'Image used in the lower right corner of TranSPHIRE.'],
         ['Project name pattern', '', str, '', 'PLAIN', '', 'Regex pattern for the project name.'],
         ['Project name pattern example', '', str, '', 'PLAIN', '', 'Example of the specified pattern.'],

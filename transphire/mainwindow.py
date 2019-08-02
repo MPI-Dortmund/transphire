@@ -69,7 +69,7 @@ class MainWindow(QMainWindow):
 
     def __init__(
             self, content_gui, content_pipeline, settings_folder,
-            mount_directory, version, parent=None
+            mount_directory, template_folder, version, parent=None
             ):
         """
         Setup the layout for the widget
@@ -165,6 +165,7 @@ class MainWindow(QMainWindow):
         # Settings folder
         self.settings_folder = settings_folder
         self.mount_directory = mount_directory
+        self.default_template_folder = template_folder
         self.temp_save = '{0}/temp_save'.format(settings_folder)
 
         # Threads
@@ -592,6 +593,7 @@ class MainWindow(QMainWindow):
                 plot_worker_motion=self.plot_worker_motion,
                 plot_worker_picking=self.plot_worker_picking,
                 settings_folder=self.settings_folder,
+                template_folder=self.default_template_folder,
                 plot_labels=plot_labels,
                 plot_name=plot_name,
                 parent=self,
@@ -1084,7 +1086,7 @@ class MainWindow(QMainWindow):
         elif os.path.exists(settings['project_folder']):
             result = self.continue_dialog(
                 text1='Output project folder already exists!',
-                text2='Do you really want to continue the old run?\nType: YES!'
+                text2='Do you really want to continue the old run?\nType: "YES"!'
                 )
             #if result:
             #    result_session = self.continue_dialog(
@@ -1168,7 +1170,7 @@ class MainWindow(QMainWindow):
         """
         result = self.continue_dialog(
             text1='Do you really want to stop?',
-            text2='Do you really want to stop!\nType: YES!'
+            text2='Do you really want to stop!\nType: "YES"!'
             )
         if result:
             self.stop()

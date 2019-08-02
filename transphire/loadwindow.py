@@ -18,13 +18,14 @@
 import os
 import json
 try:
-    from PyQt4.QtGui import QDialog, QVBoxLayout, QPushButton, QWidget, QComboBox, QLineEdit
+    from PyQt4.QtGui import QDialog, QVBoxLayout, QPushButton, QWidget, QComboBox, QLineEdit, QLabel, QHBoxLayout
 except ImportError:
-    from PyQt5.QtWidgets import QDialog, QVBoxLayout, QPushButton, QWidget, QComboBox, QLineEdit
+    from PyQt5.QtWidgets import QDialog, QVBoxLayout, QPushButton, QWidget, QComboBox, QLineEdit, QLabel, QHBoxLayout
 
 from transphire.loadcontentcontainer import LoadContentContainer
 from transphire.separator import Separator
 from transphire.tabdocker import TabDocker
+from transphire.templatedialog import TemplateDialog
 from transphire import transphire_utils as tu
 
 
@@ -34,9 +35,9 @@ class DefaultSettings(QDialog):
     Dialog used to enter default values.
 
     Inherits from:
-    QWidget
+    QDialog
     """
-    def __init__(self, apply, parent=None):
+    def __init__(self, apply, settings_directory, template_folder, parent=None):
         """
         Setup the layout for the widget.
 
@@ -50,6 +51,9 @@ class DefaultSettings(QDialog):
 
         super(DefaultSettings, self).__init__(parent)
 
+        self.settings_directory = settings_directory
+        self.template_folder = template_folder
+        self.template = None
         # Add new tab widget for the settings to layout
         central_raw_layout = QVBoxLayout(self)
         central_raw_layout.setContentsMargins(0, 0, 0, 0)
@@ -63,6 +67,15 @@ class DefaultSettings(QDialog):
         central_layout.addWidget(central_widget)
 
         layout = QVBoxLayout(central_widget)
+
+        layout_h = QHBoxLayout()
+        load_button = QPushButton('Load template', self)
+        load_button.clicked.connect(self.load_template)
+        self.template_name = QLabel('No template selected', self)
+        layout_h.addWidget(load_button)
+        layout_h.addWidget(self.template_name)
+        layout.addLayout(layout_h)
+        layout.addWidget(Separator(typ='horizontal', color='#68a3c3'))
 
         self.tab_widget = TabDocker(self)
         layout.addWidget(self.tab_widget)
@@ -80,16 +93,21 @@ class DefaultSettings(QDialog):
                     ],
                 TabDocker(self)
                 ],
+            'Internal settings': [
+                [
+                    'General',
+                    'Copy',
+                    ],
+                TabDocker(self)
+                ],
             'TranSPHIRE settings': [
                 [
                     'Mount',
                     'Pipeline',
-                    'General',
                     'Notification',
                     'Others',
                     'Font',
-                    'Copy',
-                    'Path'
+                    'Path',
                     ],
                 TabDocker(self)
                 ]
@@ -152,6 +170,15 @@ class DefaultSettings(QDialog):
         # Result is True if answer is Yes
         if not result:
             return False
+        elif done is None:
+            for info in wrongly_mod_list:
+                if isinstance(info['widget'], QLineEdit):
+                    info['widget'].setText(info['settings']['values'])
+                elif isinstance(info['widget'], QComboBox):
+                    idx = info['widget'].findText(info['settings']['values'][0])
+                    info['widget'].setCurrentIndex(idx)
+                else:
+                    raise Exception('Instance not known! Please contact the TranSPHIRE authors!')
         elif done:
             for info in wrongly_mod_list:
                 if isinstance(info['widget'], QLineEdit):
@@ -229,6 +256,12 @@ class DefaultSettings(QDialog):
         else:
             pass
 
+    def clear_tabs(self):
+        for idx in range(self.tab_widget.count()):
+            widget = self.tab_widget.widget(idx)
+            for idx_subtab in reversed(range(widget.count())):
+                widget.removeTab(idx_subtab)
+
     def get_apply(self):
         """
         Getter for the self.apply variable.
@@ -241,11 +274,57 @@ class DefaultSettings(QDialog):
         """
         return self.apply
 
+    def load_template(self):
+        template_dialog = TemplateDialog(self.settings_directory)
+        result = template_dialog.exec_()
+        if result:
+            if self.check_modified_widgets(done=None):
+                template_name = template_dialog.template
+                if template_name:
+                    self.template = os.path.join(self.settings_directory, template_name)
+                else:
+                    self.template = self.settings_directory
+                self.clear_tabs()
+                self.add_tabs(self, self.settings_directory, self.template)
+
+    @staticmethod
+    def add_tabs(default_widget, settings_folder, template_folder):
+        if template_folder != settings_folder:
+            default_widget.template_name.setText('Current template: {0}'.format(os.path.basename(template_folder)))
+
+        setting_names = sorted(tu.get_function_dict().keys())
+        content_temp = {}
+        for name in setting_names:
+            directory = template_folder
+            for entry in default_widget.default_tabs['TranSPHIRE settings'][0]:
+                if entry in name:
+                    directory = settings_folder
+                    break
+            default_file = '{0}/content_{1}.txt'.format(directory, name.replace(' ', '_'))
+            if not os.path.isfile(default_file):
+                default_file = '{0}/content_{1}.txt'.format(directory, name.replace(' ', '_').replace('>=', ''))
+            content_temp[name] = LoadContentContainer(
+                typ=name,
+                file_name=default_file,
+                settings_folder=settings_folder,
+                )
+            if directory:
+                default_widget.add_tab(widget=content_temp[name], name=name)
+                try:
+                    with open(default_file, 'r') as file_r:
+                        settings = json.load(file_r)
+                except FileNotFoundError:
+                    pass
+                else:
+                    content_temp[name].set_settings(settings)
+        return content_temp
+
     @staticmethod
     def get_content_default(
             edit_settings,
             apply,
-            settings_folder
+            settings_folder,
+            template_folder,
             ):
         """
         Staticmethod to open the default content dialog.
@@ -258,30 +337,15 @@ class DefaultSettings(QDialog):
         Return:
         Content for the widgets, Content of the apply variable
         """
+
         # Initialise default settings
         setting_names = sorted(tu.get_function_dict().keys())
-        default_widget = DefaultSettings(apply=apply)
+        default_widget = DefaultSettings(apply=apply, settings_directory=settings_folder, template_folder=template_folder)
+
+        content_temp = DefaultSettings.add_tabs(default_widget, settings_folder, template_folder=template_folder)
 
         # Initialise a new LoadContentContainer and add it as a new tab
         # Load default settings from settings file into LoadContentContainer
-        content_temp = {}
-        for name in setting_names:
-            default_file = '{0}/content_{1}.txt'.format(settings_folder, name.replace(' ', '_'))
-            if not os.path.isfile(default_file):
-                default_file = '{0}/content_{1}.txt'.format(settings_folder, name.replace(' ', '_').replace('>=', ''))
-            content_temp[name] = LoadContentContainer(
-                typ=name,
-                file_name=default_file,
-                settings_folder=settings_folder,
-                )
-            default_widget.add_tab(widget=content_temp[name], name=name)
-            try:
-                with open(default_file, 'r') as file_r:
-                    settings = json.load(file_r)
-            except FileNotFoundError:
-                pass
-            else:
-                content_temp[name].set_settings(settings)
 
         # If edit settings, open default settings dialog
         if edit_settings:
@@ -293,12 +357,20 @@ class DefaultSettings(QDialog):
         else:
             apply = None
 
+        if default_widget.template is not None:
+            template_folder = default_widget.template
+
         # Refresh content of LoadContentContainer by the provided default settings
         content = {}
         for name in setting_names:
-            default_file = '{0}/content_{1}.txt'.format(settings_folder, name.replace(' ', '_'))
+            directory = template_folder
+            for entry in default_widget.default_tabs['TranSPHIRE settings'][0]:
+                if entry in name:
+                    directory = settings_folder
+                    break
+            default_file = '{0}/content_{1}.txt'.format(directory, name.replace(' ', '_'))
             if not os.path.isfile(default_file):
-                default_file = '{0}/content_{1}.txt'.format(settings_folder, name.replace(' ', '_').replace('>=', ''))
+                default_file = '{0}/content_{1}.txt'.format(directory, name.replace(' ', '_').replace('>=', ''))
             content[name] = content_temp[name].get_settings()
             if name == 'Mount':
                 continue

@@ -15,12 +15,15 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import glob
+import os
 try:
-    from PyQt4.QtGui import QHBoxLayout, QWidget, QPushButton, QApplication
+    from PyQt4.QtGui import QHBoxLayout, QWidget, QPushButton, QApplication, QVBoxLayout, QLabel, QComboBox
     from PyQt4.QtCore import pyqtSlot, pyqtSignal
 except ImportError:
-    from PyQt5.QtWidgets import QHBoxLayout, QWidget, QPushButton, QApplication
+    from PyQt5.QtWidgets import QHBoxLayout, QWidget, QPushButton, QApplication, QVBoxLayout, QLabel, QComboBox
     from PyQt5.QtCore import pyqtSlot, pyqtSignal
+from transphire.templatedialog import TemplateDialog
 from transphire.loadwindow import DefaultSettings
 from transphire import transphire_utils as tu
 
@@ -70,58 +73,93 @@ class ButtonContainer(QWidget):
 
         # Variables
         kwargs = kwargs
+        self.settings_folder = kwargs['settings_folder']
+        self.template_folder = kwargs['template_folder']
         self.parent = parent
 
         # Setup layout
         layout = QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
 
+        templates = ['(None)']
+        templates.extend(sorted([
+            os.path.basename(entry)
+            for entry in glob.glob(os.path.join(self.settings_folder, '*'))
+            if os.path.isdir(entry)
+            ]))
+        layout_v = QVBoxLayout()
+        layout_v.setContentsMargins(0, 0, 0, 0)
+        layout_v.addWidget(QLabel('Chosen template:'))
+        self.template_box = QComboBox(parent=self)
+        self.template_box.clear()
+        self.template_box.addItems(templates)
+        if self.settings_folder == self.template_folder:
+            self.template_box.setCurrentText('(None)')
+        else:
+            self.template_box.setCurrentText(os.path.basename(self.template_folder))
+        layout.addWidget(self.template_box)
+        layout_v.addWidget(self.template_box)
+        layout.addLayout(layout_v)
+
+        layout_v = QVBoxLayout()
+        layout_v.setContentsMargins(0, 0, 0, 0)
         # About button
         self.show_about = QPushButton('About', self)
         self.show_about.clicked.connect(self._show_about)
         self.show_about.setObjectName('button')
-        layout.addWidget(self.show_about)
-
-        # Load button
-        self.load_button = QPushButton('Load', self)
-        self.load_button.clicked.connect(self.sig_load.emit)
-        self.load_button.setObjectName('button')
-        layout.addWidget(self.load_button)
-
-        # Save button
-        self.save_button = QPushButton('Save', self)
-        self.save_button.clicked.connect(self.sig_save.emit)
-        self.save_button.setObjectName('button')
-        layout.addWidget(self.save_button)
+        layout_v.addWidget(self.show_about)
 
         # Default settings button
         self.default_settings = QPushButton('Default settings', self)
         self.default_settings.clicked.connect(self._modify_settings)
         self.default_settings.setObjectName('button')
-        layout.addWidget(self.default_settings)
+        layout_v.addWidget(self.default_settings)
+        layout.addLayout(layout_v)
+
+        layout_v = QVBoxLayout()
+        layout_v.setContentsMargins(0, 0, 0, 0)
+        # Load button
+        self.load_button = QPushButton('Load', self)
+        self.load_button.clicked.connect(self.sig_load.emit)
+        self.load_button.setObjectName('button')
+        layout_v.addWidget(self.load_button)
+
+        # Save button
+        self.save_button = QPushButton('Save', self)
+        self.save_button.clicked.connect(self.sig_save.emit)
+        self.save_button.setObjectName('button')
+        layout_v.addWidget(self.save_button)
+        layout.addLayout(layout_v)
+
         layout.addStretch(1)
 
         # Check quota button
+        layout_v = QVBoxLayout()
+        layout_v.setContentsMargins(0, 0, 0, 0)
         self.check_quota = QPushButton('Check quota', self)
         self.check_quota.clicked.connect(self.sig_check_quota.emit)
         self.check_quota.setObjectName('button')
-        layout.addWidget(self.check_quota)
+        layout_v.addWidget(self.check_quota)
+        layout_v.addWidget(QLabel(self))
+        layout.addLayout(layout_v)
 
 
+        layout_v = QVBoxLayout()
+        layout_v.setContentsMargins(0, 0, 0, 0)
         # Start/Stop monitor button
         self.start_monitor_button = QPushButton('Monitor', self)
         self.start_monitor_button.clicked.connect(self._start_stop)
         self.start_monitor_button.setObjectName('start')
         self.start_monitor_button.setVisible(True)
         self.start_monitor_button.setEnabled(True)
-        layout.addWidget(self.start_monitor_button)
+        layout_v.addWidget(self.start_monitor_button)
 
         self.stop_monitor_button = QPushButton('Monitor', self)
         self.stop_monitor_button.clicked.connect(self._start_stop)
         self.stop_monitor_button.setObjectName('stop')
         self.stop_monitor_button.setVisible(False)
         self.stop_monitor_button.setEnabled(False)
-        layout.addWidget(self.stop_monitor_button)
+        layout_v.addWidget(self.stop_monitor_button)
 
         # Start/Stop button
         self.start_button = QPushButton('Start', self)
@@ -129,14 +167,15 @@ class ButtonContainer(QWidget):
         self.start_button.setObjectName('start')
         self.start_button.setVisible(True)
         self.start_button.setEnabled(True)
-        layout.addWidget(self.start_button)
+        layout_v.addWidget(self.start_button)
 
         self.stop_button = QPushButton('Stop', self)
         self.stop_button.clicked.connect(self._start_stop)
         self.stop_button.setObjectName('stop')
         self.stop_button.setVisible(False)
         self.stop_button.setEnabled(False)
-        layout.addWidget(self.stop_button)
+        layout_v.addWidget(self.stop_button)
+        layout.addLayout(layout_v)
 
         # Final stretch
 
@@ -157,7 +196,8 @@ class ButtonContainer(QWidget):
         content, apply = DefaultSettings.get_content_default(
             edit_settings=True,
             apply=True,
-            settings_folder=self.parent.settings_folder
+            settings_folder=self.settings_folder,
+            template_folder=self.template_folder,
             )
         if not apply:
             tu.message('Restart GUI to apply saved changes')
