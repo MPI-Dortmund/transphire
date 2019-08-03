@@ -91,6 +91,7 @@ class ButtonContainer(QWidget):
         layout_v.setContentsMargins(0, 0, 0, 0)
         layout_v.addWidget(QLabel('Chosen template:'))
         self.template_box = QComboBox(parent=self)
+        self.template_box.currentTextChanged.connect(self.select_template)
         self.template_box.clear()
         self.template_box.addItems(templates)
         if self.settings_folder == self.template_folder:
@@ -178,6 +179,10 @@ class ButtonContainer(QWidget):
         layout.addLayout(layout_v)
 
         # Final stretch
+
+    @pyqtSlot()
+    def select_template(self):
+        pass
 
     @pyqtSlot()
     def _modify_settings(self):

@@ -20,8 +20,10 @@ import glob
 import json
 try:
     from PyQt4.QtGui import QDialog, QVBoxLayout, QPushButton, QWidget, QComboBox, QLineEdit, QLabel, QHBoxLayout
+    from PyQt4.QtCore import pyqtSlot, pyqtSignal
 except ImportError:
     from PyQt5.QtWidgets import QDialog, QVBoxLayout, QPushButton, QWidget, QComboBox, QLineEdit, QLabel, QHBoxLayout
+    from PyQt5.QtCore import pyqtSlot, pyqtSignal
 
 from transphire.loadcontentcontainer import LoadContentContainer
 from transphire.separator import Separator
@@ -275,6 +277,7 @@ class DefaultSettings(QDialog):
         """
         return self.apply
 
+    @pyqtSlot()
     def load_template(self):
         template_dialog = TemplateDialog(self.settings_directory)
         result = template_dialog.exec_()
