@@ -177,10 +177,10 @@ class ButtonContainer(QWidget):
 
         # Final stretch
 
-    @pyqtSlot()
-    def select_template(self):
-        print('wuhu')
-        pass
+    @pyqtSlot(str)
+    def select_template(self, text):
+        self.parent.enable(var=False, use_all=True)
+        self.parent.sig_reset.emit(text, False)
 
     @pyqtSlot()
     def _modify_settings(self):
@@ -208,7 +208,7 @@ class ButtonContainer(QWidget):
         elif apply:
             template_name = content['(None)']['Others'][0][0]['Default template'][0]
             self.parent.content_raw = content
-            self.parent.default_template_name = template_name
+            self.parent.content_pipeline = content['(None)']['Pipeline']
             self.parent.enable(var=False, use_all=True)
             # result is True if No is chosen
             result = tu.question(
@@ -227,11 +227,7 @@ class ButtonContainer(QWidget):
                 self.parent.save(load_file)
             else:
                 load_file=False
-            self.parent.reset_gui(
-                content_pipeline=content['(None)']['Pipeline'],
-                template_name=template_name,
-                load_file=load_file
-                )
+            self.parent.sig_reset.emit(template_name, load_file)
 
         else:
             pass

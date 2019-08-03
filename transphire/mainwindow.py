@@ -28,7 +28,7 @@ try:
         QWidget,
         QFileDialog,
         )
-    from PyQt4.QtCore import QThread, pyqtSlot, QCoreApplication, QTimer
+    from PyQt4.QtCore import QThread, pyqtSlot, QCoreApplication, QTimer, pyqtSignal
 except ImportError:
     QT_VERSION = 5
     from PyQt5.QtWidgets import (
@@ -38,7 +38,7 @@ except ImportError:
         QWidget,
         QFileDialog,
         )
-    from PyQt5.QtCore import QThread, pyqtSlot, QCoreApplication, QTimer
+    from PyQt5.QtCore import QThread, pyqtSlot, QCoreApplication, QTimer, pyqtSignal
 
 # Objects
 from transphire.mountworker import MountWorker
@@ -66,6 +66,7 @@ class MainWindow(QMainWindow):
     Signals:
     None
     """
+    sig_reset = pyqtSignal(str, object)
 
     def __init__(
             self, content_raw, content_gui, content_pipeline, settings_folder,
@@ -161,12 +162,13 @@ class MainWindow(QMainWindow):
         self.central_widget = None
         self.content = None
         self.content_raw = content_raw
+        self.content_pipeline=content_pipeline,
         self.layout = None
 
         # Settings folder
         self.settings_folder = settings_folder
         self.mount_directory = mount_directory
-        self.default_template_name = template_name
+        self.template_name = template_name
         self.temp_save = '{0}/temp_save_{1}'.format(settings_folder, os.uname()[1].replace(' ', '_'))
 
         # Threads
@@ -188,11 +190,8 @@ class MainWindow(QMainWindow):
         self.thread_plot_picking = None
         self.mount_thread_list = None
 
-        # Fill GUI
-        self.reset_gui(
-            content_pipeline=content_pipeline,
-            template_name=template_name,
-            )
+        self.sig_reset.connect(self.reset_gui)
+        self.sig_reset.emit(template_name, None)
 
     def start_threads(self, content_pipeline):
         """
@@ -299,18 +298,20 @@ class MainWindow(QMainWindow):
         self.plot_worker_motion.moveToThread(self.thread_plot_motion)
         self.plot_worker_picking.moveToThread(self.thread_plot_picking)
 
-    def reset_gui(self, content_pipeline, template_name, load_file=None):
+    @pyqtSlot(str, object)
+    def reset_gui(self, template_name, load_file):
         """
         Reset the content of the mainwindow.
 
         Arguments:
         template_name - Name of the template to load
-        content_pipeline - Content used to start processing threads.
         load_file - Settings file (default None).
 
         Return:
         None
         """
+        self.template_name = template_name
+        content_pipeline = self.content_pipeline
         content_gui = tu.get_content_gui(
             content=self.content_raw,
             template_name=template_name
@@ -599,7 +600,7 @@ class MainWindow(QMainWindow):
                 plot_worker_motion=self.plot_worker_motion,
                 plot_worker_picking=self.plot_worker_picking,
                 settings_folder=self.settings_folder,
-                template_name=self.default_template_name,
+                template_name=self.template_name,
                 plot_labels=plot_labels,
                 plot_name=plot_name,
                 parent=self,
