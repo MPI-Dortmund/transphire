@@ -602,12 +602,13 @@ def get_key_names(settings_folder, name):
     return return_dict
 
 
-def get_content_gui(content):
+def get_content_gui(content, template_name):
     """
     Create content lists to load the GUI.
 
     Arguments:
     content - Content as dictionary.
+    template_name = Name of the template!
 
     Return:
     Content as list
@@ -619,7 +620,7 @@ def get_content_gui(content):
         {
             'name': 'Notification_widget',
             'widget': NotificationContainer,
-            'content': content['Notification_widget'],
+            'content': content[template_name]['Notification_widget'],
             'layout': 'h2',
             },
         {
@@ -635,7 +636,7 @@ def get_content_gui(content):
         {
             'name': 'Mount',
             'widget': MountContainer,
-            'content_mount': content['Mount'],
+            'content_mount': content[template_name]['Mount'],
             'layout': 'TAB1',
             },
         {
@@ -651,26 +652,26 @@ def get_content_gui(content):
         {
             'name': 'General',
             'widget': SettingsContainer,
-            'content': content['General'],
-            'content_others': content['Others'],
+            'content': content[template_name]['General'],
+            'content_others': content[template_name]['Others'],
             'layout': 'Settings',
             },
         {
             'name': 'Notification',
             'widget': SettingsContainer,
-            'content': content['Notification'],
+            'content': content[template_name]['Notification'],
             'layout': 'Settings',
             },
         {
             'name': 'Copy',
             'widget': SettingsContainer,
-            'content': content['Copy'],
+            'content': content[template_name]['Copy'],
             'layout': 'Settings',
             },
         {
             'name': 'Path',
             'widget': SettingsContainer,
-            'content': content['Path'],
+            'content': content[template_name]['Path'],
             'layout': 'Settings',
             },
         {
@@ -696,10 +697,10 @@ def get_content_gui(content):
         {
             'name': 'Status',
             'widget': StatusContainer,
-            'content': content['Others'],
-            'content_mount': content['Mount'],
-            'content_pipeline': content['Pipeline'],
-            'content_font': content['Font'],
+            'content': content[template_name]['Others'],
+            'content_mount': content[template_name]['Mount'],
+            'content_pipeline': content[template_name]['Pipeline'],
+            'content_font': content[template_name]['Font'],
             'layout': 'v2',
             },
         {
@@ -729,7 +730,7 @@ def get_content_gui(content):
             gui_content.append({
                 'name': input_content,
                 'widget': SettingsContainer,
-                'content': content[input_content],
+                'content': content[template_name][input_content],
                 'layout': typ,
                 })
             if not input_content.startswith('Compress'):

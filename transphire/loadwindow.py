@@ -16,6 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
+import glob
 import json
 try:
     from PyQt4.QtGui import QDialog, QVBoxLayout, QPushButton, QWidget, QComboBox, QLineEdit, QLabel, QHBoxLayout
@@ -280,17 +281,18 @@ class DefaultSettings(QDialog):
         if result:
             if self.check_modified_widgets(done=None):
                 template_name = template_dialog.template
-                if template_name:
-                    self.template = os.path.join(self.settings_directory, template_name)
-                else:
-                    self.template = self.settings_directory
+                self.template = os.path.join(self.settings_directory, template_name)
                 self.clear_tabs()
                 self.add_tabs(self, self.settings_directory, self.template)
 
     @staticmethod
     def add_tabs(default_widget, settings_folder, template_folder):
-        if template_folder != settings_folder:
+        if os.path.basename(template_folder) != '(None)':
             default_widget.template_name.setText('Current template: {0}'.format(os.path.basename(template_folder)))
+            template_folder = settings_folder
+        else:
+            default_widget.template_name.setText('No template selected')
+
 
         setting_names = sorted(tu.get_function_dict().keys())
         content_temp = {}
@@ -361,33 +363,41 @@ class DefaultSettings(QDialog):
             template_folder = default_widget.template
 
         # Refresh content of LoadContentContainer by the provided default settings
+        templates = ['(None)']
+        templates.extend(sorted([
+            os.path.basename(entry)
+            for entry in glob.glob(os.path.join(settings_folder, '*'))
+            if os.path.isdir(entry)
+            ]))
         content = {}
-        for name in setting_names:
-            directory = template_folder
-            for entry in default_widget.default_tabs['TranSPHIRE settings'][0]:
-                if entry in name:
-                    directory = settings_folder
-                    break
-            default_file = '{0}/content_{1}.txt'.format(directory, name.replace(' ', '_'))
-            if not os.path.isfile(default_file):
-                default_file = '{0}/content_{1}.txt'.format(directory, name.replace(' ', '_').replace('>=', ''))
-            content[name] = content_temp[name].get_settings()
-            if name == 'Mount':
-                continue
-            elif not os.path.exists(default_file):
-                print('INFORMATION: {0} default settings not modified!'.format(name))
-            else:
-                with open(default_file, 'r') as file_r:
-                    data = json.load(file_r)
-                    for entry in data:
-                        for dictionary in entry:
-                            for name_content in content[name]:
-                                for default_value in name_content:
-                                    if default_value.keys() == dictionary.keys():
-                                        for key in default_value:
-                                            default = dictionary[key][0]
-                                            default_value[key][0] = default
-                                        break
-                                    else:
-                                        pass
+        for template in templates:
+            content[template] = {}
+            for name in setting_names:
+                directory = template_folder
+                for entry in default_widget.default_tabs['TranSPHIRE settings'][0]:
+                    if entry in name:
+                        directory = settings_folder
+                        break
+                default_file = '{0}/content_{1}.txt'.format(directory, name.replace(' ', '_'))
+                if not os.path.isfile(default_file):
+                    default_file = '{0}/content_{1}.txt'.format(directory, name.replace(' ', '_').replace('>=', ''))
+                content[template][name] = content_temp[name].get_settings()
+                if name == 'Mount':
+                    continue
+                elif not os.path.exists(default_file):
+                    print('INFORMATION: {0} default settings not modified!'.format(name))
+                else:
+                    with open(default_file, 'r') as file_r:
+                        data = json.load(file_r)
+                        for entry in data:
+                            for dictionary in entry:
+                                for name_content in content[template][name]:
+                                    for default_value in name_content:
+                                        if default_value.keys() == dictionary.keys():
+                                            for key in default_value:
+                                                default = dictionary[key][0]
+                                                default_value[key][0] = default
+                                            break
+                                        else:
+                                            pass
         return content, apply

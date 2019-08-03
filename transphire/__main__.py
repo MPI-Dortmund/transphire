@@ -78,10 +78,9 @@ def main(font, root_directory, settings_directory, mount_directory, adjust_width
         template_folder = settings_directory
     else:
         template_folder = os.path.join(settings_directory, settings[0][0]['Default template'][0])
-        if not os.path.isdir(template_folder):
-            if os.path.basename(template_folder) != '(None)':
-                print('Default template no longer exists!')
-            template_folder = settings_directory
+        if not os.path.isdir(template_folder) and os.path.basename(template_folder) != '(None)':
+            print('Default template no longer exists!')
+            template_folder = os.path.join(settings_directory, '(None)')
 
 
     # Get default settings 0: content 
@@ -100,23 +99,25 @@ def main(font, root_directory, settings_directory, mount_directory, adjust_width
             font=font,
             adjust_width=adjust_width,
             adjust_height=adjust_height,
-            default=content['Font']
+            default=content['(None)']['Font']
             )
         )
 
     # Load content for the GUI
-    content_gui = tu.get_content_gui(content=content)
+    content_gui = tu.get_content_gui(
+        content=content,
+        template_name=content['(None)']['Others'][0][0]['Default template'][0]
+        )
 
-    template_folder = os.path.join(settings_directory, content['Others'][0][0]['Default template'][0])
-    if not os.path.isdir(template_folder):
-        if os.path.basename(template_folder) != '(None)':
-            print('Default template no longer exists!')
-        template_folder = settings_directory
+    template_folder = os.path.join(settings_directory, content['(None)']['Others'][0][0]['Default template'][0])
+    if not os.path.isdir(template_folder) and os.path.basename(template_folder) != '(None)':
+        print('Default template no longer exists!')
+        template_folder = os.path.join(settings_directory, '(None)')
 
     # Initilise and show GUI
     gui = MainWindow(
         content_gui=content_gui,
-        content_pipeline=content['Pipeline'],
+        content_pipeline=content[content['(None)']['Others'][0][0]['Default template'][0]]['Pipeline'],
         settings_folder=settings_directory,
         template_folder=template_folder,
         mount_directory=mount_directory,
