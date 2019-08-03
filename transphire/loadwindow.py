@@ -385,7 +385,8 @@ class DefaultSettings(QDialog):
                 if name == 'Mount':
                     continue
                 elif not os.path.exists(default_file):
-                    print('INFORMATION: {0} default settings not modified!'.format(name))
+                    #print('INFORMATION: {0} default settings not modified!'.format(name))
+                    pass
                 else:
                     with open(default_file, 'r') as file_r:
                         data = json.load(file_r)

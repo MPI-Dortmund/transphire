@@ -166,7 +166,7 @@ class MainWindow(QMainWindow):
         self.settings_folder = settings_folder
         self.mount_directory = mount_directory
         self.default_template_folder = template_folder
-        self.temp_save = '{0}/temp_save'.format(settings_folder)
+        self.temp_save = '{0}/temp_save_{1}'.format(settings_folder, os.uname()[1].replace(' ', '_'))
 
         # Threads
         self.timer_ctf = None
