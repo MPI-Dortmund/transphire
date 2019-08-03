@@ -68,8 +68,8 @@ class MainWindow(QMainWindow):
     """
 
     def __init__(
-            self, content_gui, content_pipeline, settings_folder,
-            mount_directory, template_folder, version, parent=None
+            self, content_raw, content_gui, content_pipeline, settings_folder,
+            mount_directory, template_name, version, parent=None
             ):
         """
         Setup the layout for the widget
@@ -160,12 +160,13 @@ class MainWindow(QMainWindow):
         self.central_widget_raw = None
         self.central_widget = None
         self.content = None
+        self.content_raw = content_raw
         self.layout = None
 
         # Settings folder
         self.settings_folder = settings_folder
         self.mount_directory = mount_directory
-        self.default_template_folder = template_folder
+        self.default_template_name = template_name
         self.temp_save = '{0}/temp_save_{1}'.format(settings_folder, os.uname()[1].replace(' ', '_'))
 
         # Threads
@@ -189,7 +190,8 @@ class MainWindow(QMainWindow):
 
         # Fill GUI
         self.reset_gui(
-            content_gui=content_gui, content_pipeline=content_pipeline
+            content_pipeline=content_pipeline,
+            template_name=template_name,
             )
 
     def start_threads(self, content_pipeline):
@@ -297,18 +299,22 @@ class MainWindow(QMainWindow):
         self.plot_worker_motion.moveToThread(self.thread_plot_motion)
         self.plot_worker_picking.moveToThread(self.thread_plot_picking)
 
-    def reset_gui(self, content_gui, content_pipeline, load_file=None):
+    def reset_gui(self, content_pipeline, template_name, load_file=None):
         """
         Reset the content of the mainwindow.
 
         Arguments:
-        content_gui - Content used to fill the GUI.
+        template_name - Name of the template to load
         content_pipeline - Content used to start processing threads.
         load_file - Settings file (default None).
 
         Return:
         None
         """
+        content_gui = tu.get_content_gui(
+            content=self.content_raw,
+            template_name=template_name
+            )
         # Fill MainWindow
         self.set_central_widget()
         self.set_layout_structure()
@@ -331,10 +337,10 @@ class MainWindow(QMainWindow):
                 pass
 
         # Load settings saved in load_file
-        if load_file is not None:
+        if load_file is not None and load_file:
             self.load(file_name=load_file)
             os.remove('{0}.txt'.format(load_file))
-        elif os.path.exists('{0}.txt'.format(self.temp_save)):
+        elif os.path.exists('{0}.txt'.format(self.temp_save)) and load_file is None:
             # Result is True if answer is Yes
             result = tu.question(
                 head='Restore default values.',
@@ -593,7 +599,7 @@ class MainWindow(QMainWindow):
                 plot_worker_motion=self.plot_worker_motion,
                 plot_worker_picking=self.plot_worker_picking,
                 settings_folder=self.settings_folder,
-                template_folder=self.default_template_folder,
+                template_name=self.default_template_name,
                 plot_labels=plot_labels,
                 plot_name=plot_name,
                 parent=self,

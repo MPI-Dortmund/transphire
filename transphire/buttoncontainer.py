@@ -74,7 +74,7 @@ class ButtonContainer(QWidget):
         # Variables
         kwargs = kwargs
         self.settings_folder = kwargs['settings_folder']
-        self.template_folder = kwargs['template_folder']
+        self.template_name = kwargs['template_name']
         self.parent = parent
 
         # Setup layout
@@ -91,13 +91,10 @@ class ButtonContainer(QWidget):
         layout_v.setContentsMargins(0, 0, 0, 0)
         layout_v.addWidget(QLabel('Chosen template:'))
         self.template_box = QComboBox(parent=self)
-        self.template_box.currentTextChanged.connect(self.select_template)
         self.template_box.clear()
         self.template_box.addItems(templates)
-        if self.settings_folder == self.template_folder:
-            self.template_box.setCurrentText('(None)')
-        else:
-            self.template_box.setCurrentText(os.path.basename(self.template_folder))
+        self.template_box.setCurrentText(self.template_name)
+        self.template_box.currentTextChanged.connect(self.select_template)
         layout.addWidget(self.template_box)
         layout_v.addWidget(self.template_box)
         layout.addLayout(layout_v)
@@ -182,6 +179,7 @@ class ButtonContainer(QWidget):
 
     @pyqtSlot()
     def select_template(self):
+        print('wuhu')
         pass
 
     @pyqtSlot()
@@ -202,13 +200,15 @@ class ButtonContainer(QWidget):
             edit_settings=True,
             apply=True,
             settings_folder=self.settings_folder,
-            template_folder=self.template_folder,
+            template_name=self.template_name,
             )
         if not apply:
             tu.message('Restart GUI to apply saved changes')
 
         elif apply:
-            content_gui = tu.get_content_gui(content=content)
+            template_name = content['(None)']['Others'][0][0]['Default template'][0]
+            self.parent.content_raw = content
+            self.parent.default_template_name = template_name
             self.parent.enable(var=False, use_all=True)
             # result is True if No is chosen
             result = tu.question(
@@ -219,22 +219,19 @@ class ButtonContainer(QWidget):
                 )
             app = QApplication.instance()
             app.setStyleSheet(
-                tu.look_and_feel(app=app, default=content['Font'])
+                tu.look_and_feel(app=app, default=content['(None)']['Font'])
                 )
 
-            if not result:
-                self.parent.save(temp_save_file)
-                self.parent.reset_gui(
-                    content_gui=content_gui,
-                    content_pipeline=content['Pipeline'],
-                    load_file=temp_save_file
-                    )
+            if result:
+                load_file=temp_save_file
+                self.parent.save(load_file)
             else:
-                self.parent.reset_gui(
-                    content_gui=content_gui,
-                    content_pipeline=content['Pipeline'],
-                    load_file=None
-                    )
+                load_file=False
+            self.parent.reset_gui(
+                content_pipeline=content['(None)']['Pipeline'],
+                template_name=template_name,
+                load_file=load_file
+                )
 
         else:
             pass
@@ -290,11 +287,13 @@ class ButtonContainer(QWidget):
             self.stop_monitor_button.setEnabled(var)
             self.show_about.setEnabled(var)
             self.check_quota.setEnabled(var)
+            self.template_box.setEnabled(var)
         else:
             self.load_button.setEnabled(var)
             self.save_button.setEnabled(var)
             self.check_quota.setEnabled(var)
             self.default_settings.setEnabled(var)
+            self.template_box.setEnabled(var)
 
     @staticmethod
     def _show_about():

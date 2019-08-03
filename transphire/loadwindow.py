@@ -292,8 +292,8 @@ class DefaultSettings(QDialog):
     def add_tabs(default_widget, settings_folder, template_folder):
         if os.path.basename(template_folder) != '(None)':
             default_widget.template_name.setText('Current template: {0}'.format(os.path.basename(template_folder)))
-            template_folder = settings_folder
         else:
+            template_folder = settings_folder
             default_widget.template_name.setText('No template selected')
 
 
@@ -329,7 +329,7 @@ class DefaultSettings(QDialog):
             edit_settings,
             apply,
             settings_folder,
-            template_folder,
+            template_name,
             ):
         """
         Staticmethod to open the default content dialog.
@@ -344,6 +344,7 @@ class DefaultSettings(QDialog):
         """
 
         # Initialise default settings
+        template_folder=os.path.join(settings_folder, template_name)
         setting_names = sorted(tu.get_function_dict().keys())
         default_widget = DefaultSettings(apply=apply, settings_directory=settings_folder, template_folder=template_folder)
 

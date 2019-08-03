@@ -75,12 +75,13 @@ def main(font, root_directory, settings_directory, mount_directory, adjust_width
         with open('{0}/content_Others.txt'.format(settings_directory), 'r') as file_r:
             settings = json.load(file_r)
     except FileNotFoundError:
-        template_folder = settings_directory
+        template_name = '(None)'
     else:
-        template_folder = os.path.join(settings_directory, settings[0][0]['Default template'][0])
-        if not os.path.isdir(template_folder) and os.path.basename(template_folder) != '(None)':
+        template_name = settings[0][0]['Default template'][0]
+        if not os.path.isdir(os.path.join(settings_directory, template_name)) and \
+                template_name != '(None)':
             print('Default template no longer exists!')
-            template_folder = os.path.join(settings_directory, '(None)')
+            template_folder = '(None)'
 
 
     # Get default settings 0: content 
@@ -89,7 +90,7 @@ def main(font, root_directory, settings_directory, mount_directory, adjust_width
         edit_settings=edit_settings,
         apply=False,
         settings_folder=settings_directory,
-        template_folder=template_folder
+        template_name=template_name
         )[IDX_CONTENT]
 
     # Apply font settings to application
@@ -106,20 +107,22 @@ def main(font, root_directory, settings_directory, mount_directory, adjust_width
     # Load content for the GUI
     content_gui = tu.get_content_gui(
         content=content,
-        template_name=content['(None)']['Others'][0][0]['Default template'][0]
+        template_name='(None)',
         )
 
-    template_folder = os.path.join(settings_directory, content['(None)']['Others'][0][0]['Default template'][0])
-    if not os.path.isdir(template_folder) and os.path.basename(template_folder) != '(None)':
+    template_name = content['(None)']['Others'][0][0]['Default template'][0]
+    if not os.path.isdir(os.path.join(settings_directory, template_name)) and \
+            template_name != '(None)':
         print('Default template no longer exists!')
-        template_folder = os.path.join(settings_directory, '(None)')
+        template_name = '(None)'
 
     # Initilise and show GUI
     gui = MainWindow(
+        content_raw=content,
         content_gui=content_gui,
-        content_pipeline=content[content['(None)']['Others'][0][0]['Default template'][0]]['Pipeline'],
+        content_pipeline=content['(None)']['Pipeline'],
         settings_folder=settings_directory,
-        template_folder=template_folder,
+        template_name=template_name,
         mount_directory=mount_directory,
         version=transphire.__version__
         )
