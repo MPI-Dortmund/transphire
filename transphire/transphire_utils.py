@@ -83,9 +83,9 @@ def find_best_match(name, dictionary):
     for version in reversed(sorted(valid_versions)):
         version_string = '.'.join([str(entry) for entry in version])
         if is_higher_version(name, version_string):
-            return_key = '{0} v{1}'.format(prog_name, version_string)
+            return_key = '{0} >=v{1}'.format(prog_name, version_string)
             break
-    assert return_key is not None, (name, dictionary)
+    assert return_key is not None, (name, prog_name, valid_versions, dictionary)
     return return_key
 
 
@@ -106,8 +106,7 @@ def is_higher_version(name, version_ref):
     version_comp = VERSION_RE.search(name).group(2)
     version_tuple_comp = tuple([int(entry) for entry in version_comp.split('.')])
     version_tuple_ref = tuple([int(entry) for entry in version_ref.split('.')])
-    return_value = version_tuple_comp >= version_tuple_ref
-    return return_value
+    return version_tuple_comp >= version_tuple_ref
 
 
 def normalize_image(data, apix=1.0, min_res=30, real=True):

@@ -93,7 +93,7 @@ def get_dtype_dict():
         ('image', '|U1200'),
         ]
 
-    dtype['Gctf v1.06'] = [
+    dtype['Gctf >=v1.06'] = [
         ('defocus_1', '<f8'),
         ('defocus_2', '<f8'),
         ('astigmatism', '<f8'),
@@ -103,7 +103,7 @@ def get_dtype_dict():
         ('file_name', '|U1200')
         ]
 
-    dtype['CTER v1.0'] = [
+    dtype['CTER >=v1.0'] = [
         ('defocus_1', '<f8'),
         ('defocus_2', '<f8'),
         ('astigmatism', '<f8'),
@@ -113,7 +113,7 @@ def get_dtype_dict():
         ('file_name', '|U1200')
         ]
 
-    dtype['CTFFIND4 v4.1.8'] = [
+    dtype['CTFFIND4 >=v4.1.8'] = [
         ('mic_number', '<f8'),
         ('defocus_1', '<f8'),
         ('defocus_2', '<f8'),
@@ -124,7 +124,7 @@ def get_dtype_dict():
         ('file_name', '|U1200')
         ]
 
-    dtype['crYOLO v1.0.4'] = [
+    dtype['crYOLO >=v1.0.4'] = [
         ('coord_x', '<f8'),
         ('coord_y', '<f8'),
         ('box_x', '<f8'),
@@ -193,7 +193,7 @@ def get_dtype_import_dict():
     Dtype dict
     """
     dtype_import = {}
-    dtype_import['CTER v1.0'] = [
+    dtype_import['CTER >=v1.0'] = [
         ('defocus', '<f8'),
         ('cs', '<f8'),
         ('volt', '<f8'),
@@ -218,7 +218,7 @@ def get_dtype_import_dict():
         ('file_name', '|U1200'),
         ]
 
-    dtype_import['Gctf v1.06'] = [
+    dtype_import['Gctf >=v1.06'] = [
         ('defocus_1', '<f8'),
         ('defocus_2', '<f8'),
         ('astigmatism', '<f8'),
@@ -227,7 +227,7 @@ def get_dtype_import_dict():
         ('limit', '<f8')
         ]
 
-    dtype_import['CTFFIND4 v4.1.8'] = [
+    dtype_import['CTFFIND4 >=v4.1.8'] = [
         ('mic_number', '<f8'),
         ('defocus_1', '<f8'),
         ('defocus_2', '<f8'),
@@ -237,13 +237,13 @@ def get_dtype_import_dict():
         ('limit', '<f8')
         ]
 
-    dtype_import['MotionCor2 v1.0.0'] = [
+    dtype_import['MotionCor2 >=v1.0.0'] = [
         ('frame_number', '<f8'),
         ('shift_x', '<f8'),
         ('shift_y', '<f8')
         ]
 
-    dtype_import['crYOLO v1.0.4'] = [
+    dtype_import['crYOLO >=v1.0.4'] = [
         ('coord_x', '<f8'),
         ('coord_y', '<f8'),
         ('box_x', '<f8'),
@@ -362,7 +362,6 @@ def import_gctf_v1_06(name, directory_name, import_name=''):
     Imported data
     """
     suffix = '_gctf'
-    dtype_import_dict_name = tu.find_best_match(name, get_dtype_import_dict())
     dtype_dict_name = tu.find_best_match(name, get_dtype_dict())
 
     useable_files = []
@@ -535,7 +534,6 @@ def import_motion_cor_2_v1_0_0(name, directory_name, import_name=''):
     Imported data
     """
     dtype_import_dict_name = tu.find_best_match(name, get_dtype_import_dict())
-    dtype_dict_name = tu.find_best_match(name, get_dtype_dict())
 
     directory_names = glob.glob('{0}/*_with_DW_log'.format(directory_name))
     files = np.array(
