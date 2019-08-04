@@ -197,7 +197,7 @@ class NotificationContainer(QWidget):
             try:
                 self.content[key].set_settings(*settings[key])
             except KeyError:
-                print('Key', key, 'no longer exists')
+                #print('Key', key, 'no longer exists')
                 continue
 
     @pyqtSlot()

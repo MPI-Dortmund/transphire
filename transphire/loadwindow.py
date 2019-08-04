@@ -40,7 +40,7 @@ class DefaultSettings(QDialog):
     Inherits from:
     QDialog
     """
-    def __init__(self, apply, settings_directory, template_folder, parent=None):
+    def __init__(self, apply, settings_directory, template_name, parent=None):
         """
         Setup the layout for the widget.
 
@@ -55,8 +55,7 @@ class DefaultSettings(QDialog):
         super(DefaultSettings, self).__init__(parent)
 
         self.settings_directory = settings_directory
-        self.template_folder = template_folder
-        self.template = None
+        self.current_template = template_name
         # Add new tab widget for the settings to layout
         central_raw_layout = QVBoxLayout(self)
         central_raw_layout.setContentsMargins(0, 0, 0, 0)
@@ -283,45 +282,59 @@ class DefaultSettings(QDialog):
         result = template_dialog.exec_()
         if result:
             if self.check_modified_widgets(done=None):
-                template_name = template_dialog.template
-                self.template = os.path.join(self.settings_directory, template_name)
+                self.current_template = template_dialog.template
                 self.clear_tabs()
-                self.add_tabs(self, self.settings_directory, self.template)
+                self.add_tabs()
 
-    @staticmethod
-    def add_tabs(default_widget, settings_folder, template_folder):
-        if os.path.basename(template_folder) != '(None)':
-            default_widget.template_name.setText('Current template: {0}'.format(os.path.basename(template_folder)))
+    def add_tabs(self):
+        template_folder = ['(None)']
+        template_folder.extend(sorted([
+            os.path.basename(entry)
+            for entry in glob.glob(os.path.join(self.settings_directory, '*'))
+            if os.path.isdir(entry)
+            ]))
+
+        if self.current_template != '(None)':
+            self.template_name.setText('Current template: {0}'.format(self.current_template))
         else:
-            template_folder = settings_folder
-            default_widget.template_name.setText('No template selected')
+            self.template_name.setText('No template selected')
 
 
-        setting_names = sorted(tu.get_function_dict().keys())
         content_temp = {}
-        for name in setting_names:
-            directory = template_folder
-            for entry in default_widget.default_tabs['TranSPHIRE settings'][0]:
-                if entry in name:
-                    directory = settings_folder
-                    break
-            default_file = '{0}/content_{1}.txt'.format(directory, name.replace(' ', '_'))
-            if not os.path.isfile(default_file):
-                default_file = '{0}/content_{1}.txt'.format(directory, name.replace(' ', '_').replace('>=', ''))
-            content_temp[name] = LoadContentContainer(
-                typ=name,
-                file_name=default_file,
-                settings_folder=settings_folder,
-                )
-            if directory:
-                default_widget.add_tab(widget=content_temp[name], name=name)
-                try:
-                    with open(default_file, 'r') as file_r:
-                        settings = json.load(file_r)
-                except FileNotFoundError:
-                    pass
-                else:
-                    content_temp[name].set_settings(settings)
+        for template_name in template_folder:
+            if template_name != '(None)':
+                template_directory = os.path.join(self.settings_directory, template_name)
+            else:
+                template_directory = self.settings_directory
+
+            setting_names = sorted(tu.get_function_dict().keys())
+            content_temp[template_name] = {}
+            for name in setting_names:
+                directory = template_directory
+                for entry in self.default_tabs['TranSPHIRE settings'][0]:
+                    if entry in name:
+                        directory = self.settings_directory
+                        break
+                default_file = '{0}/content_{1}.txt'.format(directory, name.replace(' ', '_'))
+                if not os.path.isfile(default_file):
+                    default_file = '{0}/content_{1}.txt'.format(directory, name.replace(' ', '_').replace('>=', ''))
+                content_temp[template_name][name] = LoadContentContainer(
+                    typ=name,
+                    file_name=default_file,
+                    settings_folder=self.settings_directory,
+                    )
+                if directory:
+                    if template_name == self.current_template:
+                        self.add_tab(widget=content_temp[template_name][name], name=name)
+                    else:
+                        content_temp[template_name][name].setVisible(False)
+                    try:
+                        with open(default_file, 'r') as file_r:
+                            settings = json.load(file_r)
+                    except FileNotFoundError:
+                        pass
+                    else:
+                        content_temp[template_name][name].set_settings(settings)
         return content_temp
 
     @staticmethod
@@ -346,9 +359,15 @@ class DefaultSettings(QDialog):
         # Initialise default settings
         template_folder=os.path.join(settings_folder, template_name)
         setting_names = sorted(tu.get_function_dict().keys())
-        default_widget = DefaultSettings(apply=apply, settings_directory=settings_folder, template_folder=template_folder)
+        default_widget = DefaultSettings(apply=apply, settings_directory=settings_folder, template_name=template_name)
 
-        content_temp = DefaultSettings.add_tabs(default_widget, settings_folder, template_folder=template_folder)
+        templates = ['(None)']
+        templates.extend(sorted([
+            os.path.basename(entry)
+            for entry in glob.glob(os.path.join(settings_folder, '*'))
+            if os.path.isdir(entry)
+            ]))
+        content_temp = default_widget.add_tabs()
 
         # Initialise a new LoadContentContainer and add it as a new tab
         # Load default settings from settings file into LoadContentContainer
@@ -356,15 +375,13 @@ class DefaultSettings(QDialog):
         # If edit settings, open default settings dialog
         if edit_settings:
             result = default_widget.exec_()
+            content_temp = default_widget.add_tabs()
             if result:
                 apply = default_widget.get_apply()
             else:
                 apply = None
         else:
             apply = None
-
-        if default_widget.template is not None:
-            template_folder = default_widget.template
 
         # Refresh content of LoadContentContainer by the provided default settings
         templates = ['(None)']
@@ -373,11 +390,12 @@ class DefaultSettings(QDialog):
             for entry in glob.glob(os.path.join(settings_folder, '*'))
             if os.path.isdir(entry)
             ]))
+
         content = {}
         for template in templates:
             content[template] = {}
             for name in setting_names:
-                directory = template_folder
+                directory = os.path.join(settings_folder, template)
                 for entry in default_widget.default_tabs['TranSPHIRE settings'][0]:
                     if entry in name:
                         directory = settings_folder
@@ -385,7 +403,7 @@ class DefaultSettings(QDialog):
                 default_file = '{0}/content_{1}.txt'.format(directory, name.replace(' ', '_'))
                 if not os.path.isfile(default_file):
                     default_file = '{0}/content_{1}.txt'.format(directory, name.replace(' ', '_').replace('>=', ''))
-                content[template][name] = content_temp[name].get_settings()
+                content[template][name] = content_temp[template][name].get_settings()
                 if name == 'Mount':
                     continue
                 elif not os.path.exists(default_file):

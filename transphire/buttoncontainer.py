@@ -180,7 +180,20 @@ class ButtonContainer(QWidget):
     @pyqtSlot(str)
     def select_template(self, text):
         self.parent.enable(var=False, use_all=True)
-        self.parent.sig_reset.emit(text, False)
+        new_content = {}
+        for key, value in self.parent.content_raw[text].items():
+            if key not in self.parent.content:
+                continue
+            elif not hasattr(self.parent.content[key], 'set_settings'):
+                continue
+            new_content[key] = {}
+            for entry in value[0]:
+                for key_entry, value_entry in entry.items():
+                    if 'WIDGETS ' in key_entry:
+                        continue
+                    new_content[key][key_entry] = value_entry[0]
+        self.parent.set_settings(new_content)
+        self.parent.enable(var=True, use_all=True)
 
     @pyqtSlot()
     def _modify_settings(self):
