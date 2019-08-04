@@ -1097,7 +1097,7 @@ class ProcessThread(QThread):
             )
 
         for idx, root_name in enumerate(file_list):
-            hole, grid_number, spot1, spot2, date, time = \
+            hole, grid_number, spot1, spot2, date, collect_time = \
                 tus.extract_time_and_grid_information(
                     root_name=root_name,
                     settings=self.settings,
@@ -1107,7 +1107,7 @@ class ProcessThread(QThread):
             del spot1, spot2, hole, grid_number
             data[idx]['root'] = root_name
             data[idx]['date'] = int(date)
-            data[idx]['time'] = int(time)
+            data[idx]['time'] = int(collect_time)
 
         data = np.sort(data, order=['date', 'time'])
         for root_name in data['root']:

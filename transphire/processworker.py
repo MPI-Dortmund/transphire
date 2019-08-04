@@ -740,7 +740,7 @@ class ProcessWorker(QObject):
                     self.sig_error.emit(error)
                 elif key == 'log':
                     log = queue_com['log'].get()
-                    with open(self.settings['project_folder'], 'a+') as write:
+                    with open(os.path.join(self.settings['project_folder'], 'log'), 'a+') as write:
                         write.write('{0}\n'.format(log))
                 else:
                     print(
