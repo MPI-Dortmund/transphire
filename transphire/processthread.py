@@ -30,6 +30,7 @@ try:
     from PyQt4.QtCore import QThread
 except ImportError:
     from PyQt5.QtCore import QThread
+import hyperspy.io_plugins.digital_micrograph as hidm
 from transphire import transphire_utils as tu
 from transphire import transphire_software as tus
 from transphire import transphire_motion as tum
@@ -1394,7 +1395,7 @@ class ProcessThread(QThread):
                 name = '{0}_krios_sum'.format(new_name_meta)
             elif extension == 'dm4' and 'gain' in file_entry:
                 name = '{0}_gain'.format(new_name_meta)
-            elif extension == 'xml' and file_entry in meta_files:
+            elif extension in ('xml', 'gtg') and file_entry in meta_files:
                 is_xml = True
                 name = new_name_meta
             elif extension == 'xml':
@@ -1554,13 +1555,109 @@ class ProcessThread(QThread):
             else:
                 pass
 
+    @staticmethod
+    def get_gtg_info(xml_file, entries, first_entry):
+        try:
+            with open(xml_file, "rb") as read: 
+                reader = hidm.DigitalMicrographReader(read) 
+                reader.parse_file()
+        except IOError as e:
+            print(e)
+        else:
+            gtg_values = {
+                '_pipeAlpha': ['Microscope Info', 'Stage Position', 'Stage Alpha'],
+                '_pipeCoordX': ['Microscope Info', 'Stage Position', 'Stage X'],
+                '_pipeCoordY': ['Microscope Info', 'Stage Position', 'Stage Y'],
+                '_pipeCoordZ': ['Microscope Info', 'Stage Position', 'Stage Z'],
+
+                '_pipeDefocusMicroscope': ['Latitude', 'Distance To Focus Position'],
+                '_pipeAppliedDefocusMicroscope': ['Latitude', 'Intended Defocus'],
+                #'_pipeDose': ['Latitude', 'Pixel Size'],
+                '_pipePixelSize': ['Latitude', 'Pixel Size'],
+                #'_pipeNrFractions': [r'.*<b:NumberOffractions>(.*?)</b:NumberOffractions>.*', r'<b:StartFrameNumber>'],
+
+                '_pipeExposureTime': ['Acquisition', 'Parameters', 'Detector', 'exposure (s)'],
+                'frame exposure': ['Acquisition', 'Parameters', 'High Level', 'Frame Exposure'],
+                '_pipeHeight': ['Latitude', 'Image Size Y'],
+                '_pipeWidth': ['Latitude', 'Image Size X'],
+                }
+            for key, value in gtg_values.items():
+                temp = reader.tags_dict
+                for idx, entry in enumerate(value):
+                    if isinstance(temp[entry], dict):
+                        temp = temp[entry]
+                    else:
+                        if key == 'frame exposure':
+                            first_key = '_pipeNrFractions'
+                            val = int(entries[-1] // temp[entry] + 0.5)
+                        else:
+                            first_key = key
+                            val = temp[entry]
+                        entries.append(val)
+                        if first_entry:
+                            first_entry.append('{0} #{1}'.format(first_key, idx+8)
+
+    @staticmethod
+    def get_xml_info(xml_file, entries, first_entry):
+        try:
+            with open(xml_file, 'r') as read:
+                lines = read.read()
+        except IOError:
+            pass
+        else:
+            xml_values = {
+                '_pipeCoordX': [r'.*<X>(.*?)</X>.*'],
+                '_pipeCoordY': [r'.*<Y>(.*?)</Y>.*'],
+                '_pipeCoordZ': [r'.*<Z>(.*?)</Z>.*'],
+                '_pipeDefocusMicroscope': [r'.*<Defocus>(.*?)</Defocus>.*'],
+                '_pipeAppliedDefocusMicroscope': [r'.*<a:Key>AppliedDefocus</a:Key><a:Value .*?>(.*?)</a:Value>.*'],
+                '_pipeDose': [r'.*<a:Key>Dose</a:Key><a:Value .*?>(.*?)</a:Value>.*'],
+                '_pipePixelSize': [r'.*<pixelSize><x><numericValue>(.*?)</numericValue>.*'],
+                '_pipeNrFractions': [r'.*<b:NumberOffractions>(.*?)</b:NumberOffractions>.*', r'<b:StartFrameNumber>'],
+                '_pipeExposureTime': [r'.*<camera>.*?<ExposureTime>(.*?)</ExposureTime>.*'],
+                '_pipeHeight': [r'.*<ReadoutArea.*?<a:height>(.*?)</a:height>.*'],
+                '_pipeWidth': [r'.*<ReadoutArea.*?<a:width>(.*?)</a:width>.*'],
+                }
+            idx = 0
+            for xml_key, values in xml_values.items():
+                for xml_value in values:
+                    error = False
+                    try:
+                        extracted_value = re.match(xml_value, lines).group(1)
+                    except AttributeError:
+                        try:
+                            extracted_value = len(re.findall(xml_value, lines))
+                        except Exception:
+                            extracted_value = None
+                            error = True
+                        else:
+                            if extracted_value:
+                                break
+                            else:
+                                extracted_value = None
+                                error = True
+                    else:
+                        break
+
+                entries.append(extracted_value)
+                if first_entry:
+                    first_entry.append('{0} #{1}'.format(xml_key, idx+8)
+                else:
+                    pass
+                idx += 1
+
+                if error:
+                    print('Attribute {0} not present in the XML file, please contact the TranSPHIRE authors'.format(xml_key))
+                else:
+                    pass
+
     def append_to_translate(self, root_name, new_name, xml_file):
         """
         Write to the translation file.
 
         root_name - Root name of the file
         new_name - New name of the file
-        xml_file - XML file that contains meta data information
+        xml_file - XML or GTG file that contains meta data information
 
         Returns:
         None
@@ -1578,13 +1675,13 @@ class ProcessThread(QThread):
             first_entry = []
         else:
             first_entry = [
-                '_pipeRootName',
-                '_pipeNewName',
-                '_pipeHoleNumber',
-                '_pipeSpotNumber',
-                '_pipeDate',
-                '_pipeTime',
-                '_pipeGridNumber',
+                '_pipeRootName #1',
+                '_pipeNewName #2',
+                '_pipeHoleNumber #3',
+                '_pipeSpotNumber #4',
+                '_pipeDate #5',
+                '_pipeTime #6',
+                '_pipeGridNumber #7',
                 ]
 
         try:
@@ -1625,56 +1722,13 @@ class ProcessThread(QThread):
 
             if xml_file is None:
                 pass
+            elif xml_file.endswith('xml'):
+                get_xml_info(xml_file, entries, first_entry)
+            elif xml_file.endswith('gtg'):
+                get_gtg_info(xml_file, entries, first_entry)
             else:
-                try:
-                    with open(xml_file, 'r') as read:
-                        lines = read.read()
-                except IOError:
-                    pass
-                else:
-                    xml_values = {
-                        '_pipeCoordX': [r'.*<X>(.*?)</X>.*'],
-                        '_pipeCoordY': [r'.*<Y>(.*?)</Y>.*'],
-                        '_pipeCoordZ': [r'.*<Z>(.*?)</Z>.*'],
-                        '_pipeDefocusMicroscope': [r'.*<Defocus>(.*?)</Defocus>.*'],
-                        '_pipeAppliedDefocusMicroscope': [r'.*<a:Key>AppliedDefocus</a:Key><a:Value .*?>(.*?)</a:Value>.*'],
-                        '_pipeDose': [r'.*<a:Key>Dose</a:Key><a:Value .*?>(.*?)</a:Value>.*'],
-                        '_pipePixelSize': [r'.*<pixelSize><x><numericValue>(.*?)</numericValue>.*'],
-                        '_pipeNrFractions': [r'.*<b:NumberOffractions>(.*?)</b:NumberOffractions>.*', r'<b:StartFrameNumber>'],
-                        '_pipeExposureTime': [r'.*<camera>.*?<ExposureTime>(.*?)</ExposureTime>.*'],
-                        '_pipeHeight': [r'.*<ReadoutArea.*?<a:height>(.*?)</a:height>.*'],
-                        '_pipeWidth': [r'.*<ReadoutArea.*?<a:width>(.*?)</a:width>.*'],
-                        }
-                    for xml_key, values in xml_values.items():
-                        for xml_value in values:
-                            error = False
-                            try:
-                                extracted_value = re.match(xml_value, lines).group(1)
-                            except AttributeError:
-                                try:
-                                    extracted_value = len(re.findall(xml_value, lines))
-                                except Exception:
-                                    extracted_value = None
-                                    error = True
-                                else:
-                                    if extracted_value:
-                                        break
-                                    else:
-                                        extracted_value = None
-                                        error = True
-                            else:
-                                break
+                assert False, ('File not known:', xml_file)
 
-                        entries.append(extracted_value)
-                        if first_entry:
-                            first_entry.append(xml_key)
-                        else:
-                            pass
-
-                        if error:
-                            print('Attribute {0} not present in the XML file, please contact the TranSPHIRE authors'.format(xml_key))
-                        else:
-                            pass
 
         except ValueError:
             if first_entry:
