@@ -73,6 +73,9 @@ class TemplateDialog(QDialog):
     @pyqtSlot()
     def remove_template(self):
         text = self.combo_box.currentText()
+        if text == '(None)':
+            tu.message('Default template cannot be deleted!')
+            return None
         dialog = InputBox(is_password=False, parent=self)
         dialog.setText('Confirm deletion', 'Do you really want to remove delete template {0}? Type in "YES!"'.format(text))
         result = dialog.exec_()
@@ -111,6 +114,7 @@ class TemplateDialog(QDialog):
                     self.templates.append(text)
                     self.combo_box.clear()
                     self.combo_box.addItems(self.templates)
+                    self.combo_box.setCurrentText(text)
 
     @pyqtSlot()
     def copy_template(self):
@@ -142,3 +146,4 @@ class TemplateDialog(QDialog):
                     self.templates.append(text)
                     self.combo_box.clear()
                     self.combo_box.addItems(self.templates)
+                    self.combo_box.setCurrentText(text)
