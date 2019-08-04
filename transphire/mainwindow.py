@@ -162,7 +162,7 @@ class MainWindow(QMainWindow):
         self.central_widget = None
         self.content = None
         self.content_raw = content_raw
-        self.content_pipeline=content_pipeline,
+        self.content_pipeline=content_pipeline
         self.layout = None
 
         # Settings folder
