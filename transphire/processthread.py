@@ -1595,7 +1595,7 @@ class ProcessThread(QThread):
                             val = temp[entry]
                         entries.append(val)
                         if first_entry:
-                            first_entry.append('{0} #{1}'.format(first_key, idx+8)
+                            first_entry.append('{0} #{1}'.format(first_key, idx+8))
 
     @staticmethod
     def get_xml_info(xml_file, entries, first_entry):
@@ -1641,7 +1641,7 @@ class ProcessThread(QThread):
 
                 entries.append(extracted_value)
                 if first_entry:
-                    first_entry.append('{0} #{1}'.format(xml_key, idx+8)
+                    first_entry.append('{0} #{1}'.format(xml_key, idx+8))
                 else:
                     pass
                 idx += 1

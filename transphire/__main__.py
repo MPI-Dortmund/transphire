@@ -77,7 +77,11 @@ def main(font, root_directory, settings_directory, mount_directory, adjust_width
     except FileNotFoundError:
         template_name = '(None)'
     else:
-        template_name = settings[0][0]['Default template'][0]
+        try:
+            template_name = settings[0][0]['Default template'][0]
+        except KeyError:
+            template_name = '(None)'
+
         if not os.path.isdir(os.path.join(settings_directory, template_name)) and \
                 template_name != '(None)':
             print('Default template no longer exists!')
