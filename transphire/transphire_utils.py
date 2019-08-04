@@ -236,7 +236,7 @@ def get_function_dict():
             'executable': True,
             'has_path': True,
             'typ': 'motion',
-            'allow_empty': ['-DefectFile', '-Gain'],
+            'allow_empty': ['-DefectFile', '-Gain', '-Dark'],
             }
     function_dict['MotionCor2 >=v1.0.5'] = copy_mod.deepcopy(function_dict['MotionCor2 >=v1.0.0'])
     function_dict['MotionCor2 >=v1.0.5']['content'] = tc.default_motion_cor_2_v1_0_5
