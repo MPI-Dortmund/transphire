@@ -129,15 +129,18 @@ class StatusContainer(QWidget):
             for key in entry:
                 basename = key
                 number = int(entry[key][0])
-                if number == 1:
-                    name = basename
-                    self.content[name] = StatusWidget(name=name, default_name='Not running', default_quota='')
-                    layout_v1.addWidget(self.content[name])
-                else:
-                    for idx in range(number):
-                        name = '{0}_{1}'.format(basename, idx+1)
-                        self.content[name] = StatusWidget(name=name, default_name='Not running', default_quota='')
-                        layout_v1.addWidget(self.content[name])
+                name = basename
+                self.content[name] = StatusWidget(name=name, default_name='Not running', default_quota='')
+                layout_v1.addWidget(self.content[name])
+                #if number == 1:
+                #    name = basename
+                #    self.content[name] = StatusWidget(name=name, default_name='Not running', default_quota='')
+                #    layout_v1.addWidget(self.content[name])
+                #else:
+                #    for idx in range(number):
+                #        name = '{0}_{1}'.format(basename, idx+1)
+                #        self.content[name] = StatusWidget(name=name, default_name='Not running', default_quota='')
+                #        layout_v1.addWidget(self.content[name])
 
         # Add picture
         if image and os.path.exists(image):

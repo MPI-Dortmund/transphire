@@ -118,7 +118,7 @@ class ProcessThread(QThread):
         except KeyError:
             self.user = None
 
-        self.queue_com['status'].put(tu.create_log('Starting', name))
+        self.queue_com['log'].put(tu.create_log('Starting', name))
 
     def run(self):
         """
@@ -142,7 +142,7 @@ class ProcessThread(QThread):
                     self.queue_com['status'].put([
                         'Finished',
                         [],
-                        self.name,
+                        self.typ,
                         '#d9d9d9'
                         ])
                     QThread.sleep(10)
@@ -155,7 +155,7 @@ class ProcessThread(QThread):
                     self.queue_com['status'].put([
                         'Skipped',
                         [self.queue.qsize()],
-                        self.name,
+                        self.typ,
                         '#d9d9d9'
                         ])
                     QThread.sleep(10)
@@ -168,7 +168,7 @@ class ProcessThread(QThread):
                     self.queue_com['status'].put([
                         'Later',
                         [self.queue.qsize()],
-                        self.name,
+                        self.typ,
                         '#d9d9d9'
                         ])
                     QThread.sleep(10)
@@ -182,7 +182,7 @@ class ProcessThread(QThread):
                 self.queue_com['status'].put([
                     'Quota Error',
                     [self.queue.qsize()],
-                    self.name,
+                    self.typ,
                     '#ff5c33'
                     ])
                 QThread.sleep(10)
@@ -194,7 +194,7 @@ class ProcessThread(QThread):
                 self.queue_com['status'].put([
                     'Connection Error',
                     [self.queue.qsize()],
-                    self.name,
+                    self.typ,
                     '#ff5c33'
                     ])
                 QThread.sleep(10)
@@ -206,7 +206,7 @@ class ProcessThread(QThread):
                 self.queue_com['status'].put([
                     'No space Error',
                     [self.queue.qsize()],
-                    self.name,
+                    self.typ,
                     '#ff5c33'
                     ])
                 QThread.sleep(10)
@@ -222,7 +222,7 @@ class ProcessThread(QThread):
                     self.queue_com['status'].put([
                         'Unknown Error',
                         ['{0:.1f} min'.format(time_diff / 60)],
-                        self.name,
+                        self.typ,
                         '#ff5c33'
                         ])
                 else:
@@ -233,7 +233,7 @@ class ProcessThread(QThread):
                             self.shared_dict_typ['file_number'],
                             '{0:.1f} min'.format(time_diff / 60)
                             ],
-                        self.name,
+                        self.typ,
                         '#ff5c33'
                         ])
                 i = 0
@@ -270,7 +270,7 @@ class ProcessThread(QThread):
                 self.is_running = False
 
         # Print, if stopped
-        self.queue_com['status'].put(['STOPPED', [], self.name, '#ff5c33'])
+        self.queue_com['status'].put(['STOPPED', [], self.typ, '#ff5c33'])
         self.queue_com['log'].put(tu.create_log('Stopped', self.name))
         print(self.name, ': Stopped')
 
@@ -389,7 +389,7 @@ class ProcessThread(QThread):
                 self.queue_com['status'].put([
                     'Lost connection',
                     ['{0:.1f} min'.format(time_diff / 60)],
-                    self.name,
+                    self.typ,
                     '#ff5c33'
                     ])
                 if self.typ == 'Motion' or \
@@ -481,7 +481,7 @@ class ProcessThread(QThread):
             self.queue_com['status'].put([
                 'Copy Metadata',
                 [],
-                self.name,
+                self.typ,
                 'lightgreen'
                 ])
             try:
@@ -521,9 +521,9 @@ class ProcessThread(QThread):
         time_diff = time.time() - self.time_last
 
         self.queue_com['status'].put([
-            'Running',
+            'Run',
             ['{0:.1f} min'.format(time_diff / 60)],
-            self.name,
+            self.typ,
             'lightgreen'
             ])
         try:
@@ -593,14 +593,21 @@ class ProcessThread(QThread):
                 self.shared_dict_typ['queue_list_time'] -= 60
             else:
                 if self.queue.empty():
+                    if self.shared_dict_typ['running'] == 0:
+                        color = '#ffc14d'
+                    else:
+                        color = 'lightgreen'
                     self.queue_com['status'].put([
-                        'Waiting',
+                        '{0:02d}|{1:02d}'.format(
+                            self.shared_dict_typ['running'],
+                            self.shared_dict_typ['max_running'],
+                            ),
                         [
                             self.queue.qsize(),
                             self.shared_dict_typ['file_number']
                             ],
-                        self.name,
-                        '#ffc14d'
+                        self.typ,
+                        color
                         ])
                     if not self.shared_dict_typ['queue_list']:
                         error = True
@@ -624,14 +631,22 @@ class ProcessThread(QThread):
         # Get new file
         self.queue_lock.lock()
         try:
+            self.shared_dict_typ['running'] += 1
+            if self.shared_dict_typ['running'] == 0:
+                color = '#ffc14d'
+            else:
+                color = 'lightgreen'
             self.queue_com['status'].put([
-                'Running',
+                '{0:02d}|{1:02d}'.format(
+                    self.shared_dict_typ['running'],
+                    self.shared_dict_typ['max_running'],
+                    ),
                 [
                     self.queue.qsize(),
                     self.shared_dict_typ['file_number']
                     ],
-                self.name,
-                'lightgreen'
+                self.typ,
+                color,
                 ])
             if dummy:
                 root_name = 'None'
@@ -783,6 +798,28 @@ class ProcessThread(QThread):
                         self.shared_dict_typ['file_number'] += 1
                     finally:
                         self.queue_lock.unlock()
+
+        self.queue_lock.lock()
+        try:
+            self.shared_dict_typ['running'] -= 1
+            if self.shared_dict_typ['running'] == 0:
+                color = '#ffc14d'
+            else:
+                color = 'lightgreen'
+            self.queue_com['status'].put([
+                '{0:02d}|{1:02d}'.format(
+                    self.shared_dict_typ['running'],
+                    self.shared_dict_typ['max_running'],
+                    ),
+                [
+                    self.queue.qsize(),
+                    self.shared_dict_typ['file_number']
+                    ],
+                self.typ,
+                color,
+                ])
+        finally:
+            self.queue_lock.unlock()
 
     def check_queue_files(self, root_name):
         if self.settings['Copy']['Compress'] == 'False':
@@ -1182,13 +1219,14 @@ class ProcessThread(QThread):
                 finally:
                     self.shared_dict_typ['bad_lock'].unlock()
 
-                frames_root = root_name.replace(
-                    self.settings['General']['Search path meta'],
-                    self.settings['General']['Search path frames'],
-                    )
                 if entry_dir.endswith('.jpg'):
+                    frames_root = root_name.replace(
+                        self.settings['General']['Search path meta'],
+                        self.settings['General']['Search path frames'],
+                        )
                     compare_name = frames_root[:-len('_19911213_2019')]
                 else:
+                    frames_root = root_name
                     compare_name = frames_root
 
                 frames = tus.find_frames(
@@ -1723,9 +1761,9 @@ class ProcessThread(QThread):
             if xml_file is None:
                 pass
             elif xml_file.endswith('xml'):
-                get_xml_info(xml_file, entries, first_entry)
+                self.get_xml_info(xml_file, entries, first_entry)
             elif xml_file.endswith('gtg'):
-                get_gtg_info(xml_file, entries, first_entry)
+                self.get_gtg_info(xml_file, entries, first_entry)
             else:
                 assert False, ('File not known:', xml_file)
 

@@ -60,7 +60,7 @@ def extract_time_and_grid_information(root_name, settings, queue_com, name):
             spot1 = search_results.group('spot')
             spot2 = ''
             date = search_results.group('date')
-            with open(root_name, 'rb') as read:
+            with open('{0}.gtg'.format(root_name), 'rb') as read:
                 reader = DigitalMicrographReader(read)
                 reader.parse_file()
             time = datetime.datetime.strptime(
@@ -178,7 +178,7 @@ def find_frames(frames_root, compare_name, settings, queue_com, name, write_erro
             elif settings['General']['Camera'] in ('K2', 'K3'):
                 frames = glob.glob(
                     '{0}.{1}'.format(
-                        compare_name,
+                        os.path.join(os.path.dirname(compare_name), 'Stack', os.path.basename(compare_name)),
                         settings['General']['Input extension']
                         )
                     )
@@ -588,7 +588,7 @@ def find_related_frames_to_jpg(frames_root, root_name, settings, queue_com, name
                     ])
 
             elif settings['General']['Camera'] in ('K2', 'K3'):
-                compare_name_frames = frames_root
+                compare_name_frames = os.path.join(os.path.dirname(root_name), 'Stack', os.path.basename(root_name))
                 compare_name_meta = root_name
                 frames = glob.glob('{0}.{1}'.format(
                     compare_name_frames,

@@ -78,6 +78,8 @@ class ProcessWorker(QObject):
         self.mount_directory = mount_directory
         self.stop = None
         self.settings = {}
+        self.idx_number = 0
+        self.idx_values = 1
 
         # Events
         self.sig_start.connect(self.run)
@@ -196,14 +198,12 @@ class ProcessWorker(QObject):
         bad_dict = {}
         queue_dict = {}
         full_content = []
-        idx_number = 0
-        idx_values = 1
         for entry in content_process:
             for process in entry:
                 for key in process:
-                    process[key][idx_values]['group'], process[key][idx_values]['aim'] = \
-                        process[key][idx_values]['group'].split(';')
-                    process[key][idx_values]['aim'] = process[key][idx_values]['aim'].split(',')
+                    process[key][self.idx_values]['group'], process[key][self.idx_values]['aim'] = \
+                        process[key][self.idx_values]['group'].split(';')
+                    process[key][self.idx_values]['aim'] = process[key][self.idx_values]['aim'].split(',')
                     wait_dict[key] = False
                     share_dict[key] = []
                     bad_dict[key] = []
@@ -224,6 +224,8 @@ class ProcessWorker(QObject):
                         'delay_error': False,
                         'queue_list_time': 0,
                         'tar_idx': 0,
+                        'max_running': int(process[key][self.idx_number]),
+                        'running': 0,
                         'queue_list': [],
                         'queue_lock': QMutex(),
                         'save_lock': QMutex(),
@@ -249,13 +251,14 @@ class ProcessWorker(QObject):
                             ),
                         }
 
-                    if process[key][idx_number] == '1':
-                        full_content.append([key, process[key]])
-                    else:
-                        for idx in range(int(process[key][idx_number])):
-                            full_content.append(
-                                ['{0}_{1}'.format(key, idx+1), process[key]]
-                                )
+                    full_content.append([key, process[key]])
+                    #if process[key][self.idx_number] == '1':
+                    #    full_content.append([key, process[key]])
+                    #else:
+                    #    for idx in range(int(process[key][self.idx_number])):
+                    #        full_content.append(
+                    #            ['{0}_{1}'.format(key, idx+1), process[key]]
+                    #            )
 
         # Queue communication dictionary
         queue_com = {
@@ -284,7 +287,6 @@ class ProcessWorker(QObject):
                 queue_dict=queue_dict,
                 content_process=content_process,
                 full_content=full_content,
-                idx_values=idx_values,
                 )
 
         self.sig_finished.emit()
@@ -354,7 +356,6 @@ class ProcessWorker(QObject):
             queue_dict,
             content_process,
             full_content,
-            idx_values,
         ):
         """
         Run the TranSPHIRE process.
@@ -596,22 +597,29 @@ class ProcessWorker(QObject):
         thread_list = []
         use_threads_set = set(use_threads_list)
         for key, settings_content in full_content:
-            content_settings = settings_content[idx_values]
-            thread = ProcessThread(
-                shared_dict=shared_dict,
-                name=key,
-                content_settings=content_settings,
-                queue_com=queue_com,
-                settings=self.settings,
-                mount_directory=self.mount_directory,
-                password=self.password,
-                use_threads_set=use_threads_set,
-                stop=self.stop,
-                parent=self
-                )
-            thread.start()
-            thread_list.append([thread, key, content_settings])
-            QThread.sleep(1)
+            content_settings = settings_content[self.idx_values]
+            number = settings_content[self.idx_number]
+            if number == '1':
+                names = [key]
+            else:
+                names = ['{0}_{1}'.format(key, idx) for idx in range(int(number))]
+
+            for name in names:
+                thread = ProcessThread(
+                    shared_dict=shared_dict,
+                    name=name,
+                    content_settings=content_settings,
+                    queue_com=queue_com,
+                    settings=self.settings,
+                    mount_directory=self.mount_directory,
+                    password=self.password,
+                    use_threads_set=use_threads_set,
+                    stop=self.stop,
+                    parent=self
+                    )
+                thread.start()
+                thread_list.append([thread, name, content_settings])
+                QThread.sleep(1)
 
         # Run until the user stops the processes
         while True:
@@ -627,7 +635,7 @@ class ProcessWorker(QObject):
 
         # Indicate to stop all processes
         for key, settings_content in full_content:
-            typ = settings_content[idx_values]['name']
+            typ = settings_content[self.idx_values]['name']
             size = shared_dict['queue'][typ].qsize()
             self.sig_status.emit(
                 'Stopping',
@@ -637,7 +645,7 @@ class ProcessWorker(QObject):
                 )
 
         # Send the stop signals to all threads
-        for thread, name, setting in thread_list:
+        for thread, _, _ in thread_list:
             thread.stop = True
 
         # Wait for all threads to finish
@@ -650,13 +658,17 @@ class ProcessWorker(QObject):
             print('Waiting for', name, 'thread to quit!')
             thread.wait()
             self.check_queue(queue_com=queue_com)
+
+        for key, settings_content in full_content:
+            typ = settings_content[self.idx_values]['name']
             size = shared_dict['queue'][typ].qsize()
             self.sig_status.emit(
                 'Not running',
                 [size, shared_dict['typ'][typ]['file_number']],
-                name,
+                key,
                 'white'
                 )
+        self.check_queue(queue_com=queue_com)
 
 
     def pre_check_programs(self):
