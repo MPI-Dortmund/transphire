@@ -812,6 +812,7 @@ class ProcessThread(QThread):
                         root_name=root_name,
                         file_name=self.shared_dict['typ'][self.typ]['done_file'],
                         )
+
                 finally:
                     self.queue_lock.unlock()
 
@@ -963,7 +964,7 @@ class ProcessThread(QThread):
         is_present = False
         try:
             with open(file_name, 'r') as read:
-                is_present = bool(root_name in read.read())
+                is_present = bool(re.search('^{0}$'.format(root_name), read.read(), re.MULTILINE))
         except FileNotFoundError:
             pass
 
