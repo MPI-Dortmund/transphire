@@ -215,6 +215,7 @@ class ProcessThread(QThread):
             if self.shared_dict_typ['delay_error']:
                 QThread.sleep(10)
                 self.shared_dict_typ['delay_error'] = False
+                self.shared_dict_typ['is_error'] = False
 
             if self.shared_dict_typ['unknown_error']:
                 time_diff = time.time() - self.time_last
@@ -244,6 +245,7 @@ class ProcessThread(QThread):
                     else:
                         i += 1
                 self.shared_dict_typ['unknown_error'] = False
+                self.shared_dict_typ['is_error'] = False
                 continue
             else:
                 pass
@@ -559,6 +561,7 @@ class ProcessThread(QThread):
                 else:
                     pass
                 self.shared_dict_typ['unknown_error'] = True
+                self.shared_dict_typ['is_error'] = True
             else:
                 pass
         else:
@@ -592,28 +595,31 @@ class ProcessThread(QThread):
                 self.shared_dict_typ['queue_list_time'] -= 60
             else:
                 if self.queue.empty():
-                    if self.shared_dict_typ['running'] == 0:
-                        color = '#ffc14d'
-                    else:
-                        color = 'lightgreen'
-                    self.queue_com['status'].put([
-                        '{0:02d}|{1:02d}'.format(
-                            self.shared_dict_typ['running'],
-                            self.shared_dict_typ['max_running'],
-                            ),
-                        [
-                            self.queue.qsize(),
-                            self.shared_dict_typ['file_number']
-                            ],
-                        self.typ,
-                        color
-                        ])
-                    if not self.shared_dict_typ['queue_list']:
+                    if self.shared_dict_typ['is_error']:
                         error = True
-                    elif time.time() - self.shared_dict_typ['queue_list_time'] > 30:
-                        dummy = True
                     else:
-                        error = True
+                        if self.shared_dict_typ['running'] == 0:
+                            color = '#ffc14d'
+                        else:
+                            color = 'lightgreen'
+                        self.queue_com['status'].put([
+                            '{0:02d}|{1:02d}'.format(
+                                self.shared_dict_typ['running'],
+                                self.shared_dict_typ['max_running'],
+                                ),
+                            [
+                                self.queue.qsize(),
+                                self.shared_dict_typ['file_number']
+                                ],
+                            self.typ,
+                            color
+                            ])
+                        if not self.shared_dict_typ['queue_list']:
+                            error = True
+                        elif time.time() - self.shared_dict_typ['queue_list_time'] > 30:
+                            dummy = True
+                        else:
+                            error = True
                 else:
                     pass
         except Exception:
@@ -710,6 +716,7 @@ class ProcessThread(QThread):
                     typ='lost_input_frames'
                     )
             self.shared_dict_typ['delay_error'] = True
+            self.shared_dict_typ['is_error'] = True
         except BlockingIOError:
             if not dummy:
                 self.add_to_queue(aim=self.typ, root_name=root_name)
@@ -733,6 +740,7 @@ class ProcessThread(QThread):
                 else:
                     pass
                 self.shared_dict_typ['unknown_error'] = True
+                self.shared_dict_typ['is_error'] = True
             else:
                 pass
         except IOError:
@@ -743,12 +751,14 @@ class ProcessThread(QThread):
                 typ=method_dict[self.typ]['lost_connect']
                 )
             self.shared_dict_typ['delay_error'] = True
+            self.shared_dict_typ['is_error'] = True
         except UserWarning:
             if not dummy:
                 self.add_to_queue(aim=self.typ, root_name=root_name)
             self.write_error(msg=tb.format_exc(), root_name=root_name)
             self.stop = True
             self.shared_dict_typ['delay_error'] = True
+            self.shared_dict_typ['is_error'] = True
         except Exception:
             if not dummy:
                 self.add_to_queue(aim=self.typ, root_name=root_name)
@@ -772,6 +782,7 @@ class ProcessThread(QThread):
                 else:
                     pass
                 self.shared_dict_typ['unknown_error'] = True
+                self.shared_dict_typ['is_error'] = True
             else:
                 pass
         else:
@@ -801,22 +812,23 @@ class ProcessThread(QThread):
         self.queue_lock.lock()
         try:
             self.shared_dict_typ['running'] -= 1
-            if self.shared_dict_typ['running'] == 0:
-                color = '#ffc14d'
-            else:
-                color = 'lightgreen'
-            self.queue_com['status'].put([
-                '{0:02d}|{1:02d}'.format(
-                    self.shared_dict_typ['running'],
-                    self.shared_dict_typ['max_running'],
-                    ),
-                [
-                    self.queue.qsize(),
-                    self.shared_dict_typ['file_number']
-                    ],
-                self.typ,
-                color,
-                ])
+            if not self.shared_dict_typ['is_error']:
+                if self.shared_dict_typ['running'] == 0:
+                    color = '#ffc14d'
+                else:
+                    color = 'lightgreen'
+                self.queue_com['status'].put([
+                    '{0:02d}|{1:02d}'.format(
+                        self.shared_dict_typ['running'],
+                        self.shared_dict_typ['max_running'],
+                        ),
+                    [
+                        self.queue.qsize(),
+                        self.shared_dict_typ['file_number']
+                        ],
+                    self.typ,
+                    color,
+                    ])
         finally:
             self.queue_lock.unlock()
 

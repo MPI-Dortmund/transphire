@@ -222,6 +222,7 @@ class ProcessWorker(QObject):
                         'full_hdd': False,
                         'unknown_error': False,
                         'delay_error': False,
+                        'is_error': False,
                         'queue_list_time': 0,
                         'tar_idx': 0,
                         'max_running': int(process[key][self.idx_number]),
