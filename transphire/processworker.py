@@ -90,7 +90,7 @@ class ProcessWorker(QObject):
         for entry in self.settings['Copy']['CTF_entries']:
             self.settings['CTF_folder'][entry] = os.path.join(
                 self.settings['project_folder'],
-                entry.replace(' ', '_')
+                entry.replace(' ', '_').replace('>=', '')
                 )
             self.sig_plot_ctf.emit(
                 entry,
@@ -104,7 +104,7 @@ class ProcessWorker(QObject):
         for entry in self.settings['Copy']['Motion_entries']:
             self.settings['Motion_folder'][entry] = os.path.join(
                 self.settings['project_folder'],
-                entry.replace(' ', '_')
+                entry.replace(' ', '_').replace('>=', '')
                 )
             self.sig_plot_motion.emit(
                 entry,
@@ -118,7 +118,7 @@ class ProcessWorker(QObject):
         for entry in self.settings['Copy']['Picking_entries']:
             self.settings['Picking_folder'][entry] = os.path.join(
                 self.settings['project_folder'],
-                entry.replace(' ', '_')
+                entry.replace(' ', '_').replace('>=', '')
                 )
             self.sig_plot_picking.emit(
                 entry,
@@ -162,34 +162,34 @@ class ProcessWorker(QObject):
             )
         self.settings['motion_folder'] = os.path.join(
             self.settings['motion_folder'],
-            self.settings['Copy']['Motion'].replace(' ', '_')
+            self.settings['Copy']['Motion'].replace(' ', '_').replace('>=', '')
             )
         self.settings['scratch_motion_folder'] = os.path.join(
             self.settings['scratch_folder'],
-            self.settings['Copy']['Motion'].replace(' ', '_')
+            self.settings['Copy']['Motion'].replace(' ', '_').replace('>=', '')
             )
         self.settings['ctf_folder'] = os.path.join(
             self.settings['ctf_folder'],
-            self.settings['Copy']['CTF'].replace(' ', '_')
+            self.settings['Copy']['CTF'].replace(' ', '_').replace('>=', '')
             )
         self.settings['picking_folder'] = os.path.join(
             self.settings['picking_folder'],
-            self.settings['Copy']['Picking'].replace(' ', '_')
+            self.settings['Copy']['Picking'].replace(' ', '_').replace('>=', '')
             )
         self.settings['compress_folder'] = os.path.join(
             self.settings['compress_folder'],
-            self.settings['Copy']['Compress'].replace(' ', '_')
+            self.settings['Copy']['Compress'].replace(' ', '_').replace('>=', '')
             )
         self.settings['Copy_hdd_folder'] = os.path.join(
             self.settings['Copy_hdd_folder'], 'HDD'
             )
         self.settings['Copy_work_folder'] = os.path.join(
             self.settings['Copy_work_folder'],
-            self.settings['Copy']['Copy to work'].replace(' ', '_')
+            self.settings['Copy']['Copy to work'].replace(' ', '_').replace('>=', '')
             )
         self.settings['Copy_backup_folder'] = os.path.join(
             self.settings['Copy_backup_folder'],
-            self.settings['Copy']['Copy to backup'].replace(' ', '_')
+            self.settings['Copy']['Copy to backup'].replace(' ', '_').replace('>=', '')
             )
 
         typ_dict = {}
@@ -619,7 +619,8 @@ class ProcessWorker(QObject):
                     )
                 thread.start()
                 thread_list.append([thread, name, content_settings])
-                QThread.sleep(1)
+            self.check_queue(queue_com=queue_com)
+        QThread.sleep(1)
 
         # Run until the user stops the processes
         while True:
@@ -643,6 +644,7 @@ class ProcessWorker(QObject):
                 key,
                 '#ff5c33'
                 )
+        self.check_queue(queue_com=queue_com)
 
         # Send the stop signals to all threads
         for thread, _, _ in thread_list:
@@ -752,7 +754,7 @@ class ProcessWorker(QObject):
                     self.sig_error.emit(error)
                 elif key == 'log':
                     log = queue_com['log'].get()
-                    with open(os.path.join(self.settings['project_folder'], 'log'), 'a+') as write:
+                    with open(os.path.join(self.settings['project_folder'], 'log.txt'), 'a+') as write:
                         write.write('{0}\n'.format(log))
                 else:
                     print(

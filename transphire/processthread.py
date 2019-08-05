@@ -486,16 +486,15 @@ class ProcessThread(QThread):
                 ])
             try:
                 self.run_software_meta(directory=folder)
-            except FileNotFoundError:
+            except FileNotFoundError as e:
+                print(e)
                 self.stop = True
                 message_notification = '\n'.join([
                     'Folder no longer available!',
                     '{0} is stopping now!'.format(self.name)
                     ])
                 message_error = '\n'.join([
-                    '{0} no longer available!'.format(
-                        folder.replace('_', ' ')
-                        ),
+                    '{0} no longer available!'.format(folder),
                     '{0} is stopping now!'.format(self.name)
                     ])
                 self.queue_com['notification'].put(
@@ -2997,7 +2996,8 @@ class ProcessThread(QThread):
                     tar_file = [
                         entry
                         for entry in self.shared_dict_typ['queue_list']
-                        if self.settings['tar_folder'] in entry
+                        if self.settings['tar_folder'] in entry and \
+                        self.name in entry
                         ][0]
                 except IndexError:
                     tar_file = os.path.join(
@@ -3013,11 +3013,11 @@ class ProcessThread(QThread):
             finally:
                 self.queue_lock.unlock()
 
-                with tarfile.open(tar_file, 'a') as tar:
-                    tar.add(
-                        root_name,
-                        arcname=os.path.join('..', root_name.replace(self.settings['project_folder'], ''))
-                        )
+            with tarfile.open(tar_file, 'a') as tar:
+                tar.add(
+                    root_name,
+                    arcname=os.path.join('..', root_name.replace(self.settings['project_folder'], ''))
+                    )
 
             self.queue_lock.lock()
             try:

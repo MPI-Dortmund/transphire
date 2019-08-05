@@ -62,6 +62,32 @@ def create_log(*args):
     return '{0} => {1}'.format(time_string, ' '.join([str(entry) for entry in args]))
 
 
+def find_latest_version(name, dictionary):
+    """
+    Find the latest matching version key in a dictionary.
+    Raises an assertion error it the return_key is not valid.
+
+    name - Name of the program
+    dictionary - Dictionary to find the best matching version.
+
+    Returns:
+    The best matching version Key.
+    """
+    prog_name = name
+    valid_versions = [
+        tuple([int(num) for num in VERSION_RE.search(entry).group(2).split('.')])
+        for entry in dictionary.keys()
+        if prog_name in entry
+        ]
+    return_key = None
+    for version in reversed(sorted(valid_versions)):
+        version_string = '.'.join([str(entry) for entry in version])
+        return_key = '{0} >=v{1}'.format(prog_name, version_string)
+        break
+    assert return_key is not None, (name, prog_name, valid_versions, dictionary)
+    return return_key
+
+
 def find_best_match(name, dictionary):
     """
     Find the best matching version key in a dictionary.

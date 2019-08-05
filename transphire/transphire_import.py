@@ -450,7 +450,6 @@ def import_cter_v1_0(name, directory_name, import_name=''):
     Imported data
     """
     dtype_import_dict_name = tu.find_best_match(name, get_dtype_import_dict())
-    dtype_dict_name = tu.find_best_match(name, get_dtype_dict())
 
     useable_files = []
     for file_name in sorted(glob.glob('{0}/{1}*/partres.txt'.format(directory_name, import_name))):
@@ -485,7 +484,7 @@ def import_cter_v1_0(name, directory_name, import_name=''):
         )
     data_original = np.zeros(
         len(useable_files),
-        dtype=get_dtype_import_dict()[dtype_dict_name]
+        dtype=get_dtype_import_dict()[dtype_import_dict_name]
         )
     data = np.atleast_1d(data)
     data_original = np.atleast_1d(data_original)
@@ -582,7 +581,7 @@ def import_motion_cor_2_v1_0_0(name, directory_name, import_name=''):
         try:
             data_name = np.genfromtxt(
                 file_name,
-                dtype=get_dtype_import_dict()[dtype_dict_name]
+                dtype=get_dtype_import_dict()[dtype_import_dict_name]
                 )
         except IOError:
             continue

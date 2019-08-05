@@ -732,7 +732,7 @@ def to_partres_file(data, ctf_name, ctf_settings, project_folder, ctf_folder, su
     """
 
 
-    dtype_import_dict_name = tu.find_best_match(ctf_name, ti.get_dtype_import_dict())
+    dtype_import_dict_name = tu.find_latest_version('CTER', ti.get_dtype_import_dict())
     export_dtype = ti.get_dtype_import_dict()[dtype_import_dict_name]
     export_data = np.atleast_1d(np.empty(data.shape[0], dtype=export_dtype))
     constant_settings = set([
@@ -998,7 +998,7 @@ def create_jpg_file(input_mrc_file, settings, ctf_name):
         input_data = tu.normalize_image(input_data)
 
         if input_data.shape[0] > 512:
-            if input_data.shape[0] > 4096:
+            if np.max(input_data.shape) > 4096:
                 original_shape = 4096*2
             else:
                 original_shape = 4096

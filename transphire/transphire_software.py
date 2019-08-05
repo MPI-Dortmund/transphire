@@ -25,6 +25,7 @@ import traceback as tb
 import pexpect as pe
 from hyperspy.io_plugins.digital_micrograph import DigitalMicrographReader
 from transphire import transphire_import as ti
+from transphire import transphire_utils as tu
 
 
 def extract_time_and_grid_information(root_name, settings, queue_com, name):
@@ -1155,7 +1156,6 @@ def check_for_outlier(dict_name, data, file_name, settings):
         print('file_name', file_name)
         raise
 
-    dtype_dict_name = tu.find_best_match(dict_name, dtype_dict)
     for key in dtype_dict[dict_name]:
         key = key[0]
 
