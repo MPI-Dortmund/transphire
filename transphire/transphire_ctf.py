@@ -610,7 +610,7 @@ def combine_ctf_outputs(
         project_folder,
         '{0}_transphire_ctf.star'.format(ctf_name.replace(' ', '_').replace('>=', ''))
         )
-    return output_name_partres_combined, output_name_star_combined
+    return output_name_partres_combined, output_name_star_combined, output_name_partres, output_name_star
 
 
 def to_star_file(data, ctf_name, ctf_settings, project_folder, ctf_folder, sum_file, dw_file):

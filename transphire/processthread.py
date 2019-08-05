@@ -2233,31 +2233,13 @@ class ProcessThread(QThread):
             output_name_star_relion3_comb = output_combine[2]
             new_gain = output_combine[3]
             new_defect = output_combine[4]
-            motion_files = sorted(glob.glob(
-                '{0}/*_transphire_motion.txt'.format(
-                    os.path.dirname(file_stdout_combine)
-                    )
-                ))
 
             combine_list = [
                 [self.shared_dict['motion_txt_lock'], output_name_mic, output_name_mic_comb],
                 [self.shared_dict['motion_star_lock'], output_name_star, output_name_star_comb],
                 [self.shared_dict['motion_star_relion3_lock'], output_name_star_relion3, output_name_star_relion3_comb],
                 ]
-            for file_lock, in_file, out_file in combine_list:
-                file_lock.lock()
-                try:
-                    with open(in_file, 'r') as read:
-                        if not os.path.exists(out_file):
-                            lines = read.readlines()
-                        else:
-                            lines = read.readlines()[-1]
-                    with open(out_file, 'a+') as write:
-                        write.write(''.join(lines))
-                finally:
-                    file_lock.unlock()
-                self.file_to_distribute(file_name=in_file)
-                self.file_to_distribute(file_name=out_file)
+            self.create_combines(combine_list)
 
             star_files_relion3_meta = output_combine[8]
             self.file_to_distribute(file_name=star_files_relion3_meta)
@@ -2522,7 +2504,7 @@ class ProcessThread(QThread):
 
         # Combine output files
         if data.shape[0] != 0:
-            output_name_partres, output_name_star = tuc.combine_ctf_outputs(
+            output_name_partres_comb, output_name_star_comb, output_name_partres, output_name_star = tuc.combine_ctf_outputs(
                 data=data,
                 data_orig=data_orig,
                 root_path=root_path,
@@ -2534,56 +2516,13 @@ class ProcessThread(QThread):
                 sum_file=file_sum,
                 dw_file=file_dw,
                 )
-            partres_files = sorted(glob.glob(
-                '{0}/*_transphire_ctf_partres.txt'.format(
-                    self.settings['ctf_folder']
-                    )
-                ))
 
-            output_lines = []
-            self.shared_dict['ctf_partres_lock'].lock()
-            try:
-                for file_name in partres_files:
-                    with open(file_name, 'r') as read:
-                        output_lines.append(read.readlines()[-1])
-                with open(output_name_partres, 'w') as write:
-                    write.write(''.join(output_lines))
-            finally:
-                self.shared_dict['ctf_partres_lock'].unlock()
+            combine_list = [
+                [self.shared_dict['ctf_partres_lock'], output_name_partres, output_name_partres_comb],
+                [self.shared_dict['ctf_star_lock'], output_name_star, output_name_star_comb],
+                ]
+            self.create_combines(combine_list)
 
-            star_files = sorted(glob.glob(
-                '{0}/*_transphire_ctf.star'.format(
-                    self.settings['ctf_folder']
-                    )
-                ))
-
-            header = []
-            self.shared_dict['ctf_star_lock'].lock()
-            try:
-                with open(star_files[0], 'r') as read:
-                    header.extend(read.readlines()[:-1])
-                output_lines = []
-                for file_name in star_files:
-                    with open(file_name, 'r') as read:
-                        output_lines.append(read.readlines()[-1])
-                with open(output_name_star, 'w') as write:
-                    write.write(''.join(header))
-                    write.write(''.join(output_lines))
-            finally:
-                self.shared_dict['ctf_star_lock'].unlock()
-
-            copy_names = []
-            copy_names.extend(star_files)
-            copy_names.extend(partres_files)
-
-            for file_name in copy_names:
-                if not os.path.basename(root_name) in file_name:
-                    continue
-                else:
-                    self.file_to_distribute(file_name=file_name)
-
-            self.file_to_distribute(file_name=output_name_partres)
-            self.file_to_distribute(file_name=output_name_star)
         else:
             pass
 
@@ -3341,3 +3280,19 @@ class ProcessThread(QThread):
             pass
         self.queue_com['notification'].put(message_notification)
         self.write_error(msg=message_error, root_name=file_name)
+
+    def create_combines(self, combine_list):
+        for file_lock, in_file, out_file in combine_list:
+            file_lock.lock()
+            try:
+                with open(in_file, 'r') as read:
+                    if not os.path.exists(out_file):
+                        lines = read.readlines()
+                    else:
+                        lines = read.readlines()[-1]
+                with open(out_file, 'a+') as write:
+                    write.write(''.join(lines))
+            finally:
+                file_lock.unlock()
+            self.file_to_distribute(file_name=in_file)
+            self.file_to_distribute(file_name=out_file)
