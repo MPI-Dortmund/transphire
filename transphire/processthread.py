@@ -1486,7 +1486,7 @@ class ProcessThread(QThread):
             command='copy'
             )
 
-        log_files.extend([log_file, err_file])
+        log_files.extend([log_file, err_file, new_stack])
 
         self.append_to_translate(
             root_name=root_name,
