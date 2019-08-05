@@ -46,6 +46,48 @@ def default_compress_command_line():
     return items
 
 
+def default_cryolo_v1_4_1():
+    """
+    Content of crYOLO version 1.4.1
+
+    Arguments:
+    None
+
+    Return:
+    Content items as list
+    """
+    items = [
+        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['--conf', '', str, '', 'FILE', 'Main', '', 'Path to configuration file.'],
+        ['--weights', '', str, '', 'FILE', 'Main', 'Path to pretrained weights.'],
+        ['--threshold', '0.3', float, '', 'PLAIN', 'Main', 'Confidence threshold. Have to be between 0 and 1. As higher, as more conservative.'],
+        ['Pixel size (A/px)', '1', float, 'Filter micrographs:True', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Pixel size value. Only used for visual representation.'],
+        ['Box size', '200', int, '', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Box size value. Only used for visual representation.'],
+        ['--filament', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Activate filament mode'],
+        ['--filament_width', '0', float, '--filament:True', 'PLAIN', 'Main', '(FILAMENT MODE) Filament width (in pixel)'],
+        ['--nomerging', ['False', 'True'], bool, '', 'COMBO', 'Main', '(FILAMENT MODE) The filament mode does not merge filaments'],
+        ['--nosplit', ['False', 'True'], bool, '', 'COMBO', 'Main', '(FILAMENT MODE) The filament mode does not split to curved filaments'],
+        ['--box_distance', '0', int, '--filament:True', 'PLAIN', 'Main', '(FILAMENT MODE) Distance between two boxes(in pixel)'],
+        ['--mask_width', '100', int, '--filament:True', 'PLAIN', 'Main', '(FILAMENT MODE) Mask width (in pixel)'],
+        ['--search_range_factor', '1.41', float, '--filament:True', 'PLAIN', 'Main', '(FILAMENT MODE) The search range for connecting boxes is the box size times this factor.'],
+        ['--minimum_number_boxes', '0', int, '--filament:True', 'PLAIN', 'Main', '(FILAMENT MODE) Distance between two boxes(in pixel)'],
+        ['Filter micrographs', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT A CRYOLO OPTION. Box size value. Only used for visual representation.'],
+        ['Filter value high pass (A)', '9999', float, 'Filter micrographs:True', 'PLAIN', 'Advanced', 'NOT A CRYOLO OPTION. High-pass filter value in angstrom before running crYOLO.'],
+        ['Filter value low pass (A)', '10', float, 'Filter micrographs:True', 'PLAIN', 'Advanced', 'NOT A CRYOLO OPTION. Low-pass filter value in angstrom before running crYOLO.'],
+        ['--patch', '-1', int, '', 'PLAIN', 'Advanced', 'Number of patches. (-1 uses the patch size specified in the configuration file.)'],
+        ['--distance', '0', int, '', 'PLAIN', 'Advanced', 'Particles with a distance less than this value (in pixel) will be removed'],
+        ['--norm_margin', '0', int, '', 'PLAIN', 'Advanced', 'Relative margin size for normalization.'],
+        ['--prediction_batch_size', '3', int, '', 'PLAIN', 'Advanced', 'How many images should be predicted in one batch.  Smaller values might resolve memory issues.'],
+        ['--num_cpu', '-1', int, '', 'PLAIN', 'Advanced', '(FILAMENT MODE) Number of CPUs used during filament tracing. By default it will use all of the available CPUs.'],
+        ['--otf', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'On the fly filtering.'],
+        ['--gpu', '0', [int]*99, '', 'PLAIN', 'Advanced', 'Specifiy which gpu\'s should be used.'],
+        ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT A CRYOLO OPTION. Split the gpu values specified in --gpu to be able to run mutliple crYOLO jobs in parallel.'],
+        ]
+    return items
+
+
 def default_cryolo_v1_2_1():
     """
     Content of crYOLO version 1.2.1

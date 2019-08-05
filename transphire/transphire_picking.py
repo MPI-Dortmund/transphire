@@ -100,7 +100,30 @@ def find_logfiles(root_path, file_name, settings, queue_com, name):
     copied_log_files = None
     picking_name = settings['Copy']['Picking']
     picking_root_path = os.path.join(settings['picking_folder'], file_name)
-    if tu.is_higher_version(picking_name, '1.2.2'):
+    if tu.is_higher_version(picking_name, '1.4.1'):
+        if settings[picking_name]['--filament'] == 'True':
+            folder_names = (
+                ('EMAN_HELIX_SEGMENTED', 'box'),
+                ('EMAN_START_END', 'box'),
+                ('STAR_START_END', 'star'),
+                )
+        else:
+            folder_names = (
+                ('CBOX', 'cbox'),
+                ('EMAN', 'box'),
+                ('STAR', 'star'),
+                )
+        copied_log_files = []
+        for folder_name, ext in folder_names:
+            copied_log_files.extend(['{0}.{1}'.format(os.path.join(
+                os.path.dirname(picking_root_path),
+                folder_name,
+                os.path.basename(picking_root_path)
+                ),
+                ext,
+                )])
+        log_files = copied_log_files
+    elif tu.is_higher_version(picking_name, '1.2.2'):
         if settings[picking_name]['--filament'] == 'True':
             folder_names = (
                 ('EMAN_HELIX_SEGMENTED', 'box'),
@@ -228,6 +251,14 @@ def create_cryolo_v1_1_0_command(
         ignore_list.append('--filament_width')
         ignore_list.append('--box_distance')
         ignore_list.append('--minimum_number_boxes')
+        ignore_list.append('--nomerging')
+        if settings[picking_name]['--nomerging'] == 'True':
+            command.append('--nomerging')
+        ignore_list.append('--nosplit')
+        if settings[picking_name]['--nosplit'] == 'True':
+            command.append('--nosplit')
+        ignore_list.append('--mask_width')
+        ignore_list.append('--search_range_factor')
 
     if settings[picking_name]['Split Gpu?'] == 'True':
         try:
@@ -243,6 +274,10 @@ def create_cryolo_v1_1_0_command(
 
     command.append('--gpu')
     command.append('{0}'.format(gpu))
+
+    ignore_list.append('--otf')
+    if settings[picking_name]['--otf'] == 'True':
+        command.append('--otf')
 
     for key in settings[picking_name]:
         if key in ignore_list:

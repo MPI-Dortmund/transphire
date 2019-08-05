@@ -289,7 +289,10 @@ def get_function_dict():
     function_dict['crYOLO >=v1.2.1']['content'] = tc.default_cryolo_v1_2_1
 
     function_dict['crYOLO >=v1.2.2'] = copy_mod.deepcopy(function_dict['crYOLO >=v1.2.1'])
-    function_dict['crYOLO >=v1.4.1'] = copy_mod.deepcopy(function_dict['crYOLO >=v1.2.1'])
+    function_dict['crYOLO >=v1.2.2']['plot_data'] = ti.import_cryolo_v1_2_2
+
+    function_dict['crYOLO >=v1.4.1'] = copy_mod.deepcopy(function_dict['crYOLO >=v1.2.2'])
+    function_dict['crYOLO >=v1.4.1']['content'] = tc.default_cryolo_v1_4_1
 
     function_dict['Compress cmd'] = {
             'content': tc.default_compress_command_line,

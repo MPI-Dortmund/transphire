@@ -836,7 +836,6 @@ class ProcessThread(QThread):
         if self.settings['Copy']['Compress'] == 'False':
             return
 
-
         basename = os.path.basename(os.path.splitext(root_name)[0])
         if self.settings['General']['Input extension'] in ('dm4',):
             stack_extension = 'mrc'
