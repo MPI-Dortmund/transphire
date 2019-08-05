@@ -755,8 +755,11 @@ class ProcessWorker(QObject):
                     self.sig_error.emit(error)
                 elif key == 'log':
                     log = queue_com['log'].get()
-                    with open(os.path.join(self.settings['project_folder'], 'log.txt'), 'a+') as write:
-                        write.write('{0}\n'.format(log))
+                    try:
+                        with open(os.path.join(self.settings['project_folder'], 'log.txt'), 'a+') as write:
+                            write.write('{0}\n'.format(log))
+                    except FileNotFoundError:
+                        pass
                 else:
                     print(
                         'Processworker - check_queue:',

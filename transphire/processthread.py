@@ -658,6 +658,23 @@ class ProcessThread(QThread):
             else:
                 root_name = self.remove_from_queue()
         except Exception:
+            self.shared_dict_typ['running'] -= 1
+            if self.shared_dict_typ['running'] == 0:
+                color = '#ffc14d'
+            else:
+                color = 'lightgreen'
+            self.queue_com['status'].put([
+                '{0:02d}|{1:02d}'.format(
+                    self.shared_dict_typ['running'],
+                    self.shared_dict_typ['max_running'],
+                    ),
+                [
+                    self.queue.qsize(),
+                    self.shared_dict_typ['file_number']
+                    ],
+                self.typ,
+                color,
+                ])
             return None
         finally:
             self.queue_lock.unlock()
@@ -1501,6 +1518,12 @@ class ProcessThread(QThread):
                     self.add_to_queue(aim=aim_name, root_name=new_stack)
                 else:
                     for log_file in log_files:
+                        if 'Frames to' in compare[0] and '/Stack/' in log_file:
+                            pass
+                        elif 'Meta to' in compare[0] and '/Meta/' in log_file:
+                            pass
+                        else:
+                            continue
                         self.add_to_queue(aim=aim_name, root_name=log_file)
             else:
                 pass

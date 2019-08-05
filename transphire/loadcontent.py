@@ -275,7 +275,7 @@ class LoadContent(QWidget):
             else:
                 if default_value:
                     widget.setStyleSheet(tu.get_style(typ='unchanged'))
-                    print('WARNING: {0} is empty!'.format(key))
+                    #print('WARNING: {0} is empty!'.format(key))
                 else:
                     pass
 
