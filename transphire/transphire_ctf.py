@@ -604,11 +604,11 @@ def combine_ctf_outputs(
 
     output_name_partres_combined = os.path.join(
         project_folder,
-        '{0}_transphire_ctf_partres.txt'.format(ctf_name.replace(' ', '_'))
+        '{0}_transphire_ctf_partres.txt'.format(ctf_name.replace(' ', '_').replace('>=', ''))
         )
     output_name_star_combined = os.path.join(
         project_folder,
-        '{0}_transphire_ctf.star'.format(ctf_name.replace(' ', '_'))
+        '{0}_transphire_ctf.star'.format(ctf_name.replace(' ', '_').replace('>=', ''))
         )
     return output_name_partres_combined, output_name_star_combined
 

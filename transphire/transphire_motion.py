@@ -401,15 +401,15 @@ def combine_motion_outputs(
 
     output_name_mic_combined = os.path.join(
         project_folder,
-        '{0}_transphire_motion.txt'.format(motion_name.replace(' ', '_'))
+        '{0}_transphire_motion.txt'.format(motion_name.replace(' ', '_').replace('>=', ''))
         )
     output_name_star_combined = os.path.join(
         project_folder,
-        '{0}_transphire_motion.star'.format(motion_name.replace(' ', '_'))
+        '{0}_transphire_motion.star'.format(motion_name.replace(' ', '_').replace('>=', ''))
         )
     output_name_star_relion3_combined = os.path.join(
         project_folder,
-        '{0}_transphire_motion_relion3.star'.format(motion_name.replace(' ', '_'))
+        '{0}_transphire_motion_relion3.star'.format(motion_name.replace(' ', '_').replace('>=', ''))
         )
 
     # SPHIRE
