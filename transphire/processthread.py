@@ -26,10 +26,6 @@ import tarfile
 import subprocess as sp
 import numpy as np
 import pexpect as pe
-try:
-    from PyQt4.QtCore import QThread
-except ImportError:
-    from PyQt5.QtCore import QThread
 import hyperspy.io_plugins.digital_micrograph as hidm
 from transphire import transphire_utils as tu
 from transphire import transphire_software as tus
@@ -38,12 +34,12 @@ from transphire import transphire_ctf as tuc
 from transphire import transphire_picking as tup
 
 
-class ProcessThread(QThread):
+class ProcessThread(object):
     """
     Worker thread
 
     Inherits from:
-    QThread
+    object
 
     Buttons:
     None
@@ -83,7 +79,7 @@ class ProcessThread(QThread):
         Return:
         None
         """
-        super(ProcessThread, self).__init__(parent)
+        super(ProcessThread, self).__init__()
         # Variables
         self.stop = stop
         self.password = password
@@ -145,7 +141,7 @@ class ProcessThread(QThread):
                         self.typ,
                         '#d9d9d9'
                         ])
-                    QThread.sleep(10)
+                    time.sleep(10)
                 continue
             else:
                 pass
@@ -158,7 +154,7 @@ class ProcessThread(QThread):
                         self.typ,
                         '#d9d9d9'
                         ])
-                    QThread.sleep(10)
+                    time.sleep(10)
                 continue
             else:
                 pass
@@ -171,7 +167,7 @@ class ProcessThread(QThread):
                         self.typ,
                         '#d9d9d9'
                         ])
-                    QThread.sleep(10)
+                    time.sleep(10)
                 continue
             else:
                 pass
@@ -185,7 +181,7 @@ class ProcessThread(QThread):
                     self.typ,
                     '#ff5c33'
                     ])
-                QThread.sleep(10)
+                time.sleep(10)
                 continue
 
             if self.check_connection():
@@ -197,7 +193,7 @@ class ProcessThread(QThread):
                     self.typ,
                     '#ff5c33'
                     ])
-                QThread.sleep(10)
+                time.sleep(10)
                 continue
 
             if self.check_full():
@@ -209,11 +205,11 @@ class ProcessThread(QThread):
                     self.typ,
                     '#ff5c33'
                     ])
-                QThread.sleep(10)
+                time.sleep(10)
                 continue
 
             if self.shared_dict_typ['delay_error']:
-                QThread.sleep(10)
+                time.sleep(10)
                 self.shared_dict_typ['delay_error'] = False
                 self.shared_dict_typ['is_error'] = False
 
@@ -239,7 +235,7 @@ class ProcessThread(QThread):
                         ])
                 i = 0
                 while i < 6:
-                    QThread.sleep(10)
+                    time.sleep(10)
                     if self.stop:
                         break
                     else:
@@ -574,7 +570,7 @@ class ProcessThread(QThread):
                     )
                 self.queue_com['notification'].put(message)
                 self.queue_com['error'].put(message)
-        QThread.sleep(20)
+        time.sleep(20)
 
     def start_queue(self, clear_list):
         """
@@ -586,7 +582,7 @@ class ProcessThread(QThread):
         Return:
         None
         """
-        self.queue_lock.lock()
+        self.queue_lock.acquire()
         error = False
         dummy = False
         try:
@@ -625,16 +621,16 @@ class ProcessThread(QThread):
         except Exception:
             error = True
         finally:
-            self.queue_lock.unlock()
+            self.queue_lock.release()
 
         if error:
-            QThread.sleep(5)
+            time.sleep(5)
             return None
         else:
             pass
 
         # Get new file
-        self.queue_lock.lock()
+        self.queue_lock.acquire()
         try:
             self.shared_dict_typ['running'] += 1
             if self.shared_dict_typ['running'] == 0:
@@ -677,7 +673,7 @@ class ProcessThread(QThread):
                 ])
             return None
         finally:
-            self.queue_lock.unlock()
+            self.queue_lock.release()
 
         # Set for every process a method and the right lost_connection name
         method_dict = {
@@ -806,7 +802,7 @@ class ProcessThread(QThread):
             if not dummy:
                 self.remove_from_queue_file(root_name, self.shared_dict_typ['save_file'])
 
-                self.queue_lock.lock()
+                self.queue_lock.acquire()
                 try:
                     self.add_to_queue_file(
                         root_name=root_name,
@@ -814,20 +810,20 @@ class ProcessThread(QThread):
                         )
 
                 finally:
-                    self.queue_lock.unlock()
+                    self.queue_lock.release()
 
                 self.check_queue_files(root_name=root_name)
 
                 if self.typ == 'Import':
                     pass
                 else:
-                    self.queue_lock.lock()
+                    self.queue_lock.acquire()
                     try:
                         self.shared_dict_typ['file_number'] += 1
                     finally:
-                        self.queue_lock.unlock()
+                        self.queue_lock.release()
 
-        self.queue_lock.lock()
+        self.queue_lock.acquire()
         try:
             self.shared_dict_typ['running'] -= 1
             if not self.shared_dict_typ['is_error']:
@@ -848,7 +844,7 @@ class ProcessThread(QThread):
                     color,
                     ])
         finally:
-            self.queue_lock.unlock()
+            self.queue_lock.release()
 
     def check_queue_files(self, root_name):
         if self.settings['Copy']['Compress'] == 'False':
@@ -879,7 +875,7 @@ class ProcessThread(QThread):
 
         delete_stack = True
         for key in self.shared_dict['typ']:
-            self.shared_dict['typ'][key]['save_lock'].lock()
+            self.shared_dict['typ'][key]['save_lock'].acquire()
             try:
                 for name in ('save_file', 'list_file'):
                     with open(self.shared_dict['typ'][key][name]) as read:
@@ -889,7 +885,7 @@ class ProcessThread(QThread):
                     if stack_file in reads:
                         delete_stack = False
             finally:
-                self.shared_dict['typ'][key]['save_lock'].unlock()
+                self.shared_dict['typ'][key]['save_lock'].release()
 
         if delete_stack:
             options = (
@@ -914,7 +910,7 @@ class ProcessThread(QThread):
         Return:
         None
         """
-        self.shared_dict_typ['error_lock'].lock()
+        self.shared_dict_typ['error_lock'].acquire()
         try:
             local = time.localtime()
             print('\n{0}/{1}/{2}-{3}:{4}:{5}\t'.format(*local[0:6]))
@@ -933,7 +929,7 @@ class ProcessThread(QThread):
                 else:
                     append.write('{0}\n\n\n'.format(str(msg)))
         finally:
-            self.shared_dict_typ['error_lock'].unlock()
+            self.shared_dict_typ['error_lock'].release()
 
     def remove_from_queue(self):
         """
@@ -946,7 +942,7 @@ class ProcessThread(QThread):
         Name removed from the queue.
         """
         value = self.queue.get(block=False)
-        QThread.msleep(100)
+        time.sleep(0.1)
         return value
 
     @staticmethod
@@ -985,16 +981,16 @@ class ProcessThread(QThread):
         Return:
         None
         """
-        self.shared_dict['typ'][aim]['queue_lock'].lock()
+        self.shared_dict['typ'][aim]['queue_lock'].acquire()
         try:
             self.shared_dict['queue'][aim].put(root_name, block=False)
             self.add_to_queue_file(
                 root_name=root_name,
                 file_name=self.shared_dict['typ'][aim]['save_file']
                 )
-            QThread.msleep(100)
+            time.sleep(0.1)
         finally:
-            self.shared_dict['typ'][aim]['queue_lock'].unlock()
+            self.shared_dict['typ'][aim]['queue_lock'].release()
 
     def lost_connection(self, typ):
         """
@@ -1053,7 +1049,7 @@ class ProcessThread(QThread):
         else:
             root_name = set([root_name])
         if lock:
-            self.queue_lock.lock()
+            self.queue_lock.acquire()
         try:
             useable_lines = []
             try:
@@ -1072,7 +1068,7 @@ class ProcessThread(QThread):
                 write.write('{0}\n'.format('\n'.join(useable_lines)))
         finally:
             if lock:
-                self.queue_lock.unlock()
+                self.queue_lock.release()
 
     def run_software_meta(self, directory):
         """
@@ -1145,7 +1141,7 @@ class ProcessThread(QThread):
         """
         start_prog = time.time()
         self.queue_com['log'].put(tu.create_log(self.name, 'run_find start'))
-        self.queue_lock.lock()
+        self.queue_lock.acquire()
         file_list = []
         try:
             file_list = self.recursive_search(
@@ -1154,7 +1150,7 @@ class ProcessThread(QThread):
                 find_meta=False
                 )
         finally:
-            self.queue_lock.unlock()
+            self.queue_lock.release()
 
         data = np.empty(
             len(file_list),
@@ -1238,14 +1234,14 @@ class ProcessThread(QThread):
                     'Data' in entry_dir and \
                     (entry_dir.endswith('.jpg') or entry_dir.endswith('.gtg')):
                 root_name = entry_dir[:-len('.jpg')]
-                self.shared_dict_typ['bad_lock'].lock()
+                self.shared_dict_typ['bad_lock'].acquire()
                 try:
                     if root_name in self.shared_dict['bad'][self.typ]:
                         continue
                     else:
                         pass
                 finally:
-                    self.shared_dict_typ['bad_lock'].unlock()
+                    self.shared_dict_typ['bad_lock'].release()
 
                 if entry_dir.endswith('.jpg'):
                     frames_root = root_name.replace(
@@ -1268,21 +1264,21 @@ class ProcessThread(QThread):
                     write_error=self.write_error
                     )
                 if frames is None:
-                    self.shared_dict_typ['bad_lock'].lock()
+                    self.shared_dict_typ['bad_lock'].acquire()
                     try:
                         if root_name not in self.shared_dict['bad'][self.typ]:
                             self.shared_dict['bad'][self.typ].append(root_name)
                         else:
                             pass
                     finally:
-                        self.shared_dict_typ['bad_lock'].unlock()
+                        self.shared_dict_typ['bad_lock'].release()
                     continue
                 elif not frames:
                     continue
                 else:
                     pass
 
-                self.shared_dict['typ'][self.content_settings['group']]['share_lock'].lock()
+                self.shared_dict['typ'][self.content_settings['group']]['share_lock'].acquire()
                 try:
                     if root_name in self.shared_dict['share'][self.content_settings['group']]:
                         continue
@@ -1294,7 +1290,7 @@ class ProcessThread(QThread):
                             root_name
                             )
                 finally:
-                    self.shared_dict['typ'][self.content_settings['group']]['share_lock'].unlock()
+                    self.shared_dict['typ'][self.content_settings['group']]['share_lock'].release()
             else:
                 continue
 
@@ -1353,7 +1349,7 @@ class ProcessThread(QThread):
         else:
             pass
 
-        self.shared_dict_typ['count_lock'].lock()
+        self.shared_dict_typ['count_lock'].acquire()
         try:
             self.shared_dict_typ['file_number'] += 1
             with open(self.shared_dict_typ['number_file'], 'w') as write:
@@ -1383,17 +1379,17 @@ class ProcessThread(QThread):
                     root_name.split('/')[-1]
                     )
         finally:
-            self.shared_dict_typ['count_lock'].unlock()
+            self.shared_dict_typ['count_lock'].release()
 
         if os.path.exists('{0}_krios_sum.mrc'.format(new_name_meta)):
             self.stop = True
             if os.path.exists(self.shared_dict_typ['done_file']):
-                self.queue_lock.lock()
+                self.queue_lock.acquire()
                 try:
                     with open(self.shared_dict_typ['done_file'], 'r') as read:
                         self.shared_dict_typ['file_number'] = len(read.readlines())
                 finally:
-                    self.queue_lock.unlock()
+                    self.queue_lock.release()
             else:
                 self.shared_dict_typ['file_number'] = int(
                     self.settings['General']['Start number']
@@ -1541,12 +1537,12 @@ class ProcessThread(QThread):
         else:
             pass
 
-        QThread.sleep(1)
-        self.shared_dict['typ'][self.content_settings['group']]['share_lock'].lock()
+        time.sleep(1)
+        self.shared_dict['typ'][self.content_settings['group']]['share_lock'].acquire()
         try:
             self.shared_dict['share'][self.content_settings['group']].remove(root_name)
         finally:
-            self.shared_dict['typ'][self.content_settings['group']]['share_lock'].unlock()
+            self.shared_dict['typ'][self.content_settings['group']]['share_lock'].release()
 
         self.queue_com['log'].put(tu.create_log(self.name, 'run_import', root_name, 'stop', time.time() - start_prog))
 
@@ -1563,7 +1559,7 @@ class ProcessThread(QThread):
         check_list = []
         try:
             for name in ('Translation_file.txt', 'Translation_file_bad.txt'):
-                self.shared_dict['translate_lock'].lock()
+                self.shared_dict['translate_lock'].acquire()
                 try:
                     content_translation_file = np.genfromtxt(
                         os.path.join(
@@ -1574,7 +1570,7 @@ class ProcessThread(QThread):
                         dtype=str
                         )
                 finally:
-                    self.shared_dict['translate_lock'].unlock()
+                    self.shared_dict['translate_lock'].release()
                 check_list.append(bool(root_name in content_translation_file))
         except OSError:
             return False
@@ -1598,7 +1594,7 @@ class ProcessThread(QThread):
             self.settings['project_folder'],
             'Translation_file_bad.txt'
             )
-        self.shared_dict['translate_lock'].lock()
+        self.shared_dict['translate_lock'].acquire()
         try:
             with open(file_name, 'r') as read:
                 good_lines = []
@@ -1616,7 +1612,7 @@ class ProcessThread(QThread):
                 write.write(''.join(bad_lines))
 
         finally:
-            self.shared_dict['translate_lock'].unlock()
+            self.shared_dict['translate_lock'].release()
 
         self.file_to_distribute(file_name=file_name)
         self.file_to_distribute(file_name=file_name_bad)
@@ -1832,7 +1828,7 @@ class ProcessThread(QThread):
                         )
                     )
                 )
-        self.shared_dict['translate_lock'].lock()
+        self.shared_dict['translate_lock'].acquire()
         try:
             with open(file_name_bad, 'a') as write:
                 if first_entry:
@@ -1840,7 +1836,7 @@ class ProcessThread(QThread):
                 else:
                     pass
         finally:
-            self.shared_dict['translate_lock'].unlock()
+            self.shared_dict['translate_lock'].release()
 
         self.file_to_distribute(file_name=file_name)
         self.file_to_distribute(file_name=file_name_bad)
@@ -1960,7 +1956,7 @@ class ProcessThread(QThread):
                 )
 
             # Create folders if they do not exist
-            self.queue_lock.lock()
+            self.queue_lock.acquire()
             try:
                 tu.mkdir_p(output_transfer_root)
                 tu.mkdir_p(output_transfer)
@@ -1968,7 +1964,7 @@ class ProcessThread(QThread):
                 tu.mkdir_p(output_transfer_scratch)
                 tu.mkdir_p(output_transfer_log_scratch)
             finally:
-                self.queue_lock.unlock()
+                self.queue_lock.release()
 
             # Remove the path from the name
             file_name = os.path.basename(root_name)
@@ -2004,11 +2000,11 @@ class ProcessThread(QThread):
             # Create the commands
             if motion_idx == 0:
                 # DW folder
-                self.queue_lock.lock()
+                self.queue_lock.acquire()
                 try:
                     tu.mkdir_p(output_dw)
                 finally:
-                    self.queue_lock.unlock()
+                    self.queue_lock.release()
 
                 # Files
                 file_stack = os.path.join(
@@ -2639,7 +2635,7 @@ class ProcessThread(QThread):
                 folder=self.settings['picking_folder'],
                 command=command
                 )
-            self.queue_lock.lock()
+            self.queue_lock.acquire()
             try:
                 self.add_to_queue_file(
                     root_name=root_name,
@@ -2651,9 +2647,9 @@ class ProcessThread(QThread):
                 else:
                     pass
             finally:
-                self.queue_lock.unlock()
+                self.queue_lock.release()
 
-        self.queue_lock.lock()
+        self.queue_lock.acquire()
         try:
             if time.time() - self.shared_dict_typ['queue_list_time'] < 30:
                 return None
@@ -2675,9 +2671,9 @@ class ProcessThread(QThread):
                 file_name_list.append(tu.get_name(file_use_name))
             self.shared_dict_typ['queue_list'] = []
             self.shared_dict_typ['queue_list_time'] = time.time()
-            QThread.msleep(100)
+            time.sleep(0.1)
         finally:
-            self.queue_lock.unlock()
+            self.queue_lock.release()
 
         # Create the command for picking
         command, check_files, block_gpu, gpu_list = tup.get_picking_command(
@@ -2941,7 +2937,7 @@ class ProcessThread(QThread):
                         dont_tar = True
 
         if root_name == 'None':
-            self.queue_lock.lock()
+            self.queue_lock.acquire()
             try:
                 copy_file = [
                     entry
@@ -2960,13 +2956,13 @@ class ProcessThread(QThread):
                     lock=False
                     )
             finally:
-                self.queue_lock.unlock()
+                self.queue_lock.release()
 
         elif dont_tar:
             copy_file = root_name
 
         else:
-            self.queue_lock.lock()
+            self.queue_lock.acquire()
             try:
                 try:
                     tar_file = [
@@ -2987,7 +2983,7 @@ class ProcessThread(QThread):
                         )
                     self.shared_dict_typ['tar_idx'] += 1
             finally:
-                self.queue_lock.unlock()
+                self.queue_lock.release()
 
             with tarfile.open(tar_file, 'a') as tar:
                 tar.add(
@@ -2995,7 +2991,7 @@ class ProcessThread(QThread):
                     arcname=os.path.join('..', root_name.replace(self.settings['project_folder'], ''))
                     )
 
-            self.queue_lock.lock()
+            self.queue_lock.acquire()
             try:
                 if os.path.getsize(tar_file) > float(self.settings['Copy']['Tar size (Gb)']) * 1024**3:
                     copy_file = tar_file
@@ -3021,7 +3017,7 @@ class ProcessThread(QThread):
                     self.queue_com['log'].put(tu.create_log(self.name, 'run_copy_extern', root_name, 'stop early', time.time() - start_prog))
                     return None
             finally:
-                self.queue_lock.unlock()
+                self.queue_lock.release()
 
 
         mount_folder_name = '{0}_folder'.format(self.typ)
@@ -3103,58 +3099,58 @@ class ProcessThread(QThread):
         #    while True:
         #        is_locked = bool(not self.shared_dict['translate_lock'].tryLock())
         #        if not is_locked:
-        #            self.shared_dict['translate_lock'].unlock()
+        #            self.shared_dict['translate_lock'].release()
         #            break
         #        else:
-        #            QThread.msleep(100)
+        #            time.msleep(100)
         #elif 'Translation_file_bad.txt' in file_out:
         #    while True:
         #        is_locked = bool(not self.shared_dict['translate_lock'].tryLock())
         #        if not is_locked:
-        #            self.shared_dict['translate_lock'].unlock()
+        #            self.shared_dict['translate_lock'].release()
         #            break
         #        else:
-        #            QThread.msleep(100)
+        #            time.msleep(100)
         #elif '_transphire_ctf_partres.txt' in file_out:
         #    while True:
         #        is_locked = bool(not self.shared_dict['ctf_partres_lock'].tryLock())
         #        if not is_locked:
-        #            self.shared_dict['ctf_partres_lock'].unlock()
+        #            self.shared_dict['ctf_partres_lock'].release()
         #            break
         #        else:
-        #            QThread.msleep(100)
+        #            time.msleep(100)
         #elif '_transphire_ctf.star' in file_out:
         #    while True:
         #        is_locked = bool(not self.shared_dict['ctf_star_lock'].tryLock())
         #        if not is_locked:
-        #            self.shared_dict['ctf_star_lock'].unlock()
+        #            self.shared_dict['ctf_star_lock'].release()
         #            break
         #        else:
-        #            QThread.msleep(100)
+        #            time.msleep(100)
         #elif '_transphire_motion.txt' in file_out:
         #    while True:
         #        is_locked = bool(not self.shared_dict['motion_txt_lock'].tryLock())
         #        if not is_locked:
-        #            self.shared_dict['motion_txt_lock'].unlock()
+        #            self.shared_dict['motion_txt_lock'].release()
         #            break
         #        else:
-        #            QThread.msleep(100)
+        #            time.msleep(100)
         #elif '_transphire_motion.star' in file_out:
         #    while True:
         #        is_locked = bool(not self.shared_dict['motion_star_lock'].tryLock())
         #        if not is_locked:
-        #            self.shared_dict['motion_star_lock'].unlock()
+        #            self.shared_dict['motion_star_lock'].release()
         #            break
         #        else:
-        #            QThread.msleep(100)
+        #            time.msleep(100)
         #elif '_transphire_motion_relion3.star' in file_out:
         #    while True:
         #        is_locked = bool(not self.shared_dict['motion_star_relion3_lock'].tryLock())
         #        if not is_locked:
-        #            self.shared_dict['motion_star_relion3_lock'].unlock()
+        #            self.shared_dict['motion_star_relion3_lock'].release()
         #            break
         #        else:
-        #            QThread.msleep(100)
+        #            time.msleep(100)
         #else:
         #    pass
         #return True
@@ -3229,19 +3225,19 @@ class ProcessThread(QThread):
 
         if gpu_list:
             for entry in sorted(gpu_list):
-                self.shared_dict['gpu_lock'][entry][mutex_idx].lock()
+                self.shared_dict['gpu_lock'][entry][mutex_idx].acquire()
 
             if block_gpu:
                 for entry in sorted(gpu_list):
-                    lock_var = self.shared_dict['gpu_lock'][entry][mutex_idx].tryLock()
-                    assert bool(not lock_var)
+                #    lock_var = self.shared_dict['gpu_lock'][entry][mutex_idx].tryLock()
+                #    assert bool(not lock_var)
                     while self.shared_dict['gpu_lock'][entry][count_idx] != 0:
-                        QThread.msleep(500)
+                        time.sleep(0.500)
 
             else:
                 for entry in sorted(gpu_list):
                     self.shared_dict['gpu_lock'][entry][count_idx] += 1
-                    self.shared_dict['gpu_lock'][entry][mutex_idx].unlock()
+                    self.shared_dict['gpu_lock'][entry][mutex_idx].release()
         else:
             pass
 
@@ -3257,13 +3253,13 @@ class ProcessThread(QThread):
                 stop_time = time.time()
                 out.write('\nTime: {0} sec'.format(stop_time - start_time)) 
 
-        QThread.msleep(500)
+        time.sleep(0.500)
         if gpu_list:
             if block_gpu:
                 for entry in gpu_list:
-                    lock_var = self.shared_dict['gpu_lock'][entry][mutex_idx].tryLock()
-                    assert bool(not lock_var)
-                    self.shared_dict['gpu_lock'][entry][mutex_idx].unlock()
+                #    lock_var = self.shared_dict['gpu_lock'][entry][mutex_idx].tryLock()
+                #    assert bool(not lock_var)
+                    self.shared_dict['gpu_lock'][entry][mutex_idx].release()
 
             else:
                 for entry in gpu_list:
@@ -3308,7 +3304,7 @@ class ProcessThread(QThread):
 
     def create_combines(self, combine_list):
         for file_lock, in_file, out_file in combine_list:
-            file_lock.lock()
+            file_lock.acquire()
             try:
                 with open(in_file, 'r') as read:
                     if not os.path.exists(out_file):
@@ -3318,6 +3314,6 @@ class ProcessThread(QThread):
                 with open(out_file, 'a+') as write:
                     write.write(''.join(lines))
             finally:
-                file_lock.unlock()
+                file_lock.release()
             self.file_to_distribute(file_name=in_file)
             self.file_to_distribute(file_name=out_file)

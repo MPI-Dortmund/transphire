@@ -15,17 +15,19 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import time
 import os
 import re
 import glob
 import copy as cp
 import queue as qu
 try:
-    from PyQt4.QtCore import QObject, pyqtSignal, pyqtSlot, QThread, QMutex
+    from PyQt4.QtCore import QObject, pyqtSignal, pyqtSlot
 except ImportError:
-    from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot, QThread, QMutex
+    from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 from transphire.processthread import ProcessThread
 from transphire import transphire_utils as tu
+import multiprocessing as mp
 
 
 class ProcessWorker(QObject):
@@ -192,8 +194,8 @@ class ProcessWorker(QObject):
             self.settings['Copy']['Copy to backup'].replace(' ', '_').replace('>=', '')
             )
 
+        manager = mp.Manager()
         typ_dict = {}
-        wait_dict = {}
         share_dict = {}
         bad_dict = {}
         queue_dict = {}
@@ -204,11 +206,10 @@ class ProcessWorker(QObject):
                     process[key][self.idx_values]['group'], process[key][self.idx_values]['aim'] = \
                         process[key][self.idx_values]['group'].split(';')
                     process[key][self.idx_values]['aim'] = process[key][self.idx_values]['aim'].split(',')
-                    wait_dict[key] = False
-                    share_dict[key] = []
-                    bad_dict[key] = []
-                    queue_dict[key] = qu.Queue()
-                    typ_dict[key] = {
+                    share_dict[key] = manager.list()
+                    bad_dict[key] = manager.list()
+                    queue_dict[key] = mp.Queue()
+                    typ_dict[key] = manager.dict({
                         'file_number': 0,
                         'spot': False,
                         'lost_input_meta': False,
@@ -227,14 +228,14 @@ class ProcessWorker(QObject):
                         'tar_idx': 0,
                         'max_running': int(process[key][self.idx_number]),
                         'running': 0,
-                        'queue_list': [],
-                        'queue_lock': QMutex(),
-                        'save_lock': QMutex(),
-                        'count_lock': QMutex(),
-                        'error_lock': QMutex(),
-                        'bad_lock': QMutex(),
-                        'share_lock': QMutex(),
-                        'spot_dict': self.fill_spot_dict(),
+                        'queue_list': manager.list([]),
+                        'queue_lock': manager.Lock(),
+                        'save_lock': manager.Lock(),
+                        'count_lock': manager.Lock(),
+                        'error_lock': manager.Lock(),
+                        'bad_lock': manager.Lock(),
+                        'share_lock': manager.Lock(),
+                        'spot_dict': manager.dict(self.fill_spot_dict()),
                         'number_file': '{0}/last_filenumber.txt'.format(
                             self.settings['project_folder']
                             ),
@@ -250,7 +251,7 @@ class ProcessWorker(QObject):
                         'error_file': '{0}/Queue_{1}_error'.format(
                             self.settings['error_folder'], key
                             ),
-                        }
+                        })
 
                     full_content.append([key, process[key]])
                     #if process[key][self.idx_number] == '1':
@@ -263,10 +264,10 @@ class ProcessWorker(QObject):
 
         # Queue communication dictionary
         queue_com = {
-            'log': qu.Queue(),
-            'status': qu.Queue(),
-            'notification': qu.Queue(),
-            'error': qu.Queue(),
+            'log': mp.Queue(),
+            'status': mp.Queue(),
+            'notification': mp.Queue(),
+            'error': mp.Queue(),
             }
 
         # Set stop variable to the return value of the pre_check
@@ -288,6 +289,7 @@ class ProcessWorker(QObject):
                 queue_dict=queue_dict,
                 content_process=content_process,
                 full_content=full_content,
+                manager=manager,
                 )
 
         self.sig_finished.emit()
@@ -347,7 +349,7 @@ class ProcessWorker(QObject):
             if self.stop:
                 break
             else:
-                QThread.sleep(3)
+                time.sleep(3)
 
     def run_process(self,
             typ_dict,
@@ -357,6 +359,7 @@ class ProcessWorker(QObject):
             queue_dict,
             content_process,
             full_content,
+            manager,
         ):
         """
         Run the TranSPHIRE process.
@@ -526,21 +529,21 @@ class ProcessWorker(QObject):
         self.emit_plot_signals()
 
         # Fill different dictionarys with process information
-        gpu_mutex_dict = dict([(str(idx), [QMutex(), 0]) for idx in range(99)])
+        gpu_mutex_dict = dict([(str(idx), [manager.Lock(), 0]) for idx in range(99)])
 
         # Shared dictionary
         shared_dict = {
             'share': share_dict,
             'bad': bad_dict,
             'queue': queue_dict,
-            'translate_lock': QMutex(),
-            'ctf_star_lock': QMutex(),
-            'ctf_partres_lock': QMutex(),
-            'motion_star_lock': QMutex(),
-            'motion_star_relion3_lock': QMutex(),
-            'motion_txt_lock': QMutex(),
+            'translate_lock': manager.Lock(),
+            'ctf_star_lock': manager.Lock(),
+            'ctf_partres_lock': manager.Lock(),
+            'motion_star_lock': manager.Lock(),
+            'motion_star_relion3_lock': manager.Lock(),
+            'motion_txt_lock': manager.Lock(),
             'gpu_lock': gpu_mutex_dict,
-            'gpu_lock_lock': QMutex(),
+            'gpu_lock_lock': manager.Lock(),
             'typ': typ_dict,
             }
 
@@ -606,7 +609,7 @@ class ProcessWorker(QObject):
                 names = ['{0}_{1}'.format(key, idx) for idx in range(int(number))]
 
             for name in names:
-                thread = ProcessThread(
+                thread_obj = ProcessThread(
                     shared_dict=shared_dict,
                     name=name,
                     content_settings=content_settings,
@@ -618,10 +621,11 @@ class ProcessWorker(QObject):
                     stop=self.stop,
                     parent=self
                     )
+                thread = mp.Process(target=thread_obj.run)
                 thread.start()
                 thread_list.append([thread, name, content_settings])
             self.check_queue(queue_com=queue_com)
-        QThread.sleep(1)
+        time.sleep(1)
 
         # Run until the user stops the processes
         while True:
@@ -633,7 +637,7 @@ class ProcessWorker(QObject):
                 break
             else:
                 pass
-            QThread.sleep(3)
+            time.sleep(3)
 
         # Indicate to stop all processes
         for key, settings_content in full_content:
@@ -656,7 +660,7 @@ class ProcessWorker(QObject):
             typ = setting['name']
             print('Waiting for', name, 'to finish!')
             while thread.is_running:
-                QThread.msleep(1000)
+                time.msleep(1000)
             thread.quit()
             print('Waiting for', name, 'thread to quit!')
             thread.wait()
