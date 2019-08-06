@@ -1230,7 +1230,7 @@ class ProcessThread(QThread):
                     find_meta=find_meta
                     )
             elif find_meta:
-                if os.path.isfile(entry_dir) and 'Data' not in entry_dir:
+                if os.path.isfile(entry_dir) and 'Data' not in entry_dir and 'SurveyImages' not in entry_dir:
                     file_list.append(entry_dir)
                 else:
                     continue
