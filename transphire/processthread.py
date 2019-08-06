@@ -1253,9 +1253,11 @@ class ProcessThread(QThread):
                         self.settings['General']['Search path frames'],
                         )
                     compare_name = frames_root[:-len('_19911213_2019')]
-                else:
+                elif entry_dir.endswith('.gtg'):
                     frames_root = root_name
                     compare_name = frames_root
+                else:
+                    assert False
 
                 frames = tus.find_frames(
                     frames_root=frames_root,
@@ -1383,7 +1385,7 @@ class ProcessThread(QThread):
         finally:
             self.shared_dict_typ['count_lock'].unlock()
 
-        if os.path.exists('{0}.jpg'.format(new_name_meta)) or os.path.exists('{0}.gtg'.format(new_name_meta)):
+        if os.path.exists('{0}_krios_sum.mrc'.format(new_name_meta)):
             self.stop = True
             if os.path.exists(self.shared_dict_typ['done_file']):
                 self.queue_lock.lock()
