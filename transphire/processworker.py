@@ -565,7 +565,7 @@ class ProcessWorker(QObject):
                 self.settings['General']['Rename suffix']
                 )
 
-            if os.path.exists('{0}.jpg'.format(new_name)):
+            if os.path.exists('{0}_krios_sum.mrc'.format(new_name)):
                 old_filenumber = shared_dict['typ']['Import']['file_number']
                 with open(shared_dict['typ']['Import']['number_file'], 'r') as read:
                     shared_dict['typ']['Import']['file_number'] = int(read.readline())
