@@ -224,11 +224,11 @@ class ProcessWorker(QObject):
                         'unknown_error': False,
                         'delay_error': False,
                         'is_error': False,
-                        'queue_list_time': 0,
+                        'queue_list_time': 0.0,
                         'tar_idx': 0,
                         'max_running': int(process[key][self.idx_number]),
                         'running': 0,
-                        'queue_list': manager.list([]),
+                        'queue_list': manager.list(),
                         'queue_lock': manager.Lock(),
                         'save_lock': manager.Lock(),
                         'count_lock': manager.Lock(),
@@ -621,7 +621,7 @@ class ProcessWorker(QObject):
                     stop=mp.Value('i', self.stop),
                     parent=self
                     )
-                thread = mp.Process(target=thread_obj.run)
+                thread = mp.Process(target=self.run_in_parallel, args=(thread_obj,))
                 thread.start()
                 thread_list.append([thread, name, content_settings, thread_obj])
             self.check_queue(queue_com=queue_com)
@@ -656,13 +656,13 @@ class ProcessWorker(QObject):
             thread_obj.stop.value = True
 
         # Wait for all threads to finish
-        for thread, name, setting, _ in thread_list:
+        for thread, name, setting, thread_obj in thread_list:
             typ = setting['name']
             print('Waiting for', name, 'to finish!')
-            #while thread.is_alive:
-            #    time.sleep(1)
-            #thread.quit()
-            #print('Waiting for', name, 'thread to quit!')
+            while thread.is_alive():
+                time.sleep(1)
+                if thread_obj.has_finished:
+                    thread.terminate()
             thread.join()
             self.check_queue(queue_com=queue_com)
 
@@ -677,6 +677,9 @@ class ProcessWorker(QObject):
                 )
         self.check_queue(queue_com=queue_com)
 
+    @staticmethod
+    def run_in_parallel(thread_obj):
+        thread_obj.run()
 
     def pre_check_programs(self):
         """

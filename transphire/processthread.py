@@ -115,6 +115,7 @@ class ProcessThread(object):
             self.user = None
 
         self.queue_com['log'].put(tu.create_log('Starting', name))
+        self.has_finished = False
 
     def run(self):
         """
@@ -271,6 +272,7 @@ class ProcessThread(object):
         self.queue_com['status'].put(['STOPPED', [], self.typ, '#ff5c33'])
         self.queue_com['log'].put(tu.create_log('Stopped', self.name))
         print(self.name, ': Stopped')
+        self.has_finished = True
 
     def check_full(self):
         """
@@ -1089,43 +1091,40 @@ class ProcessThread(object):
             find_meta=True
             )
 
-        for entry in file_list:
-            if self.stop.value:
-                break
-            else:
-                pass
-            file_path = entry[len(directory)+1:]
-            file_name = os.path.join(self.settings['software_meta_folder'], file_path)
-            tu.mkdir_p(os.path.dirname(file_name))
-            tu.copy(entry, file_name)
-            # Add to queue
+        if not self.stop.value:
+            for entry in file_list:
+                file_path = entry[len(directory)+1:]
+                file_name = os.path.join(self.settings['software_meta_folder'], file_path)
+                tu.mkdir_p(os.path.dirname(file_name))
+                tu.copy(entry, file_name)
+                # Add to queue
 
-        folder_name = os.path.basename(self.settings['software_meta_folder'])
-        tar_file = self.settings['software_meta_tar']
-        with tarfile.open(tar_file, 'w') as tar:
-            tar.add(self.settings['software_meta_folder'], arcname=folder_name)
+            folder_name = os.path.basename(self.settings['software_meta_folder'])
+            tar_file = self.settings['software_meta_tar']
+            with tarfile.open(tar_file, 'w') as tar:
+                tar.add(self.settings['software_meta_folder'], arcname=folder_name)
 
-        for aim in self.content_settings['aim']:
-            *compare, aim_name = aim.split(':')
-            var = True
-            for typ in compare:
-                name = typ.split('!')[-1]
-                if typ.startswith('!'):
-                    if self.settings['Copy'][name] == 'False':
-                        continue
+            for aim in self.content_settings['aim']:
+                *compare, aim_name = aim.split(':')
+                var = True
+                for typ in compare:
+                    name = typ.split('!')[-1]
+                    if typ.startswith('!'):
+                        if self.settings['Copy'][name] == 'False':
+                            continue
+                        else:
+                            var = False
+                            break
                     else:
-                        var = False
-                        break
+                        if not self.settings['Copy'][name] == 'False':
+                            continue
+                        else:
+                            var = False
+                            break
+                if var:
+                    self.add_to_queue(aim=aim_name, root_name=tar_file)
                 else:
-                    if not self.settings['Copy'][name] == 'False':
-                        continue
-                    else:
-                        var = False
-                        break
-            if var:
-                self.add_to_queue(aim=aim_name, root_name=tar_file)
-            else:
-                pass
+                    pass
         self.queue_com['log'].put(tu.create_log(self.name, 'run_software_meta stop', time.time() - start_prog))
 
 
@@ -1152,50 +1151,57 @@ class ProcessThread(object):
         finally:
             self.queue_lock.release()
 
-        data = np.empty(
-            len(file_list),
-            dtype=[('root', '|U1200'), ('date', '<i8'), ('time', '<i8')]
-            )
+        if not self.stop.value:
+            data = np.empty(
+                len(file_list),
+                dtype=[('root', '|U1200'), ('date', '<i8'), ('time', '<i8')]
+                )
 
-        for idx, root_name in enumerate(file_list):
-            hole, grid_number, spot1, spot2, date, collect_time = \
-                tus.extract_time_and_grid_information(
-                    root_name=root_name,
-                    settings=self.settings,
-                    queue_com=self.queue_com,
-                    name=self.name
-                    )
-            del spot1, spot2, hole, grid_number
-            data[idx]['root'] = root_name
-            data[idx]['date'] = int(date)
-            data[idx]['time'] = int(collect_time)
-
-        data = np.sort(data, order=['date', 'time'])
-        for root_name in data['root']:
-            for aim in self.content_settings['aim']:
-                *compare, aim_name = aim.split(':')
-                var = True
-                for typ in compare:
-                    name = typ.split('!')[-1]
-                    if typ.startswith('!'):
-                        if self.settings['Copy'][name] == 'False':
-                            continue
-                        else:
-                            var = False
-                            break
-                    else:
-                        if not self.settings['Copy'][name] == 'False':
-                            continue
-                        else:
-                            var = False
-                            break
-                if var:
-                    self.add_to_queue(
-                        aim=aim_name,
-                        root_name=root_name
+            for idx, root_name in enumerate(file_list):
+                if not self.stop.value:
+                    break
+                hole, grid_number, spot1, spot2, date, collect_time = \
+                    tus.extract_time_and_grid_information(
+                        root_name=root_name,
+                        settings=self.settings,
+                        queue_com=self.queue_com,
+                        name=self.name
                         )
-                else:
-                    pass
+                del spot1, spot2, hole, grid_number
+                data[idx]['root'] = root_name
+                data[idx]['date'] = int(date)
+                data[idx]['time'] = int(collect_time)
+
+            data = np.sort(data, order=['date', 'time'])
+            for root_name in data['root']:
+                if not self.stop.value:
+                    break
+                for aim in self.content_settings['aim']:
+                    if not self.stop.value:
+                        break
+                    *compare, aim_name = aim.split(':')
+                    var = True
+                    for typ in compare:
+                        name = typ.split('!')[-1]
+                        if typ.startswith('!'):
+                            if self.settings['Copy'][name] == 'False':
+                                continue
+                            else:
+                                var = False
+                                break
+                        else:
+                            if not self.settings['Copy'][name] == 'False':
+                                continue
+                            else:
+                                var = False
+                                break
+                    if var:
+                        self.add_to_queue(
+                            aim=aim_name,
+                            root_name=root_name
+                            )
+                    else:
+                        pass
         self.queue_com['log'].put(tu.create_log(self.name, 'run_find stop', time.time() - start_prog))
 
     def recursive_search(self, directory, file_list, find_meta):
@@ -2643,6 +2649,7 @@ class ProcessThread(object):
                     )
                 self.shared_dict_typ['queue_list'].append(root_name)
                 if time.time() - self.shared_dict_typ['queue_list_time'] < 30:
+                    self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name, self.shared_dict_typ['queue_list_time'], time.time() - self.shared_dict_typ['queue_list_time'], 'stop early 1', time.time() - start_prog))
                     return None
                 else:
                     pass
@@ -2652,9 +2659,11 @@ class ProcessThread(object):
         self.queue_lock.acquire()
         try:
             if time.time() - self.shared_dict_typ['queue_list_time'] < 30:
+                self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name, self.shared_dict_typ['queue_list_time'], time.time() - self.shared_dict_typ['queue_list_time'], 'stop early 2', time.time() - start_prog))
                 return None
             elif not self.shared_dict_typ['queue_list']:
                 self.shared_dict_typ['queue_list_time'] = time.time()
+                self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name, self.shared_dict_typ['queue_list_time'], time.time() - self.shared_dict_typ['queue_list_time'], 'stop early 3', time.time() - start_prog))
                 return None
             file_use_list = []
             file_name_list = []
@@ -2669,7 +2678,7 @@ class ProcessThread(object):
                     file_use_name = file_use_name[2:]
                 file_use_list.append(file_use_name)
                 file_name_list.append(tu.get_name(file_use_name))
-            self.shared_dict_typ['queue_list'] = []
+            self.shared_dict_typ['queue_list'][:] = []
             self.shared_dict_typ['queue_list_time'] = time.time()
             time.sleep(0.1)
         finally:
@@ -2946,11 +2955,11 @@ class ProcessThread(object):
                         if self.settings['tar_folder'] in entry
                         ][0]
                 except IndexError:
-                    self.queue_com['log'].put(tu.create_log(self.name, 'run_copy_extern', root_name, 'stop early:', time.time() - start_prog))
+                    self.queue_com['log'].put(tu.create_log(self.name, 'run_copy_extern', root_name, 'stop early 1', time.time() - start_prog))
                     return None
                 if not os.path.exists(copy_file):
                     self.shared_dict_typ['queue_list_time'] = time.time()
-                    self.queue_com['log'].put(tu.create_log(self.name, 'run_copy_extern', root_name, 'stop early:', time.time() - start_prog))
+                    self.queue_com['log'].put(tu.create_log(self.name, 'run_copy_extern', root_name, 'stop early 2', time.time() - start_prog))
                     return None
 
                 self.shared_dict_typ['queue_list'].remove(copy_file)
@@ -3018,7 +3027,7 @@ class ProcessThread(object):
                         )
                 else:
                     self.shared_dict_typ['queue_list_time'] = time.time()
-                    self.queue_com['log'].put(tu.create_log(self.name, 'run_copy_extern', root_name, 'stop early', time.time() - start_prog))
+                    self.queue_com['log'].put(tu.create_log(self.name, 'run_copy_extern', root_name, 'stop early 3', time.time() - start_prog))
                     return None
             finally:
                 self.queue_lock.release()
