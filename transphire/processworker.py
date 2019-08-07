@@ -619,6 +619,7 @@ class ProcessWorker(QObject):
                     password=self.password,
                     use_threads_set=use_threads_set,
                     stop=mp.Value('i', self.stop),
+                    has_finished=mp.Value('i', 0),
                     parent=self
                     )
                 thread = mp.Process(target=self.run_in_parallel, args=(thread_obj,))
@@ -655,27 +656,42 @@ class ProcessWorker(QObject):
         for _, _, _, thread_obj in thread_list:
             thread_obj.stop.value = True
 
-        # Wait for all threads to finish
-        for thread, name, setting, thread_obj in thread_list:
-            typ = setting['name']
+        for _, name, _, thread_obj in thread_list:
             print('Waiting for', name, 'to finish!')
-            while thread.is_alive():
+            while not thread_obj.has_finished.value:
                 time.sleep(1)
-                if thread_obj.has_finished:
-                    thread.terminate()
-            thread.join()
-            self.check_queue(queue_com=queue_com)
+                self.check_queue(queue_com=queue_com)
+        self.check_queue(queue_com=queue_com)
+        print('All processes finished! Draining queues!')
 
+        final_sizes = []
         for key, settings_content in full_content:
             typ = settings_content[self.idx_values]['name']
             size = shared_dict['queue'][typ].qsize()
+            final_sizes.append([key, size])
+
+        for key, queue in queue_dict.items():
+            try:
+                while True:
+                    queue.get_nowait()
+            except qu.Empty:
+                pass
+        time.sleep(0.1)
+
+        print('All drained!')
+        # Wait for all threads to finish
+        for thread, name, _, thread_obj in thread_list:
+            thread.join()
+            del thread_obj
+        time.sleep(0.1)
+
+        for key, size in final_sizes:
             self.sig_status.emit(
                 'Not running',
                 [size, shared_dict['typ'][typ]['file_number']],
                 key,
                 'white'
                 )
-        self.check_queue(queue_com=queue_com)
 
     @staticmethod
     def run_in_parallel(thread_obj):

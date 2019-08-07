@@ -59,6 +59,7 @@ class ProcessThread(object):
             mount_directory,
             use_threads_set,
             stop,
+            has_finished,
             parent=None
             ):
         """
@@ -115,7 +116,7 @@ class ProcessThread(object):
             self.user = None
 
         self.queue_com['log'].put(tu.create_log('Starting', name))
-        self.has_finished = False
+        self.has_finished = has_finished
 
     def run(self):
         """
@@ -272,7 +273,7 @@ class ProcessThread(object):
         self.queue_com['status'].put(['STOPPED', [], self.typ, '#ff5c33'])
         self.queue_com['log'].put(tu.create_log('Stopped', self.name))
         print(self.name, ': Stopped')
-        self.has_finished = True
+        self.has_finished.value = True
 
     def check_full(self):
         """
@@ -1195,7 +1196,9 @@ class ProcessThread(object):
                             else:
                                 var = False
                                 break
-                    if var:
+                    if not self.stop.value:
+                        break
+                    elif var:
                         self.add_to_queue(
                             aim=aim_name,
                             root_name=root_name
