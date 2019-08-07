@@ -1159,7 +1159,7 @@ class ProcessThread(object):
                 )
 
             for idx, root_name in enumerate(file_list):
-                if not self.stop.value:
+                if self.stop.value:
                     break
                 hole, grid_number, spot1, spot2, date, collect_time = \
                     tus.extract_time_and_grid_information(
@@ -1175,10 +1175,10 @@ class ProcessThread(object):
 
             data = np.sort(data, order=['date', 'time'])
             for root_name in data['root']:
-                if not self.stop.value:
+                if self.stop.value:
                     break
                 for aim in self.content_settings['aim']:
-                    if not self.stop.value:
+                    if self.stop.value:
                         break
                     *compare, aim_name = aim.split(':')
                     var = True
@@ -1196,7 +1196,7 @@ class ProcessThread(object):
                             else:
                                 var = False
                                 break
-                    if not self.stop.value:
+                    if self.stop.value:
                         break
                     elif var:
                         self.add_to_queue(
