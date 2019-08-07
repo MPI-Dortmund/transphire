@@ -618,12 +618,12 @@ class ProcessWorker(QObject):
                     mount_directory=self.mount_directory,
                     password=self.password,
                     use_threads_set=use_threads_set,
-                    stop=self.stop,
+                    stop=mp.Value('i', self.stop),
                     parent=self
                     )
                 thread = mp.Process(target=thread_obj.run)
                 thread.start()
-                thread_list.append([thread, name, content_settings])
+                thread_list.append([thread, name, content_settings, thread_obj])
             self.check_queue(queue_com=queue_com)
         time.sleep(1)
 
@@ -652,18 +652,18 @@ class ProcessWorker(QObject):
         self.check_queue(queue_com=queue_com)
 
         # Send the stop signals to all threads
-        for thread, _, _ in thread_list:
-            thread.stop = True
+        for _, _, _, thread_obj in thread_list:
+            thread_obj.stop.value = True
 
         # Wait for all threads to finish
-        for thread, name, setting in thread_list:
+        for thread, name, setting, _ in thread_list:
             typ = setting['name']
             print('Waiting for', name, 'to finish!')
-            while thread.is_running:
-                time.msleep(1000)
-            thread.quit()
-            print('Waiting for', name, 'thread to quit!')
-            thread.wait()
+            #while thread.is_alive:
+            #    time.sleep(1)
+            #thread.quit()
+            #print('Waiting for', name, 'thread to quit!')
+            thread.join()
             self.check_queue(queue_com=queue_com)
 
         for key, settings_content in full_content:

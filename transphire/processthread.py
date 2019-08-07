@@ -132,9 +132,9 @@ class ProcessThread(object):
         self.notification_send = False
 
         # Event loop
-        while not self.stop:
+        while not self.stop.value:
             if self.done:
-                while not self.stop:
+                while not self.stop.value:
                     self.queue_com['status'].put([
                         'Finished',
                         [],
@@ -147,7 +147,7 @@ class ProcessThread(object):
                 pass
 
             if not self.run_this_thread:
-                while not self.stop:
+                while not self.stop.value:
                     self.queue_com['status'].put([
                         'Skipped',
                         [self.queue.qsize()],
@@ -160,7 +160,7 @@ class ProcessThread(object):
                 pass
 
             if self.later:
-                while not self.stop:
+                while not self.stop.value:
                     self.queue_com['status'].put([
                         'Later',
                         [self.queue.qsize()],
@@ -236,7 +236,7 @@ class ProcessThread(object):
                 i = 0
                 while i < 6:
                     time.sleep(10)
-                    if self.stop:
+                    if self.stop.value:
                         break
                     else:
                         i += 1
@@ -317,7 +317,7 @@ class ProcessThread(object):
                 total_quota = sh.disk_usage(self.settings[folder]).total / 1e12
                 used_quota = sh.disk_usage(self.settings[folder]).used / 1e12
             except FileNotFoundError:
-                self.stop = True
+                self.stop.value = True
                 message_error = '\n'.join([
                     '{0} no longer available!'.format(
                         folder.replace('_', ' ')
@@ -336,7 +336,7 @@ class ProcessThread(object):
                     )
                 return False
             if used_quota > (total_quota * stop):
-                self.stop = True
+                self.stop.value = True
                 message_error = '\n'.join([
                     'Less than {0:.1f} Tb free on {1}!'.format(
                         total_quota * (1 - stop),
@@ -486,7 +486,7 @@ class ProcessThread(object):
                 self.run_software_meta(directory=folder)
             except FileNotFoundError as e:
                 print(e)
-                self.stop = True
+                self.stop.value = True
                 message_notification = '\n'.join([
                     'Folder no longer available!',
                     '{0} is stopping now!'.format(self.name)
@@ -769,7 +769,7 @@ class ProcessThread(object):
             if not dummy:
                 self.add_to_queue(aim=self.typ, root_name=root_name)
             self.write_error(msg=tb.format_exc(), root_name=root_name)
-            self.stop = True
+            self.stop.value = True
             self.shared_dict_typ['delay_error'] = True
             self.shared_dict_typ['is_error'] = True
         except Exception:
@@ -1090,7 +1090,7 @@ class ProcessThread(object):
             )
 
         for entry in file_list:
-            if self.stop:
+            if self.stop.value:
                 break
             else:
                 pass
@@ -1217,7 +1217,7 @@ class ProcessThread(object):
         files_in_dir = sorted(glob.glob('{0}/*'.format(directory)))
 
         for entry_dir in files_in_dir:
-            if self.stop:
+            if self.stop.value:
                 break
             elif os.path.isdir(entry_dir):
                 file_list = self.recursive_search(
@@ -1340,7 +1340,7 @@ class ProcessThread(object):
 
         if overall_file_size > \
                 sh.disk_usage(self.settings['project_folder']).free:
-            self.stop = True
+            self.stop.value = True
             message = '{0}: Not enough space in project folder'.format(
                 self.name
                 )
@@ -1382,7 +1382,7 @@ class ProcessThread(object):
             self.shared_dict_typ['count_lock'].release()
 
         if os.path.exists('{0}_krios_sum.mrc'.format(new_name_meta)):
-            self.stop = True
+            self.stop.value = True
             if os.path.exists(self.shared_dict_typ['done_file']):
                 self.queue_lock.acquire()
                 try:
@@ -2939,11 +2939,15 @@ class ProcessThread(object):
         if root_name == 'None':
             self.queue_lock.acquire()
             try:
-                copy_file = [
-                    entry
-                    for entry in self.shared_dict_typ['queue_list']
-                    if self.settings['tar_folder'] in entry
-                    ][0]
+                try:
+                    copy_file = [
+                        entry
+                        for entry in self.shared_dict_typ['queue_list']
+                        if self.settings['tar_folder'] in entry
+                        ][0]
+                except IndexError:
+                    self.queue_com['log'].put(tu.create_log(self.name, 'run_copy_extern', root_name, 'stop early:', time.time() - start_prog))
+                    return None
                 if not os.path.exists(copy_file):
                     self.shared_dict_typ['queue_list_time'] = time.time()
                     self.queue_com['log'].put(tu.create_log(self.name, 'run_copy_extern', root_name, 'stop early:', time.time() - start_prog))
