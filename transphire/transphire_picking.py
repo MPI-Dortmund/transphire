@@ -41,7 +41,19 @@ def get_picking_command(file_input, new_name, settings, queue_com, name):
     command = None
     block_gpu = None
     gpu_list = None
-    if tu.is_higher_version(picking_name, '1.1'):
+    if tu.is_higher_version(picking_name, '1.4.1'):
+        command, gpu = create_cryolo_v1_4_1_command(
+            picking_name=picking_name,
+            file_input=file_input,
+            file_output=new_name,
+            settings=settings,
+            name=name,
+            )
+        check_files = []
+        block_gpu = True
+        gpu_list = gpu.split()
+
+    elif tu.is_higher_version(picking_name, '1.1'):
         command, gpu = create_cryolo_v1_1_0_command(
             picking_name=picking_name,
             file_input=file_input,
@@ -220,11 +232,10 @@ def create_filter_command(
     return ' '.join(command), file_output_tmp, check_files, block_gpu, gpu_list
 
 
-def create_cryolo_v1_1_0_command(
+def create_cryolo_v1_4_1_command(
         picking_name, file_input, file_output, settings, name
         ):
     """Create the crYOLO v1.1.0 command"""
-
     command = []
     # Start the program
     ignore_list = []
@@ -278,6 +289,65 @@ def create_cryolo_v1_1_0_command(
     ignore_list.append('--otf')
     if settings[picking_name]['--otf'] == 'True':
         command.append('--otf')
+
+    for key in settings[picking_name]:
+        if key in ignore_list:
+            continue
+        else:
+            command.append(key)
+            command.append(
+                '{0}'.format(settings[picking_name][key])
+                )
+
+    return ' '.join(command), gpu
+
+
+def create_cryolo_v1_1_0_command(
+        picking_name, file_input, file_output, settings, name
+        ):
+    """Create the crYOLO v1.1.0 command"""
+
+    command = []
+    # Start the program
+    ignore_list = []
+    ignore_list.append('--filament')
+    ignore_list.append('Filter micrographs')
+    ignore_list.append('Filter value high pass (A)')
+    ignore_list.append('Filter value low pass (A)')
+    ignore_list.append('Pixel size (A/px)')
+    ignore_list.append('Box size')
+    ignore_list.append('Split Gpu?')
+    ignore_list.append('--gpu')
+
+    command.append('{0}'.format(settings['Path'][picking_name]))
+
+    command.append('-i')
+    command.append('{0}'.format(' '.join(file_input)))
+    command.append('-o')
+    command.append('{0}'.format(file_output))
+    command.append('--write_empty')
+
+    if settings[picking_name]['--filament'] == 'True':
+        command.append('--filament')
+    else:
+        ignore_list.append('--filament_width')
+        ignore_list.append('--box_distance')
+        ignore_list.append('--minimum_number_boxes')
+
+    if settings[picking_name]['Split Gpu?'] == 'True':
+        try:
+            gpu_id = int(name.split('_')[-1])-1
+        except ValueError:
+            gpu_id = 0
+        try:
+            gpu = settings[picking_name]['--gpu'].split()[gpu_id]
+        except IndexError:
+            raise UserWarning('There are less gpus provided than threads available! Please restart with the same number of pipeline processors as GPUs provided and restart! Stopping this thread!')
+    else:
+        gpu = settings[picking_name]['--gpu']
+
+    command.append('--gpu')
+    command.append('{0}'.format(gpu))
 
     for key in settings[picking_name]:
         if key in ignore_list:
