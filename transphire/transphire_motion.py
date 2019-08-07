@@ -21,6 +21,8 @@ import re
 import collections as co
 import numpy as np
 import mrcfile as mrc
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.image as mi
 from transphire import transphire_utils as tu
 
