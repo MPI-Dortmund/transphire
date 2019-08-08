@@ -22,7 +22,7 @@ import collections as co
 import numpy as np
 import mrcfile as mrc
 import matplotlib
-matplotlib.use('Agg')
+matplotlib.use('QT5Agg')
 import matplotlib.image as mi
 from transphire import transphire_utils as tu
 
@@ -621,7 +621,7 @@ def create_export_data(export_data, lines):
     lines.append('{0}\n'.format('\t'.join(row_string)))
 
 
-def create_jpg_file(input_file, settings):
+def create_jpg_file(input_file, settings, write_lock):
     file_name = tu.get_name(input_file)
 
     tu.mkdir_p(os.path.join(settings['motion_folder'], 'jpg'))
@@ -685,7 +685,12 @@ def create_jpg_file(input_file, settings):
         arr_2 = np.sum(np.array(tile_images) / len(tile_images), axis=0)
         arr_2 = tu.rebin(arr_2, shape)
         arr_2 = tu.normalize_image(arr_2, apix=float(settings[settings['Copy']['Motion']]['-PixSize']), real=False)
-    if arr_1 is not None:
-        mi.imsave(jpg_file_1, arr_1, cmap='gist_gray')
-    if arr_2 is not None:
-        mi.imsave(jpg_file_2, arr_2, cmap='gist_gray')
+
+    write_lock.acquire()
+    try:
+        if arr_1 is not None:
+            mi.imsave(jpg_file_1, arr_1, cmap='gist_gray')
+        if arr_2 is not None:
+            mi.imsave(jpg_file_2, arr_2, cmap='gist_gray')
+    finally:
+        write_lock.release()

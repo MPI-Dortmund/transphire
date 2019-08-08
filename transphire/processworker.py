@@ -229,12 +229,14 @@ class ProcessWorker(QObject):
                         'max_running': int(process[key][self.idx_number]),
                         'running': 0,
                         'queue_list': manager.list(),
+                        'queue_list_lock': manager.Lock(),
                         'queue_lock': manager.Lock(),
                         'save_lock': manager.Lock(),
                         'count_lock': manager.Lock(),
                         'error_lock': manager.Lock(),
                         'bad_lock': manager.Lock(),
                         'share_lock': manager.Lock(),
+                        'write_lock': manager.Lock(),
                         'spot_dict': manager.dict(self.fill_spot_dict()),
                         'number_file': '{0}/last_filenumber.txt'.format(
                             self.settings['project_folder']
@@ -668,7 +670,7 @@ class ProcessWorker(QObject):
         for key, settings_content in full_content:
             typ = settings_content[self.idx_values]['name']
             size = shared_dict['queue'][typ].qsize()
-            final_sizes.append([key, size])
+            final_sizes.append([key, size, typ])
 
         for key, queue in queue_dict.items():
             try:
@@ -685,9 +687,9 @@ class ProcessWorker(QObject):
             del thread_obj
         time.sleep(0.1)
 
-        for key, size in final_sizes:
+        for key, size, typ in final_sizes:
             self.sig_status.emit(
-                'Not running',
+                '00|{0:02d}'.format(shared_dict['typ'][typ]['max_running']),
                 [size, shared_dict['typ'][typ]['file_number']],
                 key,
                 'white'

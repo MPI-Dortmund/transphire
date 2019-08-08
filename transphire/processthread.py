@@ -270,7 +270,15 @@ class ProcessThread(object):
                 self.is_running = False
 
         # Print, if stopped
-        self.queue_com['status'].put(['STOPPED', [], self.typ, '#ff5c33'])
+        self.queue_com['status'].put([
+            '{0:02d}|{1:02d}'.format(
+                self.shared_dict_typ['running'],
+                self.shared_dict_typ['max_running'],
+                ),
+            [],
+            self.typ,
+            '#ff5c33'
+            ])
         self.queue_com['log'].put(tu.create_log('Stopped', self.name))
         print(self.name, ': Stopped')
         self.has_finished.value = True
@@ -2181,7 +2189,8 @@ class ProcessThread(object):
 
         tum.create_jpg_file(
             file_for_jpg,
-            self.settings
+            self.settings,
+            self.shared_dict_typ['write_lock'],
             )
 
         import_name = tu.get_name(file_for_jpg)
@@ -2479,6 +2488,7 @@ class ProcessThread(object):
             file_sum,
             self.settings,
             self.settings['Copy']['CTF'],
+            self.shared_dict_typ['write_lock'],
             )
 
         import_name = tu.get_name(file_sum)
@@ -2644,7 +2654,7 @@ class ProcessThread(object):
                 folder=self.settings['picking_folder'],
                 command=command
                 )
-            self.queue_lock.acquire()
+            self.shared_dict_typ['queue_list_lock'].acquire()
             try:
                 self.add_to_queue_file(
                     root_name=root_name,
@@ -2657,9 +2667,9 @@ class ProcessThread(object):
                 else:
                     pass
             finally:
-                self.queue_lock.release()
+                self.shared_dict_typ['queue_list_lock'].release()
 
-        self.queue_lock.acquire()
+        self.shared_dict_typ['queue_list_lock'].acquire()
         try:
             if time.time() - self.shared_dict_typ['queue_list_time'] < 30:
                 self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name, self.shared_dict_typ['queue_list_time'], time.time() - self.shared_dict_typ['queue_list_time'], 'stop early 2', time.time() - start_prog))
@@ -2685,7 +2695,7 @@ class ProcessThread(object):
             self.shared_dict_typ['queue_list_time'] = time.time()
             time.sleep(0.1)
         finally:
-            self.queue_lock.release()
+            self.shared_dict_typ['queue_list_lock'].release()
 
         # Create the command for picking
         command, check_files, block_gpu, gpu_list = tup.get_picking_command(
@@ -2739,7 +2749,8 @@ class ProcessThread(object):
                 file_name=file_name,
                 settings=self.settings,
                 queue_com=self.queue_com,
-                name=self.name
+                name=self.name,
+                write_lock=self.shared_dict_typ['write_lock'],
                 )
             file_logs.append(log_files)
 
@@ -2949,7 +2960,7 @@ class ProcessThread(object):
                         dont_tar = True
 
         if root_name == 'None':
-            self.queue_lock.acquire()
+            self.shared_dict_typ['queue_list_lock'].acquire()
             try:
                 try:
                     copy_file = [
@@ -2972,13 +2983,13 @@ class ProcessThread(object):
                     lock=False
                     )
             finally:
-                self.queue_lock.release()
+                self.shared_dict_typ['queue_list_lock'].release()
 
         elif dont_tar:
             copy_file = root_name
 
         else:
-            self.queue_lock.acquire()
+            self.shared_dict_typ['queue_list_lock'].acquire()
             try:
                 try:
                     tar_file = [
@@ -2999,7 +3010,7 @@ class ProcessThread(object):
                         )
                     self.shared_dict_typ['tar_idx'] += 1
             finally:
-                self.queue_lock.release()
+                self.shared_dict_typ['queue_list_lock'].release()
 
             with tarfile.open(tar_file, 'a') as tar:
                 tar.add(
@@ -3007,7 +3018,7 @@ class ProcessThread(object):
                     arcname=os.path.join('..', root_name.replace(self.settings['project_folder'], ''))
                     )
 
-            self.queue_lock.acquire()
+            self.shared_dict_typ['queue_list_lock'].acquire()
             try:
                 if os.path.getsize(tar_file) > float(self.settings['Copy']['Tar size (Gb)']) * 1024**3:
                     copy_file = tar_file
@@ -3033,7 +3044,7 @@ class ProcessThread(object):
                     self.queue_com['log'].put(tu.create_log(self.name, 'run_copy_extern', root_name, 'stop early 3', time.time() - start_prog))
                     return None
             finally:
-                self.queue_lock.release()
+                self.shared_dict_typ['queue_list_lock'].release()
 
 
         mount_folder_name = '{0}_folder'.format(self.typ)

@@ -130,7 +130,7 @@ class StatusContainer(QWidget):
                 basename = key
                 number = int(entry[key][0])
                 name = basename
-                self.content[name] = StatusWidget(name=name, default_name='Not running', default_quota='')
+                self.content[name] = StatusWidget(name=name, default_name='00|{0:02d}'.format(number), default_quota='Not runnning')
                 layout_v1.addWidget(self.content[name])
                 #if number == 1:
                 #    name = basename

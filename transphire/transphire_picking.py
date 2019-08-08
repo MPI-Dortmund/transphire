@@ -412,7 +412,7 @@ def create_cryolo_v1_0_4_command(
     return ' '.join(command), gpu
 
 
-def create_box_jpg(file_name, settings, queue_com, name):
+def create_box_jpg(file_name, settings, queue_com, name, write_lock):
     """
     Create jpg files that are overlayed with the box coordinate
 
@@ -455,7 +455,11 @@ def create_box_jpg(file_name, settings, queue_com, name):
     else:
         pass
 
-    imageio.imwrite(new_jpg_file, jpg_data)
+    write_lock.acquire()
+    try:
+        imageio.imwrite(new_jpg_file, jpg_data)
+    finally:
+        write_lock.release()
 
 
 def create_box(jpg_data, maskcenters, box_size):
