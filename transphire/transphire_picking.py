@@ -50,7 +50,12 @@ def get_picking_command(file_input, new_name, settings, queue_com, name):
             name=name,
             )
         check_files = []
-        block_gpu = True
+        if '_' in gpu:
+            if float(settings[picking_name]['--gpu_fraction']) == 1:
+                raise UserWarning('Sub GPUs are only supported if the --gpu_fraction option is not equal 1')
+            block_gpu = False
+        else:
+            block_gpu = True
         gpu_list = gpu.split()
 
     elif tu.is_higher_version(picking_name, '1.1'):
@@ -61,6 +66,8 @@ def get_picking_command(file_input, new_name, settings, queue_com, name):
             settings=settings,
             name=name,
             )
+        if '_' in gpu:
+            raise UserWarning('Sub GPUs are only supported in crYOLO version >=1.4.1')
         check_files = []
         block_gpu = True
         gpu_list = gpu.split()
@@ -73,6 +80,8 @@ def get_picking_command(file_input, new_name, settings, queue_com, name):
             settings=settings,
             name=name,
             )
+        if '_' in gpu:
+            raise UserWarning('Sub GPUs are only supported in crYOLO version >=1.4.1')
         check_files = []
         block_gpu = True
         gpu_list = gpu.split()
@@ -277,11 +286,15 @@ def create_cryolo_v1_4_1_command(
         except ValueError:
             gpu_id = 0
         try:
-            gpu = settings[picking_name]['--gpu'].split()[gpu_id]
+            gpu_raw = settings[picking_name]['--gpu'].split()[gpu_id]
         except IndexError:
             raise UserWarning('There are less gpus provided than threads available! Please restart with the same number of pipeline processors as GPUs provided and restart! Stopping this thread!')
     else:
-        gpu = settings[picking_name]['--gpu']
+        gpu_raw = settings[picking_name]['--gpu']
+
+    gpu = ' '.join(list(set([entry.split('_')[0] for entry in gpu_raw.split()])))
+    if len(gpu.split()) != len(gpu_raw.split()) and settings[motion_name]['Split Gpu?'] == 'False':
+        raise UserWarning('One cannot use multi GPU in combination with the disabled Split GPU option!')
 
     command.append('--gpu')
     command.append('{0}'.format(gpu))
@@ -299,7 +312,7 @@ def create_cryolo_v1_4_1_command(
                 '{0}'.format(settings[picking_name][key])
                 )
 
-    return ' '.join(command), gpu
+    return ' '.join(command), gpu_raw
 
 
 def create_cryolo_v1_1_0_command(

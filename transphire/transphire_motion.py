@@ -130,21 +130,21 @@ def get_motion_command(file_input, file_output_scratch, file_log_scratch, settin
         gpu_list = gpu.split()
 
         if tu.is_higher_version(motion_name, '1.1.0'):
-            if '_' in gpu_list:
-                if settings[motion_name]['-GpuMemUsage'] == '1':
+            if '_' in gpu:
+                if float(settings[motion_name]['-GpuMemUsage']) == 1:
                     raise UserWarning('Sub GPUs are only supported if the GpuMemUsage option is not equal 1')
                 block_gpu = False
-            elif settings[motion_name]['-GpuMemUsage'] == '0':
+            elif float(settings[motion_name]['-GpuMemUsage']) == 0:
                 block_gpu = False
             else:
                 block_gpu = True
         elif tu.is_higher_version(motion_name, '1.0.5'):
             block_gpu = True
-            if '_' in gpu_list:
+            if '_' in gpu:
                 raise UserWarning('Sub GPUs are only supported in MotionCor version >=1.1.0')
         elif tu.is_higher_version(motion_name, '1.0.0'):
             block_gpu = False
-            if '_' in gpu_list:
+            if '_' in gpu:
                 raise UserWarning('Sub GPUs are only supported in MotionCor version >=1.1.0')
 
     else:
@@ -229,7 +229,7 @@ def create_motion_cor_2_v1_0_0_command(motion_name, file_input, file_output, fil
         gpu_raw = settings[motion_name]['-Gpu']
 
     gpu = ' '.join(list(set([entry.split('_')[0] for entry in gpu_raw.split()])))
-    if len(gpu.split()) != len(gpu_raw.split()):
+    if len(gpu.split()) != len(gpu_raw.split()) and settings[motion_name]['Split Gpu?'] == 'False':
         raise UserWarning('One cannot use multi GPU in combination with the disabled Split GPU option!')
 
     command.append('-Gpu')
