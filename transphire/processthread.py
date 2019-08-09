@@ -22,6 +22,8 @@ import shutil as sh
 import traceback as tb
 import glob
 import copy
+import matplotlib
+import threading
 import tarfile
 import subprocess as sp
 import numpy as np
@@ -118,6 +120,10 @@ class ProcessThread(object):
         self.queue_com['log'].put(tu.create_log('Starting', name))
         self.has_finished = has_finished
 
+        # This list saves the per process locks to prevent garbage collection
+        self.GLOBAL_LOCKS = []
+
+
     def run(self):
         """
         Run the thread.
@@ -128,6 +134,10 @@ class ProcessThread(object):
         Return:
         None
         """
+        lock = threading.RLock()
+        matplotlib.backends.backend_agg.RendererAgg.lock = lock
+        self.GLOBAL_LOCKS.append(lock)
+
         # Current time
         self.time_last = time.time()
         self.time_last_error = time.time()
@@ -282,6 +292,7 @@ class ProcessThread(object):
         self.queue_com['log'].put(tu.create_log('Stopped', self.name))
         print(self.name, ': Stopped')
         self.has_finished.value = True
+        self.GLOBAL_LOCKS.clear()
 
     def check_full(self):
         """
@@ -2942,10 +2953,12 @@ class ProcessThread(object):
             dont_tar = True
         else:
             for entry in self.settings['Copy']['Picking_entries']:
-                if entry.replace(' ', '_') in root_name:
+                if entry.replace(' ', '_').replace('>=', '') in root_name:
                     if root_name.endswith('txt'):
                         dont_tar = True
                     elif root_name.endswith('box'):
+                        dont_tar = True
+                    elif root_name.endswith('cbox'):
                         dont_tar = True
 
         if root_name == 'None':
