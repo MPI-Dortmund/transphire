@@ -83,6 +83,7 @@ def default_cryolo_v1_4_1():
         ['--num_cpu', '-1', int, '', 'PLAIN', 'Advanced', '(FILAMENT MODE) Number of CPUs used during filament tracing. By default it will use all of the available CPUs.'],
         ['--otf', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'On the fly filtering.'],
         ['--gpu', '0', [int]*99, '', 'PLAIN', 'Advanced', 'Specifiy which gpu\'s should be used.'],
+        ['--gpu_fraction', '1.0', float, '', 'PLAIN', 'Advanced', 'Specify the fraction of memory per GPU used by crYOLO during prediction. Only values between 0.0 and 1.0 are allowed.'],
         ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT A CRYOLO OPTION. Split the gpu values specified in --gpu to be able to run mutliple crYOLO jobs in parallel.'],
         ]
     return items
