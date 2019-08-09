@@ -134,6 +134,7 @@ class ProcessThread(object):
         Return:
         None
         """
+        # Replacing the Matplotlib Thread shared by all processes with its own lock to avoid a deadlock scenario.
         lock = threading.RLock()
         matplotlib.backends.backend_agg.RendererAgg.lock = lock
         self.GLOBAL_LOCKS.append(lock)
