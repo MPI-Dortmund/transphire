@@ -531,7 +531,14 @@ class ProcessWorker(QObject):
         self.emit_plot_signals()
 
         # Fill different dictionarys with process information
-        gpu_mutex_dict = dict([(str(idx), [manager.Lock(), 0]) for idx in range(99)])
+        gpu_mutex_dict = dict([
+            ('{0}_{1}'.format(idx, idx_2), [manager.RLock(), 0])
+            if idx_2 != -1
+            else
+            (str(idx), [manager.RLock(), 0])
+            for idx in range(10)
+            for idx_2 in range(-1, 10)
+            ])
 
         # Shared dictionary
         shared_dict = {

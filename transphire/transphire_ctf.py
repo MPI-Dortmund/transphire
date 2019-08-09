@@ -949,7 +949,7 @@ def shift_to_contrast(phase_shift):
         np.sqrt(1.0 + np.tan(np.radians(phase_shift))**2) * 100.0
 
 
-def create_jpg_file(input_mrc_file, settings, ctf_name, write_lock):
+def create_jpg_file(input_mrc_file, settings, ctf_name):
     file_name = tu.get_name(input_mrc_file)
     input_ctf_file = None
     input_1d_file = None
@@ -1063,20 +1063,16 @@ def create_jpg_file(input_mrc_file, settings, ctf_name, write_lock):
 
         arr_3 = plot_data
 
-    write_lock.acquire()
-    try:
-        if arr_1 is not None:
-            mi.imsave(jpg_file_1, arr_1, cmap='gist_gray')
-        if arr_2 is not None:
-            mi.imsave(jpg_file_2, arr_2, cmap='gist_gray')
-        if arr_3 is not None:
-            fig, ax = plt.subplots()
-            for y_values, label in arr_3:
-                ax.plot(x_data, y_values, label=label)
-            plt.legend(loc='upper right')
-            plt.grid()
-            plt.ylim([-0.5, 2.5])
-            plt.savefig(jpg_file_3, dpi=300)
-            plt.close(fig)
-    finally:
-        write_lock.release()
+    if arr_1 is not None:
+        mi.imsave(jpg_file_1, arr_1, cmap='gist_gray')
+    if arr_2 is not None:
+        mi.imsave(jpg_file_2, arr_2, cmap='gist_gray')
+    if arr_3 is not None:
+        fig, ax = plt.subplots()
+        for y_values, label in arr_3:
+            ax.plot(x_data, y_values, label=label)
+        plt.legend(loc='upper right')
+        plt.grid()
+        plt.ylim([-0.5, 2.5])
+        plt.savefig(jpg_file_3, dpi=300)
+        plt.close(fig)

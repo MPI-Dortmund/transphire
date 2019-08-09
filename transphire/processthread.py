@@ -1973,15 +1973,11 @@ class ProcessThread(object):
                 )
 
             # Create folders if they do not exist
-            self.queue_lock.acquire()
-            try:
-                tu.mkdir_p(output_transfer_root)
-                tu.mkdir_p(output_transfer)
-                tu.mkdir_p(output_transfer_log)
-                tu.mkdir_p(output_transfer_scratch)
-                tu.mkdir_p(output_transfer_log_scratch)
-            finally:
-                self.queue_lock.release()
+            tu.mkdir_p(output_transfer_root)
+            tu.mkdir_p(output_transfer)
+            tu.mkdir_p(output_transfer_log)
+            tu.mkdir_p(output_transfer_scratch)
+            tu.mkdir_p(output_transfer_log_scratch)
 
             # Remove the path from the name
             file_name = os.path.basename(root_name)
@@ -2017,11 +2013,7 @@ class ProcessThread(object):
             # Create the commands
             if motion_idx == 0:
                 # DW folder
-                self.queue_lock.acquire()
-                try:
-                    tu.mkdir_p(output_dw)
-                finally:
-                    self.queue_lock.release()
+                tu.mkdir_p(output_dw)
 
                 # Files
                 file_stack = os.path.join(
@@ -2190,7 +2182,6 @@ class ProcessThread(object):
         tum.create_jpg_file(
             file_for_jpg,
             self.settings,
-            self.shared_dict_typ['write_lock'],
             )
 
         import_name = tu.get_name(file_for_jpg)
@@ -2488,7 +2479,6 @@ class ProcessThread(object):
             file_sum,
             self.settings,
             self.settings['Copy']['CTF'],
-            self.shared_dict_typ['write_lock'],
             )
 
         import_name = tu.get_name(file_sum)
@@ -2750,7 +2740,6 @@ class ProcessThread(object):
                 settings=self.settings,
                 queue_com=self.queue_com,
                 name=self.name,
-                write_lock=self.shared_dict_typ['write_lock'],
                 )
             file_logs.append(log_files)
 
@@ -3251,20 +3240,35 @@ class ProcessThread(object):
         count_idx = 1
 
         if gpu_list:
-            for entry in sorted(gpu_list):
+            gpu_list = [
+                (entry.split('_')[0], entry)
+                if '_' in entry
+                else
+                (entry, entry)
+                for entry in sorted(gpu_list)
+                ]
+            for main, entry in gpu_list:
                 self.shared_dict['gpu_lock'][entry][mutex_idx].acquire()
+                if '_' in entry:
+                    self.shared_dict['gpu_lock'][main][mutex_idx].acquire()
+
 
             if block_gpu:
-                for entry in sorted(gpu_list):
+                for main, entry in gpu_list:
                 #    lock_var = self.shared_dict['gpu_lock'][entry][mutex_idx].tryLock()
                 #    assert bool(not lock_var)
                     while self.shared_dict['gpu_lock'][entry][count_idx] != 0:
                         time.sleep(0.500)
+                    while self.shared_dict['gpu_lock'][main][count_idx] != 0:
+                        time.sleep(0.500)
 
             else:
-                for entry in sorted(gpu_list):
+                for main, entry in gpu_list:
                     self.shared_dict['gpu_lock'][entry][count_idx] += 1
                     self.shared_dict['gpu_lock'][entry][mutex_idx].release()
+                    if '_' in entry:
+                        self.shared_dict['gpu_lock'][main][count_idx] += 1
+                        self.shared_dict['gpu_lock'][main][mutex_idx].release()
         else:
             pass
 
@@ -3283,14 +3287,18 @@ class ProcessThread(object):
         time.sleep(0.500)
         if gpu_list:
             if block_gpu:
-                for entry in gpu_list:
+                for main, entry in gpu_list:
                 #    lock_var = self.shared_dict['gpu_lock'][entry][mutex_idx].tryLock()
                 #    assert bool(not lock_var)
                     self.shared_dict['gpu_lock'][entry][mutex_idx].release()
+                    if '_' in entry:
+                        self.shared_dict['gpu_lock'][main][mutex_idx].release()
 
             else:
-                for entry in gpu_list:
+                for main, entry in gpu_list:
                     self.shared_dict['gpu_lock'][entry][count_idx] -= 1
+                    if '_' in entry:
+                        self.shared_dict['gpu_lock'][main][count_idx] -= 1
         else:
             pass
 

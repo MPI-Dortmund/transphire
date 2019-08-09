@@ -130,14 +130,22 @@ def get_motion_command(file_input, file_output_scratch, file_log_scratch, settin
         gpu_list = gpu.split()
 
         if tu.is_higher_version(motion_name, '1.1.0'):
-            if settings[motion_name]['-GpuMemUsage'] == '0':
+            if '_' in gpu_list:
+                if settings[motion_name]['-GpuMemUsage'] == '1':
+                    raise UserWarning('Sub GPUs are only supported if the GpuMemUsage option is not equal 1')
+                block_gpu = False
+            elif settings[motion_name]['-GpuMemUsage'] == '0':
                 block_gpu = False
             else:
                 block_gpu = True
         elif tu.is_higher_version(motion_name, '1.0.5'):
             block_gpu = True
+            if '_' in gpu_list:
+                raise UserWarning('Sub GPUs are only supported in MotionCor version >=1.1.0')
         elif tu.is_higher_version(motion_name, '1.0.0'):
             block_gpu = False
+            if '_' in gpu_list:
+                raise UserWarning('Sub GPUs are only supported in MotionCor version >=1.1.0')
 
     else:
         message = '\n'.join([
@@ -214,11 +222,15 @@ def create_motion_cor_2_v1_0_0_command(motion_name, file_input, file_output, fil
         except ValueError:
             gpu_id = 0
         try:
-            gpu = settings[motion_name]['-Gpu'].split()[gpu_id]
+            gpu_raw = settings[motion_name]['-Gpu'].split()[gpu_id]
         except IndexError:
             raise UserWarning('There are less gpus provided than threads available! Please restart with the same number of pipeline processors as GPUs provided and restart! Stopping this thread!')
     else:
-        gpu = settings[motion_name]['-Gpu']
+        gpu_raw = settings[motion_name]['-Gpu']
+
+    gpu = ' '.join(list(set([entry.split('_')[0] for entry in gpu_raw.split()])))
+    if len(gpu.split()) != len(gpu_raw.split()):
+        raise UserWarning('One cannot use multi GPU in combination with the disabled Split GPU option!')
 
     command.append('-Gpu')
     command.append('{0}'.format(gpu))
@@ -234,7 +246,7 @@ def create_motion_cor_2_v1_0_0_command(motion_name, file_input, file_output, fil
         else:
             continue
 
-    return ' '.join(command), gpu
+    return ' '.join(command), gpu_raw
 
 
 def create_sum_movie_command(
@@ -621,7 +633,7 @@ def create_export_data(export_data, lines):
     lines.append('{0}\n'.format('\t'.join(row_string)))
 
 
-def create_jpg_file(input_file, settings, write_lock):
+def create_jpg_file(input_file, settings):
     file_name = tu.get_name(input_file)
 
     tu.mkdir_p(os.path.join(settings['motion_folder'], 'jpg'))
@@ -686,11 +698,7 @@ def create_jpg_file(input_file, settings, write_lock):
         arr_2 = tu.rebin(arr_2, shape)
         arr_2 = tu.normalize_image(arr_2, apix=float(settings[settings['Copy']['Motion']]['-PixSize']), real=False)
 
-    write_lock.acquire()
-    try:
-        if arr_1 is not None:
-            mi.imsave(jpg_file_1, arr_1, cmap='gist_gray')
-        if arr_2 is not None:
-            mi.imsave(jpg_file_2, arr_2, cmap='gist_gray')
-    finally:
-        write_lock.release()
+    if arr_1 is not None:
+        mi.imsave(jpg_file_1, arr_1, cmap='gist_gray')
+    if arr_2 is not None:
+        mi.imsave(jpg_file_2, arr_2, cmap='gist_gray')
