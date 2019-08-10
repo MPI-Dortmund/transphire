@@ -129,7 +129,11 @@ def get_motion_command(file_input, file_output_scratch, file_log_scratch, settin
             )
         gpu_list = gpu.split()
 
-        if tu.is_higher_version(motion_name, '1.1.0'):
+        if tu.is_higher_version(motion_name, '1.2.0'):
+            if '_' in gpu:
+                raise UserWarning('Sub GPUs are only supported in MotionCor version >=1.1.0, <1.2.0')
+            block_gpu = False
+        elif tu.is_higher_version(motion_name, '1.1.0'):
             if '_' in gpu:
                 if float(settings[motion_name]['-GpuMemUsage']) == 1:
                     raise UserWarning('Sub GPUs are only supported if the GpuMemUsage option is not equal 1')
@@ -141,11 +145,11 @@ def get_motion_command(file_input, file_output_scratch, file_log_scratch, settin
         elif tu.is_higher_version(motion_name, '1.0.5'):
             block_gpu = True
             if '_' in gpu:
-                raise UserWarning('Sub GPUs are only supported in MotionCor version >=1.1.0')
+                raise UserWarning('Sub GPUs are only supported in MotionCor version >=1.1.0, <1.2.0')
         elif tu.is_higher_version(motion_name, '1.0.0'):
             block_gpu = False
             if '_' in gpu:
-                raise UserWarning('Sub GPUs are only supported in MotionCor version >=1.1.0')
+                raise UserWarning('Sub GPUs are only supported in MotionCor version >=1.1.0, <1.2.0')
 
     else:
         message = '\n'.join([

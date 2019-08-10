@@ -2043,6 +2043,7 @@ class ProcessThread(object):
                     queue_com=self.queue_com,
                     name=self.name
                     )
+                self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', root_name, 'get_motion_command', time.time() - start_prog))
                 command, block_gpu, gpu_list = tum.get_motion_command(
                     file_input=file_input,
                     file_output_scratch=file_output_scratch,
@@ -2053,6 +2054,7 @@ class ProcessThread(object):
                     do_subsum=do_subsum
                     )
 
+                self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', root_name, 'run_command', time.time() - start_prog))
                 file_stdout_scratch, file_stderr_scratch = self.run_command(
                     command=command,
                     log_prefix=file_log_scratch,
@@ -2060,6 +2062,7 @@ class ProcessThread(object):
                     gpu_list=gpu_list,
                     shell=False
                     )
+                self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', root_name, 'stuff', time.time() - start_prog))
                 file_stdout = file_stdout_scratch.replace(
                     output_transfer_log_scratch,
                     output_transfer_log
@@ -2123,6 +2126,7 @@ class ProcessThread(object):
             zero_list.append(file_stderr)
 
             # Sanity check
+            self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', root_name, 'glob', time.time() - start_prog))
             log_files_scratch = glob.glob('{0}0*'.format(file_log_scratch))
             non_zero_list_scratch.extend(log_files_scratch)
             tus.check_outputs(
@@ -2143,6 +2147,7 @@ class ProcessThread(object):
                     command='copy'
                     )
 
+            self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', root_name, 'Copy', time.time() - start_prog))
             if os.path.realpath(self.settings['scratch_motion_folder']) != \
                     os.path.realpath(self.settings['motion_folder']):
                 tu.copy(file_output_scratch, file_output)
@@ -2178,6 +2183,7 @@ class ProcessThread(object):
             else:
                 pass
 
+            self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', root_name, 'Logs', time.time() - start_prog))
             queue_dict[motion_idx]['sum'].append(file_output)
             for file_name_log in glob.glob('{0}*'.format(file_log)):
                 queue_dict[motion_idx]['log'].append(file_name_log)
@@ -2186,6 +2192,7 @@ class ProcessThread(object):
             else:
                 pass
 
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', root_name, 'Create jpg', time.time() - start_prog))
         try:
             file_for_jpg = queue_dict[motion_idx]['sum_dw'][0]
         except IndexError:
@@ -2196,6 +2203,7 @@ class ProcessThread(object):
             self.settings,
             )
 
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', root_name, 'Plot data', time.time() - start_prog))
         import_name = tu.get_name(file_for_jpg)
         data, data_original = tu.get_function_dict()[self.settings['Copy']['Motion']]['plot_data'](
             self.settings['Copy']['Motion'],
@@ -2203,6 +2211,7 @@ class ProcessThread(object):
             import_name
             )
 
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', root_name, 'Check for outlier', time.time() - start_prog))
         warnings, skip_list = tus.check_for_outlier(
             dict_name='motion',
             data=data,
@@ -2250,6 +2259,7 @@ class ProcessThread(object):
         data = data[mask]
         data_original = data_original[mask]
 
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', root_name, 'Combine outputs', time.time() - start_prog))
         if data.shape[0] != 0:
             sum_file = queue_dict[0]['sum'][0]
             try:
@@ -2296,6 +2306,7 @@ class ProcessThread(object):
         else:
             pass
 
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', root_name, 'Add to queue', time.time() - start_prog))
         if skip_list:
             pass
         else:
