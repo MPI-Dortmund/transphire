@@ -52,7 +52,10 @@ def extract_time_and_grid_information(root_name, settings, queue_com, name):
                 ])
 
         elif settings['General']['Camera'] in ('K2', 'K3'):
-            search_results = re.search(r'(?P<date>\d{8})_(?P<project>.*)_A(?P<atlas>\d{3})_G(?P<grid>\d{3})_H(?P<hole>\d{3})_D(?P<spot>\d{3})', root_name)
+            search_results = re.search(
+                r'(?P<date>\d{8})_(?P<project>.*)_A(?P<atlas>\d{3,})_G(?P<grid>\d{3,})_H(?P<hole>\d{3,})_D(?P<spot>\d{3,})',
+                root_name
+                )
             grid_number = '{0}_{1}'.format(
                 search_results.group('atlas'),
                 search_results.group('grid')
