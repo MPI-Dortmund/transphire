@@ -2042,7 +2042,7 @@ class ProcessThread(object):
                     name=self.name
                     )
                 self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', root_name, 'get_motion_command', time.time() - start_prog))
-                command, block_gpu, gpu_list = tum.get_motion_command(
+                command, block_gpu, gpu_list, file_to_delete = tum.get_motion_command(
                     file_input=file_input,
                     file_output_scratch=file_output_scratch,
                     file_log_scratch=file_log_scratch,
@@ -2058,7 +2058,8 @@ class ProcessThread(object):
                     log_prefix=file_log_scratch,
                     block_gpu=block_gpu,
                     gpu_list=gpu_list,
-                    shell=False
+                    shell=False,
+                    file_to_delete=file_to_delete,
                     )
                 self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', root_name, 'stuff', time.time() - start_prog))
                 file_stdout = file_stdout_scratch.replace(
@@ -3245,7 +3246,7 @@ class ProcessThread(object):
         else:
             pass
 
-    def run_command(self, command, log_prefix, block_gpu, gpu_list, shell):
+    def run_command(self, command, log_prefix, block_gpu, gpu_list, shell, file_to_delete=None):
         """
         Run the command with respect to the gpu list.
 
@@ -3296,6 +3297,12 @@ class ProcessThread(object):
             pass
 
         # Run the command
+        time.sleep(0.100)
+        if file_to_delete is not None:
+            try:
+                os.remove(file_to_delete)
+            except FileNotFoundError:
+                pass
         with open(log_file, 'w') as out:
             out.write(command)
             with open(err_file, 'w') as err:
@@ -3306,8 +3313,13 @@ class ProcessThread(object):
                     sp.Popen(command.split(), stdout=out, stderr=err).wait()
                 stop_time = time.time()
                 out.write('\nTime: {0} sec'.format(stop_time - start_time)) 
+        if file_to_delete is not None:
+            try:
+                os.remove(file_to_delete)
+            except FileNotFoundError:
+                pass
 
-        time.sleep(0.500)
+        time.sleep(0.100)
         if gpu_list:
             if block_gpu:
                 for main, entry in gpu_list:

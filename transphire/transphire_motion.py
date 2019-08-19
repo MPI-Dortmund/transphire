@@ -116,6 +116,7 @@ def get_motion_command(file_input, file_output_scratch, file_log_scratch, settin
     command = None
     block_gpu = None
     gpu_list = None
+    file_to_delete = None
     if tu.is_higher_version(motion_name, '1.0.0'):
         command, gpu = create_motion_cor_2_v1_0_0_command(
             motion_name=motion_name,
@@ -131,8 +132,15 @@ def get_motion_command(file_input, file_output_scratch, file_log_scratch, settin
 
         if tu.is_higher_version(motion_name, '1.2.0'):
             if '_' in gpu:
-                raise UserWarning('Sub GPUs are only supported in MotionCor version >=1.1.0, <1.2.0')
-            block_gpu = False
+                if float(settings[motion_name]['-GpuMemUsage']) == 1:
+                    raise UserWarning('Sub GPUs are only supported if the GpuMemUsage option is not equal 1')
+                block_gpu = False
+                file_to_delete = '/tmp/MotionCor2_FreeGpus.txt'
+            elif float(settings[motion_name]['-GpuMemUsage']) == 0:
+                block_gpu = False
+                file_to_delete = '/tmp/MotionCor2_FreeGpus.txt'
+            else:
+                block_gpu = True
         elif tu.is_higher_version(motion_name, '1.1.0'):
             if '_' in gpu:
                 if float(settings[motion_name]['-GpuMemUsage']) == 1:
@@ -166,7 +174,7 @@ def get_motion_command(file_input, file_output_scratch, file_log_scratch, settin
     assert block_gpu is not None, 'block_gpu not specified: {0}'.format(motion_name)
     assert gpu_list is not None, 'gpu_list not specified: {0}'.format(motion_name)
 
-    return command, block_gpu, gpu_list
+    return command, block_gpu, gpu_list, file_to_delete
 
 
 def create_motion_cor_2_v1_0_0_command(motion_name, file_input, file_output, file_log, settings, queue_com, name, do_subsum):
