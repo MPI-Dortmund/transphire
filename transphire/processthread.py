@@ -3302,7 +3302,8 @@ class ProcessThread(object):
             try:
                 os.remove(file_to_delete)
             except FileNotFoundError:
-                pass
+                with open(file_to_delete, 'w'):
+                    pass
         with open(log_file, 'w') as out:
             out.write(command)
             with open(err_file, 'w') as err:
