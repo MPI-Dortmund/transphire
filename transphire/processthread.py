@@ -793,8 +793,6 @@ class ProcessThread(object):
                 self.add_to_queue(aim=self.typ, root_name=root_name)
             self.write_error(msg=tb.format_exc(), root_name=root_name)
             self.stop.value = True
-            self.shared_dict_typ['delay_error'] = True
-            self.shared_dict_typ['is_error'] = True
         except Exception:
             if not dummy:
                 self.add_to_queue(aim=self.typ, root_name=root_name)
