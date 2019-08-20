@@ -793,6 +793,11 @@ class ProcessThread(object):
                 self.add_to_queue(aim=self.typ, root_name=root_name)
             self.write_error(msg=tb.format_exc(), root_name=root_name)
             self.stop.value = True
+            self.queue_lock.acquire()
+            try:
+                self.shared_dict_typ['max_running'] -= 1
+            finally:
+                self.queue_lock.release()
         except Exception:
             if not dummy:
                 self.add_to_queue(aim=self.typ, root_name=root_name)
