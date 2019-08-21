@@ -840,14 +840,11 @@ class ProcessThread(object):
 
                 self.check_queue_files(root_name=root_name)
 
-                if self.typ == 'Import':
-                    pass
-                else:
-                    self.queue_lock.acquire()
-                    try:
-                        self.shared_dict_typ['file_number'] += 1
-                    finally:
-                        self.queue_lock.release()
+                self.queue_lock.acquire()
+                try:
+                    self.shared_dict_typ['file_number'] += 1
+                finally:
+                    self.queue_lock.release()
 
         self.queue_lock.acquire()
         try:
