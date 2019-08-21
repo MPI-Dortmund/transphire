@@ -563,39 +563,39 @@ class ProcessWorker(QObject):
                         )
 
         # Define file number and check if file already exists
-        shared_dict['typ']['Import']['file_number'] = int(self.settings['General']['Start number']) - 1
+        shared_dict['typ']['Find']['file_number'] = int(self.settings['General']['Start number']) - 1
 
         if self.settings['General']['Rename micrographs'] == 'True':
             new_name = '{0}/{1}{2:0{3}d}{4}'.format(
                 self.settings['meta_folder'],
                 self.settings['General']['Rename prefix'],
-                shared_dict['typ']['Import']['file_number']+1,
+                shared_dict['typ']['Find']['file_number']+1,
                 len(self.settings['General']['Estimated mic number']),
                 self.settings['General']['Rename suffix']
                 )
 
             if os.path.exists('{0}_krios_sum.mrc'.format(new_name)):
-                old_filenumber = shared_dict['typ']['Import']['file_number']
-                with open(shared_dict['typ']['Import']['number_file'], 'r') as read:
-                    shared_dict['typ']['Import']['file_number'] = int(read.readline())
+                old_filenumber = shared_dict['typ']['Find']['file_number']
+                with open(shared_dict['typ']['Find']['number_file'], 'r') as read:
+                    shared_dict['typ']['Find']['file_number'] = int(read.readline())
                 if self.settings['General']['Increment number'] == 'True':
                     message = '{0}: Filenumber {1} already exists!\n'.format(
-                        'Import',
+                        'Find',
                         old_filenumber+1
                         ) + \
                         'Last one used: {0} - Continue with {1}'.format(
-                            shared_dict['typ']['Import']['file_number'],
-                            shared_dict['typ']['Import']['file_number']+1
+                            shared_dict['typ']['Find']['file_number'],
+                            shared_dict['typ']['Find']['file_number']+1
                             )
                     queue_com['error'].put(message)
                     queue_com['notification'].put(message)
                 else:
                     self.stop = True
                     message = '{0}: Filenumber {1} already exists!\n'.format(
-                        'Import',
+                        'Find',
                         old_filenumber+1
                         ) + \
-                        'Check Startnumber! Last one used: {0}'.format(shared_dict['typ']['Import']['file_number'])
+                        'Check Startnumber! Last one used: {0}'.format(shared_dict['typ']['Find']['file_number'])
                     queue_com['error'].put(message)
                     queue_com['notification'].put(message)
             else:
@@ -856,25 +856,22 @@ class ProcessWorker(QObject):
 
         if os.path.exists(save_file):
             with open(save_file, 'r') as read:
-                lines = [line.rstrip() for line in read.readlines()]
+                lines = [line.rstrip() for line in read.readlines() if line.strip()]
 
             for line in lines:
                 if self.settings['software_meta_tar'] in line:
                     self.settings['copy_software_meta'] = False
                 else:
                     pass
-                if line.startswith(self.settings['project_folder']):
-                    share_list.append(line)
-                    queue.put(line)
-                else:
-                    pass
+                share_list.append(line)
+                queue.put(line)
         else:
             with open(save_file, 'w'):
                 pass
 
         if os.path.exists(done_file):
             with open(done_file, 'r') as read:
-                lines = [line.rstrip() for line in read.readlines()]
+                lines = [line.rstrip() for line in read.readlines() if line.strip()]
                 shared_dict_typ['file_number'] = len(lines)
             for line in lines:
                 if self.settings['software_meta_tar'] in line:
@@ -887,7 +884,7 @@ class ProcessWorker(QObject):
 
         if os.path.exists(list_file):
             with open(list_file, 'r') as read:
-                lines = [line.rstrip() for line in read.readlines()]
+                lines = [line.rstrip() for line in read.readlines() if line.strip()]
             for line in lines:
                 if line:
                     queue_list.append(line)
@@ -906,11 +903,11 @@ class ProcessWorker(QObject):
                 '{0}_*.tar'.format(key)
                 ))
             if tar_files:
-                shared_dict_typ['tar_idx'] = max([int(re.search('{0}_.*([0-9]{{6}})\.tar'.format(key), entry).group(1)) for entry in tar_files]) + 1
+                shared_dict_typ['tar_idx'] = max([int(re.search('{0}_.*([0-9]{{6}})\.tar'.format(re.escape(key)), entry).group(1)) for entry in tar_files]) + 1
             else:
                 shared_dict_typ['tar_idx'] = 0
         else:
             try:
-                shared_dict_typ['tar_idx'] = max([int(re.search('{0}_.*([0-9]{{6}})\.tar'.format(key), entry).group(1)) for entry in queue_list if re.search('{0}_.*([0-9]{{6}})\.tar'.format(key), entry)])
+                shared_dict_typ['tar_idx'] = max([int(re.search('{0}_.*([0-9]{{6}})\.tar'.format(re.escape(key)), entry).group(1)) for entry in queue_list if re.search('{0}_.*([0-9]{{6}})\.tar'.format(re.escape(key)), entry)])
             except ValueError:
                 pass

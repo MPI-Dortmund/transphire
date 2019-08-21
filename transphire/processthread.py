@@ -696,10 +696,6 @@ class ProcessThread(object):
                 ])
             return None
         finally:
-            # Sleep for a second here to make sure that the order of the queue will be maintained.
-            # In case of multiple import jobs.
-            if self.typ == 'Import':
-                time.sleep(1)
             self.queue_lock.release()
 
         # Set for every process a method and the right lost_connection name
@@ -990,7 +986,7 @@ class ProcessThread(object):
         is_present = False
         try:
             with open(file_name, 'r') as read:
-                is_present = bool(re.search('^{0}$'.format(root_name), read.read(), re.MULTILINE))
+                is_present = bool(re.search(r'^{0}$'.format(re.escape(root_name)), read.read(), re.MULTILINE))
         except FileNotFoundError:
             pass
 
@@ -999,6 +995,36 @@ class ProcessThread(object):
                 append.write('{0}\n'.format(root_name))
         else:
             pass
+
+    def already_in_queue_file(self, aim, root_name):
+        """
+        Add item to queue.
+
+        Arguments:
+        aim - Aim queue
+        root_name - Name to add
+
+        Return:
+        None
+        """
+        self.shared_dict['typ'][aim]['queue_lock'].acquire()
+        is_present = False
+        try:
+            files = (
+                self.shared_dict['typ'][aim]['save_file'],
+                self.shared_dict['typ'][aim]['list_file'],
+                self.shared_dict['typ'][aim]['done_file'],
+                )
+            for file_name in files:
+                try:
+                    with open(file_name, 'r') as read:
+                        if bool(re.search(r'{0}'.format(re.escape(root_name)), read.read(), re.MULTILINE)):
+                            is_present = True
+                except FileNotFoundError:
+                    pass
+        finally:
+            self.shared_dict['typ'][aim]['queue_lock'].release()
+        return is_present
 
     def add_to_queue(self, aim, root_name):
         """
@@ -1205,6 +1231,40 @@ class ProcessThread(object):
 
             data = np.sort(data, order=['date', 'time'])
             for root_name in data['root']:
+
+                self.shared_dict_typ['count_lock'].acquire()
+                try:
+                    self.shared_dict_typ['file_number'] += 1
+
+                    if self.settings['General']['Rename micrographs'] == 'True':
+                        new_name_meta = '{0}/{1}{2:0{3}d}{4}'.format(
+                            self.settings['meta_folder'],
+                            self.settings['General']['Rename prefix'],
+                            self.shared_dict_typ['file_number'],
+                            len(self.settings['General']['Estimated mic number']),
+                            self.settings['General']['Rename suffix']
+                            )
+                    else:
+                        new_name_meta = os.path.join(
+                            self.settings['meta_folder'],
+                            root_name.split('/')[-1]
+                            )
+
+                    if os.path.exists('{0}_krios_sum.mrc'.format(new_name_meta)):
+                        self.stop = True
+                        message = '{0}: Filenumber {1} already exists!\n'.format(
+                            self.name,
+                            self.shared_dict_typ['file_number']
+                            ) + \
+                            'Check Startnumber! Last one used: {0}'.format(self.shared_dict_typ['file_number'])
+                        queue_com['error'].put(message)
+                        queue_com['notification'].put(message)
+                    else:
+                        with open(self.shared_dict_typ['number_file'], 'w') as write:
+                            write.write(str(self.shared_dict_typ['file_number']))
+                finally:
+                    self.shared_dict_typ['count_lock'].release()
+
                 if self.stop.value:
                     break
                 for aim in self.content_settings['aim']:
@@ -1231,7 +1291,7 @@ class ProcessThread(object):
                     elif var:
                         self.add_to_queue(
                             aim=aim_name,
-                            root_name=root_name
+                            root_name='{0}|||{1}'.format(self.shared_dict_typ['file_number'], root_name)
                             )
                     else:
                         pass
@@ -1314,6 +1374,26 @@ class ProcessThread(object):
                     continue
                 elif not frames:
                     continue
+                elif self.already_in_translation_file(os.path.basename(root_name)):
+                    self.shared_dict_typ['bad_lock'].acquire()
+                    try:
+                        if root_name not in self.shared_dict['bad'][self.typ]:
+                            self.shared_dict['bad'][self.typ].append(root_name)
+                        else:
+                            pass
+                    finally:
+                        self.shared_dict_typ['bad_lock'].release()
+                    continue
+                elif self.already_in_queue_file('Import', os.path.basename(root_name)):
+                    self.shared_dict_typ['bad_lock'].acquire()
+                    try:
+                        if root_name not in self.shared_dict['bad'][self.typ]:
+                            self.shared_dict['bad'][self.typ].append(root_name)
+                        else:
+                            pass
+                    finally:
+                        self.shared_dict_typ['bad_lock'].release()
+                    continue
                 else:
                     pass
 
@@ -1346,6 +1426,9 @@ class ProcessThread(object):
         """
         start_prog = time.time()
         self.queue_com['log'].put(tu.create_log(self.name, 'run_import', root_name, 'start'))
+        root_name_raw = root_name
+        number, root_name = root_name_raw.split('|||')
+        number = int(number)
         frames_root = root_name.replace(
             self.settings['General']['Search path meta'],
             self.settings['General']['Search path frames'],
@@ -1390,21 +1473,18 @@ class ProcessThread(object):
 
         self.shared_dict_typ['count_lock'].acquire()
         try:
-            self.shared_dict_typ['file_number'] += 1
-            with open(self.shared_dict_typ['number_file'], 'w') as write:
-                write.write(str(self.shared_dict_typ['file_number']))
             if self.settings['General']['Rename micrographs'] == 'True':
                 new_name_stack = '{0}/{1}{2:0{3}d}{4}'.format(
                     self.settings['stack_folder'],
                     self.settings['General']['Rename prefix'],
-                    self.shared_dict_typ['file_number'],
+                    number,
                     len(self.settings['General']['Estimated mic number']),
                     self.settings['General']['Rename suffix']
                     )
                 new_name_meta = '{0}/{1}{2:0{3}d}{4}'.format(
                     self.settings['meta_folder'],
                     self.settings['General']['Rename prefix'],
-                    self.shared_dict_typ['file_number'],
+                    number,
                     len(self.settings['General']['Estimated mic number']),
                     self.settings['General']['Rename suffix']
                     )
