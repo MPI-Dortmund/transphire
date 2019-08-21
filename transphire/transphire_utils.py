@@ -210,6 +210,16 @@ def get_function_dict():
     None
     """
     function_dict = {}
+    function_dict['WINDOW >=v1.2'] = {
+            'plot': tp.update_ctffind_4_v4_1_8,
+            'plot_data': ti.import_ctffind_v4_1_8,
+            'content': tc.default_ctffind_4_v4_1_8,
+            'executable': True,
+            'has_path': True,
+            'typ': 'extract',
+            'allow_empty': [''],
+            }
+
     function_dict['CTFFIND4 >=v4.1.8'] = {
             'plot': tp.update_ctffind_4_v4_1_8,
             'plot_data': ti.import_ctffind_v4_1_8,
@@ -504,34 +514,25 @@ def reduce_programs(exclude_set=None):
         exclude_set = set([])
     else:
         exclude_set = exclude_set
-    content_motion = []
-    content_ctf = []
-    content_picking = []
-    content_compress = []
+    content = {}
     function_dict = get_function_dict()
 
     for key in function_dict:
         if key in exclude_set:
             continue
         elif function_dict[key]['executable']:
-            if function_dict[key]['typ'] == 'motion':
-                content_motion.append(key)
-            elif function_dict[key]['typ'] == 'ctf':
-                content_ctf.append(key)
-            elif function_dict[key]['typ'] == 'picking':
-                content_picking.append(key)
-            elif function_dict[key]['typ'] == 'compress':
-                content_compress.append(key)
-            elif function_dict[key]['typ'] is None:
+            content.setdefault(function_dict[key]['typ'], []).append(key)
+
+            if function_dict[key]['typ'] is None:
                 print(key, 'is executable, but does not have a typ! Exit here!')
-                sys.exit(1)
-            else:
-                print(key, 'has an unknown typ:', function_dict[key]['typ'], '! Exit here!')
                 sys.exit(1)
         else:
             pass
 
-    return sorted(content_motion), sorted(content_ctf), sorted(content_picking), sorted(content_compress)
+    for key, value in content.items():
+        content[key] = list(reversed(value))
+
+    return content
 
 
 def reduce_copy_entries(exclude_set, content):
@@ -553,6 +554,8 @@ def reduce_copy_entries(exclude_set, content):
                 name = 'CTF'
             elif 'Picking' in sub_item:
                 name = 'Picking'
+            elif 'Extract' in sub_item:
+                name = 'Extract'
             else:
                 continue
 
@@ -642,7 +645,7 @@ def get_content_gui(content, template_name):
     Content as list
     """
 
-    content_motion, content_ctf, content_picking, content_compress = reduce_programs()
+    content_extern = reduce_programs()
 
     gui_content = [
         {
@@ -729,6 +732,11 @@ def get_content_gui(content, template_name):
             'layout': 'Settings',
             },
         {
+            'name': 'Extract',
+            'widget': TabDocker,
+            'layout': 'Settings',
+            },
+        {
             'name': 'Status',
             'widget': StatusContainer,
             'content': content[template_name]['Others'],
@@ -752,13 +760,19 @@ def get_content_gui(content, template_name):
             'widget': TabDocker,
             'layout': 'Visualisation',
             },
+        {
+            'name': 'Plot Extract',
+            'widget': TabDocker,
+            'layout': 'Visualisation',
+            },
         ]
 
     all_content = []
-    all_content.append(['Compress', content_compress])
-    all_content.append(['Motion', content_motion])
-    all_content.append(['CTF', content_ctf])
-    all_content.append(['Picking', content_picking])
+    all_content.append(['Compress', content_extern['compress']])
+    all_content.append(['Motion', content_extern['motion']])
+    all_content.append(['CTF', content_extern['ctf']])
+    all_content.append(['Picking', content_extern['picking']])
+    all_content.append(['Extract', content_extern['extract']])
     for typ, content_typ in all_content:
         for input_content in content_typ:
             gui_content.append({

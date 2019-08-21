@@ -122,6 +122,15 @@ class DefaultSettings(QDialog):
                             },
                         'content': [],
                         },
+                    'Extract': {
+                        'sub_content': {
+                            'WINDOW': {
+                                'sub_content': {},
+                                'content': ['WINDOW'],
+                                },
+                            },
+                        'content': [],
+                        },
                     'Compress': {
                         'sub_content': {
                             'Compress cmd': {

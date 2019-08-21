@@ -577,6 +577,7 @@ def default_pipeline():
             'Motion;' +
             'CTF_sum:CTF,' +
             'Picking:Picking,' +
+            'Extract:Extract,' +
             'Sum to work:Copy to work:Copy_work,' +
             'Sum to HDD:Copy to HDD:Copy_hdd,' +
             'Sum to backup:Copy to backup:Copy_backup',
@@ -589,6 +590,7 @@ def default_pipeline():
             '1',
             int,
             'CTF;' +
+            'Extract:Extract,' +
             'CTF to work:Copy to work:Copy_work,' +
             'CTF to HDD:Copy to HDD:Copy_hdd,' +
             'CTF to backup:Copy to backup:Copy_backup',
@@ -601,9 +603,22 @@ def default_pipeline():
             '1',
             int,
             'Picking;' +
+            'Extract:Extract,' +
             'Picking to work:Copy to work:Copy_work,' +
             'Picking to HDD:Copy to HDD:Copy_hdd,' +
             'Picking to backup:Copy to backup:Copy_backup',
+            'PLAIN',
+            'Main',
+            ''
+            ],
+        [
+            'Extract',
+            '1',
+            int,
+            'Extract;' +
+            'Extract to work:Copy to work:Copy_work,' +
+            'Extract to HDD:Copy to HDD:Copy_hdd,' +
+            'Extract to backup:Copy to backup:Copy_backup',
             'PLAIN',
             'Main',
             ''
@@ -901,7 +916,7 @@ def default_copy(settings_folder):
         settings_folder=settings_folder,
         name='Mount'
         )
-    programs_motion, programs_ctf, programs_picking, programs_compress = tu.reduce_programs()
+    programs_extern = tu.reduce_programs()
 
     copy_work = sorted(mount_dict['Copy_work'])
     copy_backup = sorted(mount_dict['Copy_backup'])
@@ -910,10 +925,9 @@ def default_copy(settings_folder):
     copy_work.extend(extend_list)
     copy_backup.extend(extend_list)
     copy_hdd.extend(extend_list)
-    programs_motion.extend(extend_list)
-    programs_ctf.extend(extend_list)
-    programs_picking.extend(extend_list)
-    programs_compress.extend(extend_list)
+
+    for value in programs_extern.values():
+        value.extend(extend_list)
 
     items = [
         ['WIDGETS MAIN', '8', int, '', 'PLAIN', '', ''],
@@ -922,10 +936,11 @@ def default_copy(settings_folder):
         ['Copy to work', copy_work, bool, '', 'COMBO', 'Main', 'Copy data to the work drive.'],
         ['Copy to backup', copy_backup, bool, '', 'COMBO', 'Main', 'Copy data to the backup drive.'],
         ['Copy to HDD', copy_hdd, bool, '', 'COMBO', 'Main', 'Copy data to an external hard disc.'],
-        ['Motion', programs_motion, bool, '', 'COMBO', 'Main', 'Software for motion correction.'],
-        ['CTF', programs_ctf, bool, '', 'COMBO', 'Main', 'Software for CTF estimation.'],
-        ['Picking', programs_picking, bool, '', 'COMBO', 'Main', 'Software for particle picking.'],
-        ['Compress', programs_compress, bool, '', 'COMBO', 'Main', 'Compress the micrograph movie.'],
+        ['Motion', programs_extern['motion'], bool, '', 'COMBO', 'Main', 'Software for motion correction.'],
+        ['CTF', programs_extern['ctf'], bool, '', 'COMBO', 'Main', 'Software for CTF estimation.'],
+        ['Picking', programs_extern['picking'], bool, '', 'COMBO', 'Main', 'Software for particle picking.'],
+        ['Compress', programs_extern['compress'], bool, '', 'COMBO', 'Main', 'Compress the micrograph movie.'],
+        ['Extract', programs_extern['extract'], bool, '', 'COMBO', 'Main', 'Extract particles'],
         ['Session to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the non-micrograph data (EPU session, ...) to the work drive if "Copy to work" is specified.'],
         ['Session to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the non-micrograph data (EPU session, ...) to the backup drive if "Copy to backup" is specified.'],
         ['Session to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the non-micrograph data (EPU session, ...) to the HDD drive if "Copy to HDD" is specified.'],

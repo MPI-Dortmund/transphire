@@ -164,6 +164,14 @@ class MainWindow(QMainWindow):
         self.content_raw = content_raw
         self.content_pipeline=content_pipeline
         self.layout = None
+        self.types = (
+            'mount',
+            'process',
+            'ctf',
+            'motion',
+            'picking',
+            'extract',
+            )
 
         # Settings folder
         self.settings_folder = settings_folder
@@ -172,22 +180,16 @@ class MainWindow(QMainWindow):
         self.temp_save = '{0}/temp_save_{1}'.format(settings_folder, os.uname()[1].replace(' ', '_'))
 
         # Threads
-        self.timer_ctf = None
-        self.timer_motion = None
-        self.timer_picking = None
-        self.mount_worker = None
-        self.process_worker = None
-        self.plot_worker_ctf = None
-        self.plot_worker_motion = None
-        self.plot_worker_picking = None
         self.mount_calculation_ssh = None
         self.mount_calculation_get = None
         self.mount_calculation_df = None
-        self.thread_mount = None
-        self.thread_process = None
-        self.thread_plot_ctf = None
-        self.thread_plot_motion = None
-        self.thread_plot_picking = None
+        self.timers = {}
+        self.workers = {}
+        self.threads = {}
+        for entry in self.types:
+            self.workers[entry] = None
+            self.threads[entry] = None
+            self.timers[entry] = None
         self.mount_thread_list = None
 
         self.sig_reset.connect(self.reset_gui)
@@ -204,54 +206,17 @@ class MainWindow(QMainWindow):
         None
         """
         # Stop threads if already started.
-        if self.mount_worker is not None:
-            self.mount_worker.setParent(None)
+        for entry in self.types:
+            if self.workers[entry] is not None:
+                self.workers[entry].setParent(None)
 
-        if self.process_worker is not None:
-            self.process_worker.setParent(None)
+            if self.threads[entry] is not None:
+                self.threads[entry].quit()
+                self.threads[entry].wait()
+                self.threads[entry].setParent(None)
 
-        if self.plot_worker_ctf is not None:
-            self.plot_worker_ctf.setParent(None)
-
-        if self.plot_worker_motion is not None:
-            self.plot_worker_motion.setParent(None)
-
-        if self.plot_worker_picking is not None:
-            self.plot_worker_picking.setParent(None)
-
-        if self.thread_mount is not None:
-            self.thread_mount.quit()
-            self.thread_mount.wait()
-            self.thread_mount.setParent(None)
-
-        if self.thread_process is not None:
-            self.thread_process.quit()
-            self.thread_process.wait()
-            self.thread_process.setParent(None)
-
-        if self.thread_plot_ctf is not None:
-            self.thread_plot_ctf.quit()
-            self.thread_plot_ctf.wait()
-            self.thread_plot_ctf.setParent(None)
-
-        if self.thread_plot_motion is not None:
-            self.thread_plot_motion.quit()
-            self.thread_plot_motion.wait()
-            self.thread_plot_motion.setParent(None)
-
-        if self.thread_plot_picking is not None:
-            self.thread_plot_picking.quit()
-            self.thread_plot_picking.wait()
-            self.thread_plot_picking.setParent(None)
-
-        if self.timer_ctf is not None:
-            self.timer_ctf.setParent(None)
-
-        if self.timer_motion is not None:
-            self.timer_motion.setParent(None)
-
-        if self.timer_picking is not None:
-            self.timer_picking.setParent(None)
+            if self.timers[entry] is not None:
+                self.timers[entry].setParent(None)
 
         if self.mount_thread_list is not None:
             for setting in self.content['Mount'].get_settings():
@@ -262,41 +227,30 @@ class MainWindow(QMainWindow):
                     thread.quit()
                     thread.wait()
 
-        # Create objects used in threads
-        self.mount_worker = MountWorker(
-            password=self.password,
-            settings_folder=self.settings_folder,
-            mount_directory=self.mount_directory
-            )
-        self.process_worker = ProcessWorker(
-            password=self.password,
-            content_process=content_pipeline,
-            mount_directory=self.mount_directory
-            )
-        self.plot_worker_ctf = PlotWorker()
-        self.plot_worker_motion = PlotWorker()
-        self.plot_worker_picking = PlotWorker()
+        for entry in self.types:
+            # Create objects used in threads
+            if entry == 'mount':
+                self.workers[entry] = MountWorker(
+                    password=self.password,
+                    settings_folder=self.settings_folder,
+                    mount_directory=self.mount_directory
+                    )
+            elif entry == 'process':
+                self.workers[entry] = ProcessWorker(
+                    password=self.password,
+                    content_process=content_pipeline,
+                    mount_directory=self.mount_directory
+                    )
+            else:
+                self.workers[entry] = PlotWorker()
 
-        # Create threads
-        self.thread_mount = QThread(self)
-        self.thread_process = QThread(self)
-        self.thread_plot_ctf = QThread(self)
-        self.thread_plot_motion = QThread(self)
-        self.thread_plot_picking = QThread(self)
+            # Create threads
+            self.threads[entry] = QThread(self)
+            # Start threads
+            self.threads[entry].start()
 
-        # Start threads
-        self.thread_mount.start()
-        self.thread_process.start()
-        self.thread_plot_ctf.start()
-        self.thread_plot_motion.start()
-        self.thread_plot_picking.start()
-
-        # Start objects in threads
-        self.mount_worker.moveToThread(self.thread_mount)
-        self.process_worker.moveToThread(self.thread_process)
-        self.plot_worker_ctf.moveToThread(self.thread_plot_ctf)
-        self.plot_worker_motion.moveToThread(self.thread_plot_motion)
-        self.plot_worker_picking.moveToThread(self.thread_plot_picking)
+            # Start objects in threads
+            self.workers[entry].moveToThread(self.threads[entry])
 
     @pyqtSlot(str, object)
     def reset_gui(self, template_name, load_file):
@@ -354,7 +308,7 @@ class MainWindow(QMainWindow):
                 pass
         else:
             pass
-        self.mount_worker.sig_load_save.emit()
+        self.workers['mount'].sig_load_save.emit()
 
     def save_temp_settings(self):
         """
@@ -386,25 +340,19 @@ class MainWindow(QMainWindow):
         for entry in error_list:
             tu.message(entry)
 
-        self.process_worker.sig_finished.connect(self._finished)
-        self.process_worker.sig_plot_ctf.connect(self.plot_worker_ctf.set_settings)
-        self.process_worker.sig_plot_motion.connect(self.plot_worker_motion.set_settings)
-        self.process_worker.sig_plot_picking.connect(self.plot_worker_picking.set_settings)
+        self.workers['process'].sig_finished.connect(self._finished)
+        for entry in self.types:
+            if entry in ('mount', 'process'):
+                continue
+            elif entry not in self.workers['process'].signals:
+                assert False, entry
 
-        self.timer_ctf = QTimer(self)
-        self.timer_ctf.setInterval(30000)
-        self.timer_ctf.timeout.connect(self.plot_worker_ctf.sig_calculate.emit)
-        self.timer_ctf.start()
+            self.workers['process'].signals[entry].connect(self.workers[entry].set_settings)
 
-        self.timer_motion = QTimer(self)
-        self.timer_motion.setInterval(30000)
-        self.timer_motion.timeout.connect(self.plot_worker_motion.sig_calculate.emit)
-        QTimer.singleShot(10000, self.timer_motion.start)
-
-        self.timer_picking = QTimer(self)
-        self.timer_picking.setInterval(30000)
-        self.timer_picking.timeout.connect(self.plot_worker_picking.sig_calculate.emit)
-        QTimer.singleShot(20000, self.timer_picking.start)
+            self.timers[entry] = QTimer(self)
+            self.timers[entry].setInterval(30000)
+            self.timers[entry].timeout.connect(self.workers[entry].sig_calculate.emit)
+            self.timers[entry].start()
 
         self.mount_thread_list = {}
         for key in self.content['Mount'].content:
@@ -422,13 +370,13 @@ class MainWindow(QMainWindow):
             mount_calculator.sig_finished.connect(
                 self.abort_finished
                 )
-            self.mount_worker.sig_calculate_ssh_quota.connect(
+            self.workers['mount'].sig_calculate_ssh_quota.connect(
                 mount_calculator.calculate_ssh_quota
                 )
-            self.mount_worker.sig_calculate_df_quota.connect(
+            self.workers['mount'].sig_calculate_df_quota.connect(
                 mount_calculator.calculate_df_quota
                 )
-            self.mount_worker.sig_calculate_get_quota.connect(
+            self.workers['mount'].sig_calculate_get_quota.connect(
                 mount_calculator.calculate_get_quota
                 )
         self.content['Mount'].set_threadlist(thread_list=self.mount_thread_list)
@@ -443,7 +391,7 @@ class MainWindow(QMainWindow):
         Return:
         None
         """
-        self.mount_worker.abort_finished = True
+        self.workers['mount'].abort_finished = True
 
     def set_central_widget(self):
         """
@@ -594,11 +542,9 @@ class MainWindow(QMainWindow):
 
             # Create widget
             self.content[key] = entry['widget'](
-                mount_worker=self.mount_worker,
-                process_worker=self.process_worker,
-                plot_worker_ctf=self.plot_worker_ctf,
-                plot_worker_motion=self.plot_worker_motion,
-                plot_worker_picking=self.plot_worker_picking,
+                mount_worker=self.workers['mount'],
+                process_worker=self.workers['process'],
+                plot_worker=self.workers,
                 settings_folder=self.settings_folder,
                 template_name=self.template_name,
                 plot_labels=plot_labels,
@@ -674,7 +620,7 @@ class MainWindow(QMainWindow):
             'General': general_settings[0],
             'Notification': notification_settings[0]
             }
-        self.mount_worker.sig_set_settings.emit(global_settings)
+        self.workers['mount'].sig_set_settings.emit(global_settings)
 
     def load(self, file_name=None):
         """
@@ -901,9 +847,9 @@ class MainWindow(QMainWindow):
         self.content['Button'].start_monitor_button.setEnabled(False)
         self.content['Button'].stop_monitor_button.setEnabled(False)
 
-        self.plot_worker_ctf.sig_reset_list.emit()
-        self.plot_worker_motion.sig_reset_list.emit()
-        self.plot_worker_picking.sig_reset_list.emit()
+        for entry in self.types:
+            self.workers[entry].sig_reset_list.emit()
+
         if start:
             settings = self.get_start_settings(monitor=True)
             if settings is None:
@@ -917,11 +863,11 @@ class MainWindow(QMainWindow):
                 self.content['Button'].start_monitor_button.setEnabled(True)
                 start = False
             else:
-                self.process_worker.sig_start.emit(settings)
+                self.workers['process'].sig_start.emit(settings)
                 self.content['Button'].start_button.setEnabled(False)
                 self.content['Button'].stop_button.setEnabled(False)
         else:
-            self.process_worker.stop = True
+            self.workers['process'].stop = True
 
         if start:
             self.content['Button'].start_monitor_button.setVisible(False)
@@ -1127,11 +1073,10 @@ class MainWindow(QMainWindow):
             self.content['Button'].stop_button.setEnabled(True)
             self.content['Button'].start_monitor_button.setEnabled(False)
             self.content['Button'].stop_monitor_button.setEnabled(False)
-            self.plot_worker_ctf.reset_list()
-            self.plot_worker_motion.reset_list()
-            self.plot_worker_picking.reset_list()
-            self.process_worker.sig_start.emit(settings)
-            self.mount_worker.set_settings(settings=settings)
+            for entry in self.types:
+                self.workers[entry].reset_list()
+            self.workers['process'].sig_start.emit(settings)
+            self.workers['mount'].set_settings(settings=settings)
             self.save(
                 file_name=os.path.join(
                     settings['settings_folder'],
@@ -1195,7 +1140,7 @@ class MainWindow(QMainWindow):
         Return:
         None
         """
-        self.process_worker.stop = True
+        self.workers['process'].stop = True
         self.content['Button'].start_monitor_button.setEnabled(False)
         self.content['Button'].stop_monitor_button.setEnabled(False)
         self.content['Button'].start_button.setEnabled(False)
@@ -1269,24 +1214,14 @@ class MainWindow(QMainWindow):
         else:
             pass
 
-        self.thread_plot_ctf.stop = True
-        self.thread_plot_picking.stop = True
-        self.thread_plot_motion.stop = True
+        for entry in self.types:
+            self.threads[entry].stop = True
 
-        self.timer_ctf.stop()
-        self.timer_motion.stop()
-        self.timer_picking.stop()
-
-        waiting_thread_list = (
-            self.thread_mount,
-            self.thread_process,
-            self.thread_plot_ctf,
-            self.thread_plot_motion,
-            self.thread_plot_picking,
-            )
+            if entry not in ('mount', 'process'):
+                self.timers[entry].stop()
 
         print('Wait for threads to exit.')
-        for idx, thread_instance in enumerate(waiting_thread_list):
+        for thread_instance in self.threads.values():
             thread_instance.quit()
             thread_instance.wait()
 

@@ -58,6 +58,7 @@ class ProcessWorker(QObject):
     sig_plot_ctf = pyqtSignal(str, object, object, str)
     sig_plot_motion = pyqtSignal(str, object, object, str)
     sig_plot_picking = pyqtSignal(str, object, object, str)
+    sig_plot_extract = pyqtSignal(str, object, object, str)
 
     def __init__(self, password, content_process, mount_directory, parent=None):
         """
@@ -73,6 +74,13 @@ class ProcessWorker(QObject):
         None
         """
         super(ProcessWorker, self).__init__(parent)
+        # Signals
+        self.signals = {
+            'ctf': self.sig_plot_ctf,
+            'motion': self.sig_plot_motion,
+            'picking': self.sig_plot_picking,
+            'extract': self.sig_plot_extract,
+            }
 
         # Variables
         self.password = password

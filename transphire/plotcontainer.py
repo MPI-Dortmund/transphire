@@ -33,7 +33,7 @@ class PlotContainer(QMainWindow):
     """
     sig_update_done = pyqtSignal()
 
-    def __init__(self, name, content, plot_labels, plot_name, plot_worker_ctf, plot_worker_motion, plot_worker_picking, plot_type, layout, *args, parent=None, **kwargs):
+    def __init__(self, name, content, plot_labels, plot_name, plot_worker, plot_type, layout, *args, parent=None, **kwargs):
         """
         Initialisation of the PlotContainer widget.
 
@@ -53,14 +53,7 @@ class PlotContainer(QMainWindow):
         self.plot_name = plot_name
         self.name = name
 
-        if plot_type == 'ctf':
-            self.worker = plot_worker_ctf
-        elif plot_type == 'motion':
-            self.worker = plot_worker_motion
-        elif plot_type == 'picking':
-            self.worker = plot_worker_picking
-        else:
-            raise Exception('PlotContainer - {0} not known!'.format(plot_type))
+        self.worker = plot_worker[plot_type]
 
         self.content = []
         self.dock_widgets = []
