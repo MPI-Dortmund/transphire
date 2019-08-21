@@ -66,6 +66,38 @@ def get_motion_default(settings, motion_frames, queue_com, name):
         raise IOError(message)
 
 
+def get_dws_file_name(output_transfer_scratch, file_name, settings, queue_com, name):
+    """
+    Get the name of the dose weighted file directly after the program finished.
+
+    output_transfer - Name of the folder in the scratch directory.
+    file_name - File name of the root_name path.
+    settings - TranSPHIRE settings.
+    queue_com - Queue for communication.
+    name - Name of the process.
+
+    Returns:
+    File path of the DW file.
+    """
+    motion_name = settings['Copy']['Motion']
+    if tu.is_higher_version(motion_name, '1.0.0'):
+        return os.path.join(
+            output_transfer_scratch,
+            '{0}_DWS.mrc'.format(file_name)
+            )
+
+    else:
+        message = '\n'.join([
+            '{0}: Motion version not known.'.format(motion_name),
+            'Please contact the TranSPHIRE authors!'
+            ])
+        queue_com['error'].put(
+            message,
+            name
+            )
+        raise IOError(message)
+
+
 def get_dw_file_name(output_transfer_scratch, file_name, settings, queue_com, name):
     """
     Get the name of the dose weighted file directly after the program finished.

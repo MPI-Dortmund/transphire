@@ -2065,6 +2065,7 @@ class ProcessThread(object):
                 )
 
             output_dw = os.path.join(output_transfer_root, 'DW')
+            output_dws = os.path.join(output_transfer_root, 'DWS')
             output_transfer = os.path.join(output_transfer_root, 'Non_DW')
             output_transfer_scratch = os.path.join(
                 output_transfer_scratch_root,
@@ -2113,6 +2114,7 @@ class ProcessThread(object):
             if motion_idx == 0:
                 # DW folder
                 tu.mkdir_p(output_dw)
+                tu.mkdir_p(output_dws)
 
                 # Files
                 file_stack = os.path.join(
@@ -2122,6 +2124,17 @@ class ProcessThread(object):
                 file_dw_post_move = os.path.join(
                     output_dw,
                     '{0}.mrc'.format(file_name)
+                    )
+                file_dws_post_move = os.path.join(
+                    output_dws,
+                    '{0}.mrc'.format(file_name)
+                    )
+                file_dws_pre_move = tum.get_dws_file_name(
+                    output_transfer_scratch=output_transfer_scratch,
+                    file_name=file_name,
+                    settings=self.settings,
+                    queue_com=self.queue_com,
+                    name=self.name
                     )
                 file_dw_pre_move = tum.get_dw_file_name(
                     output_transfer_scratch=output_transfer_scratch,
@@ -2165,6 +2178,8 @@ class ProcessThread(object):
                 if do_dw:
                     non_zero_list_scratch.append(file_dw_pre_move)
                     non_zero_list.append(file_dw_post_move)
+                    non_zero_list_scratch.append(file_dws_pre_move)
+                    non_zero_list.append(file_dws_post_move)
                 else:
                     pass
 
@@ -2226,6 +2241,15 @@ class ProcessThread(object):
                 )
 
             if do_dw:
+                if os.path.exists(file_dws_pre_move):
+                    tu.copy(file_dws_pre_move, file_dws_post_move)
+                    tus.check_outputs(
+                        zero_list=[],
+                        non_zero_list=[file_dws_post_move],
+                        exists_list=[],
+                        folder=self.settings['motion_folder'],
+                        command='copy'
+                        )
                 tu.copy(file_dw_pre_move, file_dw_post_move)
                 tus.check_outputs(
                     zero_list=[],
@@ -2264,6 +2288,10 @@ class ProcessThread(object):
                         self.write_error(msg=tb.format_exc(), root_name=file_entry)
                         raise
             elif do_dw:
+                try:
+                    os.remove(file_dws_pre_move)
+                except IOError:
+                    pass
                 try:
                     os.remove(file_dw_pre_move)
                 except IOError:
