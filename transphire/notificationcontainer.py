@@ -362,6 +362,7 @@ class NotificationContainer(QWidget):
         """
 
         text = '{0}:\n{1}'.format(os.uname()[1], text)
+        print(text)
         chosen_users = self.get_settings()
         for entry in chosen_users:
             for key in entry:

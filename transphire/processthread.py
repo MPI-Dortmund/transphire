@@ -1119,7 +1119,9 @@ class ProcessThread(object):
             find_meta=True
             )
 
-        if not self.stop.value:
+        if not file_list:
+            self.queue_com['notification'].put('No Meta data information found (Atlas & Co.)')
+        elif not self.stop.value:
             for entry in file_list:
                 file_path = entry[len(directory)+1:]
                 file_name = os.path.join(self.settings['software_meta_folder'], file_path)
