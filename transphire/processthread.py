@@ -3311,6 +3311,8 @@ class ProcessThread(object):
             try:
                 os.remove(file_to_delete)
             except FileNotFoundError:
+                pass
+            except PermissionError:
                 with open(file_to_delete, 'w'):
                     pass
         with open(log_file, 'w') as out:
@@ -3318,9 +3320,19 @@ class ProcessThread(object):
             with open(err_file, 'w') as err:
                 start_time = time.time()
                 if shell:
-                    sp.Popen(command, shell=True, stdout=out, stderr=err).wait()
+                    cmd = sp.Popen(command, shell=True, stdout=out, stderr=err)
                 else:
-                    sp.Popen(command.split(), stdout=out, stderr=err).wait()
+                    cmd = sp.Popen(command.split(), stdout=out, stderr=err)
+                time.sleep(0.1) 
+                if file_to_delete is not None:
+                    try:
+                        os.remove(file_to_delete)
+                    except FileNotFoundError:
+                        pass
+                    except PermissionError:
+                        with open(file_to_delete, 'w'):
+                            pass
+                cmd.wait()
                 stop_time = time.time()
                 out.write('\nTime: {0} sec'.format(stop_time - start_time)) 
         if file_to_delete is not None:
@@ -3328,6 +3340,9 @@ class ProcessThread(object):
                 os.remove(file_to_delete)
             except FileNotFoundError:
                 pass
+            except PermissionError:
+                with open(file_to_delete, 'w'):
+                    pass
 
         time.sleep(0.100)
         if gpu_list:
