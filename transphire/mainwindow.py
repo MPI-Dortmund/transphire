@@ -848,6 +848,8 @@ class MainWindow(QMainWindow):
         self.content['Button'].stop_monitor_button.setEnabled(False)
 
         for entry in self.types:
+            if entry in ('mount', 'process'):
+                continue
             self.workers[entry].sig_reset_list.emit()
 
         if start:
@@ -1074,6 +1076,8 @@ class MainWindow(QMainWindow):
             self.content['Button'].start_monitor_button.setEnabled(False)
             self.content['Button'].stop_monitor_button.setEnabled(False)
             for entry in self.types:
+                if entry in ('mount', 'process'):
+                    continue
                 self.workers[entry].reset_list()
             self.workers['process'].sig_start.emit(settings)
             self.workers['mount'].set_settings(settings=settings)
