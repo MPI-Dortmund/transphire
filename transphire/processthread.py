@@ -696,6 +696,10 @@ class ProcessThread(object):
                 ])
             return None
         finally:
+            # Sleep for a second here to make sure that the order of the queue will be maintained.
+            # In case of multiple import jobs.
+            if self.typ == 'Import':
+                time.sleep(1)
             self.queue_lock.release()
 
         # Set for every process a method and the right lost_connection name
