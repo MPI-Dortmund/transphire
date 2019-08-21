@@ -785,7 +785,7 @@ def to_partres_file(data, ctf_name, ctf_settings, project_folder, ctf_folder, su
             else:
                 # Is a CTER partres name
                 if name == 'file_name':
-                    value = sum_file.replace(project_folder, '')
+                    value = '{0}.mrc'.format(tu.get_name(sum_file))
                 else:
                     pass
 
