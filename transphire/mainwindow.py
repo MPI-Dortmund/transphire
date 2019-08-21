@@ -957,7 +957,7 @@ class MainWindow(QMainWindow):
         for key in self.content:
             try:
                 settings_widget = self.content[key].get_settings()
-            except AttributeError:
+            except AttributeError as e:
                 continue
             else:
                 settings[key] = {}

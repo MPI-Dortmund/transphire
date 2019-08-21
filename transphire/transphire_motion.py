@@ -230,7 +230,7 @@ def create_motion_cor_2_v1_0_0_command(motion_name, file_input, file_output, fil
 
     if settings[motion_name]['Split Gpu?'] == 'True':
         try:
-            gpu_id = int(name.split('_')[-1])-1
+            gpu_id = int(name.split('_')[-1])
         except ValueError:
             gpu_id = 0
         try:

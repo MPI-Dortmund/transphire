@@ -48,6 +48,7 @@ class SettingsContainer(QWidget):
         """
         super(SettingsContainer, self).__init__(parent)
 
+        self.name = name
         try:
             content_others = kwargs['content_others']
         except KeyError:
@@ -114,7 +115,7 @@ class SettingsContainer(QWidget):
                         self.layout_dict[layout_name].addLayout(self.layout_dict['{0}_v'.format(layout_name)])
 
                     widget = SettingsWidget(content=widget[key], name=name, content_others=content_others, parent=self)
-                    if group:
+                    if group and name not in ('Pipeline'):
                         group, state = group.split(':')
                         self.group.setdefault(group, [])
                         self.group[group].append([widget, state, widget_name])
@@ -176,7 +177,7 @@ class SettingsContainer(QWidget):
                 error = True
             else:
                 settings.update(dictionary)
-            if key == 'Motion' or key == 'CTF' or key == 'Picking':
+            if (key == 'Motion' or key == 'CTF' or key == 'Picking') and self.name != 'Pipeline':
                 new_key = '{0}_entries'.format(key)
                 settings[new_key] = self.content[key].get_combo_entries()
             else:

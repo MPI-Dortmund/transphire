@@ -127,20 +127,12 @@ class StatusContainer(QWidget):
         # Add process status widgets
         for entry in content_pipeline[0]:
             for key in entry:
+                if 'WIDGETS' in key:
+                    continue
                 basename = key
-                number = int(entry[key][0])
                 name = basename
-                self.content[name] = StatusWidget(name=name, default_name='00|{0:02d}'.format(number), default_quota='Not runnning')
+                self.content[name] = StatusWidget(name=name, default_name='00|00', default_quota='Not runnning')
                 layout_v1.addWidget(self.content[name])
-                #if number == 1:
-                #    name = basename
-                #    self.content[name] = StatusWidget(name=name, default_name='Not running', default_quota='')
-                #    layout_v1.addWidget(self.content[name])
-                #else:
-                #    for idx in range(number):
-                #        name = '{0}_{1}'.format(basename, idx+1)
-                #        self.content[name] = StatusWidget(name=name, default_name='Not running', default_quota='')
-                #        layout_v1.addWidget(self.content[name])
 
         # Add picture
         if image and os.path.exists(image):

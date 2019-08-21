@@ -203,6 +203,8 @@ class ProcessWorker(QObject):
         for entry in content_process:
             for process in entry:
                 for key in process:
+                    if 'WIDGETS' in key:
+                        continue
                     process[key][self.idx_values]['group'], process[key][self.idx_values]['aim'] = \
                         process[key][self.idx_values]['group'].split(';')
                     process[key][self.idx_values]['aim'] = process[key][self.idx_values]['aim'].split(',')
@@ -226,7 +228,7 @@ class ProcessWorker(QObject):
                         'is_error': False,
                         'queue_list_time': 0.0,
                         'tar_idx': 0,
-                        'max_running': int(process[key][self.idx_number]),
+                        'max_running': int(self.settings['Pipeline'][key]),
                         'running': 0,
                         'queue_list': manager.list(),
                         'queue_list_lock': manager.Lock(),
@@ -256,13 +258,6 @@ class ProcessWorker(QObject):
                         })
 
                     full_content.append([key, process[key]])
-                    #if process[key][self.idx_number] == '1':
-                    #    full_content.append([key, process[key]])
-                    #else:
-                    #    for idx in range(int(process[key][self.idx_number])):
-                    #        full_content.append(
-                    #            ['{0}_{1}'.format(key, idx+1), process[key]]
-                    #            )
 
         # Queue communication dictionary
         queue_com = {
@@ -560,6 +555,8 @@ class ProcessWorker(QObject):
         for entry in content_process:
             for process in entry:
                 for key in process:
+                    if 'WIDGETS' in key:
+                        continue
                     self.prefill_queue(
                         shared_dict=shared_dict,
                         entry=process[key][1]
@@ -584,7 +581,7 @@ class ProcessWorker(QObject):
                 if self.settings['General']['Increment number'] == 'True':
                     message = '{0}: Filenumber {1} already exists!\n'.format(
                         'Import',
-                        old_filenumber
+                        old_filenumber+1
                         ) + \
                         'Last one used: {0} - Continue with {1}'.format(
                             shared_dict['typ']['Import']['file_number'],
@@ -596,7 +593,7 @@ class ProcessWorker(QObject):
                     self.stop = True
                     message = '{0}: Filenumber {1} already exists!\n'.format(
                         'Import',
-                        old_filenumber
+                        old_filenumber+1
                         ) + \
                         'Check Startnumber! Last one used: {0}'.format(shared_dict['typ']['Import']['file_number'])
                     queue_com['error'].put(message)
@@ -610,17 +607,21 @@ class ProcessWorker(QObject):
         thread_list = []
         use_threads_set = set(use_threads_list)
         for key, settings_content in full_content:
+            
             content_settings = settings_content[self.idx_values]
-            number = settings_content[self.idx_number]
+            number = self.settings['Pipeline'][key]
+            names = None
             if (key == 'Find' and number != '1') or (key == 'Meta' and number != '1'):
                 self.stop = True
                 message = 'Find and Meta are not allowed to have more than 1 process running!'
                 queue_com['error'].put(message)
                 queue_com['notification'].put(message)
+                names = [key]
             elif number == '1':
                 names = [key]
             else:
                 names = ['{0}_{1}'.format(key, idx) for idx in range(int(number))]
+            assert names is not None, (key, names, number)
 
             for name in names:
                 thread_obj = ProcessThread(

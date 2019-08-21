@@ -282,7 +282,7 @@ def create_cryolo_v1_4_1_command(
 
     if settings[picking_name]['Split Gpu?'] == 'True':
         try:
-            gpu_id = int(name.split('_')[-1])-1
+            gpu_id = int(name.split('_')[-1])
         except ValueError:
             gpu_id = 0
         try:

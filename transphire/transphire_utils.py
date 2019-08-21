@@ -703,6 +703,12 @@ def get_content_gui(content, template_name):
             'layout': 'Settings',
             },
         {
+            'name': 'Pipeline',
+            'widget': SettingsContainer,
+            'content': content[template_name]['Pipeline'],
+            'layout': 'Settings',
+            },
+        {
             'name': 'Compress',
             'widget': TabDocker,
             'layout': 'Settings',

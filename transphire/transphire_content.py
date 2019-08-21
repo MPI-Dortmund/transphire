@@ -536,6 +536,9 @@ def default_pipeline():
     Content items as list
     """
     items = [
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         [
             'Meta',
             '1',
@@ -545,10 +548,10 @@ def default_pipeline():
             'Session to backup:Copy to backup:Copy_backup,' +
             'Session to HDD:Copy to HDD:Copy_hdd',
             'PLAIN',
-            '',
+            'Main',
             ''
             ],
-        ['Find', '1', int, 'Find;Import', 'PLAIN', '', ''],
+        ['Find', '1', int, 'Find;Import', 'PLAIN', 'Main', ''],
         [
             'Import',
             '1',
@@ -564,12 +567,12 @@ def default_pipeline():
             'Frames to HDD:Copy to HDD:Copy_hdd,' +
             'Frames to backup:Copy to backup:Copy_backup',
             'PLAIN',
-            '',
+            'Main',
             ''
             ],
         [
             'Motion',
-            '2',
+            '1',
             int,
             'Motion;' +
             'CTF_sum:CTF,' +
@@ -578,48 +581,48 @@ def default_pipeline():
             'Sum to HDD:Copy to HDD:Copy_hdd,' +
             'Sum to backup:Copy to backup:Copy_backup',
             'PLAIN',
-            '',
+            'Main',
             ''
             ],
         [
             'CTF',
-            '2',
+            '1',
             int,
             'CTF;' +
             'CTF to work:Copy to work:Copy_work,' +
             'CTF to HDD:Copy to HDD:Copy_hdd,' +
             'CTF to backup:Copy to backup:Copy_backup',
             'PLAIN',
-            '',
+            'Main',
             ''
             ],
         [
             'Picking',
-            '2',
+            '1',
             int,
             'Picking;' +
             'Picking to work:Copy to work:Copy_work,' +
             'Picking to HDD:Copy to HDD:Copy_hdd,' +
             'Picking to backup:Copy to backup:Copy_backup',
             'PLAIN',
-            '',
+            'Main',
             ''
             ],
         [
             'Compress',
-            '2',
+            '1',
             int,
             'Compress;' +
             'Compress to work:Copy to work:Copy_work,' +
             'Compress to HDD:Copy to HDD:Copy_hdd,' +
             'Compress to backup:Copy to backup:Copy_backup',
             'PLAIN',
-            '',
+            'Main',
             ''
             ],
-        ['Copy_work', '1', int, 'Copy_work;', 'PLAIN', '', ''],
-        ['Copy_hdd', '1', int, 'Copy_hdd;', 'PLAIN', '', ''],
-        ['Copy_backup', '1', int, 'Copy_backup;', 'PLAIN', '', ''],
+        ['Copy_work', '1', int, 'Copy_work;', 'PLAIN', 'Main', ''],
+        ['Copy_hdd', '1', int, 'Copy_hdd;', 'PLAIN', 'Main', ''],
+        ['Copy_backup', '1', int, 'Copy_backup;', 'PLAIN', 'Main', ''],
         ]
     return items
 

@@ -82,41 +82,79 @@ class DefaultSettings(QDialog):
         self.tab_widget = TabDocker(self)
         layout.addWidget(self.tab_widget)
         self.tab_widget.setObjectName('tab')
+        self.tab_content = {}
 
         self.default_tabs = {
-            'External software': [
-                [
-                    'CTFFIND4',
-                    'Gctf',
-                    'CTER',
-                    'MotionCor2',
-                    'crYOLO',
-                    'Compress cmd',
-                    ],
-                TabDocker(self)
-                ],
-            'Internal settings': [
-                [
+            'External software': {
+                'sub_content': {
+                    'CTF': {
+                        'sub_content': {
+                            'CTFFIND4': {
+                                'sub_content': {},
+                                'content': ['CTFFIND4'],
+                                },
+                            'Gctf': {
+                                'sub_content': {},
+                                'content': ['Gctf'],
+                                },
+                            'CTER': {
+                                'sub_content': {},
+                                'content': ['CTER'],
+                                },
+                            },
+                        'content': [],
+                        },
+                    'Motion': {
+                        'sub_content': {
+                            'MotionCor2': {
+                                'sub_content': {},
+                                'content': ['MotionCor2'],
+                                },
+                            },
+                        'content': [],
+                        },
+                    'Picking': {
+                        'sub_content': {
+                            'crYOLO': {
+                                'sub_content': {},
+                                'content': ['crYOLO'],
+                                },
+                            },
+                        'content': [],
+                        },
+                    'Compress': {
+                        'sub_content': {
+                            'Compress cmd': {
+                                'sub_content': {},
+                                'content': ['Compress cmd'],
+                                },
+                            },
+                        'content': [],
+                        },
+                    },
+                'content': [],
+                },
+            'Internal settings': {
+                'sub_content': {},
+                'content': [
                     'General',
                     'Copy',
-                    ],
-                TabDocker(self)
-                ],
-            'TranSPHIRE settings': [
-                [
-                    'Mount',
                     'Pipeline',
+                    'Path',
+                    ],
+                },
+            'TranSPHIRE settings': {
+                'sub_content': {},
+                'content': [
+                    'Mount',
                     'Notification',
                     'Others',
                     'Font',
-                    'Path',
                     ],
-                TabDocker(self)
-                ]
+                },
             }
-        for tab_name in self.default_tabs:
-            self.default_tabs[tab_name][1].setObjectName('tab')
-            self.tab_widget.add_tab(self.default_tabs[tab_name][1], tab_name)
+
+        self.create_initial_tabs(self.default_tabs, self.tab_widget)
 
         # Variables
         self.apply = False
@@ -134,6 +172,25 @@ class DefaultSettings(QDialog):
             apply_button.clicked.connect(lambda: self.check_modified_widgets(done=False))
             layout.addWidget(apply_button)
 
+    def create_initial_tabs(self, tab_dict, parent_widget):
+        for tab_name in tab_dict:
+            self.tab_content[tab_name] = TabDocker(self)
+            self.tab_content[tab_name].setObjectName('tab')
+            parent_widget.add_tab(self.tab_content[tab_name], tab_name)
+
+            self.create_initial_tabs(tab_dict[tab_name]['sub_content'], self.tab_content[tab_name])
+
+    def is_in_content(self, tab_dict, name):
+        return_value = False
+        for tab_name in tab_dict:
+            for entry in tab_dict[tab_name]['content']: 
+                if name.startswith(entry):
+                    return tab_name
+
+            found = self.is_in_content(tab_dict[tab_name]['sub_content'], name)
+            if found:
+                return found
+        return False
 
     def check_modified_widgets(self, done):
         """
@@ -147,18 +204,21 @@ class DefaultSettings(QDialog):
         """
         text_modified = False
         wrongly_mod_list = []
-        for idx in range(self.tab_widget.count()):
-            widget = self.tab_widget.widget(idx)
-            for idx_subtab in range(widget.count()):
-                widget_subtab = widget.widget(idx_subtab)
-                for entry in widget_subtab.content:
-                    for info in entry.content:
-                        if tu.get_style(typ='changed') == info['widget'].styleSheet() or \
-                                tu.get_style(typ='error') == info['widget'].styleSheet():
-                            text_modified = True
-                            wrongly_mod_list.append(info)
-                        else:
-                            continue
+        for tab_widget in self.tab_content.values():
+            for idx in range(tab_widget.count()):
+                try:
+                    widgets = tab_widget.widget(idx).content
+                except AttributeError:
+                    pass
+                else:
+                    for widget_subtab in widgets:
+                        for info in widget_subtab.content:
+                            if tu.get_style(typ='changed') == info['widget'].styleSheet() or \
+                                    tu.get_style(typ='error') == info['widget'].styleSheet():
+                                text_modified = True
+                                wrongly_mod_list.append(info)
+                            else:
+                                continue
 
         if text_modified:
             result = tu.question(
@@ -243,20 +303,13 @@ class DefaultSettings(QDialog):
         Return:
         None
         """
-        is_inside = False
-        for key in self.default_tabs:
-            compare = self.default_tabs[key][0]
-            tab_widget = self.default_tabs[key][1]
-            for tab_name in compare:
-                if name.startswith(tab_name):
-                    is_inside = True
-                    tab_widget.add_tab(widget, name)
-                else:
-                    pass
-        if not is_inside:
+        inside_name = self.is_in_content(self.default_tabs, name)
+        if not inside_name:
             raise OSError('Name {0} not known! Please fix before continuation'.format(name))
         else:
             pass
+
+        self.tab_content[inside_name].add_tab(widget, name)
 
     def clear_tabs(self):
         for idx in range(self.tab_widget.count()):
@@ -307,11 +360,11 @@ class DefaultSettings(QDialog):
             else:
                 template_directory = self.settings_directory
 
-            setting_names = sorted(tu.get_function_dict().keys())
+            setting_names = tu.get_function_dict().keys()
             content_temp[template_name] = {}
-            for name in setting_names:
+            for name in reversed(list(setting_names)):
                 directory = template_directory
-                for entry in self.default_tabs['TranSPHIRE settings'][0]:
+                for entry in self.default_tabs['TranSPHIRE settings']['content']:
                     if entry in name:
                         directory = self.settings_directory
                         break
@@ -396,7 +449,7 @@ class DefaultSettings(QDialog):
             content[template] = {}
             for name in setting_names:
                 directory = os.path.join(settings_folder, template)
-                for entry in default_widget.default_tabs['TranSPHIRE settings'][0]:
+                for entry in default_widget.default_tabs['TranSPHIRE settings']['content']:
                     if entry in name:
                         directory = settings_folder
                         break

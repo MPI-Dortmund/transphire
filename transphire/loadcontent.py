@@ -44,6 +44,7 @@ except ImportError:
         QFileDialog
         )
     from PyQt5.QtCore import pyqtSignal, pyqtSlot
+from transphire.separator import Separator
 from transphire import transphire_utils as tu
 
 
@@ -128,6 +129,8 @@ class LoadContent(QWidget):
                     layout_v.addStretch(1)
                 else:
                     pass
+                if layout_v is not None:
+                    layout_h.addWidget(Separator(typ='vertical', color='white'))
                 layout_v = QVBoxLayout()
                 layout_h.addLayout(layout_v)
             layout_v.addWidget(QLabel(entry[self.idx_name], self))
@@ -153,12 +156,12 @@ class LoadContent(QWidget):
                 widget.textChanged.connect(self._change_color_to_changed)
             else:
                 raise IOError('{0}: {1} not known!'.format(entry[self.idx_name], entry[self.idx_type]))
+            widget.setObjectName('setting')
 
             exclude_typ_list = [
                 'Mount',
                 'Font',
                 'Others',
-                'Pipeline',
                 'Notification_widget',
                 ]
             if self.typ not in exclude_typ_list and not entry[self.idx_name].startswith('WIDGETS'):

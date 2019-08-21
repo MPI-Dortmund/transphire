@@ -241,7 +241,7 @@ def create_gctf_v1_06_command(
     ignore_list.append('--gid')
     if settings[ctf_name]['Split Gpu?'] == 'True':
         try:
-            gpu_id = int(name.split('_')[-1])-1
+            gpu_id = int(name.split('_')[-1])
         except ValueError:
             gpu_id = 0
         try:
