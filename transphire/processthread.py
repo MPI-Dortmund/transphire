@@ -1120,6 +1120,7 @@ class ProcessThread(object):
             )
 
         if not file_list:
+            self.queue_com['error'].put('No Meta data information found (Atlas & Co.)')
             self.queue_com['notification'].put('No Meta data information found (Atlas & Co.)')
         elif not self.stop.value:
             for entry in file_list:

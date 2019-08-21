@@ -612,7 +612,12 @@ class ProcessWorker(QObject):
         for key, settings_content in full_content:
             content_settings = settings_content[self.idx_values]
             number = settings_content[self.idx_number]
-            if number == '1':
+            if (key == 'Find' and number != '1') or (key == 'Meta' and number != '1'):
+                self.stop = True
+                message = 'Find and Meta are not allowed to have more than 1 process running!'
+                queue_com['error'].put(message)
+                queue_com['notification'].put(message)
+            elif number == '1':
                 names = [key]
             else:
                 names = ['{0}_{1}'.format(key, idx) for idx in range(int(number))]
@@ -638,16 +643,19 @@ class ProcessWorker(QObject):
         time.sleep(1)
 
         # Run until the user stops the processes
-        while True:
-            try:
-                self.check_queue(queue_com=queue_com)
-            except BrokenPipeError:
-                pass
-            if self.stop:
-                break
-            else:
-                pass
-            time.sleep(3)
+        if not self.stop:
+            while True:
+                try:
+                    self.check_queue(queue_com=queue_com)
+                except BrokenPipeError:
+                    pass
+                if self.stop:
+                    break
+                else:
+                    pass
+                time.sleep(3)
+        else:
+            self.check_queue(queue_com=queue_com)
 
         # Indicate to stop all processes
         for key, settings_content in full_content:
