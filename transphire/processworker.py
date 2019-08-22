@@ -59,6 +59,7 @@ class ProcessWorker(QObject):
     sig_plot_motion = pyqtSignal(str, object, object, str)
     sig_plot_picking = pyqtSignal(str, object, object, str)
     sig_plot_extract = pyqtSignal(str, object, object, str)
+    sig_plot_class2d = pyqtSignal(str, object, object, str)
 
     def __init__(self, password, content_process, mount_directory, parent=None):
         """
@@ -80,6 +81,7 @@ class ProcessWorker(QObject):
             'motion': self.sig_plot_motion,
             'picking': self.sig_plot_picking,
             'extract': self.sig_plot_extract,
+            'class2d': self.sig_plot_class2d,
             }
 
         # Variables
@@ -186,6 +188,10 @@ class ProcessWorker(QObject):
             self.settings['picking_folder'],
             self.settings['Copy']['Picking'].replace(' ', '_').replace('>=', '')
             )
+        self.settings['class2d_folder'] = os.path.join(
+            self.settings['class2d_folder'],
+            self.settings['Copy']['Class2d'].replace(' ', '_').replace('>=', '')
+            )
         self.settings['extract_folder'] = os.path.join(
             self.settings['extract_folder'],
             self.settings['Copy']['Extract'].replace(' ', '_').replace('>=', '')
@@ -252,8 +258,9 @@ class ProcessWorker(QObject):
                         'share_lock': manager.Lock(),
                         'write_lock': manager.Lock(),
                         'spot_dict': manager.dict(self.fill_spot_dict()),
-                        'number_file': '{0}/last_filenumber.txt'.format(
-                            self.settings['project_folder']
+                        'number_file': '{0}/last_filenumber_{1}.txt'.format(
+                            self.settings['project_folder'],
+                            key
                             ),
                         'save_file': '{0}/Queue_{1}'.format(
                             self.settings['queue_folder'], key
@@ -528,6 +535,13 @@ class ProcessWorker(QObject):
         if self.settings['Copy']['Extract'] != 'False':
             folder_list.append('extract_folder')
             use_threads_list.append('Extract')
+        else:
+            pass
+
+        # Set Class2d settings
+        if self.settings['Copy']['Class2d'] != 'False':
+            folder_list.append('class2d_folder')
+            use_threads_list.append('Class2d')
         else:
             pass
 

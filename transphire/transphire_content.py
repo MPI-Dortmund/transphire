@@ -46,6 +46,35 @@ def default_compress_command_line():
     return items
 
 
+def default_isac2_1_2():
+    """
+    Content of sp_isac2(gpu) version 1.2
+
+    Arguments:
+    None
+
+    Return:
+    Content items as list
+    """
+    items = [
+        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['Nr. Particles', '10000', int, '', 'PLAIN', 'Main', 'NOT AN ISAC OPTION: Wait to accumulate this number of particles to process.'],
+        ['--radius', '-1', int, '', 'PLAIN', 'Main', 'particle radius: there is no default, a sensible number has to be provided, units - pixels (default required int)'],
+        ['--target_radius', '29', int, '', 'PLAIN', 'Advanced', 'target particle radius: actual particle radius on which isac will process data. Images will be shrinked/enlarged to achieve this radius (default 29)'],
+        ['--target_nx', '76', int, '', 'PLAIN', 'Advanced', 'target particle image size: actual image size on which isac will process data. Images will be shrinked/enlarged according to target particle radius and then cut/padded to achieve target_nx size. When xr > 0, the final image size for isac processing is target_nx + xr - 1  (default 76)'],
+        ['--img_per_grp', '200', int, '', 'PLAIN', 'Advanced', 'number of images per class (maximum group size, also defines number of classes K=(total number of images)/img_per_grp (default 200)'],
+        ['--minimum_grp_size', '60', float, '', 'PLAIN', 'Advanced', 'minimum size of class (default 60)'],
+
+        ['--CTF', ['False', 'True'], bool, '', 'COMBO', 'Main', 'apply phase-flip for CTF correction: if set the data will be phase-flipped using CTF information included in image headers (default False)'],
+        ['--VPP', ['False', 'True'], bool, '--CTF:False', 'COMBO', 'Main', 'Phase Plate data (default False)'],
+        ['GPU', '0', [int]*99, '', 'PLAIN', 'Advanced', 'NOT AN ISAC2 OPTION. Specifiy which gpu\'s should be used.'],
+        ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT AN ISAC2 OPTION. Split the gpu values specified in --gpu to be able to run mutliple crYOLO jobs in parallel.'],
+        ]
+    return items
+
+
 def default_window_1_2():
     """
     Content of sp_window version 1.2
@@ -401,6 +430,7 @@ def default_path():
         ['IMOD newstack', '', str, '', 'FILE', 'Main', ''],
         ['IMOD dm2mrc', '', str, '', 'FILE', 'Main', ''],
         ['e2proc2d.py', '', str, '', 'FILE', 'Main', ''],
+        ['e2bdb.py', '', str, '', 'FILE', 'Main', ''],
         ['SumMovie v1.0.2', '', str, '', 'FILE', 'Main', ''],
         ]
     function_dict = tu.get_function_dict()

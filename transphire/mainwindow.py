@@ -171,6 +171,7 @@ class MainWindow(QMainWindow):
             'motion',
             'picking',
             'extract',
+            'class2d',
             )
 
         # Settings folder
@@ -1007,6 +1008,10 @@ class MainWindow(QMainWindow):
             settings['General']['Project name']
             )
         settings['extract_folder'] = os.path.join(
+            settings['General']['Project directory'],
+            settings['General']['Project name']
+            )
+        settings['class2d_folder'] = os.path.join(
             settings['General']['Project directory'],
             settings['General']['Project name']
             )

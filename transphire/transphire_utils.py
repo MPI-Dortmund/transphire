@@ -213,7 +213,7 @@ def get_function_dict():
     function_dict['ISAC2 >=v1.2'] = {
             'plot': tp.update_ctffind_4_v4_1_8,
             'plot_data': ti.import_ctffind_v4_1_8,
-            'content': tc.default_window_1_2,
+            'content': tc.default_isac2_1_2,
             'executable': True,
             'has_path': True,
             'typ': 'class2d',
@@ -566,6 +566,8 @@ def reduce_copy_entries(exclude_set, content):
                 name = 'Picking'
             elif 'Extract' in sub_item:
                 name = 'Extract'
+            elif 'Class2d' in sub_item:
+                name = 'Class2d'
             else:
                 continue
 
@@ -747,6 +749,11 @@ def get_content_gui(content, template_name):
             'layout': 'Settings',
             },
         {
+            'name': 'Class2d',
+            'widget': TabDocker,
+            'layout': 'Settings',
+            },
+        {
             'name': 'Status',
             'widget': StatusContainer,
             'content': content[template_name]['Others'],
@@ -775,6 +782,11 @@ def get_content_gui(content, template_name):
             'widget': TabDocker,
             'layout': 'Visualisation',
             },
+        {
+            'name': 'Plot Class2d',
+            'widget': TabDocker,
+            'layout': 'Visualisation',
+            },
         ]
 
     all_content = []
@@ -783,6 +795,7 @@ def get_content_gui(content, template_name):
     all_content.append(['CTF', content_extern['ctf']])
     all_content.append(['Picking', content_extern['picking']])
     all_content.append(['Extract', content_extern['extract']])
+    all_content.append(['Class2d', content_extern['class2d']])
     for typ, content_typ in all_content:
         for input_content in content_typ:
             gui_content.append({
