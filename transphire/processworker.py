@@ -186,6 +186,10 @@ class ProcessWorker(QObject):
             self.settings['picking_folder'],
             self.settings['Copy']['Picking'].replace(' ', '_').replace('>=', '')
             )
+        self.settings['extract_folder'] = os.path.join(
+            self.settings['extract_folder'],
+            self.settings['Copy']['Extract'].replace(' ', '_').replace('>=', '')
+            )
         self.settings['compress_folder'] = os.path.join(
             self.settings['compress_folder'],
             self.settings['Copy']['Compress'].replace(' ', '_').replace('>=', '')
@@ -517,6 +521,13 @@ class ProcessWorker(QObject):
         if self.settings['Copy']['Picking'] != 'False':
             folder_list.append('picking_folder')
             use_threads_list.append('Picking')
+        else:
+            pass
+
+        # Set Extract settings
+        if self.settings['Copy']['Extract'] != 'False':
+            folder_list.append('extract_folder')
+            use_threads_list.append('Extract')
         else:
             pass
 

@@ -1006,6 +1006,10 @@ class MainWindow(QMainWindow):
             settings['General']['Project directory'],
             settings['General']['Project name']
             )
+        settings['extract_folder'] = os.path.join(
+            settings['General']['Project directory'],
+            settings['General']['Project name']
+            )
         settings['scratch_folder'] = os.path.join(
             settings['General']['Scratch directory'],
             settings['General']['Project name']

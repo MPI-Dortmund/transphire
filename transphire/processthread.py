@@ -969,7 +969,7 @@ class ProcessThread(object):
         return value
 
     @staticmethod
-    def add_to_queue_file(root_name, file_name):
+    def add_to_queue_file(root_name, file_name, allow_dublicate=False):
         """
         Add item to queue_file.
 
@@ -987,7 +987,7 @@ class ProcessThread(object):
         except FileNotFoundError:
             pass
 
-        if not is_present:
+        if not is_present or allow_dublicate:
             with open(file_name, 'a') as append:
                 append.write('{0}\n'.format(root_name))
         else:
@@ -1023,7 +1023,7 @@ class ProcessThread(object):
             self.shared_dict['typ'][aim]['queue_lock'].release()
         return is_present
 
-    def add_to_queue(self, aim, root_name):
+    def add_to_queue(self, aim, root_name, allow_dublicate=False):
         """
         Add item to queue.
 
@@ -1039,7 +1039,8 @@ class ProcessThread(object):
             self.shared_dict['queue'][aim].put(root_name, block=False)
             self.add_to_queue_file(
                 root_name=root_name,
-                file_name=self.shared_dict['typ'][aim]['save_file']
+                file_name=self.shared_dict['typ'][aim]['save_file'],
+                allow_dublicate=allow_dublicate,
                 )
             time.sleep(0.1)
         finally:
@@ -2458,6 +2459,20 @@ class ProcessThread(object):
                                 self.add_to_queue(aim=aim_name, root_name=file_input)
                             else:
                                 pass
+                        elif 'Extract' in compare:
+                            if motion_idx == 0:
+                                sum_file = sum_files[0]
+                                if sum_dw_files:
+                                    dw_file = sum_dw_files[0]
+                                else:
+                                    dw_file = 'None'
+                                self.add_to_queue(
+                                    aim=aim_name,
+                                    root_name=';;;'.join([sum_file, dw_file, file_input]),
+                                    allow_dublicate=True,
+                                    )
+                            else:
+                                pass
                         elif 'CTF_frames' in compare or 'CTF_sum' in compare or 'Picking' in compare:
                             if motion_idx == 0:
                                 sum_file = sum_files[0]
@@ -2721,6 +2736,8 @@ class ProcessThread(object):
                         self.add_to_queue(aim=aim_name, root_name=file_input)
                     elif 'Picking' in compare:
                         self.add_to_queue(aim=aim_name, root_name=root_name_raw)
+                    elif 'Extract' in compare:
+                        self.add_to_queue(aim=aim_name, root_name=root_name_raw, allow_dublicate=True)
                     else:
                         for log_file in copied_log_files:
                             self.add_to_queue(aim=aim_name, root_name=log_file)
@@ -2931,8 +2948,12 @@ class ProcessThread(object):
                             var = False
                             break
                 if var:
-                    for log_file in export_log_files:
-                        self.add_to_queue(aim=aim_name, root_name=log_file)
+                    if 'Extract' in compare:
+                        for file_use in file_queue_list:
+                            self.add_to_queue(aim=aim_name, root_name=file_use, allow_dublicate=True)
+                    else:
+                        for log_file in export_log_files:
+                            self.add_to_queue(aim=aim_name, root_name=log_file)
                 else:
                     pass
 
