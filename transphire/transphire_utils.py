@@ -210,14 +210,24 @@ def get_function_dict():
     None
     """
     function_dict = {}
+    function_dict['ISAC2 >=v1.2'] = {
+            'plot': tp.update_ctffind_4_v4_1_8,
+            'plot_data': ti.import_ctffind_v4_1_8,
+            'content': tc.default_window_1_2,
+            'executable': True,
+            'has_path': True,
+            'typ': 'class2d',
+            'allow_empty': [''],
+            }
+
     function_dict['WINDOW >=v1.2'] = {
             'plot': tp.update_ctffind_4_v4_1_8,
             'plot_data': ti.import_ctffind_v4_1_8,
-            'content': tc.default_ctffind_4_v4_1_8,
+            'content': tc.default_window_1_2,
             'executable': True,
             'has_path': True,
             'typ': 'extract',
-            'allow_empty': ['Gain file'],
+            'allow_empty': [''],
             }
 
     function_dict['CTFFIND4 >=v4.1.8'] = {

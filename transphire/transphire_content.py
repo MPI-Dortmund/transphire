@@ -46,6 +46,31 @@ def default_compress_command_line():
     return items
 
 
+def default_window_1_2():
+    """
+    Content of sp_window version 1.2
+
+    Arguments:
+    None
+
+    Return:
+    Content items as list
+    """
+    items = [
+        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['--box_size', '256', int, '', 'PLAIN', 'Main', 'Particle box size [Pixels]: The x and y dimensions of square area to be windowed. The box size after resampling is assumed when resample_ratio < 1.0. (default 256)'],
+        ['--skip_invert', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Skip invert image contrast: Use this option for negative staining data. By default, the image contrast is inverted for cryo data. (default False)'],
+        ['--limit_ctf', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Use CTF limit filter: Frequencies where CTF oscillations can not be properly modeled with the resampled pixel size will be discarded in the images with the appropriate low-pass filter. This has no effects when the CTER partres file is not specified by the CTF paramters source argument. (default False)'],
+        ['--astigmatism_error', '360.0', float, '', 'PLAIN', 'Advanced', 'Astigmatism error limit [Degrees]: Set astigmatism to zero for all micrographs where the angular error computed by sxcter is larger than the desired value. This has no effects when the CTER partres file is not specified by the CTF paramters source argument. (default 360.0)'],
+        ['--resample_ratio', '1.0', float, '', 'PLAIN', 'Advanced', 'Ratio between new and original pixel size: Use a value between 0.0 and 1.0 (excluding 0.0). The new pixel size will be automatically recalculated and stored in CTF paramers when resample_ratio < 1.0 is used. (default 1.0)'],
+        ['--check_consistency', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Check consistency of dataset: Create a text file containing the list of Micrograph ID entries might have inconsistency among the provided dataset. (i.e. mic_consistency_check_info_TIMESTAMP.txt). (default False)'],
+        ['--filament_width', '-1', int, '', 'PLAIN', 'Advanced', 'Filament width [Pixels]: Filament width for the creation of the rectangular mask. Default is one third of the box size. (default -1)'],
+        ]
+    return items
+
+
 def default_cryolo_v1_4_1():
     """
     Content of crYOLO version 1.4.1
@@ -616,9 +641,22 @@ def default_pipeline():
             '1',
             int,
             'Extract;' +
+            'Class2d:Class2d,' +
             'Extract to work:Copy to work:Copy_work,' +
             'Extract to HDD:Copy to HDD:Copy_hdd,' +
             'Extract to backup:Copy to backup:Copy_backup',
+            'PLAIN',
+            'Main',
+            ''
+            ],
+        [
+            'Class2d',
+            '1',
+            int,
+            'Class2d;' +
+            'Class2d to work:Copy to work:Copy_work,' +
+            'Class2d to HDD:Copy to HDD:Copy_hdd,' +
+            'Class2d to backup:Copy to backup:Copy_backup',
             'PLAIN',
             'Main',
             ''
@@ -941,6 +979,7 @@ def default_copy(settings_folder):
         ['Picking', programs_extern['picking'], bool, '', 'COMBO', 'Main', 'Software for particle picking.'],
         ['Compress', programs_extern['compress'], bool, '', 'COMBO', 'Main', 'Compress the micrograph movie.'],
         ['Extract', programs_extern['extract'], bool, '', 'COMBO', 'Main', 'Extract particles'],
+        ['Class2d', programs_extern['class2d'], bool, '', 'COMBO', 'Main', 'Extract particles'],
         ['Session to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the non-micrograph data (EPU session, ...) to the work drive if "Copy to work" is specified.'],
         ['Session to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the non-micrograph data (EPU session, ...) to the backup drive if "Copy to backup" is specified.'],
         ['Session to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the non-micrograph data (EPU session, ...) to the HDD drive if "Copy to HDD" is specified.'],
@@ -962,6 +1001,12 @@ def default_copy(settings_folder):
         ['Picking to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the microgaph picking data to the work drive if "Copy to work" is specified.'],
         ['Picking to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the microgaph picking data to the backup drive if "Copy to backup" is specified.'],
         ['Picking to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the microgaph picking data to the HDD drive if "Copy to HDD" is specified.'],
+        ['Extract to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the particle data to the work drive if "Copy to work" is specified.'],
+        ['Extract to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the particle data to the backup drive if "Copy to backup" is specified.'],
+        ['Extract to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the particle data to the HDD drive if "Copy to HDD" is specified.'],
+        ['Class2d to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the class2d data to the work drive if "Copy to work" is specified.'],
+        ['Class2d to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the class2d data to the backup drive if "Copy to backup" is specified.'],
+        ['Class2d to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the class2d data to the HDD drive if "Copy to HDD" is specified.'],
         ['Tar to work', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Copy the information to work drive in tar format if "Copy to work" is specified.'],
         ['Tar to backup', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Copy the information to backup drive in tar format if "Copy to backup" is specified.'],
         ['Tar to HDD', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Copy the information to HDD drive in tar format if "Copy to HDD" is specified.'],

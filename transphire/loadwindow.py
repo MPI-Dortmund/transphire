@@ -131,6 +131,15 @@ class DefaultSettings(QDialog):
                             },
                         'content': [],
                         },
+                    'Class2d': {
+                        'sub_content': {
+                            'ISAC2': {
+                                'sub_content': {},
+                                'content': ['ISAC2'],
+                                },
+                            },
+                        'content': [],
+                        },
                     'Compress': {
                         'sub_content': {
                             'Compress cmd': {

@@ -34,6 +34,7 @@ from transphire import transphire_software as tus
 from transphire import transphire_motion as tum
 from transphire import transphire_ctf as tuc
 from transphire import transphire_picking as tup
+from transphire import transphire_extract as tue
 
 
 class ProcessThread(object):
@@ -716,6 +717,10 @@ class ProcessThread(object):
                 'method': self.run_picking,
                 'lost_connect': 'full_transphire'
                 },
+            'Extract': {
+                'method': self.run_extract,
+                'lost_connect': 'full_transphire'
+                },
             'Compress': {
                 'method': self.run_compress,
                 'lost_connect': 'full_transphire'
@@ -992,6 +997,35 @@ class ProcessThread(object):
                 append.write('{0}\n'.format(root_name))
         else:
             pass
+
+    def all_in_queue_file(self, aim, root_name, lock=True):
+        """
+        Add item to queue.
+
+        Arguments:
+        aim - Aim queue
+        root_name - Name to add
+
+        Return:
+        None
+        """
+        if lock:
+            self.shared_dict['typ'][aim]['queue_list_lock'].acquire()
+        matches = 0
+        try:
+            files = (
+                self.shared_dict['typ'][aim]['list_file'],
+                )
+            for file_name in files:
+                try:
+                    with open(file_name, 'r') as read:
+                        matches = re.findall(r'^.*{0}.*$'.format(re.escape(root_name)), read.read(), re.MULTILINE)
+                except FileNotFoundError:
+                    pass
+        finally:
+            if lock:
+                self.shared_dict['typ'][aim]['queue_list_lock'].release()
+        return matches
 
     def already_in_queue_file(self, aim, root_name):
         """
@@ -2542,6 +2576,372 @@ class ProcessThread(object):
         # New name
         file_name = os.path.basename(root_name)
         new_name = os.path.join(
+            self.settings['extract_folder'],
+            '{0}.mrc'.format(file_name)
+            )
+
+        # Create the command
+        command, check_files, block_gpu, gpu_list, shell = tuc.get_ctf_command(
+            file_sum=file_sum,
+            file_input=file_input,
+            new_name=new_name,
+            settings=self.settings,
+            queue_com=self.queue_com,
+            name=self.name
+            )
+
+        # Log files
+        log_prefix = os.path.join(
+                self.settings['ctf_folder'],
+                file_name
+                )
+
+        log_file, err_file = self.run_command(
+            command=command,
+            log_prefix=log_prefix,
+            block_gpu=block_gpu,
+            gpu_list=gpu_list,
+            shell=shell
+            )
+
+        zero_list = [err_file]
+        non_zero_list = [log_file]
+        non_zero_list.extend(check_files)
+
+        root_path = os.path.join(os.path.dirname(root_name), file_name)
+        log_files, copied_log_files = tuc.find_logfiles(
+            root_path=root_path,
+            file_name=file_name,
+            settings=self.settings,
+            queue_com=self.queue_com,
+            name=self.name
+            )
+
+        try:
+            log_files.remove(err_file)
+            copied_log_files.remove(err_file)
+        except ValueError:
+            pass
+
+        tus.check_outputs(
+            zero_list=zero_list,
+            non_zero_list=non_zero_list+log_files,
+            exists_list=[],
+            folder=self.settings['ctf_folder'],
+            command=command
+            )
+
+        for old_file, new_file in zip(log_files, copied_log_files):
+            if os.path.realpath(old_file) != os.path.realpath(new_file):
+                tu.copy(old_file, new_file)
+            else:
+                pass
+
+        tus.check_outputs(
+            zero_list=[],
+            non_zero_list=copied_log_files,
+            exists_list=[],
+            folder=self.settings['ctf_folder'],
+            command=command
+            )
+
+        for old_file, new_file in zip(log_files, copied_log_files):
+            if os.path.realpath(old_file) != os.path.realpath(new_file):
+                os.remove(old_file)
+            else:
+                pass
+
+        copied_log_files.extend(non_zero_list)
+        copied_log_files.extend(zero_list)
+        copied_log_files = list(set(copied_log_files))
+
+        tuc.create_jpg_file(
+            file_sum,
+            self.settings,
+            self.settings['Copy']['CTF'],
+            )
+
+        import_name = tu.get_name(file_sum)
+        data, data_orig = tu.get_function_dict()[self.settings['Copy']['CTF']]['plot_data'](
+            self.settings['Copy']['CTF'],
+            self.settings['ctf_folder'],
+            import_name
+            )
+
+        try:
+            warnings, skip_list = tus.check_for_outlier(
+                dict_name='ctf',
+                data=data,
+                file_name=file_sum,
+                settings=self.settings
+                )
+        except ValueError:
+            raise IOError('{0} - Please check, if {0} can be executed outside of TranSPHIRE'.format(self.settings['Copy']['CTF']))
+
+        if skip_list:
+            self.remove_from_translate(os.path.basename(root_name))
+        else:
+            pass
+
+        for warning in skip_list:
+            self.send_out_of_range_error(warning, root_name, 'skip')
+
+        for warning in warnings:
+            self.send_out_of_range_error(warning, root_name, 'warning')
+
+        mask = np.in1d(
+            np.array(
+                np.char.rsplit(
+                    np.array(
+                        np.char.rsplit(
+                            data['file_name'],
+                            '/',
+                            1
+                            ).tolist()
+                        )[:, -1],
+                    '.',
+                    1
+                    ).tolist()
+                )[:,0],
+            np.char.rsplit(np.char.rsplit(
+                file_sum,
+                '/',
+                1
+                ).tolist()[-1], '.', 1).tolist()[0]
+            )
+        data = data[mask]
+        data_orig = data_orig[mask]
+
+        # Combine output files
+        output_name_partres_comb, output_name_star_comb, output_name_partres, output_name_star = tuc.combine_ctf_outputs(
+            data=data,
+            data_orig=data_orig,
+            root_path=root_path,
+            file_name=file_name,
+            settings=self.settings,
+            queue_com=self.queue_com,
+            shared_dict=self.shared_dict,
+            name=self.name,
+            sum_file=file_sum,
+            dw_file=file_dw,
+            )
+
+        combine_list = [
+            [self.shared_dict['ctf_partres_lock'], output_name_partres, output_name_partres_comb],
+            [self.shared_dict['ctf_star_lock'], output_name_star, output_name_star_comb],
+            ]
+        self.create_combines(combine_list)
+
+        if skip_list:
+            pass
+        else:
+            # Add to queue
+            for aim in self.content_settings['aim']:
+                *compare, aim_name = aim.split(':')
+                var = True
+                for typ in compare:
+                    name = typ.split('!')[-1]
+                    if typ.startswith('!'):
+                        if self.settings['Copy'][name] == 'False':
+                            continue
+                        else:
+                            var = False
+                            break
+                    else:
+                        if not self.settings['Copy'][name] == 'False':
+                            continue
+                        else:
+                            var = False
+                            break
+                if var:
+                    if '!Compress' in compare or 'Compress' in compare:
+                        self.add_to_queue(aim=aim_name, root_name=file_input)
+                    elif 'Picking' in compare:
+                        self.add_to_queue(aim=aim_name, root_name=root_name_raw)
+                    elif 'Extract' in compare:
+                        self.add_to_queue(aim=aim_name, root_name=output_name_partres)
+                    else:
+                        for log_file in copied_log_files:
+                            self.add_to_queue(aim=aim_name, root_name=log_file)
+                else:
+                    pass
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_ctf', root_name, 'stop', time.time() - start_prog))
+
+    def run_extract(self, root_name):
+        """
+        Run Particle extraction.
+
+        root_name - name of the file to process.
+
+        Returns:
+        None
+        """
+        start_prog = time.time()
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_extract', root_name, 'start'))
+
+        self.shared_dict_typ['queue_list_lock'].acquire()
+        try:
+            self.add_to_queue_file(
+                root_name=root_name,
+                file_name=self.shared_dict_typ['list_file'],
+                )
+            file_name = tu.get_name(tu.get_name(tu.get_name(root_name)))
+            matches_in_queue = self.all_in_queue_file(self.typ, file_name, lock=False)
+        finally:
+            self.shared_dict_typ['queue_list_lock'].release()
+
+        if len(matches_in_queue) != 3:
+            return None
+
+        print('START WITH', file_name)
+        # Create the command
+        output_dir = os.path.join(self.settings['extract_folder'], file_name)
+        tmp_matches = matches_in_queue[:]
+        file_ctf = [entry for entry in tmp_matches if 'partres.txt' in entry][0]
+        tmp_matches.remove(file_ctf)
+        file_box = [entry for entry in tmp_matches if '.box' in entry][0]
+        tmp_matches.remove(file_box)
+        file_sum = [entry for entry in tmp_matches if '.mrc' in entry][0]
+        tmp_matches.remove(file_sum)
+        assert not tmp_matches, (tmp_matches, matches_in_queue, file_ctf, file_box, file_sum, output_dir)
+        print(tmp_matches, matches_in_queue, file_ctf, file_box, file_sum, output_dir)
+
+        command, check_files, block_gpu, gpu_list, shell = tue.get_extract_command(
+            file_sum=file_sum,
+            file_box=file_box,
+            file_ctf=file_ctf,
+            output_dir=output_dir,
+            settings=self.settings,
+            queue_com=self.queue_com,
+            name=self.name
+            )
+        print(file_name, ":", command)
+        print('')
+
+        # Log files
+        log_prefix = os.path.join(
+                self.settings['extract_folder'],
+                file_name
+                )
+
+        log_file, err_file = self.run_command(
+            command=command,
+            log_prefix=log_prefix,
+            block_gpu=block_gpu,
+            gpu_list=gpu_list,
+            shell=shell
+            )
+
+        zero_list = []
+        non_zero_list = [log_file, err_file]
+        non_zero_list.extend(check_files)
+
+        log_files, copied_log_files = tue.find_logfiles(
+            root_path=output_dir,
+            file_name=file_name,
+            settings=self.settings,
+            queue_com=self.queue_com,
+            name=self.name
+            )
+
+        tus.check_outputs(
+            zero_list=zero_list,
+            non_zero_list=non_zero_list,
+            exists_list=log_files,
+            folder=self.settings['extract_folder'],
+            command=command
+            )
+
+        try:
+            log_files.remove(err_file)
+            copied_log_files.remove(err_file)
+        except ValueError:
+            pass
+
+        for old_file, new_file in zip(log_files, copied_log_files):
+            if os.path.realpath(old_file) != os.path.realpath(new_file):
+                os.remove(old_file)
+            else:
+                pass
+
+        copied_log_files.extend(non_zero_list)
+        copied_log_files.extend(zero_list)
+        copied_log_files = list(set(copied_log_files))
+
+        skip_list = False
+        if skip_list:
+            pass
+        else:
+            # Add to queue
+            for aim in self.content_settings['aim']:
+                *compare, aim_name = aim.split(':')
+                var = True
+                for typ in compare:
+                    name = typ.split('!')[-1]
+                    if typ.startswith('!'):
+                        if self.settings['Copy'][name] == 'False':
+                            continue
+                        else:
+                            var = False
+                            break
+                    else:
+                        if not self.settings['Copy'][name] == 'False':
+                            continue
+                        else:
+                            var = False
+                            break
+                if var:
+                    if 'Class2d' in compare:
+                        for log_file in copied_log_files:
+                            if '.bdb' in log_file:
+                                self.add_to_queue(aim=aim_name, root_name=log_file)
+                    else:
+                        for log_file in copied_log_files:
+                            self.add_to_queue(aim=aim_name, root_name=log_file)
+                else:
+                    pass
+
+        self.remove_from_queue_file(matches_in_queue, self.shared_dict_typ['list_file'])
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name, 'stop', time.time() - start_prog))
+        return None
+
+
+        # Split is file_sum, file_dw_sum, file_frames
+        try:
+            file_sum, file_dw, file_input = root_name.split(';;;')
+        except ValueError:
+            file_input = root_name
+            file_sum = root_name
+            file_dw = 'None'
+        try:
+            if self.settings[self.settings['Copy']['CTF']]['Use movies'] == 'True':
+                if not os.path.isfile(file_input):
+                    compress_name = self.settings['Copy']['Compress']
+                    try:
+                        compress_extension = self.settings[compress_name]['--command_compress_extension']
+                    except KeyError:
+                        raise IOError('Compressed file and Stack file does not exist!')
+
+                    compressed_file_name = os.path.join(
+                        self.settings['compress_folder'],
+                        '{0}.{1}'.format(
+                            tu.get_name(root_name[len(self.settings['stack_folder'])+1:]),
+                            compress_extension
+                            )
+                        )
+                    file_input = compressed_file_name
+                    file_sum = file_input
+                else:
+                    file_input = file_input
+                root_name, _ = os.path.splitext(file_input)
+            else:
+                root_name, _ = os.path.splitext(file_sum)
+        except KeyError:
+            root_name, _ = os.path.splitext(file_sum)
+
+        # New name
+        file_name = os.path.basename(root_name)
+        new_name = os.path.join(
             self.settings['ctf_folder'],
             '{0}.mrc'.format(file_name)
             )
@@ -2938,7 +3338,7 @@ class ProcessThread(object):
                 if var:
                     if 'Extract' in compare:
                         for log_file in export_log_files:
-                            if 'EMAN_HELIX_SEGMENTED' in log_file:
+                            if 'EMAN_START_END' in log_file:
                                 continue
                             elif 'EMAN' in log_file:
                                 self.add_to_queue(aim=aim_name, root_name=log_file)

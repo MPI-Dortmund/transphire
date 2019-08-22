@@ -18,7 +18,7 @@
 import numpy as np
 
 
-def get_mic_number(array, settings):
+def get_mic_number(array, settings, as_int=True):
     """
     Identify the micrograph number out of the name string.
 
@@ -44,11 +44,13 @@ def get_mic_number(array, settings):
                 number = first_part
             else:
                 number = first_part.split(prefix)[-1]
-            try:
-                number_list.append(int(number))
-            except ValueError:
-                error = True
-                break
+            if as_int:
+                try:
+                    number = int(number)
+                except ValueError:
+                    error = True
+                    break
+            number_list.append(number)
     else:
         number_list = np.arange(len(array))
 
