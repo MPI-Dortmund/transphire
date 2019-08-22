@@ -217,7 +217,7 @@ def get_function_dict():
             'executable': True,
             'has_path': True,
             'typ': 'extract',
-            'allow_empty': [''],
+            'allow_empty': ['Gain file'],
             }
 
     function_dict['CTFFIND4 >=v4.1.8'] = {

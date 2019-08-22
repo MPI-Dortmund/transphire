@@ -1994,7 +1994,7 @@ class ProcessThread(object):
         for motion_idx, key in enumerate(self.settings['motion_frames']):
             # The current settings that we work with
             motion_frames = copy.deepcopy(self.settings['motion_frames'][key])
-            queue_dict[motion_idx] = {'log': [], 'sum': [], 'sum_dw': []}
+            queue_dict[motion_idx] = {'log': [], 'sum': [], 'sum_dw': [], 'sum_dws': []}
 
             # Abort if frames out of range
             if motion_frames['first'] > \
@@ -2300,6 +2300,8 @@ class ProcessThread(object):
                 queue_dict[motion_idx]['log'].append(file_name_log)
             if do_dw:
                 queue_dict[motion_idx]['sum_dw'].append(file_dw_post_move)
+                if os.path.exists(file_dws_post_move):
+                    queue_dict[motion_idx]['sum_dws'].append(file_dws_post_move)
             else:
                 pass
 
@@ -2438,6 +2440,7 @@ class ProcessThread(object):
                         sum_files = queue_dict[motion_idx]['sum']
                         log_files = queue_dict[motion_idx]['log']
                         sum_dw_files = queue_dict[motion_idx]['sum_dw']
+                        sum_dws_files = queue_dict[motion_idx]['sum_dws']
                         if '!Compress' in compare:
                             if motion_idx == 0:
                                 self.add_to_queue(aim=aim_name, root_name=file_input)
@@ -2450,15 +2453,13 @@ class ProcessThread(object):
                                 pass
                         elif 'Extract' in compare:
                             if motion_idx == 0:
-                                sum_file = sum_files[0]
                                 if sum_dw_files:
                                     dw_file = sum_dw_files[0]
                                 else:
-                                    dw_file = 'None'
+                                    dw_file = sum_files[0]
                                 self.add_to_queue(
                                     aim=aim_name,
-                                    root_name=';;;'.join([sum_file, dw_file, file_input]),
-                                    allow_dublicate=True,
+                                    root_name=dw_file
                                     )
                             else:
                                 pass
@@ -2481,6 +2482,8 @@ class ProcessThread(object):
                             for file_name in log_files:
                                 self.add_to_queue(aim=aim_name, root_name=file_name)
                             for file_name in sum_dw_files:
+                                self.add_to_queue(aim=aim_name, root_name=file_name)
+                            for file_name in sum_dws_files:
                                 self.add_to_queue(aim=aim_name, root_name=file_name)
                     else:
                         pass
@@ -2676,28 +2679,24 @@ class ProcessThread(object):
         data_orig = data_orig[mask]
 
         # Combine output files
-        if data.shape[0] != 0:
-            output_name_partres_comb, output_name_star_comb, output_name_partres, output_name_star = tuc.combine_ctf_outputs(
-                data=data,
-                data_orig=data_orig,
-                root_path=root_path,
-                file_name=file_name,
-                settings=self.settings,
-                queue_com=self.queue_com,
-                shared_dict=self.shared_dict,
-                name=self.name,
-                sum_file=file_sum,
-                dw_file=file_dw,
-                )
+        output_name_partres_comb, output_name_star_comb, output_name_partres, output_name_star = tuc.combine_ctf_outputs(
+            data=data,
+            data_orig=data_orig,
+            root_path=root_path,
+            file_name=file_name,
+            settings=self.settings,
+            queue_com=self.queue_com,
+            shared_dict=self.shared_dict,
+            name=self.name,
+            sum_file=file_sum,
+            dw_file=file_dw,
+            )
 
-            combine_list = [
-                [self.shared_dict['ctf_partres_lock'], output_name_partres, output_name_partres_comb],
-                [self.shared_dict['ctf_star_lock'], output_name_star, output_name_star_comb],
-                ]
-            self.create_combines(combine_list)
-
-        else:
-            pass
+        combine_list = [
+            [self.shared_dict['ctf_partres_lock'], output_name_partres, output_name_partres_comb],
+            [self.shared_dict['ctf_star_lock'], output_name_star, output_name_star_comb],
+            ]
+        self.create_combines(combine_list)
 
         if skip_list:
             pass
@@ -2726,7 +2725,7 @@ class ProcessThread(object):
                     elif 'Picking' in compare:
                         self.add_to_queue(aim=aim_name, root_name=root_name_raw)
                     elif 'Extract' in compare:
-                        self.add_to_queue(aim=aim_name, root_name=root_name_raw, allow_dublicate=True)
+                        self.add_to_queue(aim=aim_name, root_name=output_name_partres)
                     else:
                         for log_file in copied_log_files:
                             self.add_to_queue(aim=aim_name, root_name=log_file)
@@ -2938,8 +2937,11 @@ class ProcessThread(object):
                             break
                 if var:
                     if 'Extract' in compare:
-                        for file_use in file_queue_list:
-                            self.add_to_queue(aim=aim_name, root_name=file_use, allow_dublicate=True)
+                        for log_file in export_log_files:
+                            if 'EMAN_HELIX_SEGMENTED' in log_file:
+                                continue
+                            elif 'EMAN' in log_file:
+                                self.add_to_queue(aim=aim_name, root_name=log_file)
                     else:
                         for log_file in export_log_files:
                             self.add_to_queue(aim=aim_name, root_name=log_file)
