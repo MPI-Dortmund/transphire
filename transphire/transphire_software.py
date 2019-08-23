@@ -1082,12 +1082,13 @@ def check_outputs(zero_list, non_zero_list, exists_list, folder, command):
     Returns:
     None
     """
+    template = 'Command failed:\n{0}\nfor\n{1}.\nPlease check the logfiles in\n{2}!'
     for file_path in non_zero_list:
         try:
             size = os.path.getsize(file_path)
         except OSError:
             raise Exception(
-                'Command failed: {0} for {1}. Please check the logfiles in {2}!'.format(
+                template.format(
                     command,
                     file_path,
                     folder
@@ -1096,7 +1097,7 @@ def check_outputs(zero_list, non_zero_list, exists_list, folder, command):
         else:
             if size == 0:
                 raise Exception(
-                    'Command failed: {0} for {1}. Please check the logfiles in {2}!'.format(
+                    template.format(
                         command,
                         file_path,
                         folder
@@ -1110,7 +1111,7 @@ def check_outputs(zero_list, non_zero_list, exists_list, folder, command):
             size = os.path.getsize(file_path)
         except OSError:
             raise Exception(
-                'Command failed: {0} for {1}. Please check the logfiles in {2}!'.format(
+                template.format(
                     command,
                     file_path,
                     folder
@@ -1119,7 +1120,7 @@ def check_outputs(zero_list, non_zero_list, exists_list, folder, command):
         else:
             if size > 0:
                 raise Exception(
-                    'Command failed: {0} for {1}. Please check the logfiles in {2}!'.format(
+                    template.format(
                         command,
                         file_path,
                         folder
@@ -1131,7 +1132,7 @@ def check_outputs(zero_list, non_zero_list, exists_list, folder, command):
     for file_path in exists_list:
         if not os.path.exists(file_path):
             raise Exception(
-                'Command failed: {0} for {1}. Please check the logfiles in {2}!'.format(
+                template.format(
                     command,
                     file_path,
                     folder

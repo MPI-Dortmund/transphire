@@ -164,15 +164,11 @@ class MainWindow(QMainWindow):
         self.content_raw = content_raw
         self.content_pipeline=content_pipeline
         self.layout = None
-        self.types = (
-            'mount',
-            'process',
-            'ctf',
-            'motion',
-            'picking',
-            'extract',
-            'class2d',
-            )
+        function_dict = tu.get_function_dict()
+        self.types = ['mount', 'process']
+        for value in function_dict.values():
+            if value['typ'] is not None and value['typ'] not in self.types:
+                self.types.append(value['typ'])
 
         # Settings folder
         self.settings_folder = settings_folder
@@ -342,13 +338,13 @@ class MainWindow(QMainWindow):
             tu.message(entry)
 
         self.workers['process'].sig_finished.connect(self._finished)
-        for entry in self.types:
+        for idx, entry in enumerate(self.types):
             if entry in ('mount', 'process'):
                 continue
-            elif entry not in self.workers['process'].signals:
-                assert False, entry
 
-            self.workers['process'].signals[entry].connect(self.workers[entry].set_settings)
+            signal = getattr(self.workers['process'], 'sig_plot_{0}'.format(idx))
+            signal.connect(self.workers[entry].set_settings)
+            self.workers['process'].signals[entry] = signal
 
             self.timers[entry] = QTimer(self)
             self.timers[entry].setInterval(30000)
@@ -991,37 +987,10 @@ class MainWindow(QMainWindow):
             settings['General']['Project directory'],
             settings['General']['Project name']
             )
-        settings['compress_folder'] = os.path.join(
-            settings['General']['Project directory'],
-            settings['General']['Project name']
-            )
-        settings['motion_folder'] = os.path.join(
-            settings['General']['Project directory'],
-            settings['General']['Project name']
-            )
-        settings['ctf_folder'] = os.path.join(
-            settings['General']['Project directory'],
-            settings['General']['Project name']
-            )
-        settings['picking_folder'] = os.path.join(
-            settings['General']['Project directory'],
-            settings['General']['Project name']
-            )
-        settings['extract_folder'] = os.path.join(
-            settings['General']['Project directory'],
-            settings['General']['Project name']
-            )
-        settings['class2d_folder'] = os.path.join(
-            settings['General']['Project directory'],
-            settings['General']['Project name']
-            )
         settings['scratch_folder'] = os.path.join(
             settings['General']['Scratch directory'],
             settings['General']['Project name']
             )
-        settings['Copy_hdd_folder'] = self.mount_directory
-        settings['Copy_backup_folder'] = self.mount_directory
-        settings['Copy_work_folder'] = self.mount_directory
         settings['settings_folder'] = os.path.join(
             settings['project_folder'],
             'settings'
@@ -1037,6 +1006,45 @@ class MainWindow(QMainWindow):
         settings['tar_folder'] = os.path.join(
             settings['project_folder'], 'tar_folder'
             )
+        settings['stack_folder'] = os.path.join(
+            settings['project_folder'], 'Stack'
+            )
+        settings['meta_folder'] = os.path.join(
+            settings['project_folder'], 'Meta'
+            )
+        settings['software_meta_folder'] = os.path.join(
+            settings['project_folder'], 'Software_meta'
+            )
+
+        names = [
+            entry.replace('_entries', '')
+            for entry in settings['Copy']
+            if entry.endswith('_entries') and
+            entry.replace('_entries', '') in settings['Copy']
+            ]
+        names.append('Copy_to_hdd')
+        for entry in names:
+            if 'copy_to_hdd' in entry.lower():
+                folder_name = entry.lower()
+            elif 'copy_to_' in entry.lower():
+                base_dir = self.mount_directory
+                folder_name = settings['Copy'][entry].replace(' ', '_').replace('>=', '')
+            else:
+                base_dir = os.path.join(
+                    settings['General']['Project directory'],
+                    settings['General']['Project name']
+                    )
+                folder_name = settings['Copy'][entry].replace(' ', '_').replace('>=', '')
+
+            settings['{0}_folder'.format(entry.lower())] = os.path.join(
+                settings['project_folder'],
+                folder_name
+                )
+            settings['scratch_{0}_folder'.format(entry.lower())] = os.path.join(
+                settings['scratch_folder'],
+                folder_name
+                )
+
         return settings
 
     @pyqtSlot()

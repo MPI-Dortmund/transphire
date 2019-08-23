@@ -55,11 +55,17 @@ class ProcessWorker(QObject):
     sig_error = pyqtSignal(str)
     sig_status = pyqtSignal(str, object, str, str)
     sig_notification = pyqtSignal(str)
-    sig_plot_ctf = pyqtSignal(str, object, object, str)
-    sig_plot_motion = pyqtSignal(str, object, object, str)
-    sig_plot_picking = pyqtSignal(str, object, object, str)
-    sig_plot_extract = pyqtSignal(str, object, object, str)
-    sig_plot_class2d = pyqtSignal(str, object, object, str)
+    sig_plot_1 = pyqtSignal(str, object, object, str)
+    sig_plot_2 = pyqtSignal(str, object, object, str)
+    sig_plot_3 = pyqtSignal(str, object, object, str)
+    sig_plot_4 = pyqtSignal(str, object, object, str)
+    sig_plot_5 = pyqtSignal(str, object, object, str)
+    sig_plot_6 = pyqtSignal(str, object, object, str)
+    sig_plot_7 = pyqtSignal(str, object, object, str)
+    sig_plot_8 = pyqtSignal(str, object, object, str)
+    sig_plot_9 = pyqtSignal(str, object, object, str)
+    sig_plot_10 = pyqtSignal(str, object, object, str)
+    sig_plot_11 = pyqtSignal(str, object, object, str)
 
     def __init__(self, password, content_process, mount_directory, parent=None):
         """
@@ -76,13 +82,7 @@ class ProcessWorker(QObject):
         """
         super(ProcessWorker, self).__init__(parent)
         # Signals
-        self.signals = {
-            'ctf': self.sig_plot_ctf,
-            'motion': self.sig_plot_motion,
-            'picking': self.sig_plot_picking,
-            'extract': self.sig_plot_extract,
-            'class2d': self.sig_plot_class2d,
-            }
+        self.signals = {}
 
         # Variables
         self.password = password
@@ -98,46 +98,26 @@ class ProcessWorker(QObject):
 
     def emit_plot_signals(self):
         # Set CTF settings
-        self.settings['CTF_folder'] = {}
-        for entry in self.settings['Copy']['CTF_entries']:
-            self.settings['CTF_folder'][entry] = os.path.join(
-                self.settings['project_folder'],
-                entry.replace(' ', '_').replace('>=', '')
-                )
-            self.sig_plot_ctf.emit(
-                entry,
-                self.settings['CTF_folder'][entry],
-                self.settings,
-                self.settings['Copy']['CTF']
-                )
+        names = [
+            entry.replace('_entries', '')
+            for entry in self.settings['Copy']
+            if entry.endswith('_entries') and
+            entry.replace('_entries', '') in self.settings['Copy']
+            ]
 
-        # Set Motion settings
-        self.settings['Motion_folder'] = {}
-        for entry in self.settings['Copy']['Motion_entries']:
-            self.settings['Motion_folder'][entry] = os.path.join(
-                self.settings['project_folder'],
-                entry.replace(' ', '_').replace('>=', '')
-                )
-            self.sig_plot_motion.emit(
-                entry,
-                self.settings['Motion_folder'][entry],
-                self.settings,
-                self.settings['Copy']['Motion']
-                )
-
-        # Set Picking settings
-        self.settings['Picking_folder'] = {}
-        for entry in self.settings['Copy']['Picking_entries']:
-            self.settings['Picking_folder'][entry] = os.path.join(
-                self.settings['project_folder'],
-                entry.replace(' ', '_').replace('>=', '')
-                )
-            self.sig_plot_picking.emit(
-                entry,
-                self.settings['Picking_folder'][entry],
-                self.settings,
-                self.settings['Copy']['Picking']
-                )
+        for name in names:
+            self.settings['{0}_folder'.format(name)] = {}
+            for entry in self.settings['Copy']['{0}_entries'.format(name)]:
+                self.settings['{0}_folder'.format(name)][entry] = os.path.join(
+                    self.settings['project_folder'],
+                    entry.replace(' ', '_').replace('>=', '')
+                    )
+                self.signals[name.lower()].emit(
+                    entry,
+                    self.settings['{0}_folder'.format(name)][entry],
+                    self.settings,
+                    self.settings['Copy'][name]
+                    )
 
     @pyqtSlot(object)
     def run(self, settings):
@@ -160,56 +140,8 @@ class ProcessWorker(QObject):
             self.settings['Output extension'] = self.settings['General']['Input extension']
 
         # Set paths
-        self.settings['stack_folder'] = os.path.join(
-            self.settings['project_folder'], 'Stack'
-            )
-        self.settings['meta_folder'] = os.path.join(
-            self.settings['project_folder'], 'Meta'
-            )
-        self.settings['software_meta_folder'] = os.path.join(
-            self.settings['project_folder'], 'Software_meta'
-            )
         self.settings['software_meta_tar'] = os.path.join(
             self.settings['tar_folder'], 'Software_meta.tar'
-            )
-        self.settings['motion_folder'] = os.path.join(
-            self.settings['motion_folder'],
-            self.settings['Copy']['Motion'].replace(' ', '_').replace('>=', '')
-            )
-        self.settings['scratch_motion_folder'] = os.path.join(
-            self.settings['scratch_folder'],
-            self.settings['Copy']['Motion'].replace(' ', '_').replace('>=', '')
-            )
-        self.settings['ctf_folder'] = os.path.join(
-            self.settings['ctf_folder'],
-            self.settings['Copy']['CTF'].replace(' ', '_').replace('>=', '')
-            )
-        self.settings['picking_folder'] = os.path.join(
-            self.settings['picking_folder'],
-            self.settings['Copy']['Picking'].replace(' ', '_').replace('>=', '')
-            )
-        self.settings['class2d_folder'] = os.path.join(
-            self.settings['class2d_folder'],
-            self.settings['Copy']['Class2d'].replace(' ', '_').replace('>=', '')
-            )
-        self.settings['extract_folder'] = os.path.join(
-            self.settings['extract_folder'],
-            self.settings['Copy']['Extract'].replace(' ', '_').replace('>=', '')
-            )
-        self.settings['compress_folder'] = os.path.join(
-            self.settings['compress_folder'],
-            self.settings['Copy']['Compress'].replace(' ', '_').replace('>=', '')
-            )
-        self.settings['Copy_hdd_folder'] = os.path.join(
-            self.settings['Copy_hdd_folder'], 'HDD'
-            )
-        self.settings['Copy_work_folder'] = os.path.join(
-            self.settings['Copy_work_folder'],
-            self.settings['Copy']['Copy to work'].replace(' ', '_').replace('>=', '')
-            )
-        self.settings['Copy_backup_folder'] = os.path.join(
-            self.settings['Copy_backup_folder'],
-            self.settings['Copy']['Copy to backup'].replace(' ', '_').replace('>=', '')
             )
 
         manager = mp.Manager()
@@ -391,83 +323,14 @@ class ProcessWorker(QObject):
         folder_list = ['stack_folder', 'meta_folder']
         use_threads_list = ['Meta', 'Find', 'Import']
 
-        # Fill folder list and threads list
-        for name in ['work', 'backup']:
-            short_name = 'Copy_{0}'.format(name)
-            long_name = 'Copy to {0}'.format(name)
-            folder_name = '{0}_folder'.format(short_name)
-            user_name = '{0}_user'.format(short_name)
-            self.settings['Copy'][short_name] = \
-                self.settings['Copy'][long_name]
-
-            if self.settings['Copy'][long_name] != 'False':
-                if self.settings['Copy'][long_name] == 'Later':
-                    pass
-                elif not os.path.ismount(self.settings[folder_name]):
-                    try:
-                        os.listdir(self.settings[folder_name])
-                    except PermissionError:
-                        pass
-                    except FileNotFoundError:
-                        self.sig_error.emit(
-                            '{0} folder {1} not mounted!'.format(
-                                name,
-                                self.settings['Copy'][long_name]
-                                )
-                            )
-                        return None
-                    except OSError as err:
-                        if 'Required key' in str(err):
-                            self.sig_error.emit(
-                                '\n'.join([
-                                    '{0} folder {1} no longer mounted! '.format(
-                                        name,
-                                        self.settings['Copy'][long_name]
-                                        ),
-                                    'Use kinit to refresh the key'
-                                    ])
-                                )
-                            return None
-                        else:
-                            print(
-                                '\n'.join([
-                                    'Unknown Error occured!',
-                                    'Please contact the TranSPHIRE authors!'
-                                    ])
-                            )
-                            raise
-                    else:
-                        self.sig_error.emit(
-                            '{0} folder {1} not mounted!'.format(
-                                name,
-                                self.settings['Copy'][long_name]
-                                )
-                            )
-                        return None
-
-                else:
-                    pass
-                try:
-                    self.settings[user_name] = self.settings[
-                        'user_{0}'.format(
-                            self.settings['Copy'][long_name].replace(' ', '_')
-                            )
-                        ]
-                except KeyError:
-                    self.sig_error.emit('{0} needs remount! '.format(name))
-                    return None
-                use_threads_list.append(short_name)
-            else:
-                pass
-
         # Decide if one will use copy to HDD
-        self.settings['Copy']['Copy_hdd'] = self.settings['Copy']['Copy to HDD']
+        self.settings['Copy']['Copy_to_hdd'] = self.settings['Copy']['Copy to HDD']
         if self.settings['Copy']['Copy to HDD'] != 'False':
             if self.settings['Copy']['Copy to HDD'] == 'Later':
                 pass
             else:
                 try:
-                    for folder in glob.glob('{0}/*'.format(self.settings['Copy_hdd_folder'])):
+                    for folder in glob.glob('{0}/*'.format(self.settings['Copy_to_hdd_folder'])):
                         if not os.path.ismount(folder):
                             try:
                                 os.listdir(folder)
@@ -487,63 +350,113 @@ class ProcessWorker(QObject):
                         'Please remount if you want to use HDD!'
                         )
                     return None
-            use_threads_list.append('Copy_hdd')
+            use_threads_list.append('Copy_to_hdd')
         else:
             pass
 
-        # Set CTF settings
-        if self.settings['Copy']['CTF'] != 'False':
-            folder_list.append('ctf_folder')
-            use_threads_list.append('CTF')
-            ctf_name = self.settings['Copy']['CTF']
-            try:
-                if self.settings[ctf_name]['Use movies'] == 'True':
-                    self.settings['Copy']['CTF_frames'] = 'True'
-                    self.settings['Copy']['CTF_sum'] = 'False'
+        names = [
+            entry.replace('_entries', '')
+            for entry in settings['Copy']
+            if entry.endswith('_entries') and
+            entry.replace('_entries', '') in settings['Copy']
+            ]
+        for entry in names:
+            if 'copy_to_' in entry.lower():
+                # Fill folder list and threads list
+                for name in ['work', 'backup']:
+                    short_name = 'Copy_to_{0}'.format(name)
+                    long_name = 'Copy to {0}'.format(name)
+                    folder_name = '{0}_folder'.format(short_name.lower())
+                    user_name = '{0}_user'.format(short_name)
+                    self.settings['Copy'][short_name] = \
+                        self.settings['Copy'][long_name]
+
+                    if self.settings['Copy'][long_name] != 'False':
+                        if self.settings['Copy'][long_name] == 'Later':
+                            pass
+                        elif not os.path.ismount(self.settings[folder_name]):
+                            try:
+                                os.listdir(self.settings[folder_name])
+                            except PermissionError:
+                                pass
+                            except FileNotFoundError:
+                                self.sig_error.emit(
+                                    '{0} folder {1} not mounted!'.format(
+                                        name,
+                                        self.settings['Copy'][long_name]
+                                        )
+                                    )
+                                return None
+                            except OSError as err:
+                                if 'Required key' in str(err):
+                                    self.sig_error.emit(
+                                        '\n'.join([
+                                            '{0} folder {1} no longer mounted! '.format(
+                                                name,
+                                                self.settings['Copy'][long_name]
+                                                ),
+                                            'Use kinit to refresh the key'
+                                            ])
+                                        )
+                                    return None
+                                else:
+                                    print(
+                                        '\n'.join([
+                                            'Unknown Error occured!',
+                                            'Please contact the TranSPHIRE authors!'
+                                            ])
+                                    )
+                                    raise
+                            else:
+                                self.sig_error.emit(
+                                    '{0} folder {1} not mounted!'.format(
+                                        name,
+                                        self.settings['Copy'][long_name]
+                                        )
+                                    )
+                                return None
+
+                        else:
+                            pass
+                        try:
+                            self.settings[user_name] = self.settings[
+                                'user_{0}'.format(
+                                    self.settings['Copy'][long_name].replace(' ', '_')
+                                    )
+                                ]
+                        except KeyError:
+                            self.sig_error.emit('{0} needs remount! '.format(name))
+                            return None
+                        use_threads_list.append(short_name)
+                    else:
+                        pass
+
+            elif 'ctf' == entry.lower():
+                # Set CTF settings
+                if self.settings['Copy']['CTF'] != 'False':
+                    folder_list.append('ctf_folder')
+                    use_threads_list.append('CTF')
+                    ctf_name = self.settings['Copy']['CTF']
+                    try:
+                        if self.settings[ctf_name]['Use movies'] == 'True':
+                            self.settings['Copy']['CTF_frames'] = 'True'
+                            self.settings['Copy']['CTF_sum'] = 'False'
+                        else:
+                            self.settings['Copy']['CTF_frames'] = 'False'
+                            self.settings['Copy']['CTF_sum'] = 'True'
+                    except KeyError:
+                        self.settings['Copy']['CTF_frames'] = 'False'
+                        self.settings['Copy']['CTF_sum'] = 'True'
                 else:
                     self.settings['Copy']['CTF_frames'] = 'False'
-                    self.settings['Copy']['CTF_sum'] = 'True'
-            except KeyError:
-                self.settings['Copy']['CTF_frames'] = 'False'
-                self.settings['Copy']['CTF_sum'] = 'True'
-        else:
-            self.settings['Copy']['CTF_frames'] = 'False'
-            self.settings['Copy']['CTF_sum'] = 'False'
-
-        # Set Compress settings
-        if self.settings['Copy']['Compress'] != 'False':
-            folder_list.append('compress_folder')
-            use_threads_list.append('Compress')
-        else:
-            pass
-
-        # Set Motion settings
-        if self.settings['Copy']['Motion'] != 'False':
-            folder_list.append('motion_folder')
-            use_threads_list.append('Motion')
-        else:
-            pass
-
-        # Set Picking settings
-        if self.settings['Copy']['Picking'] != 'False':
-            folder_list.append('picking_folder')
-            use_threads_list.append('Picking')
-        else:
-            pass
-
-        # Set Extract settings
-        if self.settings['Copy']['Extract'] != 'False':
-            folder_list.append('extract_folder')
-            use_threads_list.append('Extract')
-        else:
-            pass
-
-        # Set Class2d settings
-        if self.settings['Copy']['Class2d'] != 'False':
-            folder_list.append('class2d_folder')
-            use_threads_list.append('Class2d')
-        else:
-            pass
+                    self.settings['Copy']['CTF_sum'] = 'False'
+            else:
+                # Set Compress settings
+                if self.settings['Copy'][entry] != 'False':
+                    folder_list.append('{0}_folder'.format(entry.lower()))
+                    use_threads_list.append(entry)
+                else:
+                    pass
 
         # Create output directories
         for entry in folder_list:

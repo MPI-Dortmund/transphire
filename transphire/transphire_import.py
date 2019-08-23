@@ -76,6 +76,7 @@ def get_dtype_dict():
         ('file_name', '|U1200'),
         ('image', '|U1200'),
         ]
+
     dtype['ctf'] = [
         ('mic_number', '<f8'),
         ('defocus', '<f8'),
@@ -87,8 +88,24 @@ def get_dtype_dict():
         ('file_name', '|U1200'),
         ('image', '|U1200'),
         ]
+
     dtype['picking'] = [
         ('particles', '<i8'),
+        ('file_name', '|U1200'),
+        ('image', '|U1200'),
+        ]
+
+    dtype['extract'] = [
+        ('accepted', '<i8'),
+        ('rejected', '<i8'),
+        ('file_name', '|U1200'),
+        ('image', '|U1200'),
+        ]
+
+    dtype['class2d'] = [
+        ('nr_classes', '<i8'),
+        ('accepted', '<i8'),
+        ('rejected', '<i8'),
         ('file_name', '|U1200'),
         ('image', '|U1200'),
         ]
@@ -250,6 +267,45 @@ def get_dtype_import_dict():
         ('box_y', '<f8'),
         ]
     return dtype_import
+
+
+def import_isac_v1_2(name, directory_name, import_name=''):
+    files = [
+        entry for entry in glob.glob(
+        '{0}/{1}*_transphire.log'.format(directory_name, import_name)
+        )
+        ]
+    return np.array([]), np.array([])
+
+
+def import_window_v1_2(name, directory_name, import_name=''):
+    print(
+        '{0}/{1}*_transphire.log'.format(directory_name, import_name)
+        )
+    files = [
+        entry for entry in glob.glob(
+        '{0}/{1}*_transphire.log'.format(directory_name, import_name)
+        )
+        ]
+    useable_files = []
+    for file_name in files:
+        with open(file_name, 'r') as read:
+            match = re.search('^.*Processed\s+:\s+(\d+).*$(?:\n|\r\n)^.*Rejected by out of boundary\s+:\s+(\d+).*$', read.read(), re.MULTILINE)
+        if match is not None:
+            useable_files.append([file_name, match.group(1), match.group(2)])
+
+    useable_files_jpg = [
+        tu.get_name(entry)
+        for entry in glob.glob(os.path.join(directory_name, 'jpg*', '*.jpg'))
+        ]
+
+    useable_files = [
+        entry
+        for entry in sorted(useable_files)
+        if tu.get_name(entry[0]).replace('_transphire', '') in useable_files_jpg
+        ]
+
+    return np.array([]), np.array([])
 
 
 def import_ctffind_v4_1_8(name, directory_name, import_name=''):

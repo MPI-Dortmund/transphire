@@ -278,7 +278,7 @@ class ProcessThread(object):
                 pass
             else:
                 self.is_running = True
-                if self.typ not in ('Find', 'Meta'):
+                if self.typ not in ('Find', 'Meta', 'Extract'):
                     self.start_queue(clear_list=True)
                 self.is_running = False
 
@@ -329,7 +329,7 @@ class ProcessThread(object):
         """
         scratch_stop = float(self.settings['Notification']['Scratch quota stop (%)']) / 100
         project_stop = float(self.settings['Notification']['Project quota stop (%)']) / 100
-        if self.typ in ['Copy_work', 'Copy_backup', 'Copy_hdd']:
+        if self.typ in ['Copy_to_work', 'Copy_to_backup', 'Copy_to_hdd']:
             return True
         else:
             pass
@@ -396,9 +396,9 @@ class ProcessThread(object):
         processes = [
             ['lost_input_frames', 'Search path frames'],
             ['lost_input_meta', 'Search path meta'],
-            ['lost_work', 'Copy_work_folder'],
-            ['lost_backup', 'Copy_backup_folder'],
-            ['lost_hdd', 'Copy_hdd_folder']
+            ['lost_work', 'copy_to_work_folder'],
+            ['lost_backup', 'copy_to_backup_folder'],
+            ['lost_hdd', 'copy_to_hdd_folder']
             ]
         for process, folder in processes:
             if self.shared_dict_typ[process]:
@@ -730,15 +730,15 @@ class ProcessThread(object):
                 'method': self.run_compress,
                 'lost_connect': 'full_transphire'
                 },
-            'Copy_work': {
+            'Copy_to_work': {
                 'method': self.run_copy_extern,
                 'lost_connect': 'full_work'
                 },
-            'Copy_backup': {
+            'Copy_to_backup': {
                 'method': self.run_copy_extern,
                 'lost_connect': 'full_backup'
                 },
-            'Copy_hdd': {
+            'Copy_to_hdd': {
                 'method': self.run_copy_extern,
                 'lost_connect': 'full_hdd'
                 }
@@ -1775,7 +1775,7 @@ class ProcessThread(object):
 
     def file_to_distribute(self, file_name):
         for copy_name in ('work', 'HDD', 'backup'):
-            copy_type = 'Copy_{0}'.format(copy_name.lower())
+            copy_type = 'Copy_to_{0}'.format(copy_name.lower())
             if not self.settings['Copy']['Copy to {0}'.format(copy_name)] == 'False':
                 self.add_to_queue(aim=copy_type, root_name=file_name)
             else:
@@ -2581,7 +2581,7 @@ class ProcessThread(object):
         # New name
         file_name = os.path.basename(root_name)
         new_name = os.path.join(
-            self.settings['extract_folder'],
+            self.settings['ctf_folder'],
             '{0}.mrc'.format(file_name)
             )
 
@@ -2781,6 +2781,15 @@ class ProcessThread(object):
         Returns:
         None
         """
+        if root_name == 'None':
+            self.shared_dict_typ['queue_list_lock'].acquire()
+            try:
+                self.shared_dict_typ['queue_list_time'] = time.time() * 100
+                self.shared_dict_typ['queue_list'][:] = []
+            finally:
+                self.shared_dict_typ['queue_list_lock'].release()
+            return None
+
         start_prog = time.time()
         self.queue_com['log'].put(tu.create_log(self.name, 'run_extract', root_name, 'start'))
 
@@ -2792,11 +2801,11 @@ class ProcessThread(object):
                 )
             file_name = tu.get_name(tu.get_name(tu.get_name(root_name)))
             matches_in_queue = self.all_in_queue_file(self.typ, file_name, lock=False)
+            if len(matches_in_queue) != 3:
+                return None
         finally:
             self.shared_dict_typ['queue_list_lock'].release()
-
-        if len(matches_in_queue) != 3:
-            return None
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name, 'blubb-4', time.time() - start_prog))
 
         # Create the command
         output_dir = os.path.join(self.settings['extract_folder'], file_name)
@@ -2808,6 +2817,7 @@ class ProcessThread(object):
         file_sum = [entry for entry in tmp_matches if '.mrc' in entry][0]
         tmp_matches.remove(file_sum)
         assert not tmp_matches, (tmp_matches, matches_in_queue, file_ctf, file_box, file_sum, output_dir)
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name, 'blubb-3', time.time() - start_prog))
 
         command, check_files, block_gpu, gpu_list, shell = tue.get_extract_command(
             file_sum=file_sum,
@@ -2824,6 +2834,7 @@ class ProcessThread(object):
                 self.settings['extract_folder'],
                 file_name
                 )
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name, 'blubb-2', time.time() - start_prog))
 
         log_file, err_file = self.run_command(
             command=command,
@@ -2832,18 +2843,20 @@ class ProcessThread(object):
             gpu_list=gpu_list,
             shell=shell
             )
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name, 'blubb-1', time.time() - start_prog))
 
-        zero_list = []
-        non_zero_list = [log_file, err_file]
+        zero_list = [err_file]
+        non_zero_list = [log_file]
         non_zero_list.extend(check_files)
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name, 'blubb0', time.time() - start_prog))
 
         log_files, copied_log_files = tue.find_logfiles(
             root_path=output_dir,
-            file_name=file_name,
             settings=self.settings,
             queue_com=self.queue_com,
             name=self.name
             )
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name, 'blubb1', time.time() - start_prog))
 
         tus.check_outputs(
             zero_list=zero_list,
@@ -2852,6 +2865,7 @@ class ProcessThread(object):
             folder=self.settings['extract_folder'],
             command=command
             )
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name, 'blubb2', time.time() - start_prog))
 
         try:
             log_files.remove(err_file)
@@ -2868,7 +2882,11 @@ class ProcessThread(object):
         copied_log_files.extend(non_zero_list)
         copied_log_files.extend(zero_list)
         copied_log_files = list(set(copied_log_files))
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name, 'blaa1', time.time() - start_prog))
 
+        tue.create_jpg_file(file_name, self.settings['extract_folder'])
+
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name, 'blaa2', time.time() - start_prog))
         skip_list = False
         if skip_list:
             pass
@@ -2894,7 +2912,7 @@ class ProcessThread(object):
                 if var:
                     if 'Class2d' in compare:
                         for log_file in copied_log_files:
-                            if '.bdb' in log_file:
+                            if '.bdb' in log_file and not log_file.endswith('data.bdb'):
                                 self.add_to_queue(aim=aim_name, root_name='|||'.join([log_file, file_box]))
                     else:
                         for log_file in copied_log_files:
@@ -2906,13 +2924,18 @@ class ProcessThread(object):
         self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name, 'stop', time.time() - start_prog))
 
     def run_class2d(self, root_name):
+        if root_name == 'None':
+            self.shared_dict_typ['queue_list_lock'].acquire()
+            try:
+                self.shared_dict_typ['queue_list_time'] = time.time() * 100
+            finally:
+                self.shared_dict_typ['queue_list_lock'].release()
+            return None
+
         start_prog = time.time()
         self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name, 'start'))
 
         class2d_name = self.settings['Copy'][self.typ]
-        stack_name, box_name = root_name.split('|||')
-        with open(box_name, 'r') as read:
-            nr_particles = len([entry for entry in read.readlines() if entry.split() and not entry.startswith('#')])
 
         self.shared_dict_typ['queue_list_lock'].acquire()
         try:
@@ -2925,18 +2948,24 @@ class ProcessThread(object):
             except FileNotFoundError:
                 old_nr_of_particles = 0
 
+            stack_name, box_name = root_name.split('|||')
+            with open(box_name, 'r') as read:
+                nr_particles = len([entry for entry in read.readlines() if entry.split() and not entry.startswith('#')])
             new_nr_of_particles = old_nr_of_particles + nr_particles
+
             with open(self.shared_dict_typ['number_file'], 'w') as write:
                 write.write(str(new_nr_of_particles))
             self.add_to_queue_file(
                 root_name=root_name,
                 file_name=self.shared_dict_typ['list_file'],
                 )
+            self.shared_dict_typ['queue_list'].append(root_name)
+
             if new_nr_of_particles < int(self.settings[class2d_name]['Nr. Particles']):
                 return None
 
-            with open(self.shared_dict_typ['list_file'], 'r') as read:
-                file_names = [entry.strip().split('|||')[0] for entry in read.readlines() if entry.strip()]
+            file_names = [entry for entry in self.shared_dict_typ['queue_list'] if entry.strip()]
+            self.shared_dict_typ['queue_list'][:] = []
         finally:
             self.shared_dict_typ['queue_list_lock'].release()
 
@@ -2944,7 +2973,7 @@ class ProcessThread(object):
         file_name = '{0:03d}'.format(self.shared_dict_typ['tar_idx'])
         command, check_files, block_gpu, gpu_list, shell, new_stack = tuclass.create_stack_combine_command(
             class2d_name=class2d_name,
-            file_names=file_names,
+            file_names=[entry.strip().split('|||')[0] for entry in file_names if entry.strip()],
             file_name=file_name,
             output_dir=self.settings['class2d_folder'],
             settings=self.settings,
@@ -2990,6 +3019,78 @@ class ProcessThread(object):
             shell=shell
             )
 
+        zero_list = [err_file]
+        non_zero_list = [log_file]
+        non_zero_list.extend(check_files)
+
+        log_files, copied_log_files = tuclass.find_logfiles(
+            root_path=os.path.join(self.settings['class2d_folder'], file_name),
+            settings=self.settings,
+            queue_com=self.queue_com,
+            name=self.name
+            )
+
+        tus.check_outputs(
+            zero_list=zero_list,
+            non_zero_list=non_zero_list,
+            exists_list=log_files,
+            folder=self.settings['class2d_folder'],
+            command=command
+            )
+
+        try:
+            log_files.remove(err_file)
+            copied_log_files.remove(err_file)
+        except ValueError:
+            pass
+
+        for old_file, new_file in zip(log_files, copied_log_files):
+            if os.path.realpath(old_file) != os.path.realpath(new_file):
+                os.remove(old_file)
+            else:
+                pass
+
+        copied_log_files.extend(non_zero_list)
+        copied_log_files.extend(zero_list)
+        copied_log_files = list(set(copied_log_files))
+
+        tuclass.create_jpg_file(file_name, self.settings['class2d_folder'])
+
+        skip_list = False
+        if skip_list:
+            pass
+        else:
+            # Add to queue
+            for aim in self.content_settings['aim']:
+                *compare, aim_name = aim.split(':')
+                var = True
+                for typ in compare:
+                    name = typ.split('!')[-1]
+                    if typ.startswith('!'):
+                        if self.settings['Copy'][name] == 'False':
+                            continue
+                        else:
+                            var = False
+                            break
+                    else:
+                        if not self.settings['Copy'][name] == 'False':
+                            continue
+                        else:
+                            var = False
+                            break
+                if var:
+                    for log_file in copied_log_files:
+                        self.add_to_queue(aim=aim_name, root_name=log_file)
+                else:
+                    pass
+
+        self.shared_dict_typ['queue_list_lock'].acquire()
+        try:
+            with open(self.shared_dict_typ['number_file'], 'w') as write:
+                write.write('0')
+            self.remove_from_queue_file(file_names, self.shared_dict_typ['list_file'])
+        finally:
+            self.shared_dict_typ['queue_list_lock'].release()
         self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name, 'stop', time.time() - start_prog))
 
     def run_picking(self, root_name):
@@ -3335,11 +3436,11 @@ class ProcessThread(object):
         dont_tar = False
         if root_name == 'None':
             pass
-        elif not self.settings['Copy']['Tar to work'] == 'True' and self.typ == 'Copy_work':
+        elif not self.settings['Copy']['Tar to work'] == 'True' and self.typ == 'Copy_to_work':
             dont_tar = True
-        elif not self.settings['Copy']['Tar to backup'] == 'True' and self.typ == 'Copy_backup':
+        elif not self.settings['Copy']['Tar to backup'] == 'True' and self.typ == 'Copy_to_backup':
             dont_tar = True
-        elif not self.settings['Copy']['Tar to HDD'] == 'True' and self.typ == 'Copy_HDD':
+        elif not self.settings['Copy']['Tar to HDD'] == 'True' and self.typ == 'Copy_to_HDD':
             dont_tar = True
         elif root_name.endswith('jpg'):
             dont_tar = True
@@ -3448,7 +3549,7 @@ class ProcessThread(object):
                 self.shared_dict_typ['queue_list_lock'].release()
 
 
-        mount_folder_name = '{0}_folder'.format(self.typ)
+        mount_folder_name = '{0}_folder'.format(self.typ.lower())
         mount_name = self.settings['Copy'][self.typ]
         sudo = self.settings['Mount'][mount_name]['Need sudo for copy?']
         protocol = self.settings['Mount'][mount_name]['Protocol']

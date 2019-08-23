@@ -283,7 +283,7 @@ class LoadContent(QWidget):
                     pass
 
             if key == 'Typ' and not widget.isEnabled():
-                value = 'Copy_hdd'
+                value = 'Copy_to_hdd'
             elif key == 'Protocol' and not widget.isEnabled():
                 value = 'hdd'
             else:
@@ -315,7 +315,7 @@ class LoadContent(QWidget):
                     else:
                         pass
                 elif 'Typ' in entry:
-                    if entry['Typ'][0] == 'Copy_hdd':
+                    if entry['Typ'][0] == 'Copy_to_hdd':
                         disable_typ = True
                     else:
                         pass
@@ -361,8 +361,8 @@ class LoadContent(QWidget):
                     hdd_idx = widget.findText(entry[key][0])
                     if idx < 0:
                         if is_hdd:
-                            widget.addItem('Copy_hdd')
-                            hdd_idx = widget.findText('Copy_hdd')
+                            widget.addItem('Copy_to_hdd')
+                            hdd_idx = widget.findText('Copy_to_hdd')
                         else:
                             hdd_idx = 0
                     else:

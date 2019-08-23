@@ -177,9 +177,17 @@ class SettingsContainer(QWidget):
                 error = True
             else:
                 settings.update(dictionary)
-            if (key == 'Motion' or key == 'CTF' or key == 'Picking') and self.name != 'Pipeline':
-                new_key = '{0}_entries'.format(key)
-                settings[new_key] = self.content[key].get_combo_entries()
+            if self.name == 'Copy':
+                new_key = '{0}_entries'.format(key.replace(' ', '_'))
+                try:
+                    entries = self.content[key].get_combo_entries()
+                except AttributeError:
+                    pass
+                else:
+                    test_list = ['False', 'True']
+                    if set(test_list) == set(entries):
+                        continue
+                    settings[new_key] = self.content[key].get_combo_entries()
             else:
                 pass
         if error:
@@ -204,11 +212,7 @@ class SettingsContainer(QWidget):
                 try: # This block has been introduced for backwards compatibility changes.
                     content = self.content[key.replace(' v', ' >=v')]
                 except KeyError:
-                    if key == 'CTF_entries':
-                        continue
-                    elif key == 'Motion_entries':
-                        continue
-                    elif key == 'Picking_entries':
+                    if self.name == 'Copy' and key.endswith('_entries'):
                         continue
                     else:
                         print('Content for {0} is disabled.'.format(key))
@@ -217,12 +221,8 @@ class SettingsContainer(QWidget):
             try:
                 content.set_settings(settings[key])
             except KeyError:
-                if key == 'CTF_entries':
-                    pass
-                elif key == 'Motion_entries':
-                    pass
-                elif key == 'Picking_entries':
-                    pass
+                if self.name == 'Copy' and key.endswith('_entries'):
+                    continue
                 else:
                     print(
                         'Setting changed: {0}!'.format(key),

@@ -107,14 +107,17 @@ class PlotWorker(QObject):
                     )
 
     def calculate_array_now(self, name, directory_name, settings):
-        data, _ = tu.get_function_dict()[name]['plot_data'](
-            name=name,
-            directory_name=directory_name
-            )
-
-        if data is None:
-            self.running = False
-        elif data.size == 0:
+        try:
+            data, _ = tu.get_function_dict()[name]['plot_data'](
+                name=name,
+                directory_name=directory_name
+                )
+        except KeyError:
             self.running = False
         else:
-            self.sig_data.emit(name, data, directory_name, settings)
+            if data is None:
+                self.running = False
+            elif data.size == 0:
+                self.running = False
+            else:
+                self.sig_data.emit(name, data, directory_name, settings)

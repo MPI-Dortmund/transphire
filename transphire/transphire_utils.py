@@ -212,7 +212,7 @@ def get_function_dict():
     function_dict = {}
     function_dict['ISAC2 >=v1.2'] = {
             'plot': tp.update_ctffind_4_v4_1_8,
-            'plot_data': ti.import_ctffind_v4_1_8,
+            'plot_data': ti.import_isac_v1_2,
             'content': tc.default_isac2_1_2,
             'executable': True,
             'has_path': True,
@@ -222,7 +222,7 @@ def get_function_dict():
 
     function_dict['WINDOW >=v1.2'] = {
             'plot': tp.update_ctffind_4_v4_1_8,
-            'plot_data': ti.import_ctffind_v4_1_8,
+            'plot_data': ti.import_window_v1_2,
             'content': tc.default_window_1_2,
             'executable': True,
             'has_path': True,
@@ -618,9 +618,9 @@ def get_key_names(settings_folder, name):
         data = []
 
     return_dict = {
-        'Copy_work': [],
-        'Copy_backup': [],
-        'Copy_hdd': [],
+        'Copy_to_work': [],
+        'Copy_to_backup': [],
+        'Copy_to_hdd': [],
         'Import': [],
         'Copy': [],
         }
@@ -635,7 +635,10 @@ def get_key_names(settings_folder, name):
                     typ = widget[key][0]
                 else:
                     pass
-        return_dict[typ].append(name)
+        try:
+            return_dict[typ].append(name)
+        except KeyError:
+            return_dict[typ.replace('_', '_to_')].append(name)
     if return_dict['Copy']:
         print('')
         print('Old Copy type detected! Please edit the TranSPHIRE settings and change them to Import')

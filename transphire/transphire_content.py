@@ -599,9 +599,9 @@ def default_pipeline():
             '1',
             int,
             'Meta;' +
-            'Session to work:Copy to work:Copy_work,' +
-            'Session to backup:Copy to backup:Copy_backup,' +
-            'Session to HDD:Copy to HDD:Copy_hdd',
+            'Session to work:Copy to work:Copy_to_work,' +
+            'Session to backup:Copy to backup:Copy_to_backup,' +
+            'Session to HDD:Copy to HDD:Copy_to_hdd',
             'PLAIN',
             'Main',
             ''
@@ -615,12 +615,12 @@ def default_pipeline():
             'Motion:Motion,' +
             'CTF_frames:CTF,' +
             'Compress:Compress,' +
-            'Meta to work:Copy to work:Copy_work,' +
-            'Meta to backup:Copy to backup:Copy_backup,' +
-            'Meta to HDD:Copy to HDD:Copy_hdd,' +
-            'Frames to work:Copy to work:Copy_work,' +
-            'Frames to HDD:Copy to HDD:Copy_hdd,' +
-            'Frames to backup:Copy to backup:Copy_backup',
+            'Meta to work:Copy to work:Copy_to_work,' +
+            'Meta to backup:Copy to backup:Copy_to_backup,' +
+            'Meta to HDD:Copy to HDD:Copy_to_hdd,' +
+            'Frames to work:Copy to work:Copy_to_work,' +
+            'Frames to HDD:Copy to HDD:Copy_to_hdd,' +
+            'Frames to backup:Copy to backup:Copy_to_backup',
             'PLAIN',
             'Main',
             ''
@@ -633,9 +633,9 @@ def default_pipeline():
             'CTF_sum:CTF,' +
             'Picking:Picking,' +
             'Extract:Extract,' +
-            'Sum to work:Copy to work:Copy_work,' +
-            'Sum to HDD:Copy to HDD:Copy_hdd,' +
-            'Sum to backup:Copy to backup:Copy_backup',
+            'Sum to work:Copy to work:Copy_to_work,' +
+            'Sum to HDD:Copy to HDD:Copy_to_hdd,' +
+            'Sum to backup:Copy to backup:Copy_to_backup',
             'PLAIN',
             'Main',
             ''
@@ -646,9 +646,9 @@ def default_pipeline():
             int,
             'CTF;' +
             'Extract:Extract,' +
-            'CTF to work:Copy to work:Copy_work,' +
-            'CTF to HDD:Copy to HDD:Copy_hdd,' +
-            'CTF to backup:Copy to backup:Copy_backup',
+            'CTF to work:Copy to work:Copy_to_work,' +
+            'CTF to HDD:Copy to HDD:Copy_to_hdd,' +
+            'CTF to backup:Copy to backup:Copy_to_backup',
             'PLAIN',
             'Main',
             ''
@@ -659,9 +659,9 @@ def default_pipeline():
             int,
             'Picking;' +
             'Extract:Extract,' +
-            'Picking to work:Copy to work:Copy_work,' +
-            'Picking to HDD:Copy to HDD:Copy_hdd,' +
-            'Picking to backup:Copy to backup:Copy_backup',
+            'Picking to work:Copy to work:Copy_to_work,' +
+            'Picking to HDD:Copy to HDD:Copy_to_hdd,' +
+            'Picking to backup:Copy to backup:Copy_to_backup',
             'PLAIN',
             'Main',
             ''
@@ -672,9 +672,9 @@ def default_pipeline():
             int,
             'Extract;' +
             'Class2d:Class2d,' +
-            'Extract to work:Copy to work:Copy_work,' +
-            'Extract to HDD:Copy to HDD:Copy_hdd,' +
-            'Extract to backup:Copy to backup:Copy_backup',
+            'Extract to work:Copy to work:Copy_to_work,' +
+            'Extract to HDD:Copy to HDD:Copy_to_hdd,' +
+            'Extract to backup:Copy to backup:Copy_to_backup',
             'PLAIN',
             'Main',
             ''
@@ -684,9 +684,9 @@ def default_pipeline():
             '1',
             int,
             'Class2d;' +
-            'Class2d to work:Copy to work:Copy_work,' +
-            'Class2d to HDD:Copy to HDD:Copy_hdd,' +
-            'Class2d to backup:Copy to backup:Copy_backup',
+            'Class2d to work:Copy to work:Copy_to_work,' +
+            'Class2d to HDD:Copy to HDD:Copy_to_hdd,' +
+            'Class2d to backup:Copy to backup:Copy_to_backup',
             'PLAIN',
             'Main',
             ''
@@ -696,16 +696,16 @@ def default_pipeline():
             '1',
             int,
             'Compress;' +
-            'Compress to work:Copy to work:Copy_work,' +
-            'Compress to HDD:Copy to HDD:Copy_hdd,' +
-            'Compress to backup:Copy to backup:Copy_backup',
+            'Compress to work:Copy to work:Copy_to_work,' +
+            'Compress to HDD:Copy to HDD:Copy_to_hdd,' +
+            'Compress to backup:Copy to backup:Copy_to_backup',
             'PLAIN',
             'Main',
             ''
             ],
-        ['Copy_work', '1', int, 'Copy_work;', 'PLAIN', 'Main', ''],
-        ['Copy_hdd', '1', int, 'Copy_hdd;', 'PLAIN', 'Main', ''],
-        ['Copy_backup', '1', int, 'Copy_backup;', 'PLAIN', 'Main', ''],
+        ['Copy_to_work', '1', int, 'Copy_to_work;', 'PLAIN', 'Main', ''],
+        ['Copy_to_hdd', '1', int, 'Copy_to_hdd;', 'PLAIN', 'Main', ''],
+        ['Copy_to_backup', '1', int, 'Copy_to_backup;', 'PLAIN', 'Main', ''],
         ]
     return items
 
@@ -789,7 +789,7 @@ def default_mount(hdd=None):
         ['SSH address', '', str, '', 'PLAIN', '', ''],
         ['Quota command', '', str, '', 'PLAIN', '', ''],
         ['Quota / TB', '', float, '', 'PLAIN', '', ''],
-        ['Typ', ['Import', 'Copy_work', 'Copy_backup'], str, '', 'COMBO', '', ''],
+        ['Typ', ['Import', 'Copy_to_work', 'Copy_to_backup'], str, '', 'COMBO', '', ''],
         ]
     return items
 
@@ -986,13 +986,13 @@ def default_copy(settings_folder):
         )
     programs_extern = tu.reduce_programs()
 
-    copy_work = sorted(mount_dict['Copy_work'])
-    copy_backup = sorted(mount_dict['Copy_backup'])
-    copy_hdd = sorted(mount_dict['Copy_hdd'])
+    copy_to_work = sorted(mount_dict['Copy_to_work'])
+    copy_to_backup = sorted(mount_dict['Copy_to_backup'])
+    copy_to_hdd = sorted(mount_dict['Copy_to_hdd'])
 
-    copy_work.extend(extend_list)
-    copy_backup.extend(extend_list)
-    copy_hdd.extend(extend_list)
+    copy_to_work.extend(extend_list)
+    copy_to_backup.extend(extend_list)
+    copy_to_hdd.extend(extend_list)
 
     for value in programs_extern.values():
         value.extend(extend_list)
@@ -1001,9 +1001,9 @@ def default_copy(settings_folder):
         ['WIDGETS MAIN', '8', int, '', 'PLAIN', '', ''],
         ['WIDGETS ADVANCED', '8', int, '', 'PLAIN', '', ''],
         ['WIDGETS RARE', '8', int, '', 'PLAIN', '', '', ''],
-        ['Copy to work', copy_work, bool, '', 'COMBO', 'Main', 'Copy data to the work drive.'],
-        ['Copy to backup', copy_backup, bool, '', 'COMBO', 'Main', 'Copy data to the backup drive.'],
-        ['Copy to HDD', copy_hdd, bool, '', 'COMBO', 'Main', 'Copy data to an external hard disc.'],
+        ['Copy to work', copy_to_work, bool, '', 'COMBO', 'Main', 'Copy data to the work drive.'],
+        ['Copy to backup', copy_to_backup, bool, '', 'COMBO', 'Main', 'Copy data to the backup drive.'],
+        ['Copy to HDD', copy_to_hdd, bool, '', 'COMBO', 'Main', 'Copy data to an external hard disc.'],
         ['Motion', programs_extern['motion'], bool, '', 'COMBO', 'Main', 'Software for motion correction.'],
         ['CTF', programs_extern['ctf'], bool, '', 'COMBO', 'Main', 'Software for CTF estimation.'],
         ['Picking', programs_extern['picking'], bool, '', 'COMBO', 'Main', 'Software for particle picking.'],

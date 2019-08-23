@@ -140,7 +140,7 @@ class MountWidget(QWidget):
         None
         """
         # Mount external hdd
-        if self.typ == 'Copy_hdd':
+        if self.typ == 'Copy_to_hdd':
             self.mount_worker.sig_mount_hdd.emit(self.mount_folder)
         else:
             user, password, folder = self._check_user(
@@ -174,7 +174,7 @@ class MountWidget(QWidget):
         Return:
         None
         """
-        if self.typ == 'Copy_hdd':
+        if self.typ == 'Copy_to_hdd':
             hdd_folder = '{0}/{1}'.format(
                 self.mount_worker.mount_directory,
                 self.mount_folder
