@@ -62,7 +62,7 @@ class SettingsWidget(QWidget):
         self.typ = content[1]['typ']
         self.values = content[1]['values']
         self.name = content[1]['name']
-        tooltip = content[1]['tooltip']
+        self.tooltip = content[1]['tooltip']
         self.dtype = content[1]['dtype']
 
         if self.name == 'Project name':
@@ -75,7 +75,7 @@ class SettingsWidget(QWidget):
                             pattern = widget[key][0]
                         elif key == 'Project name pattern example':
                             pattern_example = widget[key][0]
-            add_to_tooltip = [tooltip]
+            add_to_tooltip = [self.tooltip]
             if pattern:
                 add_to_tooltip.extend([
                     'Needs to follow:',
@@ -86,32 +86,49 @@ class SettingsWidget(QWidget):
                     'For example',
                     pattern_example
                     ])
-            tooltip = '\n'.join(add_to_tooltip)
+            self.tooltip = '\n'.join(add_to_tooltip)
+
+        if self.tooltip:
+            final_tooltip = []
+            for line in self.tooltip.splitlines():
+                final_tooltip.append('\n'.join([line[i:i+80] for i in range(0, len(line), 80)]))
+            self.tooltip = '\n'.join(final_tooltip)
+        else:
+            self.tooltip = self.name
 
         if self.typ == 'PLAIN':
             self.edit = QLineEdit(self.name, self)
+            self.edit.setToolTip(self.tooltip)
+            self.edit.textChanged.connect(self.change_tooltip)
             self.edit.setText(self.default)
 
         elif self.typ == 'FILE':
             self.edit = QLineEdit(self.name, self)
+            self.edit.setToolTip(self.tooltip)
+            self.edit.textChanged.connect(self.change_tooltip)
             self.edit.setText(self.default)
             self.edit.setPlaceholderText('Press shift+return')
             self.edit.returnPressed.connect(self._find_file)
 
         elif self.typ == 'FILE/CHOICE':
             self.edit = QLineEdit(self.name, self)
+            self.edit.setToolTip(self.tooltip)
+            self.edit.textChanged.connect(self.change_tooltip)
             self.edit.setText(self.default)
             self.edit.setPlaceholderText('Press shift+return')
             self.edit.returnPressed.connect(self._find_file)
 
         elif self.typ == 'DIR':
             self.edit = QLineEdit(self.name, self)
+            self.edit.setToolTip(self.tooltip)
+            self.edit.textChanged.connect(self.change_tooltip)
             self.edit.setText(self.default)
             self.edit.setPlaceholderText('Press shift+return')
             self.edit.returnPressed.connect(self._find_dir)
 
         elif self.typ == 'COMBO':
             self.edit = QComboBox(self)
+            self.edit.setToolTip(self.tooltip)
             self.edit.currentIndexChanged.connect(lambda: self.sig_index_changed.emit(self.name))
             self.edit.addItems(self.values)
             self.edit.setCurrentIndex(self.edit.findText(self.default))
@@ -129,14 +146,8 @@ class SettingsWidget(QWidget):
         else:
             self.label.setObjectName('setting')
             self.edit.setObjectName('setting')
+
         self.label.setToolTip(self.name)
-        if tooltip:
-            final_tooltip = []
-            for line in tooltip.splitlines():
-                final_tooltip.append('\n'.join([line[i:i+80] for i in range(0, len(line), 80)]))
-            self.edit.setToolTip('\n'.join(final_tooltip))
-        else:
-            self.edit.setToolTip(self.name)
         try:
             self.edit.textEdited.connect(
                 lambda: self.edit.setStyleSheet(tu.get_style(typ='unchanged'))
@@ -151,6 +162,11 @@ class SettingsWidget(QWidget):
             pass
         layout.addWidget(self.label)
         layout.addWidget(self.edit)
+
+    def change_tooltip(self, text):
+        edit = self.sender()
+        tooltip = '{0}\n\nCurrent Text:\n\n{1}'.format(self.tooltip, text)
+        edit.setToolTip(tooltip)
 
     def change_color_if_true(self):
         """
