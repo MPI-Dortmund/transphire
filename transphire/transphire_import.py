@@ -103,7 +103,7 @@ def get_dtype_dict():
         ]
 
     dtype['class2d'] = [
-        ('nr_classes', '<i8'),
+        ('classes', '<i8'),
         ('accepted', '<i8'),
         ('rejected', '<i8'),
         ('file_name', '|U1200'),
@@ -272,16 +272,66 @@ def get_dtype_import_dict():
 def import_isac_v1_2(name, directory_name, import_name=''):
     files = [
         entry for entry in glob.glob(
-        '{0}/{1}*_transphire.log'.format(directory_name, import_name)
+        '{0}/*/ISAC2'.format(directory_name, import_name)
         )
         ]
-    return np.array([]), np.array([])
+    useable_files = []
+    for file_name in files:
+        try:
+            with open(os.path.join(file_name, 'processed_images.txt'), 'r') as read:
+                accepted = len([entry for entry in read.readlines() if entry.strip()])
+            with open(os.path.join(file_name, 'not_processed_images.txt'), 'r') as read:
+                rejected = len([entry for entry in read.readlines() if entry.strip()])
+            classes = len([entry for entry in glob.glob(
+                '{0}/png/*'.format(os.path.dirname(file_name), import_name)
+                )])
+        except FileNotFoundError:
+            continue
+        useable_files.append([file_name, accepted, rejected, classes])
+
+    useable_files_jpg = [
+        tu.get_name(entry)
+        for entry in glob.glob(os.path.join(directory_name, 'jpg*', '*.jpg'))
+        ]
+
+    useable_files = [
+        [entry[0].replace('_transphire', ''), entry[1], entry[2], entry[3]]
+        for entry in sorted(useable_files)
+        if tu.get_name(entry[0]).replace('_transphire', '') in useable_files_jpg
+        ]
+
+    data = np.zeros(
+        len(useable_files),
+        dtype=get_dtype_dict()['class2d']
+        )
+    data = np.atleast_1d(data)
+    data.fill(0)
+
+    file_names_jpg = [tu.get_name(entry[0]) for entry in useable_files]
+    jpgs = sorted([
+        os.path.basename(entry)
+        for entry in glob.glob(os.path.join(directory_name, 'jpg*'))
+        ])
+    jpg_names = [
+        ';;;'.join([
+            os.path.join(directory_name, jpg_dir_name, '{0}.jpg'.format(entry))
+            for jpg_dir_name in jpgs
+            ])
+        for entry in file_names_jpg
+        ]
+
+    for idx, entry in enumerate(useable_files):
+        data['file_name'][idx] = entry[0]
+        data['accepted'][idx] = entry[1]
+        data['rejected'][idx] = entry[2]
+        data['classes'][idx] = entry[3]
+    data['image'] = jpg_names
+
+    data = np.sort(data, order='file_name')
+    return data, data
 
 
 def import_window_v1_2(name, directory_name, import_name=''):
-    print(
-        '{0}/{1}*_transphire.log'.format(directory_name, import_name)
-        )
     files = [
         entry for entry in glob.glob(
         '{0}/{1}*_transphire.log'.format(directory_name, import_name)
@@ -289,8 +339,15 @@ def import_window_v1_2(name, directory_name, import_name=''):
         ]
     useable_files = []
     for file_name in files:
-        with open(file_name, 'r') as read:
-            match = re.search('^.*Processed\s+:\s+(\d+).*$(?:\n|\r\n)^.*Rejected by out of boundary\s+:\s+(\d+).*$', read.read(), re.MULTILINE)
+        try:
+            with open(file_name, 'r') as read:
+                match = re.search(
+                    '^.*Processed\s+:\s+(\d+).*$(?:\n|\r\n)^.*Rejected by out of boundary\s+:\s+(\d+).*$',
+                    read.read(),
+                    re.MULTILINE
+                    )
+        except FileNotFoundError:
+            continue
         if match is not None:
             useable_files.append([file_name, match.group(1), match.group(2)])
 
@@ -300,12 +357,39 @@ def import_window_v1_2(name, directory_name, import_name=''):
         ]
 
     useable_files = [
-        entry
+        [entry[0].replace('_transphire', ''), entry[1], entry[2]]
         for entry in sorted(useable_files)
         if tu.get_name(entry[0]).replace('_transphire', '') in useable_files_jpg
         ]
 
-    return np.array([]), np.array([])
+    data = np.zeros(
+        len(useable_files),
+        dtype=get_dtype_dict()['extract']
+        )
+    data = np.atleast_1d(data)
+    data.fill(0)
+
+    file_names_jpg = [tu.get_name(entry[0]) for entry in useable_files]
+    jpgs = sorted([
+        os.path.basename(entry)
+        for entry in glob.glob(os.path.join(directory_name, 'jpg*'))
+        ])
+    jpg_names = [
+        ';;;'.join([
+            os.path.join(directory_name, jpg_dir_name, '{0}.jpg'.format(entry))
+            for jpg_dir_name in jpgs
+            ])
+        for entry in file_names_jpg
+        ]
+
+    for idx, entry in enumerate(useable_files):
+        data['file_name'][idx] = entry[0]
+        data['accepted'][idx] = entry[1]
+        data['rejected'][idx] = entry[2]
+    data['image'] = jpg_names
+
+    data = np.sort(data, order='file_name')
+    return data, data
 
 
 def import_ctffind_v4_1_8(name, directory_name, import_name=''):
@@ -368,7 +452,7 @@ def import_ctffind_v4_1_8(name, directory_name, import_name=''):
     data.fill(0)
     data_original.fill(0)
 
-    file_names_jpg = [os.path.basename(os.path.splitext(entry[0])[0]) for entry in useable_files]
+    file_names_jpg = [tu.get_name(entry[0]) for entry in useable_files]
     jpgs = sorted([os.path.basename(entry) for entry in glob.glob(os.path.join(directory_name, 'jpg*'))])
     jpg_names = [';;;'.join([os.path.join(directory_name, jpg_dir_name, '{0}.jpg'.format(entry)) for jpg_dir_name in jpgs]) for entry in file_names_jpg]
 

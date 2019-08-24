@@ -211,7 +211,7 @@ def get_function_dict():
     """
     function_dict = {}
     function_dict['ISAC2 >=v1.2'] = {
-            'plot': tp.update_ctffind_4_v4_1_8,
+            'plot': tp.update_cryolo_v1_0_4,
             'plot_data': ti.import_isac_v1_2,
             'content': tc.default_isac2_1_2,
             'executable': True,
@@ -221,7 +221,7 @@ def get_function_dict():
             }
 
     function_dict['WINDOW >=v1.2'] = {
-            'plot': tp.update_ctffind_4_v4_1_8,
+            'plot': tp.update_cryolo_v1_0_4,
             'plot_data': ti.import_window_v1_2,
             'content': tc.default_window_1_2,
             'executable': True,

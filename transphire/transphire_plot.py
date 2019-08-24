@@ -129,27 +129,21 @@ def update_motion_cor_2_v1_0_0(data, settings, label):
     Return:
     x values, y values, label, title
     """
+    x_values = get_mic_number(data['file_name'], settings)
+    y_values = data[label]
     if label == 'overall drift':
-        x_values = get_mic_number(data['file_name'], settings)
-        y_values = data['overall drift']
         label = 'Drift / px'
         title = 'Overall drift'
 
     elif label == 'average drift per frame':
-        x_values = get_mic_number(data['file_name'], settings)
-        y_values = data['average drift per frame']
         label = 'Drift / px'
         title = 'Average drift per frame'
 
     elif label == 'first frame drift':
-        x_values = get_mic_number(data['file_name'], settings)
-        y_values = data['first frame drift']
         label = 'Drift / px'
         title = 'First frame drift'
 
     elif label == 'average drift per frame without first':
-        x_values = get_mic_number(data['file_name'], settings)
-        y_values = data['average drift per frame without first']
         label = 'Drift / px'
         title = 'Average drift per frame without first'
 
@@ -173,6 +167,8 @@ def update_cryolo_v1_0_4(data, settings, label):
     x values, y values, label, title
     """
     x_values = get_mic_number(data['file_name'], settings)
-    y_values = data['particles']
-    return x_values, y_values, 'Nr. of Particles', 'Total particles: {0}'.format(np.sum(data['particles']))
+    y_values = data[label]
+    title ='Total {0}: {1}'.format(label, np.sum(data[label]))
+    label = 'Nr. of {0}'.format(label)
+    return x_values, y_values, label, title
 
