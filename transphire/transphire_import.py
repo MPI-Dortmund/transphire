@@ -287,7 +287,7 @@ def import_isac_v1_2(name, directory_name, import_name=''):
                 )])
         except FileNotFoundError:
             continue
-        useable_files.append([file_name, accepted, rejected, classes])
+        useable_files.append([os.path.dirname(file_name), accepted, rejected, classes])
 
     useable_files_jpg = [
         tu.get_name(entry)
@@ -295,9 +295,9 @@ def import_isac_v1_2(name, directory_name, import_name=''):
         ]
 
     useable_files = [
-        [entry[0].replace('_transphire', ''), entry[1], entry[2], entry[3]]
+        [entry[0], entry[1], entry[2], entry[3]]
         for entry in sorted(useable_files)
-        if tu.get_name(entry[0]).replace('_transphire', '') in useable_files_jpg
+        if tu.get_name(entry[0]) in useable_files_jpg
         ]
 
     data = np.zeros(
