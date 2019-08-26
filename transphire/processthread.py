@@ -396,9 +396,9 @@ class ProcessThread(object):
         processes = [
             ['lost_input_frames', 'Search path frames'],
             ['lost_input_meta', 'Search path meta'],
-            ['lost_work', 'copy_to_work_folder'],
-            ['lost_backup', 'copy_to_backup_folder'],
-            ['lost_hdd', 'copy_to_hdd_folder']
+            ['lost_work', 'Copy_to_work_folder'],
+            ['lost_backup', 'Copy_to_backup_folder'],
+            ['lost_hdd', 'Copy_to_hdd_folder']
             ]
         for process, folder in processes:
             if self.shared_dict_typ[process]:

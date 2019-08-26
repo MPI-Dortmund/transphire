@@ -362,9 +362,9 @@ class ProcessWorker(QObject):
 
         names = [
             entry.replace('_entries', '')
-            for entry in settings['Copy']
+            for entry in self.settings['Copy']
             if entry.endswith('_entries') and
-            entry.replace('_entries', '') in settings['Copy']
+            entry.replace('_entries', '') in self.settings['Copy']
             ]
         for entry in names:
             if 'copy_to_' in entry.lower():
@@ -528,8 +528,11 @@ class ProcessWorker(QObject):
 
             if os.path.exists('{0}_krios_sum.mrc'.format(new_name)):
                 old_filenumber = shared_dict['typ']['Find']['file_number']
-                with open(shared_dict['typ']['Find']['number_file'], 'r') as read:
-                    shared_dict['typ']['Find']['file_number'] = int(read.readline())
+                try:
+                    with open(shared_dict['typ']['Find']['number_file'], 'r') as read:
+                        shared_dict['typ']['Find']['file_number'] = int(read.readline())
+                except FileNotFoundError:
+                    shared_dict['typ']['Find']['file_number'] = 0
                 if self.settings['General']['Increment number'] == 'True':
                     message = '{0}: Filenumber {1} already exists!\n'.format(
                         'Find',
