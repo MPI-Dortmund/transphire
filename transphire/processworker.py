@@ -276,10 +276,16 @@ class ProcessWorker(QObject):
             for entry in full_content:
                 name = entry[0]
                 key = '_'.join([key for key in name.split('_') if not check_int(key)])
-                with open(typ_dict[key]['save_file']) as read:
-                    nr_do = len([line for line in read.readlines() if line.strip()])
-                with open(typ_dict[key]['done_file']) as read:
-                    nr_done = len([line for line in read.readlines() if line.strip()])
+                try:
+                    with open(typ_dict[key]['save_file']) as read:
+                        nr_do = len([line for line in read.readlines() if line.strip()])
+                except FileNotFoundError:
+                    nr_do = 0
+                try:
+                    with open(typ_dict[key]['done_file']) as read:
+                        nr_done = len([line for line in read.readlines() if line.strip()])
+                except FileNotFoundError:
+                    nr_done = 0
                 queue_com['status'].put([
                     text,
                     [
