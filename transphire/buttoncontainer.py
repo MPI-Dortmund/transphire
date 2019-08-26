@@ -181,18 +181,23 @@ class ButtonContainer(QWidget):
     def select_template(self, text):
         self.parent.enable(var=False, use_all=True)
         new_content = {}
+        new_design = {}
         for key, value in self.parent.content_raw[text].items():
             if key not in self.parent.content:
                 continue
             elif not hasattr(self.parent.content[key], 'set_settings'):
                 continue
             new_content[key] = {}
+            new_design[key] = {}
             for entry in value[0]:
                 for key_entry, value_entry in entry.items():
                     if 'WIDGETS ' in key_entry:
+                        new_design[key][key_entry] = value_entry[0]
                         continue
                     new_content[key][key_entry] = value_entry[0]
+                    new_design[key][key_entry] = value_entry[1]['widget_2']
         self.parent.set_settings(new_content)
+        self.parent.set_design(new_design)
         self.parent.enable(var=True, use_all=True)
 
     @pyqtSlot()
@@ -215,6 +220,7 @@ class ButtonContainer(QWidget):
             settings_folder=self.settings_folder,
             template_name=self.template_name,
             )
+        template_name = content['(None)']['Others'][0][0]['Default template'][0]
         if not apply:
             tu.message('Restart GUI to apply saved changes')
 

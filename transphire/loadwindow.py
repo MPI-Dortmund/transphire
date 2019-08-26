@@ -158,12 +158,12 @@ class DefaultSettings(QDialog):
                     'General',
                     'Copy',
                     'Pipeline',
-                    'Path',
                     ],
                 },
             'TranSPHIRE settings': {
                 'sub_content': {},
                 'content': [
+                    'Path',
                     'Mount',
                     'Notification',
                     'Others',

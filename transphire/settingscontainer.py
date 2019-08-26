@@ -195,6 +195,69 @@ class SettingsContainer(QWidget):
         else:
             return [settings]
 
+    def set_design(self, settings):
+        """
+        Set settings to the widgets
+
+        Arguments:
+        settings - Settings to set.
+
+        Returns:
+        None
+        """
+
+        # Clear old layout design
+        for dict_name in ['Main', 'Advanced', 'Rare']:
+            self.layout_dict['{0}_max'.format(dict_name)] = int(settings['WIDGETS {0}'.format(dict_name.upper())])
+            self.layout_dict['{0}_v'.format(dict_name)] = None
+            self.layout_dict['{0}_idx'.format(dict_name)] = 0
+            for idx in reversed(range(self.layout_dict[dict_name].count())):
+                item = self.layout_dict[dict_name].itemAt(idx)
+                self.layout_dict[dict_name].removeItem(item)
+                if isinstance(item, QVBoxLayout):
+                    for idx in reversed(range(item.count())):
+                        item2 = item.itemAt(idx)
+                        item.removeItem(item2)
+                    item.setParent(None)
+                else:
+                    try:
+                        item.widget().setParent(None)
+                    except AttributeError:
+                        pass
+            self.layout_dict[dict_name].addStretch(1)
+
+        for key in settings:
+            if key == 'WIDGETS MAIN' or key == 'WIDGETS ADVANCED' or key == 'WIDGETS RARE':
+                continue
+            layout_name = settings[key]
+            try:
+                widget = self.content[key]
+            except KeyError:
+                if self.name == 'Path':
+                    continue
+                else:
+                    raise
+
+            if self.layout_dict['{0}_idx'.format(layout_name)] % self.layout_dict['{0}_max'.format(layout_name)] == 0:
+                if self.layout_dict['{0}_v'.format(layout_name)] is not None:
+                    self.layout_dict[layout_name].addWidget(Separator(typ='vertical', color='lightgrey'))
+                    self.layout_dict['{0}_v'.format(layout_name)].addStretch(1)
+                else:
+                    pass
+                self.layout_dict['{0}_v'.format(layout_name)] = QVBoxLayout()
+                self.layout_dict['{0}_v'.format(layout_name)].setContentsMargins(0, 0, 0, 0)
+                self.layout_dict[layout_name].addLayout(self.layout_dict['{0}_v'.format(layout_name)])
+
+            self.layout_dict['{0}_v'.format(layout_name)].addWidget(widget)
+            self.layout_dict['{0}_idx'.format(layout_name)] += 1
+
+        for dict_name in ['Main', 'Advanced', 'Rare']:
+            try:
+                self.layout_dict['{0}_v'.format(dict_name)].addStretch(1)
+                self.layout_dict[dict_name].addStretch(1)
+            except AttributeError:
+                pass
+
     def set_settings(self, settings):
         """
         Set settings to the widgets
@@ -215,7 +278,7 @@ class SettingsContainer(QWidget):
                     if self.name == 'Copy' and key.endswith('_entries'):
                         continue
                     else:
-                        print('Content for {0} is disabled.'.format(key))
+                        #print('Content for {0} is disabled.'.format(key))
                         continue
 
             try:
