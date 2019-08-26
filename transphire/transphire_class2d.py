@@ -201,6 +201,8 @@ def create_isac2_1_2_command(class2d_name, stack_name, file_name, output_dir, se
 
 def create_jpg_file(file_name, output_dir):
     files = sorted(glob.glob(os.path.join(output_dir, file_name, 'png', '*')))
+    if len(files) == 0:
+        return None
     columns = np.sqrt(2*len(files))
     columns = int(columns+bool(columns % 2))
     columns += bool(columns % 2)
