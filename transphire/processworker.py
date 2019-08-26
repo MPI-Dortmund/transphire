@@ -102,7 +102,7 @@ class ProcessWorker(QObject):
             entry.replace('_entries', '')
             for entry in self.settings['Copy']
             if entry.endswith('_entries') and
-            entry.replace('_entries', '') in self.settings['Copy']
+            entry.replace('_entries', '').replace('_', ' ') in self.settings['Copy']
             ]
 
         for name in names:
@@ -112,12 +112,15 @@ class ProcessWorker(QObject):
                     self.settings['project_folder'],
                     entry.replace(' ', '_').replace('>=', '')
                     )
-                self.signals[name.lower()].emit(
-                    entry,
-                    self.settings['{0}_folder'.format(name)][entry],
-                    self.settings,
-                    self.settings['Copy'][name]
-                    )
+                try:
+                    self.signals[name.lower()].emit(
+                        entry,
+                        self.settings['{0}_folder'.format(name)][entry],
+                        self.settings,
+                        self.settings['Copy'][name]
+                        )
+                except KeyError:
+                    pass
 
     @pyqtSlot(object)
     def run(self, settings):
@@ -336,7 +339,7 @@ class ProcessWorker(QObject):
                 pass
             else:
                 try:
-                    for folder in glob.glob('{0}/*'.format(self.settings['Copy_to_hdd_folder'])):
+                    for folder in glob.glob('{0}/*'.format(self.settings['copy_to_hdd_folder'])):
                         if not os.path.ismount(folder):
                             try:
                                 os.listdir(folder)
@@ -364,7 +367,7 @@ class ProcessWorker(QObject):
             entry.replace('_entries', '')
             for entry in self.settings['Copy']
             if entry.endswith('_entries') and
-            entry.replace('_entries', '') in self.settings['Copy']
+            entry.replace('_entries', '').replace('_', ' ') in self.settings['Copy']
             ]
         for entry in names:
             if 'copy_to_' in entry.lower():

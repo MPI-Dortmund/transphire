@@ -181,6 +181,8 @@ def create_jpg_file(file_name, output_dir):
     columns += bool(columns % 2)
     rows = int(len(files) / columns + 0.5)
 
+    if columns * rows < len(files):
+        rows += 1
     image = img.imread(files[0])
     dpi = 600
     width = image.shape[0] * columns / dpi

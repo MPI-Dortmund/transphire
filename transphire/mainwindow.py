@@ -1043,7 +1043,7 @@ class MainWindow(QMainWindow):
             entry.replace('_entries', '')
             for entry in settings['Copy']
             if entry.endswith('_entries') and
-            entry.replace('_entries', '') in settings['Copy']
+            entry.replace('_entries', '').replace('_', ' ') in settings['Copy']
             ]
         names.append('Copy_to_hdd')
         for entry in names:
@@ -1053,7 +1053,7 @@ class MainWindow(QMainWindow):
                 folder_name = entry.lower()
             elif 'copy_to_' in entry.lower():
                 base_dir = self.mount_directory
-                folder_name = settings['Copy'][entry].replace(' ', '_').replace('>=', '')
+                folder_name = settings['Copy'][entry.replace('_', ' ')].replace(' ', '_').replace('>=', '')
             else:
                 base_dir = settings['project_folder']
                 base_dir2 = settings['scratch_folder']
