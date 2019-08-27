@@ -2942,11 +2942,15 @@ class ProcessThread(object):
             try:
                 with open(self.shared_dict_typ['number_file'], 'r') as read:
                     try:
-                        old_nr_of_particles = int(read.read().strip())
+                        data = read.read().strip().split('|||')
+                        old_nr_of_particles = int(data[0])
+                        class_idx = int(data[1])
                     except ValueError:
                         old_nr_of_particles = 0
+                        class_idx = 0
             except FileNotFoundError:
                 old_nr_of_particles = 0
+                class_idx = 0
 
             stack_name, box_name = root_name.split('|||')
             with open(box_name, 'r') as read:
@@ -2954,7 +2958,7 @@ class ProcessThread(object):
             new_nr_of_particles = old_nr_of_particles + nr_particles
 
             with open(self.shared_dict_typ['number_file'], 'w') as write:
-                write.write(str(new_nr_of_particles))
+                write.write('{0}|||{1}'.format(new_nr_of_particles, class_idx))
             self.add_to_queue_file(
                 root_name=root_name,
                 file_name=self.shared_dict_typ['list_file'],
@@ -2970,7 +2974,7 @@ class ProcessThread(object):
             self.shared_dict_typ['queue_list_lock'].release()
 
         # Combine Stacks to one stack for ISAC
-        file_name = '{0:03d}'.format(self.shared_dict_typ['tar_idx'])
+        file_name = '{0:03d}'.format(class_idx)
         command, check_files, block_gpu, gpu_list, shell, new_stack = tuclass.create_stack_combine_command(
             class2d_name=class2d_name,
             file_names=[entry.strip().split('|||')[0] for entry in file_names if entry.strip()],
@@ -3087,7 +3091,7 @@ class ProcessThread(object):
         self.shared_dict_typ['queue_list_lock'].acquire()
         try:
             with open(self.shared_dict_typ['number_file'], 'w') as write:
-                write.write('0')
+                write.write('0|||{0}'.format(class_idx+1))
             self.remove_from_queue_file(file_names, self.shared_dict_typ['list_file'])
         finally:
             self.shared_dict_typ['queue_list_lock'].release()

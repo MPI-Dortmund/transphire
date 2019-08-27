@@ -61,6 +61,7 @@ def default_isac2_1_2():
         ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
         ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
         ['Nr. Particles', '10000', int, '', 'PLAIN', 'Main', 'NOT AN ISAC OPTION: Wait to accumulate this number of particles to process.'],
+        ['MPI processes', '6', int, '', 'PLAIN', 'Main', 'NOT AN ISAC OPTION: Number of MPI processes to use with ISAC.'],
         ['--radius', '-1', int, '', 'PLAIN', 'Main', 'particle radius: there is no default, a sensible number has to be provided, units - pixels (default required int)'],
         ['--target_radius', '29', int, '', 'PLAIN', 'Advanced', 'target particle radius: actual particle radius on which isac will process data. Images will be shrinked/enlarged to achieve this radius (default 29)'],
         ['--target_nx', '76', int, '', 'PLAIN', 'Advanced', 'target particle image size: actual image size on which isac will process data. Images will be shrinked/enlarged according to target particle radius and then cut/padded to achieve target_nx size. When xr > 0, the final image size for isac processing is target_nx + xr - 1  (default 76)'],
@@ -431,6 +432,7 @@ def default_path():
         ['IMOD dm2mrc', '', str, '', 'FILE', 'Main', ''],
         ['e2proc2d.py', '', str, '', 'FILE', 'Main', ''],
         ['e2bdb.py', '', str, '', 'FILE', 'Main', ''],
+        ['mpirun', '', str, '', 'FILE', 'Main', ''],
         ['SumMovie v1.0.2', '', str, '', 'FILE', 'Main', ''],
         ]
     function_dict = tu.get_function_dict()
