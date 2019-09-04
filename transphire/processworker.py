@@ -483,10 +483,10 @@ class ProcessWorker(QObject):
 
         # Fill different dictionarys with process information
         gpu_mutex_dict = dict([
-            ('{0}_{1}'.format(idx, idx_2), [manager.RLock(), 0])
+            ('{0}_{1}'.format(idx, idx_2), [manager.RLock(), mp.Value('i', 0)])
             if idx_2 != -1
             else
-            (str(idx), [manager.RLock(), 0])
+            (str(idx), [manager.RLock(), mp.Value('i', 0)])
             for idx in range(10)
             for idx_2 in range(-1, 10)
             ])
@@ -814,6 +814,10 @@ class ProcessWorker(QObject):
         share_list = shared_dict['share'][share]
         queue = shared_dict['queue'][key]
         queue_list = shared_dict_typ['queue_list']
+
+        if self.settings["General"]["Software"] == "Just Stack":
+            self.settings['copy_software_meta'] = False
+
 
         if os.path.exists(save_file):
             with open(save_file, 'r') as read:

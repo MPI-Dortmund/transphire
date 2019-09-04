@@ -1105,6 +1105,10 @@ class MainWindow(QMainWindow):
                     ]:
                 try:
                     tu.mkdir_p(settings[name])
+                except PermissionError:
+                    tu.message('You do not have permission to write to your specified project directory!')
+                    self.enable(True)
+                    return None
                 except FileNotFoundError:
                     tu.message('Project name cannot be empty')
                     self.enable(True)

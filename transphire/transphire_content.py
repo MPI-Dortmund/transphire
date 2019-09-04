@@ -951,7 +951,7 @@ def default_general():
         ['WIDGETS MAIN', '7', int, '', 'PLAIN', '', ''],
         ['WIDGETS ADVANCED', '7', int, '', 'PLAIN', '', ''],
         ['WIDGETS RARE', '7', int, '', 'PLAIN', '', ''],
-        ['Software', ['EPU >=1.9', 'EPU >=1.8', 'Latitude S'], str, '', 'COMBO', 'Main', 'Software used for data collection.'],
+        ['Software', ['EPU >=1.9', 'EPU >=1.8', 'Latitude S', 'Just Stack'], str, '', 'COMBO', 'Main', 'Software used for data collection.'],
         ['Type', ['Stack', 'Frames'], str, '', 'COMBO', 'Main', 'Stack type used for data collection.'],
         ['Camera', ['K2', 'K3', 'Falcon3', 'Falcon2'], str, '', 'COMBO', 'Main', 'Camera used for data collection.'],
         ['Search path frames', '', str, '', 'DIR', 'Main', 'Directory path containing the micrograph movie files of the data collection (mrc, tif, tiff, ...)'],

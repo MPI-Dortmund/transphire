@@ -1361,6 +1361,66 @@ class ProcessThread(object):
                     file_list=file_list,
                     find_meta=find_meta
                     )
+            elif self.settings["General"]["Software"] == "Just Stack":
+                root_name = os.path.splitext(entry_dir)[0]
+                frames_root = root_name
+                compare_name = frames_root
+                frames = tus.find_frames(
+                    frames_root=frames_root,
+                    compare_name=compare_name,
+                    settings=self.settings,
+                    queue_com=self.queue_com,
+                    name=self.name,
+                    write_error=self.write_error
+                    )
+                if frames is None:
+                    self.shared_dict_typ['bad_lock'].acquire()
+                    try:
+                        if root_name not in self.shared_dict['bad'][self.typ]:
+                            self.shared_dict['bad'][self.typ].append(root_name)
+                        else:
+                            pass
+                    finally:
+                        self.shared_dict_typ['bad_lock'].release()
+                    continue
+                elif not frames:
+                    continue
+                elif self.already_in_translation_file(os.path.basename(root_name)):
+                    self.shared_dict_typ['bad_lock'].acquire()
+                    try:
+                        if root_name not in self.shared_dict['bad'][self.typ]:
+                            self.shared_dict['bad'][self.typ].append(root_name)
+                        else:
+                            pass
+                    finally:
+                        self.shared_dict_typ['bad_lock'].release()
+                    continue
+                elif self.already_in_queue_file('Import', os.path.basename(root_name)):
+                    self.shared_dict_typ['bad_lock'].acquire()
+                    try:
+                        if root_name not in self.shared_dict['bad'][self.typ]:
+                            self.shared_dict['bad'][self.typ].append(root_name)
+                        else:
+                            pass
+                    finally:
+                        self.shared_dict_typ['bad_lock'].release()
+                    continue
+                else:
+                    pass
+
+                self.shared_dict['typ'][self.content_settings['group']]['share_lock'].acquire()
+                try:
+                    if root_name in self.shared_dict['share'][self.content_settings['group']]:
+                        continue
+                    else:
+                        self.time_last = time.time()
+                        self.notification_send = False
+                        file_list.append(root_name)
+                        self.shared_dict['share'][self.content_settings['group']].append(
+                            root_name
+                            )
+                finally:
+                    self.shared_dict['typ'][self.content_settings['group']]['share_lock'].release()
             elif find_meta:
                 if os.path.isfile(entry_dir) and 'Data' not in entry_dir and 'SurveyImages' not in entry_dir:
                     file_list.append(entry_dir)
@@ -3344,6 +3404,21 @@ class ProcessThread(object):
                 command='just check'
                 )
 
+        elif self.settings['General']['Input extension'] in ('tiff', 'tif'):
+            log_prefix = os.path.join(
+                    self.settings['stack_folder'],
+                    new_root_name
+                    )
+            new_name = root_name
+            log_file, err_file = tus.get_logfiles(log_prefix)
+            tus.check_outputs(
+                zero_list=[err_file],
+                non_zero_list=[log_file, new_name],
+                exists_list=[],
+                folder=self.settings['stack_folder'],
+                command='just check'
+                )
+
         else:
             compress_name = self.settings['Copy']['Compress']
             compress_settings = self.settings[compress_name]
@@ -3774,17 +3849,17 @@ class ProcessThread(object):
                 for main, entry in gpu_list:
                 #    lock_var = self.shared_dict['gpu_lock'][entry][mutex_idx].tryLock()
                 #    assert bool(not lock_var)
-                    while self.shared_dict['gpu_lock'][entry][count_idx] != 0:
-                        time.sleep(0.500)
-                    while self.shared_dict['gpu_lock'][main][count_idx] != 0:
+                    while self.shared_dict['gpu_lock'][entry][count_idx].value != 0 or self.shared_dict['gpu_lock'][main][count_idx].value != 0:
                         time.sleep(0.500)
 
             else:
                 for main, entry in gpu_list:
-                    self.shared_dict['gpu_lock'][entry][count_idx] += 1
+                    self.shared_dict['gpu_lock'][entry][count_idx].value += 1
+                    if '_' in entry:
+                        self.shared_dict['gpu_lock'][main][count_idx].value += 1
+                for main, entry in gpu_list:
                     self.shared_dict['gpu_lock'][entry][mutex_idx].release()
                     if '_' in entry:
-                        self.shared_dict['gpu_lock'][main][count_idx] += 1
                         self.shared_dict['gpu_lock'][main][mutex_idx].release()
         else:
             pass
@@ -3840,9 +3915,9 @@ class ProcessThread(object):
 
             else:
                 for main, entry in gpu_list:
-                    self.shared_dict['gpu_lock'][entry][count_idx] -= 1
+                    self.shared_dict['gpu_lock'][entry][count_idx].value -= 1
                     if '_' in entry:
-                        self.shared_dict['gpu_lock'][main][count_idx] -= 1
+                        self.shared_dict['gpu_lock'][main][count_idx].value -= 1
         else:
             pass
 

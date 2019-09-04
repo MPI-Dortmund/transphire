@@ -150,6 +150,9 @@ def get_motion_command(file_input, file_output_scratch, file_log_scratch, settin
     gpu_list = None
     file_to_delete = None
     if tu.is_higher_version(motion_name, '1.0.0'):
+        mem_is_one = bool(float(settings[motion_name]['-GpuMemUsage']) == 1)
+        if mem_is_one:
+            settings[motion_name]['-GpuMemUsage'] = '0.5'
         command, gpu = create_motion_cor_2_v1_0_0_command(
             motion_name=motion_name,
             file_input=file_input,
@@ -164,7 +167,7 @@ def get_motion_command(file_input, file_output_scratch, file_log_scratch, settin
 
         if tu.is_higher_version(motion_name, '1.2.0'):
             if '_' in gpu:
-                if float(settings[motion_name]['-GpuMemUsage']) == 1:
+                if mem_is_one:
                     raise UserWarning('Sub GPUs are only supported if the GpuMemUsage option is not equal 1')
                 block_gpu = False
                 file_to_delete = '/tmp/MotionCor2_FreeGpus.txt'
@@ -175,7 +178,7 @@ def get_motion_command(file_input, file_output_scratch, file_log_scratch, settin
                 block_gpu = True
         elif tu.is_higher_version(motion_name, '1.1.0'):
             if '_' in gpu:
-                if float(settings[motion_name]['-GpuMemUsage']) == 1:
+                if mem_is_one:
                     raise UserWarning('Sub GPUs are only supported if the GpuMemUsage option is not equal 1')
                 block_gpu = False
             elif float(settings[motion_name]['-GpuMemUsage']) == 0:

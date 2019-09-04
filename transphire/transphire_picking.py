@@ -438,7 +438,7 @@ def create_box_jpg(file_name, settings, queue_com, name):
     It creates a file.
     """
     picking_name = settings['Copy']['Picking']
-    box_file = find_logfiles(file_name, file_name, settings, queue_com, name)[0][0]
+    box_file = [entry for entry in find_logfiles(file_name, file_name, settings, queue_com, name)[0] if entry.endswith('.box') and '/EMAN_START_END/' not in entry][0]
     jpg_file = os.path.join(settings['picking_folder'], '{0}.png'.format(file_name))
     new_jpg_file = os.path.join(settings['picking_folder'], 'jpg', '{0}.jpg'.format(file_name))
     tu.mkdir_p(os.path.join(settings['picking_folder'], 'jpg'))

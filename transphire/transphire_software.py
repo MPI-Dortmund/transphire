@@ -42,7 +42,14 @@ def extract_time_and_grid_information(root_name, settings, queue_com, name):
     hole_number, spot1_number, spot2_number, date, time
     """
     message = None
-    if settings['General']['Software'] == 'Latitude S':
+    if settings['General']['Software'] == 'Just Stack':
+        hole = 0
+        grid_number = 0
+        spot1 = 0
+        spot2 = 0
+        date = 0
+        time = 0
+    elif settings['General']['Software'] == 'Latitude S':
         if settings['General']['Camera'] in ('Falcon2', 'Falcon3'):
             message = '\n'.join([
                 'Falcon2/Falcon3 is not supported for Software {0}.'.format(
@@ -160,7 +167,39 @@ def find_frames(frames_root, compare_name, settings, queue_com, name, write_erro
     True if the function was successful.
     """
     message = None
-    if settings['General']['Software'] == 'Latitude S':
+    if settings['General']['Software'] == 'Just Stack':
+        frames = glob.glob(
+            '{0}.{1}'.format(
+                compare_name,
+                settings['General']['Input extension']
+                )
+            )
+        try:
+            value, checked_nr_frames = check_nr_frames(
+                frames=frames,
+                settings=settings
+                )
+        except BlockingIOError:
+            write_error(
+                msg=tb.format_exc(),
+                root_name=frames_root
+                )
+            return False
+
+        if not value:
+            message = 'File {0} has {1} frames instead of {2}\n'.format(
+                frames[0],
+                checked_nr_frames,
+                int(settings['General']['Number of frames'])
+                )
+            write_error(
+                msg=message,
+                root_name=frames_root
+                )
+            return None
+        else:
+            return True
+    elif settings['General']['Software'] == 'Latitude S':
         if settings['General']['Type'] == 'Frames':
             message = '\n'.join([
                 'Frames and Falcon2/Falcon3 is not supported for Software {0}.'.format(
@@ -572,7 +611,15 @@ def find_related_frames_to_jpg(frames_root, root_name, settings, queue_com, name
     name - Name of the process
     """
     message = None
-    if settings['General']['Software'] == 'Latitude S':
+    if settings['General']['Software'] == 'Just Stack':
+        compare_name_frames = root_name
+        compare_name_meta = root_name
+        frames = glob.glob('{0}*.{1}'.format(
+            compare_name_frames,
+            settings['General']['Input extension']
+            ))
+        return frames, compare_name_frames, compare_name_meta
+    elif settings['General']['Software'] == 'Latitude S':
         if settings['General']['Type'] == 'Frames':
             message = '\n'.join([
                 'Frames and Falcon2/Falcon3 is not supported for Software {0}.'.format(
@@ -798,7 +845,9 @@ def get_copy_command_for_frames(settings, queue_com, name):
     Command to use for copy.
     """
     message = None
-    if settings['General']['Software'] == 'Latitude S':
+    if settings['General']['Software'] == 'Just Stack':
+        return "rsync"
+    elif settings['General']['Software'] == 'Latitude S':
         if settings['General']['Type'] == 'Frames':
             message = '\n'.join([
                 'Frames and Falcon2/Falcon3 is not supported for Software {0}.'.format(
@@ -990,7 +1039,11 @@ def find_all_files(root_name, compare_name_frames, compare_name_meta, settings, 
     list of files related to root_name.
     """
     message = None
-    if settings['General']['Software'] == 'Latitude S':
+    if settings['General']['Software'] == 'Just Stack':
+        meta_files = glob.glob('{0}.*'.format(root_name))
+        frame_files = glob.glob('{0}*'.format(compare_name_frames))
+        return set(meta_files), set(frame_files)
+    elif settings['General']['Software'] == 'Latitude S':
 
         if settings['General']['Camera'] in ('Falcon2', 'Falcon3'):
             message = '\n'.join([

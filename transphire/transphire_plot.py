@@ -30,6 +30,10 @@ def get_mic_number(array, settings, as_int=True):
     Array of micrograph numbers
     """
     error = False
+    if as_int:
+        out_type = int
+    else:
+        out_type = str
     if settings['General']['Rename micrographs'] == 'True':
         number_list = []
         prefix = settings['General']['Rename prefix']
@@ -59,7 +63,7 @@ def get_mic_number(array, settings, as_int=True):
     else:
         pass
 
-    return np.array(number_list)
+    return np.array(number_list).astype(out_type)
 
 
 def update_ctffind_4_v4_1_8(data, settings, label):
