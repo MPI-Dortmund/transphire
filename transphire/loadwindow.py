@@ -490,7 +490,9 @@ class DefaultSettings(QDialog):
                                         if default_value.keys() == dictionary.keys():
                                             for key in default_value:
                                                 default = dictionary[key][0]
+                                                widget_2 = dictionary[key][1]['widget_2']
                                                 default_value[key][0] = default
+                                                default_value[key][1]['widget_2'] = widget_2
                                             break
                                         else:
                                             pass
