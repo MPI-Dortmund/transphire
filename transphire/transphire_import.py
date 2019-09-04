@@ -280,13 +280,16 @@ def import_isac_v1_2(name, directory_name, import_name=''):
         try:
             with open(os.path.join(file_name, 'processed_images.txt'), 'r') as read:
                 accepted = len([entry for entry in read.readlines() if entry.strip()])
+        except FileNotFoundError:
+            accepted = 0
+        try:
             with open(os.path.join(file_name, 'not_processed_images.txt'), 'r') as read:
                 rejected = len([entry for entry in read.readlines() if entry.strip()])
-            classes = len([entry for entry in glob.glob(
-                '{0}/png/*'.format(os.path.dirname(file_name), import_name)
-                )])
         except FileNotFoundError:
-            continue
+            rejected = 0
+        classes = len([entry for entry in glob.glob(
+            '{0}/png/*'.format(os.path.dirname(file_name), import_name)
+            )])
         useable_files.append([os.path.dirname(file_name), accepted, rejected, classes])
 
     useable_files_jpg = [

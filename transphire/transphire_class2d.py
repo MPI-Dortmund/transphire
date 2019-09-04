@@ -164,7 +164,7 @@ def create_isac2_1_2_command(class2d_name, stack_name, file_name, output_dir, se
 
     command = []
 
-    command.append("PATH=$(dirname $(head {0} -n 1 | cut -c 3-) | sed 's/ //g'):${{PATH}}".format(settings['Path'][class2d_name]))
+    command.append("PATH=$(dirname $(head $(which {0}) -n 1 | cut -c 3-) | sed 's/ //g'):${{PATH}}".format(settings['Path'][class2d_name]))
     command.append('CUDA_VISIBLE_DEVICES={0}'.format(','.join(gpu)))
     command.append(settings['Path']['mpirun'])
     command.append('-np {0}'.format(settings[class2d_name]['MPI processes']))

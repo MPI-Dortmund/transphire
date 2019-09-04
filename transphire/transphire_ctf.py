@@ -95,7 +95,20 @@ def get_ctf_command(file_sum, file_input, new_name, settings, queue_com, name):
             shell = False
 
     elif 'CTER' in ctf_name:
-        if tu.is_higher_version(ctf_name, '1.0'):
+        if tu.is_higher_version(ctf_name, '1.2'):
+            output_dir, _ = os.path.splitext(new_name)
+            command = create_cter_1_2_command(
+                ctf_name=ctf_name,
+                file_sum=file_sum,
+                file_input=file_input,
+                output_dir=output_dir,
+                settings=settings
+                )
+            check_files = ['{0}/partres.txt'.format(output_dir)]
+            block_gpu = False
+            gpu_list = []
+            shell = True
+        elif tu.is_higher_version(ctf_name, '1.0'):
             output_dir, _ = os.path.splitext(new_name)
             command = create_cter_1_0_command(
                 ctf_name=ctf_name,
@@ -272,6 +285,56 @@ def create_gctf_v1_06_command(
 
     return ' '.join(command), gpu
 
+
+def create_cter_1_2_command(
+        ctf_name, file_sum, file_input, output_dir, settings
+        ):
+    """Create the CTER v1.2 command"""
+
+    try:
+        shutil.rmtree(output_dir)
+    except FileNotFoundError:
+        pass
+
+    command = []
+    # Start the program
+    command.append('{0}'.format(settings['Path'][ctf_name]))
+    command.append("'{0}*'".format(file_sum[:-1]))
+    command.append(output_dir)
+    command.append('--selection_list={0}'.format(file_sum))
+    ignore_list = []
+    ignore_list.append('Phase plate')
+    if settings[ctf_name]['Phase plate'] == 'False':
+        ignore_list.append('--defocus_min')
+        ignore_list.append('--defocus_max')
+        ignore_list.append('--defocus_step')
+        ignore_list.append('--phase_min')
+        ignore_list.append('--phase_max')
+        ignore_list.append('--phase_step')
+    else:
+        command.append('--vpp')
+
+    ignore_list.append('--pap')
+    if settings[ctf_name]['--pap'] == 'True':
+        command.append('--pap')
+    else:
+        pass
+
+    for key in settings[ctf_name]:
+        if key in ignore_list:
+            continue
+        elif settings[ctf_name][key]:
+            command.append('{0}={1}'.format(key, settings[ctf_name][key]))
+        else:
+            continue
+
+    # Prepare HDF
+    command.append(';')
+    command.append(settings['Path']['e2proc2d.py'])
+    command.append(os.path.join(output_dir, 'power2d', '{0}_pws.hdf'.format(tu.get_name(file_sum))))
+    command.append(os.path.join(output_dir, 'power2d', '{0}_pws.mrc'.format(tu.get_name(file_sum))))
+
+    return ' '.join(command)
 
 def create_cter_1_0_command(
         ctf_name, file_sum, file_input, output_dir, settings
@@ -960,7 +1023,11 @@ def create_jpg_file(input_mrc_file, settings, ctf_name):
         input_ctf_file = os.path.join(settings['ctf_folder'], '{0}.ctf'.format(file_name))
         input_1d_file = os.path.join(settings['ctf_folder'], '{0}_EPA.log'.format(file_name))
     elif 'CTER' in ctf_name:
-        input_1d_file = os.path.join(settings['ctf_folder'], file_name, 'pwrot', '{0}_rotinf.txt'.format(file_name))
+        if tu.is_higher_version(ctf_name, '1.2'):
+            input_ctf_file = os.path.join(settings['ctf_folder'], file_name, 'power2d', '{0}_pws.mrc'.format(file_name))
+            input_1d_file = os.path.join(settings['ctf_folder'], file_name, 'pwrot', '{0}_rotinf.txt'.format(file_name))
+        elif tu.is_higher_version(ctf_name, '1.0'):
+            input_1d_file = os.path.join(settings['ctf_folder'], file_name, 'pwrot', '{0}_rotinf.txt'.format(file_name))
 
     try:
         if not os.path.exists(input_ctf_file):
