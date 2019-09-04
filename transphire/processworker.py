@@ -17,6 +17,7 @@
 """
 import time
 import os
+import shutil
 import re
 import glob
 import copy as cp
@@ -719,7 +720,9 @@ class ProcessWorker(QObject):
                         )
                     error = True
                 else:
-                    if not is_file:
+                    if shutil.which(self.settings[typ][name]) is not None:
+                        pass
+                    elif not is_file:
                         self.sig_error.emit(
                             '{0} path not valid or disabled (Advanced, Rare)! Please adjust it!'.format(name)
                             )
