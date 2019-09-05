@@ -130,6 +130,7 @@ class PlotWidget(QWidget):
             self.lower_edit = QLineEdit('-inf', self)
             self.upper_edit = QLineEdit('inf', self)
             self.bin_edit = QLineEdit('50', self)
+            self.notification = QLabel(self)
 
             layout_h.addWidget(QLabel('Lower {0}'.format(axis_name), self))
             layout_h.addWidget(self.lower_edit)
@@ -140,6 +141,7 @@ class PlotWidget(QWidget):
                 layout_h.addWidget(self.bin_edit)
             else:
                 self.bin_edit.setVisible(False)
+            layout_h.addWidget(self.notification)
             layout_h.addStretch(1)
             layout_v.addLayout(layout_h)
 
@@ -343,23 +345,31 @@ class PlotWidget(QWidget):
         return change
 
     def get_lower_higher_bin(self):
-        try:
-            lower_lim = float(self.lower_edit.text())
-        except ValueError:
-            print('Lower limit value: {0} - Not a valid float! Falling back to -infinity.'.format(self.lower_edit.text()))
-            lower_lim = -np.nan_to_num(np.inf)
+        while True:
+            try:
+                lower_lim = float(self.lower_edit.text())
+            except ValueError:
+                print('Lower limit value: {0} - Not a valid float! Falling back to -infinity.'.format(self.lower_edit.text()))
+                self.notification.setText('Lower limit value: {0} - Not a valid float! Falling back to -infinity.'.format(self.lower_edit.text()))
+                self.lower_edit.setText('-inf')
+                continue
 
-        try:
-            upper_lim = float(self.upper_edit.text())
-        except ValueError:
-            print('Upper limit value: {0} - Not a valid float! Falling back to infinity.'.format(self.upper_edit.text()))
-            upper_lim = np.nan_to_num(np.inf)
+            try:
+                upper_lim = float(self.upper_edit.text())
+            except ValueError:
+                print('Upper limit value: {0} - Not a valid float! Falling back to infinity.'.format(self.upper_edit.text()))
+                self.notification.setText('Upper limit value: {0} - Not a valid float! Falling back to infinity.'.format(self.upper_edit.text()))
+                self.upper_edit.setText('inf')
+                continue
 
-        try:
-            bins = int(self.bin_edit.text())
-        except ValueError:
-            print('Bin value: {0} - Not a valid integer! Using 50.'.format(self.bin_edit.text()))
-            bins = 50
+            try:
+                bins = int(self.bin_edit.text())
+            except ValueError:
+                print('Bin value: {0} - Not a valid integer! Using 50.'.format(self.bin_edit.text()))
+                self.notification.setText('Bin value: {0} - Not a valid integer! Using 50.'.format(self.bin_edit.text()))
+                self.bin_edit.setText('-inf')
+                continue
+            break
         return lower_lim, upper_lim, bins
 
 
@@ -387,35 +397,43 @@ class PlotWidget(QWidget):
             idx_nan = np.isnan(y_values_raw)
             x_values_raw = x_values_raw[~idx_nan]
             y_values_raw = y_values_raw[~idx_nan]
-            lower_lim, upper_lim, bins = self.get_lower_higher_bin()
-            mask = (lower_lim < y_values_raw) & (y_values_raw < upper_lim)
-            title = '{0}: {1} out of range {2} to {3}'.format(title, y_values_raw[~mask].shape[0], lower_lim, upper_lim)
-            if self.plot_typ == 'values':
-                y_values = y_values_raw[mask]
-                x_values = x_values_raw[mask]
-            elif self.plot_typ == 'histogram':
-                y_values, x_values = np.histogram(y_values_raw[mask], bins)
+            while True:
+                lower_lim, upper_lim, bins = self.get_lower_higher_bin()
+                mask = (lower_lim < y_values_raw) & (y_values_raw < upper_lim)
+                title = '{0}: {1} out of range {2} to {3}\nmin:{4:0.2f} - max:{5:0.2f} - mean:{6:0.2f} - median:{7:0.2f}'.format(title, y_values_raw[~mask].shape[0], lower_lim, upper_lim, np.min(y_values_raw), np.max(y_values_raw), np.mean(y_values_raw), np.median(y_values_raw))
+                if self.plot_typ == 'values':
+                    y_values = y_values_raw[mask]
+                    x_values = x_values_raw[mask]
+                elif self.plot_typ == 'histogram':
+                    y_values, x_values = np.histogram(y_values_raw[mask], bins)
 
-            if lower_lim != self.lower_lim:
-                self.lower_lim = lower_lim
-                change = True
-            if upper_lim != self.upper_lim:
-                self.upper_lim = upper_lim
-                change = True
-            try:
-                change = self.prepare_axis(
-                    np.min(x_values),
-                    np.max(x_values),
-                    np.min(y_values),
-                    np.max(y_values),
-                    label,
-                    title,
-                    x_values,
-                    y_values,
-                    change,
-                    )
-            except ValueError:
-                return
+                if lower_lim != self.lower_lim:
+                    self.lower_lim = lower_lim
+                    change = True
+                if upper_lim != self.upper_lim:
+                    self.upper_lim = upper_lim
+                    change = True
+                try:
+                    change = self.prepare_axis(
+                        np.min(x_values),
+                        np.max(x_values),
+                        np.min(y_values),
+                        np.max(y_values),
+                        label,
+                        title,
+                        x_values,
+                        y_values,
+                        change,
+                        )
+                except ValueError as e:
+                    print('Chosed values lead to zero data points! Falling back to +-infinity.')
+                    self.notification.setText('Chosen values lead to zero data points! Falling back to +-infinity.')
+                    self.lower_edit.setText('-inf')
+                    self.upper_edit.setText('inf')
+                    continue
+                else:
+                    break
+
 
             if self.plot_typ == 'values':
                 self.line.set_data(x_values, y_values)

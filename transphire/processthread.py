@@ -2865,7 +2865,6 @@ class ProcessThread(object):
                 return None
         finally:
             self.shared_dict_typ['queue_list_lock'].release()
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name, 'blubb-4', time.time() - start_prog))
 
         # Create the command
         output_dir = os.path.join(self.settings['extract_folder'], file_name)
@@ -2877,7 +2876,6 @@ class ProcessThread(object):
         file_sum = [entry for entry in tmp_matches if '.mrc' in entry][0]
         tmp_matches.remove(file_sum)
         assert not tmp_matches, (tmp_matches, matches_in_queue, file_ctf, file_box, file_sum, output_dir)
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name, 'blubb-3', time.time() - start_prog))
 
         command, check_files, block_gpu, gpu_list, shell = tue.get_extract_command(
             file_sum=file_sum,
@@ -2894,7 +2892,6 @@ class ProcessThread(object):
                 self.settings['extract_folder'],
                 file_name
                 )
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name, 'blubb-2', time.time() - start_prog))
 
         log_file, err_file = self.run_command(
             command=command,
@@ -2903,12 +2900,10 @@ class ProcessThread(object):
             gpu_list=gpu_list,
             shell=shell
             )
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name, 'blubb-1', time.time() - start_prog))
 
         zero_list = [err_file]
         non_zero_list = [log_file]
         non_zero_list.extend(check_files)
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name, 'blubb0', time.time() - start_prog))
 
         log_files, copied_log_files = tue.find_logfiles(
             root_path=output_dir,
@@ -2916,7 +2911,6 @@ class ProcessThread(object):
             queue_com=self.queue_com,
             name=self.name
             )
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name, 'blubb1', time.time() - start_prog))
 
         tus.check_outputs(
             zero_list=zero_list,
@@ -2925,7 +2919,6 @@ class ProcessThread(object):
             folder=self.settings['extract_folder'],
             command=command
             )
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name, 'blubb2', time.time() - start_prog))
 
         try:
             log_files.remove(err_file)
@@ -2942,11 +2935,9 @@ class ProcessThread(object):
         copied_log_files.extend(non_zero_list)
         copied_log_files.extend(zero_list)
         copied_log_files = list(set(copied_log_files))
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name, 'blaa1', time.time() - start_prog))
 
         tue.create_jpg_file(file_name, self.settings['extract_folder'])
 
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name, 'blaa2', time.time() - start_prog))
         skip_list = False
         if skip_list:
             pass
@@ -2981,7 +2972,7 @@ class ProcessThread(object):
                     pass
 
         self.remove_from_queue_file(matches_in_queue, self.shared_dict_typ['list_file'])
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name, 'stop', time.time() - start_prog))
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_extract', root_name, 'stop', time.time() - start_prog))
 
     def run_class2d(self, root_name):
         if root_name == 'None':
@@ -2993,7 +2984,7 @@ class ProcessThread(object):
             return None
 
         start_prog = time.time()
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name, 'start'))
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_class2d', root_name, 'start'))
 
         class2d_name = self.settings['Copy'][self.typ]
 
@@ -3155,7 +3146,7 @@ class ProcessThread(object):
             self.remove_from_queue_file(file_names, self.shared_dict_typ['list_file'])
         finally:
             self.shared_dict_typ['queue_list_lock'].release()
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name, 'stop', time.time() - start_prog))
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_class2d', root_name, 'stop', time.time() - start_prog))
 
     def run_picking(self, root_name):
         """
