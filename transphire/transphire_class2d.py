@@ -113,7 +113,7 @@ def create_class2d_command(class2d_name, stack_name, file_name, output_dir, sett
                 name=name,
                 )
             check_files = []
-            block_gpu = False
+            block_gpu = True
             gpu_list = []
             shell = True
     else:
