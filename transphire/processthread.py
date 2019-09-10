@@ -1555,7 +1555,7 @@ class ProcessThread(object):
             message = '{0}: No frames found! If this appears very often, please restart TranSPHIRE.'.format(self.name)
             self.queue_com['notification'].put(message)
             self.write_error(msg=message, root_name=root_name)
-            raise Exception(message)
+            return None
 
         if overall_file_size > \
                 sh.disk_usage(self.settings['project_folder']).free:

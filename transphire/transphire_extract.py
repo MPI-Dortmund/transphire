@@ -92,13 +92,10 @@ def create_window_1_2_command(extract_name, file_sum, file_box, file_ctf, output
     # Add SPHIRE to the PATH
     command.append("PATH=$(dirname $(head $(which {0}) -n 1 | cut -c 3-) | sed 's/ //g'):${{PATH}}".format(settings['Path'][extract_name]))
     # Start the program
-    if settings['General']['Rename micrographs'] == 'True':
-        mic_number = tp.get_mic_number([file_sum], settings, as_int=False)
-    else:
-        mic_number = [tu.get_name(file_sum)]
+    mic_number = tu.get_name(file_sum)
     command.append(settings['Path'][extract_name])
-    command.append("'{0}'".format(file_sum.replace(mic_number[0], '*')))
-    command.append("'{0}'".format(file_box.replace(mic_number[0], '*')))
+    command.append("'{0}'".format(os.path.join(os.path.dirname(file_sum), os.path.basename(file_sum).replace(mic_number, '*'))))
+    command.append("'{0}'".format(os.path.join(os.path.dirname(file_box), os.path.basename(file_box).replace(mic_number, '*'))))
     command.append(file_ctf)
     command.append(output_dir)
     command.append('--selection_list={0}'.format(file_sum))

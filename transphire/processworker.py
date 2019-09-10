@@ -828,7 +828,7 @@ class ProcessWorker(QObject):
                     self.settings['copy_software_meta'] = False
                 else:
                     pass
-                share_list.append(line)
+                share_list.append(line.split('|||')[-1])
                 queue.put(line)
         else:
             with open(save_file, 'w'):
