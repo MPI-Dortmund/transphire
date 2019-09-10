@@ -427,19 +427,19 @@ def default_path():
         ['WIDGETS MAIN', '8', int, '', 'PLAIN', 'Main', ''],
         ['WIDGETS ADVANCED', '8', int, '', 'PLAIN', 'Main', ''],
         ['WIDGETS RARE', '8', int, '', 'PLAIN', 'Main', ''],
-        ['IMOD header', '', str, '', 'FILE', 'Main', ''],
-        ['IMOD newstack', '', str, '', 'FILE', 'Main', ''],
-        ['IMOD dm2mrc', '', str, '', 'FILE', 'Main', ''],
-        ['e2proc2d.py', '', str, '', 'FILE', 'Main', ''],
-        ['e2bdb.py', '', str, '', 'FILE', 'Main', ''],
-        ['mpirun', '', str, '', 'FILE', 'Main', ''],
-        ['SumMovie v1.0.2', '', str, '', 'FILE', 'Main', ''],
+        ['IMOD header', 'header', str, '', 'FILE', 'Main', ''],
+        ['IMOD newstack', 'newstack', str, '', 'FILE', 'Main', ''],
+        ['IMOD dm2mrc', 'dm2mrc', str, '', 'FILE', 'Main', ''],
+        ['e2proc2d.py', 'e2proc2d.py', str, '', 'FILE', 'Main', ''],
+        ['e2bdb.py', 'e2bdb.py', str, '', 'FILE', 'Main', ''],
+        ['mpirun', 'mpirun', str, '', 'FILE', 'Main', ''],
+        ['SumMovie v1.0.2', 'summovie', str, '', 'FILE', 'Main', ''],
         ]
     function_dict = tu.get_function_dict()
     for key in sorted(function_dict.keys()):
         if function_dict[key]['executable']:
             if function_dict[key]['has_path']:
-                items.append([key, '', str, '', 'FILE', 'Main', ''])
+                items.append([key, function_dict[key]['has_path'], str, '', 'FILE', 'Main', ''])
         else:
             pass
 

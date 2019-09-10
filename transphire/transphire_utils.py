@@ -215,7 +215,7 @@ def get_function_dict():
             'plot_data': ti.import_isac_v1_2,
             'content': tc.default_isac2_1_2,
             'executable': True,
-            'has_path': True,
+            'has_path': 'sp_isac2_gpu.py',
             'typ': 'class2d',
             'allow_empty': [''],
             }
@@ -225,7 +225,7 @@ def get_function_dict():
             'plot_data': ti.import_window_v1_2,
             'content': tc.default_window_1_2,
             'executable': True,
-            'has_path': True,
+            'has_path': 'sp_window.py',
             'typ': 'extract',
             'allow_empty': [''],
             }
@@ -235,7 +235,7 @@ def get_function_dict():
             'plot_data': ti.import_ctffind_v4_1_8,
             'content': tc.default_ctffind_4_v4_1_8,
             'executable': True,
-            'has_path': True,
+            'has_path': 'ctffind',
             'typ': 'ctf',
             'allow_empty': ['Gain file'],
             }
@@ -247,7 +247,7 @@ def get_function_dict():
             'plot_data': ti.import_gctf_v1_06,
             'content': tc.default_gctf_v1_06,
             'executable': True,
-            'has_path': True,
+            'has_path': 'Gctf',
             'typ': 'ctf',
             'allow_empty': [],
             }
@@ -256,7 +256,7 @@ def get_function_dict():
             'plot_data': ti.import_gctf_v1_06,
             'content': tc.default_gctf_v1_18,
             'executable': True,
-            'has_path': True,
+            'has_path': 'Gctf_v1.18',
             'typ': 'ctf',
             'allow_empty': [],
             }
@@ -268,7 +268,7 @@ def get_function_dict():
             'plot_data': ti.import_cter_v1_0,
             'content': tc.default_cter_v1_0,
             'executable': True,
-            'has_path': True,
+            'has_path': 'sp_cter.py',
             'typ': 'ctf',
             'allow_empty': [],
             }
@@ -279,7 +279,7 @@ def get_function_dict():
             'plot_data': ti.import_motion_cor_2_v1_0_0,
             'content': tc.default_motion_cor_2_v1_0_0,
             'executable': True,
-            'has_path': True,
+            'has_path': 'MotionCor2',
             'typ': 'motion',
             'allow_empty': ['-DefectFile', '-Gain', '-Dark'],
             }
@@ -296,7 +296,7 @@ def get_function_dict():
             'plot_data': ti.import_cryolo_v1_0_4,
             'content': tc.default_cryolo_v1_0_4,
             'executable': True,
-            'has_path': True,
+            'has_path': 'cryolo_predict.py',
             'typ': 'picking',
             'allow_empty': [],
             }
