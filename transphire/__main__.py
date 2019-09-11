@@ -52,7 +52,7 @@ def main(font, root_directory, settings_directory, mount_directory, adjust_width
     app = QApplication([])
 
     # Create default folders
-    tu.mkdir_p(settings_directory)
+    tu.mkdir_p(os.path.join(settings_directory, 'DEFAULT'))
     tu.mkdir_p(mount_directory)
 
     # Load default font settings for the default settings dialog

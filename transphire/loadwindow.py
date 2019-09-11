@@ -358,25 +358,18 @@ class DefaultSettings(QDialog):
                 self.add_tabs()
 
     def add_tabs(self):
-        template_folder = ['DEFAULT']
-        template_folder.extend(sorted([
+        template_folder = sorted([
             os.path.basename(entry)
             for entry in glob.glob(os.path.join(self.settings_directory, '*'))
             if os.path.isdir(entry)
-            ]))
+            ])
 
-        if self.current_template != 'DEFAULT':
-            self.template_name.setText('Current template: {0}'.format(self.current_template))
-        else:
-            self.template_name.setText('No template selected')
+        self.template_name.setText('Current template: {0}'.format(self.current_template))
 
 
         content_temp = {}
         for template_name in template_folder:
-            if template_name != 'DEFAULT':
-                template_directory = os.path.join(self.settings_directory, template_name)
-            else:
-                template_directory = self.settings_directory
+            template_directory = os.path.join(self.settings_directory, template_name)
 
             setting_names = tu.get_function_dict().keys()
             content_temp[template_name] = {}
@@ -432,12 +425,11 @@ class DefaultSettings(QDialog):
         setting_names = sorted(tu.get_function_dict().keys())
         default_widget = DefaultSettings(apply=apply, settings_directory=settings_folder, template_name=template_name)
 
-        templates = ['DEFAULT']
-        templates.extend(sorted([
+        templates = sorted([
             os.path.basename(entry)
             for entry in glob.glob(os.path.join(settings_folder, '*'))
             if os.path.isdir(entry)
-            ]))
+            ])
         content_temp = default_widget.add_tabs()
 
         # Initialise a new LoadContentContainer and add it as a new tab
@@ -455,12 +447,11 @@ class DefaultSettings(QDialog):
             apply = None
 
         # Refresh content of LoadContentContainer by the provided default settings
-        templates = ['DEFAULT']
-        templates.extend(sorted([
+        templates = sorted([
             os.path.basename(entry)
             for entry in glob.glob(os.path.join(settings_folder, '*'))
             if os.path.isdir(entry)
-            ]))
+            ])
 
         content = {}
         for template in templates:
