@@ -164,7 +164,7 @@ class ProcessWorker(QObject):
                     process[key][self.idx_values]['aim'] = process[key][self.idx_values]['aim'].split(',')
                     share_dict[key] = manager.list()
                     bad_dict[key] = manager.list()
-                    queue_dict[key] = mp.Queue()
+                    queue_dict[key] = manager.Queue()
                     typ_dict[key] = manager.dict({
                         'file_number': 0,
                         'spot': False,
@@ -216,10 +216,10 @@ class ProcessWorker(QObject):
 
         # Queue communication dictionary
         queue_com = {
-            'log': mp.Queue(),
-            'status': mp.Queue(),
-            'notification': mp.Queue(),
-            'error': mp.Queue(),
+            'log': manager.Queue(),
+            'status': manager.Queue(),
+            'notification': manager.Queue(),
+            'error': manager.Queue(),
             }
 
         # Set stop variable to the return value of the pre_check
@@ -639,7 +639,6 @@ class ProcessWorker(QObject):
                 time.sleep(1)
                 self.check_queue(queue_com=queue_com)
         self.check_queue(queue_com=queue_com)
-        print('All processes finished! Draining queues!')
 
         final_sizes = []
         for key, settings_content in full_content:
@@ -647,15 +646,6 @@ class ProcessWorker(QObject):
             size = shared_dict['queue'][typ].qsize()
             final_sizes.append([key, size, typ])
 
-        for key, queue in queue_dict.items():
-            try:
-                while True:
-                    queue.get_nowait()
-            except qu.Empty:
-                pass
-        time.sleep(0.1)
-
-        print('All drained!')
         # Wait for all threads to finish
         for thread, name, _, thread_obj in thread_list:
             thread.join()
@@ -669,6 +659,7 @@ class ProcessWorker(QObject):
                 key,
                 'white'
                 )
+        time.sleep(1)
 
     @staticmethod
     def run_in_parallel(thread_obj):

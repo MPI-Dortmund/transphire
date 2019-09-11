@@ -975,7 +975,6 @@ class ProcessThread(object):
         Name removed from the queue.
         """
         value = self.queue.get(block=False)
-        time.sleep(0.1)
         return value
 
     @staticmethod
@@ -1081,7 +1080,6 @@ class ProcessThread(object):
                 file_name=self.shared_dict['typ'][aim]['save_file'],
                 allow_dublicate=allow_dublicate,
                 )
-            time.sleep(0.1)
         finally:
             self.shared_dict['typ'][aim]['queue_lock'].release()
 
@@ -3242,7 +3240,6 @@ class ProcessThread(object):
                 file_name_list.append(tu.get_name(file_use_name))
             self.shared_dict_typ['queue_list'][:] = []
             self.shared_dict_typ['queue_list_time'] = time.time()
-            time.sleep(0.1)
         finally:
             self.shared_dict_typ['queue_list_lock'].release()
 
@@ -3841,7 +3838,7 @@ class ProcessThread(object):
                 #    lock_var = self.shared_dict['gpu_lock'][entry][mutex_idx].tryLock()
                 #    assert bool(not lock_var)
                     while self.shared_dict['gpu_lock'][entry][count_idx].value != 0 or self.shared_dict['gpu_lock'][main][count_idx].value != 0:
-                        time.sleep(0.500)
+                        time.sleep(0.1)
 
             else:
                 for main, entry in gpu_list:
@@ -3856,7 +3853,7 @@ class ProcessThread(object):
             pass
 
         # Run the command
-        time.sleep(0.100)
+        time.sleep(0.01)
         if file_to_delete is not None:
             try:
                 os.remove(file_to_delete)
@@ -3873,7 +3870,7 @@ class ProcessThread(object):
                     cmd = sp.Popen(command, shell=True, stdout=out, stderr=err)
                 else:
                     cmd = sp.Popen(command.split(), stdout=out, stderr=err)
-                time.sleep(0.1) 
+                time.sleep(0.01) 
                 if file_to_delete is not None:
                     try:
                         os.remove(file_to_delete)
@@ -3885,6 +3882,7 @@ class ProcessThread(object):
                 cmd.wait()
                 stop_time = time.time()
                 out.write('\nTime: {0} sec'.format(stop_time - start_time)) 
+        time.sleep(0.01)
         if file_to_delete is not None:
             try:
                 os.remove(file_to_delete)
@@ -3894,7 +3892,6 @@ class ProcessThread(object):
                 with open(file_to_delete, 'w'):
                     pass
 
-        time.sleep(0.100)
         if gpu_list:
             if block_gpu:
                 for main, entry in gpu_list:
