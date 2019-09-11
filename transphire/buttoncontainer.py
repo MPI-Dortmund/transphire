@@ -81,18 +81,17 @@ class ButtonContainer(QWidget):
         layout = QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
 
-        templates = ['DEFAULT']
-        templates.extend(sorted([
+        templates = sorted([
             os.path.basename(entry)
             for entry in glob.glob(os.path.join(self.settings_folder, '*'))
             if os.path.isdir(entry)
-            ]))
+            ])
         layout_v = QVBoxLayout()
         layout_v.setContentsMargins(0, 0, 0, 0)
         layout_v.addWidget(QLabel('Chosen template:'))
         self.template_box = QComboBox(parent=self)
         self.template_box.clear()
-        self.template_box.addItems(templates)
+        self.template_box.addItems([entry for entry in templates if entry != 'SHARED'])
         self.template_box.setCurrentText(self.template_name)
         self.template_box.currentTextChanged.connect(self.select_template)
         layout.addWidget(self.template_box)

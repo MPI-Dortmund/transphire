@@ -77,6 +77,7 @@ class LoadContentContainer(QWidget):
             layout_h1.addWidget(QLabel('Copy from:', self))
             combo_box = QComboBox(self)
             combo_box.addItems([entry for entry in templates if entry != 'SHARED'])
+            combo_box.setCurrentText(template_name)
             combo_box.currentTextChanged.connect(self.copy_from_template)
             layout_h1.addWidget(combo_box)
             layout_h1.addStretch(1)
