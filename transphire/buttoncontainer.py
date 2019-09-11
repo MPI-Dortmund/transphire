@@ -81,7 +81,7 @@ class ButtonContainer(QWidget):
         layout = QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
 
-        templates = ['(None)']
+        templates = ['DEFAULT']
         templates.extend(sorted([
             os.path.basename(entry)
             for entry in glob.glob(os.path.join(self.settings_folder, '*'))
@@ -220,14 +220,14 @@ class ButtonContainer(QWidget):
             settings_folder=self.settings_folder,
             template_name=self.template_name,
             )
-        template_name = content['(None)']['Others'][0][0]['Default template'][0]
+        template_name = content['DEFAULT']['Others'][0][0]['Default template'][0]
         if not apply:
             tu.message('Restart GUI to apply saved changes')
 
         elif apply:
-            template_name = content['(None)']['Others'][0][0]['Default template'][0]
+            template_name = content['DEFAULT']['Others'][0][0]['Default template'][0]
             self.parent.content_raw = content
-            self.parent.content_pipeline = content['(None)']['Pipeline']
+            self.parent.content_pipeline = content['DEFAULT']['Pipeline']
             self.parent.enable(var=False, use_all=True)
             # result is True if No is chosen
             result = tu.question(
@@ -238,7 +238,7 @@ class ButtonContainer(QWidget):
                 )
             app = QApplication.instance()
             app.setStyleSheet(
-                tu.look_and_feel(app=app, default=content['(None)']['Font'])
+                tu.look_and_feel(app=app, default=content['DEFAULT']['Font'])
                 )
 
             if result:

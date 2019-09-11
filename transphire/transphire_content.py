@@ -439,7 +439,7 @@ def default_path():
     for key in sorted(function_dict.keys()):
         if function_dict[key]['executable']:
             if function_dict[key]['has_path']:
-                items.append([key, function_dict[key]['has_path'], str, '', 'FILE', 'Main', ''])
+                items.append([key, function_dict[key]['has_path'], str, '', 'FILE', 'Advanced', ''])
         else:
             pass
 
@@ -491,7 +491,7 @@ def default_others(settings_folder):
     Content items as list
     """
     file_name = os.path.join(os.path.dirname(__file__), 'images', 'Transphire.png')
-    templates = ['(None)']
+    templates = ['DEFAULT']
     templates.extend(sorted([os.path.basename(entry) for entry in glob.glob(os.path.join(settings_folder, '*')) if os.path.isdir(entry)]))
     items = [
         ['Default template', templates, str, '', 'COMBO', '', 'Image used in the lower right corner of TranSPHIRE.'],

@@ -38,7 +38,7 @@ class TemplateDialog(QDialog):
 
         layout = QVBoxLayout(central_widget)
 
-        self.templates = ['(None)']
+        self.templates = ['DEFAULT']
         self.templates.extend(sorted([os.path.basename(entry) for entry in glob.glob(os.path.join(settings_directory, '*')) if os.path.isdir(entry)]))
 
         layout.addWidget(QLabel('Available templates:'))
@@ -73,7 +73,7 @@ class TemplateDialog(QDialog):
     @pyqtSlot()
     def remove_template(self):
         text = self.combo_box.currentText()
-        if text == '(None)':
+        if text == 'DEFAULT':
             tu.message('Default template cannot be deleted!')
             return None
         dialog = InputBox(is_password=False, parent=self)

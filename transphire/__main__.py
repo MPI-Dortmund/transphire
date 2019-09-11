@@ -75,17 +75,17 @@ def main(font, root_directory, settings_directory, mount_directory, adjust_width
         with open('{0}/content_Others.txt'.format(settings_directory), 'r') as file_r:
             settings = json.load(file_r)
     except FileNotFoundError:
-        template_name = '(None)'
+        template_name = 'DEFAULT'
     else:
         try:
             template_name = settings[0][0]['Default template'][0]
         except KeyError:
-            template_name = '(None)'
+            template_name = 'DEFAULT'
 
         if not os.path.isdir(os.path.join(settings_directory, template_name)) and \
-                template_name != '(None)':
+                template_name != 'DEFAULT':
             print('Default template no longer exists!')
-            template_folder = '(None)'
+            template_folder = 'DEFAULT'
 
 
     # Get default settings 0: content 
@@ -104,27 +104,27 @@ def main(font, root_directory, settings_directory, mount_directory, adjust_width
             font=font,
             adjust_width=adjust_width,
             adjust_height=adjust_height,
-            default=content['(None)']['Font']
+            default=content['DEFAULT']['Font']
             )
         )
 
     # Load content for the GUI
     content_gui = tu.get_content_gui(
         content=content,
-        template_name='(None)',
+        template_name='DEFAULT',
         )
 
-    template_name = content['(None)']['Others'][0][0]['Default template'][0]
+    template_name = content['DEFAULT']['Others'][0][0]['Default template'][0]
     if not os.path.isdir(os.path.join(settings_directory, template_name)) and \
-            template_name != '(None)':
+            template_name != 'DEFAULT':
         print('Default template no longer exists!')
-        template_name = '(None)'
+        template_name = 'DEFAULT'
 
     # Initilise and show GUI
     gui = MainWindow(
         content_raw=content,
         content_gui=content_gui,
-        content_pipeline=content['(None)']['Pipeline'],
+        content_pipeline=content['DEFAULT']['Pipeline'],
         settings_folder=settings_directory,
         template_name=template_name,
         mount_directory=mount_directory,
