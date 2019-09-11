@@ -38,14 +38,13 @@ class TemplateDialog(QDialog):
 
         layout = QVBoxLayout(central_widget)
 
-        self.templates = ['DEFAULT']
-        self.templates.extend(sorted([os.path.basename(entry) for entry in glob.glob(os.path.join(settings_directory, '*')) if os.path.isdir(entry)]))
+        self.templates = sorted([os.path.basename(entry) for entry in glob.glob(os.path.join(settings_directory, '*')) if os.path.isdir(entry)])
 
         layout.addWidget(QLabel('Available templates:'))
 
         self.combo_box = QComboBox(parent=self)
         self.combo_box.clear()
-        self.combo_box.addItems(self.templates)
+        self.combo_box.addItems([entry for entry in self.templates if entry != 'SHARED'])
         layout.addWidget(self.combo_box)
 
         if add_remove:
@@ -89,7 +88,7 @@ class TemplateDialog(QDialog):
                 else:
                     self.templates.remove(text)
                     self.combo_box.clear()
-                    self.combo_box.addItems(self.templates)
+                    self.combo_box.addItems([entry for entry in self.templates if entry != 'SHARED'])
             else:
                 tu.message('Input needs to be "YES!" to work')
 
@@ -100,9 +99,11 @@ class TemplateDialog(QDialog):
         result = dialog.exec_()
 
         if result:
-            text = dialog.getText()
+            text = dialog.getText().strip()
             if ' ' in text:
                 tu.message('There are not whitespaces allowed in the template name!')
+            elif 'shared' == text.lower():
+                tu.message('Shared is a protected namespace. Please choose another name.')
             elif text in self.templates:
                 tu.message('Template name already exists! Please choose another one!')
             else:
@@ -113,7 +114,7 @@ class TemplateDialog(QDialog):
                 else:
                     self.templates.append(text)
                     self.combo_box.clear()
-                    self.combo_box.addItems(self.templates)
+                    self.combo_box.addItems([entry for entry in self.templates if entry != 'SHARED'])
                     self.combo_box.setCurrentText(text)
 
     @pyqtSlot()
