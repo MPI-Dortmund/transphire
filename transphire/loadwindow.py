@@ -382,9 +382,11 @@ class DefaultSettings(QDialog):
             content_temp[template_name] = {}
             for name in reversed(list(setting_names)):
                 directory = template_directory
+                is_shared = False
                 for entry in self.default_tabs['TranSPHIRE settings']['content']:
                     if entry in name:
                         directory = os.path.join(self.settings_directory, 'SHARED')
+                        is_shared = True
                         break
                 default_file = '{0}/content_{1}.txt'.format(directory, name.replace(' ', '_'))
                 if not os.path.isfile(default_file):
@@ -392,8 +394,11 @@ class DefaultSettings(QDialog):
                 assert name not in content_temp[template_name]
                 content_temp[template_name][name] = LoadContentContainer(
                     typ=name,
-                    file_name=default_file,
+                    template_name=template_name,
+                    templates=template_folder,
                     settings_folder=self.settings_directory,
+                    is_shared=is_shared,
+                    default_file=default_file,
                     )
 
                 try:

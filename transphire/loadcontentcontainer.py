@@ -16,13 +16,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import os
 import json
 import copy
 try:
-    from PyQt4.QtGui import QWidget, QPushButton, QVBoxLayout, QHBoxLayout
+    from PyQt4.QtGui import QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QComboBox, QLabel
     from PyQt4.QtCore import pyqtSlot
 except ImportError:
-    from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout
+    from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QComboBox, QLabel
     from PyQt5.QtCore import pyqtSlot
 
 from transphire.tabdocker import TabDocker
@@ -42,7 +43,7 @@ class LoadContentContainer(QWidget):
     Add - Add new Mount entry (Case Mount)
     """
 
-    def __init__(self, typ, file_name, settings_folder, parent=None):
+    def __init__(self, typ, template_name, templates, settings_folder, is_shared, default_file, parent=None):
         """
         Setup the layout for the widget
 
@@ -59,14 +60,27 @@ class LoadContentContainer(QWidget):
         # Variables
         self.layout = QHBoxLayout()
         self.content = []
-        self.file = file_name
+        self.template_name = template_name
         self.settings_folder = settings_folder
         self.typ = typ
         self.name = '{0} settings'.format(self.typ)
         self.tab_widget = None
+        self.file = default_file
+        self.default_settings = None
+        self.prev_item = self.template_name
 
         # Layout
         layout = QVBoxLayout(self)
+        if not is_shared:
+
+            layout_h1 = QHBoxLayout()
+            layout_h1.addWidget(QLabel('Copy from:', self))
+            combo_box = QComboBox(self)
+            combo_box.addItems([entry for entry in templates if entry != 'SHARED'])
+            combo_box.currentTextChanged.connect(self.copy_from_template)
+            layout_h1.addWidget(combo_box)
+            layout_h1.addStretch(1)
+            layout.addLayout(layout_h1)
 
         # Save button
         save_button = QPushButton('Save settings', self)
@@ -99,6 +113,28 @@ class LoadContentContainer(QWidget):
         # Set minimum width of widget
         title_length = len(self.windowTitle())
         self.setMinimumWidth(title_length * 21)
+
+    @pyqtSlot(str)
+    def copy_from_template(self, template):
+        result = tu.question(
+            head='Change template.',
+            text='Changing the template will overwrite all unsaved changes!\nDo you really want to continue?.',
+            parent=self
+            )
+        if result:
+            default_file = os.path.join(self.settings_folder, template, os.path.basename(self.file))
+            try:
+                with open(default_file, 'r') as file_r:
+                    settings = json.load(file_r)
+            except FileNotFoundError:
+                #tu.message('The template {0} does not have settings for this File, fall back to default settings.'.format(template))
+                settings = self.default_settings
+            self.set_settings(settings)
+            self.prev_item = template
+        else:
+            self.sender().blockSignals(True)
+            self.sender().setCurrentText(self.prev_item)
+            self.sender().blockSignals(False)
 
     @pyqtSlot()
     def add_widget(self, name=None, hdd=None):
@@ -138,6 +174,7 @@ class LoadContentContainer(QWidget):
             self.layout.addWidget(separator_1)
             self.layout.addWidget(widget)
             self.layout.addWidget(separator_2)
+        self.default_settings = self.get_settings()
 
     @pyqtSlot(object)
     def remove_widget(self, separator):
@@ -188,8 +225,6 @@ class LoadContentContainer(QWidget):
 
         if settings is None:
             return None
-        path = self.file.split('/')[:-1]
-        tu.mkdir_p('/'.join(path))
 
         for entry in settings:
             for widget in entry:
