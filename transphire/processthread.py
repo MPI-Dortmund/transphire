@@ -3017,133 +3017,141 @@ class ProcessThread(object):
             if new_nr_of_particles < int(self.settings[class2d_name]['Nr. Particles']):
                 return None
 
+            file_queue_list = self.shared_dict_typ['queue_list'][:]
             file_names = [entry for entry in self.shared_dict_typ['queue_list'] if entry.strip()]
             self.shared_dict_typ['queue_list'][:] = []
         finally:
             self.shared_dict_typ['queue_list_lock'].release()
 
         # Combine Stacks to one stack for ISAC
-        file_name = '{0:03d}'.format(class_idx)
-        command, check_files, block_gpu, gpu_list, shell, new_stack = tuclass.create_stack_combine_command(
-            class2d_name=class2d_name,
-            file_names=[entry.strip().split('|||')[0] for entry in file_names if entry.strip()],
-            file_name=file_name,
-            output_dir=self.settings['class2d_folder'],
-            settings=self.settings,
-            queue_com=self.queue_com,
-            name=self.name,
-            )
-
-        # Log files
-        log_prefix = os.path.join(
-                self.settings['class2d_folder'],
-                '{0}_combine'.format(file_name)
-                )
-
-        log_file, err_file = self.run_command(
-            command=command,
-            log_prefix=log_prefix,
-            block_gpu=block_gpu,
-            gpu_list=gpu_list,
-            shell=shell
-            )
-
-        command, check_files, block_gpu, gpu_list, shell = tuclass.create_class2d_command(
-            class2d_name=class2d_name,
-            stack_name=new_stack,
-            file_name=file_name,
-            output_dir=self.settings['class2d_folder'],
-            settings=self.settings,
-            queue_com=self.queue_com,
-            name=self.name,
-            )
-
-        # Log files
-        log_prefix = os.path.join(
-                self.settings['class2d_folder'],
-                '{0}'.format(file_name)
-                )
-
-        log_file, err_file = self.run_command(
-            command=command,
-            log_prefix=log_prefix,
-            block_gpu=block_gpu,
-            gpu_list=gpu_list,
-            shell=shell
-            )
-
-        zero_list = [err_file]
-        non_zero_list = [log_file]
-        non_zero_list.extend(check_files)
-
-        log_files, copied_log_files = tuclass.find_logfiles(
-            root_path=os.path.join(self.settings['class2d_folder'], file_name),
-            settings=self.settings,
-            queue_com=self.queue_com,
-            name=self.name
-            )
-
-        tus.check_outputs(
-            zero_list=zero_list,
-            non_zero_list=non_zero_list,
-            exists_list=log_files,
-            folder=self.settings['class2d_folder'],
-            command=command
-            )
-
         try:
-            log_files.remove(err_file)
-            copied_log_files.remove(err_file)
-        except ValueError:
-            pass
+            file_name = '{0:03d}'.format(class_idx)
+            command, check_files, block_gpu, gpu_list, shell, new_stack = tuclass.create_stack_combine_command(
+                class2d_name=class2d_name,
+                file_names=[entry.strip().split('|||')[0] for entry in file_names if entry.strip()],
+                file_name=file_name,
+                output_dir=self.settings['class2d_folder'],
+                settings=self.settings,
+                queue_com=self.queue_com,
+                name=self.name,
+                )
 
-        for old_file, new_file in zip(log_files, copied_log_files):
-            if os.path.realpath(old_file) != os.path.realpath(new_file):
-                os.remove(old_file)
-            else:
+            # Log files
+            log_prefix = os.path.join(
+                    self.settings['class2d_folder'],
+                    '{0}_combine'.format(file_name)
+                    )
+
+            log_file, err_file = self.run_command(
+                command=command,
+                log_prefix=log_prefix,
+                block_gpu=block_gpu,
+                gpu_list=gpu_list,
+                shell=shell
+                )
+
+            command, check_files, block_gpu, gpu_list, shell = tuclass.create_class2d_command(
+                class2d_name=class2d_name,
+                stack_name=new_stack,
+                file_name=file_name,
+                output_dir=self.settings['class2d_folder'],
+                settings=self.settings,
+                queue_com=self.queue_com,
+                name=self.name,
+                )
+
+            # Log files
+            log_prefix = os.path.join(
+                    self.settings['class2d_folder'],
+                    '{0}'.format(file_name)
+                    )
+
+            log_file, err_file = self.run_command(
+                command=command,
+                log_prefix=log_prefix,
+                block_gpu=block_gpu,
+                gpu_list=gpu_list,
+                shell=shell
+                )
+
+            zero_list = [err_file]
+            non_zero_list = [log_file]
+            non_zero_list.extend(check_files)
+
+            log_files, copied_log_files = tuclass.find_logfiles(
+                root_path=os.path.join(self.settings['class2d_folder'], file_name),
+                settings=self.settings,
+                queue_com=self.queue_com,
+                name=self.name
+                )
+
+            tus.check_outputs(
+                zero_list=zero_list,
+                non_zero_list=non_zero_list,
+                exists_list=log_files,
+                folder=self.settings['class2d_folder'],
+                command=command
+                )
+
+            try:
+                log_files.remove(err_file)
+                copied_log_files.remove(err_file)
+            except ValueError:
                 pass
 
-        copied_log_files.extend(non_zero_list)
-        copied_log_files.extend(zero_list)
-        copied_log_files = list(set(copied_log_files))
-
-        tuclass.create_jpg_file(file_name, self.settings['class2d_folder'])
-
-        skip_list = False
-        if skip_list:
-            pass
-        else:
-            # Add to queue
-            for aim in self.content_settings['aim']:
-                *compare, aim_name = aim.split(':')
-                var = True
-                for typ in compare:
-                    name = typ.split('!')[-1]
-                    if typ.startswith('!'):
-                        if self.settings['Copy'][name] == 'False':
-                            continue
-                        else:
-                            var = False
-                            break
-                    else:
-                        if not self.settings['Copy'][name] == 'False':
-                            continue
-                        else:
-                            var = False
-                            break
-                if var:
-                    for log_file in copied_log_files:
-                        self.add_to_queue(aim=aim_name, root_name=log_file)
+            for old_file, new_file in zip(log_files, copied_log_files):
+                if os.path.realpath(old_file) != os.path.realpath(new_file):
+                    os.remove(old_file)
                 else:
                     pass
 
-        self.shared_dict_typ['queue_list_lock'].acquire()
-        try:
-            with open(self.shared_dict_typ['number_file'], 'w') as write:
-                write.write('0|||{0}'.format(class_idx+1))
-            self.remove_from_queue_file(file_names, self.shared_dict_typ['list_file'])
-        finally:
-            self.shared_dict_typ['queue_list_lock'].release()
+            copied_log_files.extend(non_zero_list)
+            copied_log_files.extend(zero_list)
+            copied_log_files = list(set(copied_log_files))
+
+            tuclass.create_jpg_file(file_name, self.settings['class2d_folder'])
+
+            skip_list = False
+            if skip_list:
+                pass
+            else:
+                # Add to queue
+                for aim in self.content_settings['aim']:
+                    *compare, aim_name = aim.split(':')
+                    var = True
+                    for typ in compare:
+                        name = typ.split('!')[-1]
+                        if typ.startswith('!'):
+                            if self.settings['Copy'][name] == 'False':
+                                continue
+                            else:
+                                var = False
+                                break
+                        else:
+                            if not self.settings['Copy'][name] == 'False':
+                                continue
+                            else:
+                                var = False
+                                break
+                    if var:
+                        for log_file in copied_log_files:
+                            self.add_to_queue(aim=aim_name, root_name=log_file)
+                    else:
+                        pass
+
+        except Exception:
+            self.shared_dict_typ['queue_list'].extend(file_queue_list)
+            raise
+
+        else:
+            self.shared_dict_typ['queue_list_lock'].acquire()
+            try:
+                with open(self.shared_dict_typ['number_file'], 'w') as write:
+                    write.write('0|||{0}'.format(class_idx+1))
+                self.remove_from_queue_file(file_names, self.shared_dict_typ['list_file'])
+            finally:
+                self.shared_dict_typ['queue_list_lock'].release()
+
         self.queue_com['log'].put(tu.create_log(self.name, 'run_class2d', root_name, 'stop', time.time() - start_prog))
 
     def run_picking(self, root_name):
@@ -3243,124 +3251,128 @@ class ProcessThread(object):
         finally:
             self.shared_dict_typ['queue_list_lock'].release()
 
-        # Create the command for picking
-        command, check_files, block_gpu, gpu_list = tup.get_picking_command(
-            file_input=file_use_list,
-            new_name=self.settings['picking_folder'],
-            settings=self.settings,
-            queue_com=self.queue_com,
-            name=self.name
-            )
-
-        # Log files
-        log_prefix = os.path.join(
-                self.settings['picking_folder'],
-                file_name_list[-1]
-                )
-
-        log_file, err_file = self.run_command(
-            command=command,
-            log_prefix=log_prefix,
-            block_gpu=block_gpu,
-            gpu_list=gpu_list,
-            shell=False
-            )
-
-        zero_list = []
-        non_zero_list = [err_file, log_file]
-        non_zero_list.extend(check_files)
-
-        file_logs = []
-        for file_use, file_name in zip(file_use_list, file_name_list):
-            root_path = os.path.join(os.path.dirname(file_use), file_name)
-            log_files, copied_log_files = tup.find_logfiles(
-                root_path=root_path,
-                file_name=file_name,
+        try:
+            # Create the command for picking
+            command, check_files, block_gpu, gpu_list = tup.get_picking_command(
+                file_input=file_use_list,
+                new_name=self.settings['picking_folder'],
                 settings=self.settings,
                 queue_com=self.queue_com,
                 name=self.name
                 )
 
-            tus.check_outputs(
-                zero_list=zero_list,
-                non_zero_list=non_zero_list,
-                exists_list=log_files,
-                folder=self.settings['picking_folder'],
-                command=command
-                )
-            log_files.extend(non_zero_list)
-            log_files.extend(zero_list)
+            # Log files
+            log_prefix = os.path.join(
+                    self.settings['picking_folder'],
+                    file_name_list[-1]
+                    )
 
-            tup.create_box_jpg(
-                file_name=file_name,
-                settings=self.settings,
-                queue_com=self.queue_com,
-                name=self.name,
-                )
-            file_logs.append(log_files)
-
-        export_log_files = []
-        for file_use, file_name, file_log in zip(file_use_list, file_name_list, file_logs):
-            import_name = tu.get_name(file_use)
-            data, data_orig = tu.get_function_dict()[self.settings['Copy']['Picking']]['plot_data'](
-                self.settings['Copy']['Picking'],
-                self.settings['Picking_folder'][self.settings['Copy']['Picking']],
-                import_name
+            log_file, err_file = self.run_command(
+                command=command,
+                log_prefix=log_prefix,
+                block_gpu=block_gpu,
+                gpu_list=gpu_list,
+                shell=False
                 )
 
-            warnings, skip_list = tus.check_for_outlier(
-                dict_name='picking',
-                data=data,
-                file_name=file_use,
-                settings=self.settings
-                )
+            zero_list = []
+            non_zero_list = [err_file, log_file]
+            non_zero_list.extend(check_files)
+
+            file_logs = []
+            for file_use, file_name in zip(file_use_list, file_name_list):
+                root_path = os.path.join(os.path.dirname(file_use), file_name)
+                log_files, copied_log_files = tup.find_logfiles(
+                    root_path=root_path,
+                    file_name=file_name,
+                    settings=self.settings,
+                    queue_com=self.queue_com,
+                    name=self.name
+                    )
+
+                tus.check_outputs(
+                    zero_list=zero_list,
+                    non_zero_list=non_zero_list,
+                    exists_list=log_files,
+                    folder=self.settings['picking_folder'],
+                    command=command
+                    )
+                log_files.extend(non_zero_list)
+                log_files.extend(zero_list)
+
+                tup.create_box_jpg(
+                    file_name=file_name,
+                    settings=self.settings,
+                    queue_com=self.queue_com,
+                    name=self.name,
+                    )
+                file_logs.append(log_files)
+
+            export_log_files = []
+            for file_use, file_name, file_log in zip(file_use_list, file_name_list, file_logs):
+                import_name = tu.get_name(file_use)
+                data, data_orig = tu.get_function_dict()[self.settings['Copy']['Picking']]['plot_data'](
+                    self.settings['Copy']['Picking'],
+                    self.settings['Picking_folder'][self.settings['Copy']['Picking']],
+                    import_name
+                    )
+
+                warnings, skip_list = tus.check_for_outlier(
+                    dict_name='picking',
+                    data=data,
+                    file_name=file_use,
+                    settings=self.settings
+                    )
+
+                if skip_list:
+                    self.remove_from_translate(os.path.basename(file_use))
+                else:
+                    export_log_files.extend(file_log)
+
+            for warning in skip_list:
+                self.send_out_of_range_error(warning, root_name, 'skip')
+
+            for warning in warnings:
+                self.send_out_of_range_error(warning, root_name, 'warning')
 
             if skip_list:
-                self.remove_from_translate(os.path.basename(file_use))
+                pass
             else:
-                export_log_files.extend(file_log)
-
-        for warning in skip_list:
-            self.send_out_of_range_error(warning, root_name, 'skip')
-
-        for warning in warnings:
-            self.send_out_of_range_error(warning, root_name, 'warning')
-
-        if skip_list:
-            pass
-        else:
-            # Add to queue
-            for aim in self.content_settings['aim']:
-                *compare, aim_name = aim.split(':')
-                var = True
-                for typ in compare:
-                    name = typ.split('!')[-1]
-                    if typ.startswith('!'):
-                        if self.settings['Copy'][name] == 'False':
-                            continue
-                        else:
-                            var = False
-                            break
-                    else:
-                        if not self.settings['Copy'][name] == 'False':
-                            continue
-                        else:
-                            var = False
-                            break
-                if var:
-                    if 'Extract' in compare:
-                        for log_file in export_log_files:
-                            if 'EMAN_START_END' in log_file:
+                # Add to queue
+                for aim in self.content_settings['aim']:
+                    *compare, aim_name = aim.split(':')
+                    var = True
+                    for typ in compare:
+                        name = typ.split('!')[-1]
+                        if typ.startswith('!'):
+                            if self.settings['Copy'][name] == 'False':
                                 continue
-                            elif 'EMAN' in log_file:
+                            else:
+                                var = False
+                                break
+                        else:
+                            if not self.settings['Copy'][name] == 'False':
+                                continue
+                            else:
+                                var = False
+                                break
+                    if var:
+                        if 'Extract' in compare:
+                            for log_file in export_log_files:
+                                if 'EMAN_START_END' in log_file:
+                                    continue
+                                elif 'EMAN' in log_file:
+                                    self.add_to_queue(aim=aim_name, root_name=log_file)
+                        else:
+                            for log_file in export_log_files:
                                 self.add_to_queue(aim=aim_name, root_name=log_file)
                     else:
-                        for log_file in export_log_files:
-                            self.add_to_queue(aim=aim_name, root_name=log_file)
-                else:
-                    pass
-
-        self.remove_from_queue_file(file_queue_list, self.shared_dict_typ['list_file'])
+                        pass
+        except Exception:
+            self.shared_dict_typ['queue_list'].extend(file_queue_list)
+            raise
+        else:
+            self.remove_from_queue_file(file_queue_list, self.shared_dict_typ['list_file'])
         self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name, 'stop', time.time() - start_prog))
 
     def run_compress(self, root_name):
