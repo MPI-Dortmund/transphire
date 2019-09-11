@@ -51,14 +51,18 @@ def main(font, root_directory, settings_directory, mount_directory, adjust_width
     QApplication.setStyle('fusion')
     app = QApplication([])
 
+    settings_default = os.path.join(settings_directory, 'DEFAULT')
+    settings_shared = os.path.join(settings_directory, 'SHARED')
     # Create default folders
-    tu.mkdir_p(os.path.join(settings_directory, 'DEFAULT'))
+    tu.mkdir_p(settings_directory)
+    tu.mkdir_p(settings_default)
+    tu.mkdir_p(settings_shared)
     tu.mkdir_p(mount_directory)
 
     # Load default font settings for the default settings dialog
     if font is None:
         try:
-            with open('{0}/content_Font.txt'.format(settings_directory), 'r') as file_r:
+            with open('{0}/content_Font.txt'.format(settings_shared), 'r') as file_r:
                 settings = json.load(file_r)
             app.setStyleSheet(
                 tu.look_and_feel_small(
@@ -72,7 +76,7 @@ def main(font, root_directory, settings_directory, mount_directory, adjust_width
         app.setStyleSheet(tu.look_and_feel_small(app=app, font=font))
 
     try:
-        with open('{0}/content_Others.txt'.format(settings_directory), 'r') as file_r:
+        with open('{0}/content_Others.txt'.format(settings_shared), 'r') as file_r:
             settings = json.load(file_r)
     except FileNotFoundError:
         template_name = 'DEFAULT'
