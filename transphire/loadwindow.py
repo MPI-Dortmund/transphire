@@ -329,11 +329,19 @@ class DefaultSettings(QDialog):
 
         self.tab_content[inside_name].add_tab(widget, name)
 
+    def recursive_clear(self, tab_widget):
+        count = tab_widget.count()
+        for idx in reversed(range(count)):
+            widget = tab_widget.widget(idx)
+            if isinstance(widget, TabDocker):
+                self.recursive_clear(widget)
+            else:
+                tab_widget.removeTab(idx)
+                widget.setParent(None)
+                del widget
+
     def clear_tabs(self):
-        for idx in range(self.tab_widget.count()):
-            widget = self.tab_widget.widget(idx)
-            for idx_subtab in reversed(range(widget.count())):
-                widget.removeTab(idx_subtab)
+        self.recursive_clear(self.tab_widget)
 
     def get_apply(self):
         """
@@ -366,7 +374,6 @@ class DefaultSettings(QDialog):
 
         self.template_name.setText('Current template: {0}'.format(self.current_template))
 
-
         content_temp = {}
         for template_name in template_folder:
             template_directory = os.path.join(self.settings_directory, template_name)
@@ -377,28 +384,30 @@ class DefaultSettings(QDialog):
                 directory = template_directory
                 for entry in self.default_tabs['TranSPHIRE settings']['content']:
                     if entry in name:
-                        directory = self.settings_directory
+                        directory = os.path.join(self.settings_directory, 'SHARED')
                         break
                 default_file = '{0}/content_{1}.txt'.format(directory, name.replace(' ', '_'))
                 if not os.path.isfile(default_file):
                     default_file = '{0}/content_{1}.txt'.format(directory, name.replace(' ', '_').replace('>=', ''))
+                assert name not in content_temp[template_name]
                 content_temp[template_name][name] = LoadContentContainer(
                     typ=name,
                     file_name=default_file,
                     settings_folder=self.settings_directory,
                     )
-                if directory:
-                    if template_name == self.current_template:
-                        self.add_tab(widget=content_temp[template_name][name], name=name)
-                    else:
-                        content_temp[template_name][name].setVisible(False)
-                    try:
-                        with open(default_file, 'r') as file_r:
-                            settings = json.load(file_r)
-                    except FileNotFoundError:
-                        pass
-                    else:
-                        content_temp[template_name][name].set_settings(settings)
+
+                try:
+                    with open(default_file, 'r') as file_r:
+                        settings = json.load(file_r)
+                except FileNotFoundError:
+                    pass
+                else:
+                    content_temp[template_name][name].set_settings(settings)
+
+                if template_name == self.current_template:
+                    self.add_tab(widget=content_temp[template_name][name], name=name)
+                else:
+                    content_temp[template_name][name].setVisible(False)
         return content_temp
 
     @staticmethod
@@ -469,7 +478,6 @@ class DefaultSettings(QDialog):
                 if name == 'Mount':
                     continue
                 elif not os.path.exists(default_file):
-                    #print('INFORMATION: {0} default settings not modified!'.format(name))
                     pass
                 else:
                     with open(default_file, 'r') as file_r:
