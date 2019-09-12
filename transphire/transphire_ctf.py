@@ -1067,10 +1067,12 @@ def create_jpg_file(input_mrc_file, settings, ctf_name):
         input_data = tu.normalize_image(input_data)
 
         if input_data.shape[0] > 512:
-            if np.max(input_data.shape) > 4096:
-                original_shape = 4096*2
-            else:
-                original_shape = 4096
+            idx = 1
+            while True:
+                if np.max(input_data.shape) < 4096:
+                    break
+                idx += 1
+            original_shape = idx * 4096
             bin_shape = 512
             ratio = original_shape / bin_shape
             pad_x = original_shape - input_data.shape[0]

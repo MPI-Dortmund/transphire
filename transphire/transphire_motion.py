@@ -706,10 +706,11 @@ def create_jpg_file(input_file, settings):
     input_data = input_data - np.mean(input_data)
     input_data = tu.normalize_image(input_data)
 
-    if np.max(input_data.shape) > 4096:
-        original_shape = 2*4096
-    else:
-        original_shape = 4096
+    idx = 1
+    while True:
+        if np.max(input_data.shape) < 4096:
+            break
+        idx += 1
     bin_shape = 512
     ratio = original_shape / bin_shape
     assert ratio.is_integer()
