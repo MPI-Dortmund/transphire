@@ -711,6 +711,7 @@ def create_jpg_file(input_file, settings):
         if np.max(input_data.shape) < 4096:
             break
         idx += 1
+    original_shape = idx * 4096
     bin_shape = 512
     ratio = original_shape / bin_shape
     assert ratio.is_integer()
