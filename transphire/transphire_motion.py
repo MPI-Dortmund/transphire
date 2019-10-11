@@ -708,7 +708,7 @@ def create_jpg_file(input_file, settings):
 
     idx = 1
     while True:
-        if np.max(input_data.shape) < 4096:
+        if np.max(input_data.shape) < idx * 4096:
             break
         idx += 1
     original_shape = idx * 4096
