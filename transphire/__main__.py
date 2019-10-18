@@ -21,6 +21,7 @@ import os
 import json
 import argparse
 import re
+import urllib
 try:
     from PyQt4.QtGui import QApplication
 except ImportError:
@@ -217,37 +218,47 @@ def check_update():
     """
     Check for TranSHPIRE updates on PyPi
     """
-    pip_path = '{0}/pip'.format([path for path in sys.path if '/bin' in path][0])
     current_version = transphire.__version__
-    version_string = os.popen("{0} install transphire== 2>&1".format(pip_path)).read()
+    latest_version = '1.0.0'
+    try:
+        with urllib.request.urlopen(
+                "https://pypi.org/pypi/transphire/json") as url:
+            data = json.loads(url.read().decode())
+            from distutils.version import LooseVersion as V
+            for ver in data["releases"].keys():
+                vers = V(ver)
+                if vers > V(latest_version) and len(vers.version) == 3:
+                    latest_version = ver
+    except Exception as e:
+        print('Could not check for updates! Please check your internet connection or for erros in the command:  {0}'.format(version_string))
+        print('If you have questions, please contact the TranSPHIRE authors.')
+        return
+
+    pip_path = '{0}/pip'.format([path for path in sys.path if '/bin' in path][0])
+    #version_string = os.popen("{0} install transphire== 2>&1".format(pip_path), timeout=3).read()
     message_insert = None
     message_template = '{{0}}\nUse:\n"{0} install transphire --upgrade"\nto update!\nTo check the changes visit:\n{1}!'.format(
         pip_path,
         "http://sphire.mpg.de/wiki/doku.php?id=downloads:transphire_1"
         )
-    try:
-        latest_version = re.search('.* ([0-9]+\.[0-9]+\.[0-9]+)\).*', version_string).group(1)
-    except AttributeError:
-        print('Could not check for updates! Please check your internet connection or for erros in the command:  {0}'.format(version_string))
-        print('If you have questions, please contact the TranSPHIRE authors.')
+
+    if current_version == 'XX.XX.XX':
+        print('Available version: {0}'.format(latest_version))
+        return None
+    print('Current version: {0} -- Available version: {1}'.format(current_version, latest_version))
+    vers_1, vers_2, vers_3 = current_version.split('.')
+    latest_vers_1, latest_vers_2, latest_vers_3 = latest_version.split('.')
+    if int(latest_vers_1) > int(vers_1):
+        message_insert = 'Major TranSPHIRE update available!\nYou might need to do more than just the pip update procedure!'
+    elif int(latest_vers_1) == int(vers_1) and \
+            int(latest_vers_2) > int(vers_2):
+        message_insert = 'TranSPHIRE update available!\nTranSPHIRE got additional functionalities!'
+    elif int(latest_vers_1) == int(vers_1) and \
+            int(latest_vers_2) == int(vers_2) and \
+            int(latest_vers_3) > int(vers_3):
+        message_insert = 'TranSPHIRE bugfix update available!'
     else:
-        if current_version == 'XX.XX.XX':
-            print('Available version: {0}'.format(latest_version))
-            return None
-        print('Current version: {0} -- Available version: {1}'.format(current_version, latest_version))
-        vers_1, vers_2, vers_3 = current_version.split('.')
-        latest_vers_1, latest_vers_2, latest_vers_3 = latest_version.split('.')
-        if int(latest_vers_1) > int(vers_1):
-            message_insert = 'Major TranSPHIRE update available!\nYou might need to do more than just the pip update procedure!'
-        elif int(latest_vers_1) == int(vers_1) and \
-                int(latest_vers_2) > int(vers_2):
-            message_insert = 'TranSPHIRE update available!\nTranSPHIRE got additional functionalities!'
-        elif int(latest_vers_1) == int(vers_1) and \
-                int(latest_vers_2) == int(vers_2) and \
-                int(latest_vers_3) > int(vers_3):
-            message_insert = 'TranSPHIRE bugfix update available!'
-        else:
-            print('No updates available')
+        print('No updates available')
 
     if message_insert is None:
         pass
