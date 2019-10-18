@@ -53,7 +53,7 @@ def get_picking_command(file_input, new_name, settings, queue_com, name):
         if '_' in gpu:
             if float(settings[picking_name]['--gpu_fraction']) == 1:
                 raise UserWarning('Sub GPUs are only supported if the --gpu_fraction option is not equal 1')
-            block_gpu = False
+            block_gpu = True
         else:
             block_gpu = True
         gpu_list = gpu.split()

@@ -169,7 +169,7 @@ def get_motion_command(file_input, file_output_scratch, file_log_scratch, settin
             if '_' in gpu:
                 if mem_is_one:
                     raise UserWarning('Sub GPUs are only supported if the GpuMemUsage option is not equal 1')
-                block_gpu = False
+                block_gpu = True
                 file_to_delete = '/tmp/MotionCor2_FreeGpus.txt'
             elif float(settings[motion_name]['-GpuMemUsage']) == 0:
                 block_gpu = False
@@ -180,7 +180,7 @@ def get_motion_command(file_input, file_output_scratch, file_log_scratch, settin
             if '_' in gpu:
                 if mem_is_one:
                     raise UserWarning('Sub GPUs are only supported if the GpuMemUsage option is not equal 1')
-                block_gpu = False
+                block_gpu = True
             elif float(settings[motion_name]['-GpuMemUsage']) == 0:
                 block_gpu = False
             else:

@@ -3845,30 +3845,19 @@ class ProcessThread(object):
                 (entry, entry)
                 for entry in sorted(gpu_list)
                 ]
+
             for main, entry in gpu_list:
-                self.shared_dict['gpu_lock'][entry][mutex_idx].acquire()
+                shared_dict['gpu_lock'][entry][mutex_idx].acquire()
                 if '_' in entry:
-                    self.shared_dict['gpu_lock'][main][mutex_idx].acquire()
+                    shared_dict['gpu_lock'][main][mutex_idx].acquire()
 
-
-            if block_gpu:
-                for main, entry in gpu_list:
-                #    lock_var = self.shared_dict['gpu_lock'][entry][mutex_idx].tryLock()
-                #    assert bool(not lock_var)
-                    while self.shared_dict['gpu_lock'][entry][count_idx].value != 0 or self.shared_dict['gpu_lock'][main][count_idx].value != 0:
-                        time.sleep(0.1)
-
-            else:
-                for main, entry in gpu_list:
-                    self.shared_dict['gpu_lock'][entry][count_idx].value += 1
-                    if '_' in entry:
-                        self.shared_dict['gpu_lock'][main][count_idx].value += 1
-                for main, entry in gpu_list:
-                    self.shared_dict['gpu_lock'][entry][mutex_idx].release()
-                    if '_' in entry:
-                        self.shared_dict['gpu_lock'][main][mutex_idx].release()
-        else:
-            pass
+            for main, entry in gpu_list:
+                if '_' in entry:
+                    shared_dict['gpu_lock'][main][count_idx].value += 1
+                    shared_dict['gpu_lock'][main][mutex_idx].release()
+                else:
+                    while shared_dict['gpu_lock'][main][count_idx].value != 0:
+                        time.sleep(0.05)
 
         # Run the command
         time.sleep(0.01)
@@ -3880,6 +3869,8 @@ class ProcessThread(object):
             except PermissionError:
                 with open(file_to_delete, 'w'):
                     pass
+
+        time.sleep(0.01)
         with open(log_file, 'w') as out:
             out.write(command)
             with open(err_file, 'w') as err:
@@ -3900,6 +3891,7 @@ class ProcessThread(object):
                 cmd.wait()
                 stop_time = time.time()
                 out.write('\nTime: {0} sec'.format(stop_time - start_time)) 
+
         time.sleep(0.01)
         if file_to_delete is not None:
             try:
@@ -3911,21 +3903,10 @@ class ProcessThread(object):
                     pass
 
         if gpu_list:
-            if block_gpu:
-                for main, entry in gpu_list:
-                #    lock_var = self.shared_dict['gpu_lock'][entry][mutex_idx].tryLock()
-                #    assert bool(not lock_var)
-                    self.shared_dict['gpu_lock'][entry][mutex_idx].release()
-                    if '_' in entry:
-                        self.shared_dict['gpu_lock'][main][mutex_idx].release()
-
-            else:
-                for main, entry in gpu_list:
-                    self.shared_dict['gpu_lock'][entry][count_idx].value -= 1
-                    if '_' in entry:
-                        self.shared_dict['gpu_lock'][main][count_idx].value -= 1
-        else:
-            pass
+            for main, entry in gpu_list:
+                if '_' in entry:
+                    shared_dict['gpu_lock'][main][count_idx].value -= 1
+                shared_dict['gpu_lock'][entry][mutex_idx].release()
 
         return log_file, err_file
 

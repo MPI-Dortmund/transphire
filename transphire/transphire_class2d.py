@@ -47,7 +47,7 @@ def create_stack_combine_command(class2d_name, file_names, file_name, output_dir
                 settings=settings,
                 )
             check_files = []
-            block_gpu = False
+            block_gpu = True
             gpu_list = []
             shell = False
     else:

@@ -88,7 +88,7 @@ def get_ctf_command(file_sum, file_input, new_name, settings, queue_com, name):
             if tu.is_higher_version(ctf_name, '1.18'):
                 block_gpu = True
             elif tu.is_higher_version(ctf_name, '1.06'):
-                block_gpu = False
+                block_gpu = True
             else:
                 assert False
             gpu_list = gpu.split()
