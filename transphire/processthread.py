@@ -3853,22 +3853,35 @@ class ProcessThread(object):
 
             for main, entry in gpu_list:
                 if '_' in entry:
-                    shared_dict['gpu_lock'][main][count_idx].value += 1
-                    shared_dict['gpu_lock'][main][mutex_idx].release()
+                    self.shared_dict['gpu_lock'][main][count_idx].value += 1
+                    self.shared_dict['gpu_lock'][main][mutex_idx].release()
                 else:
-                    while shared_dict['gpu_lock'][main][count_idx].value != 0:
+                    while self.shared_dict['gpu_lock'][main][count_idx].value != 0:
                         time.sleep(0.05)
 
         # Run the command
-        time.sleep(0.01)
-        if file_to_delete is not None:
-            try:
-                os.remove(file_to_delete)
-            except FileNotFoundError:
-                pass
-            except PermissionError:
-                with open(file_to_delete, 'w'):
-                    pass
+        self.delete_file_to_delete(file_to_delete)
+
+        while True:
+            with open(log_file, 'w') as out:
+                out.write(command)
+                with open(err_file, 'w') as err:
+                    start_time = time.time()
+                    self.delete_file_to_delete(file_to_delete)
+                    stop_time = time.time()
+                    if shell:
+                        cmd = sp.Popen(command, shell=True, stdout=out, stderr=err)
+                    else:
+                        cmd = sp.Popen(command.split(), stdout=out, stderr=err)
+                    self.delete_file_to_delete(file_to_delete)
+                    cmd.wait()
+                    self.delete_file_to_delete(file_to_delete)
+                    stop_time = time.time()
+                    out.write('\nTime: {0} sec'.format(stop_time - start_time)) 
+            with open(err_file, 'r') as err:
+                if 'Error: All GPUs are in use, quit.' in err.read():
+                    continue
+            break
 
         time.sleep(0.01)
         with open(log_file, 'w') as out:
@@ -3892,7 +3905,9 @@ class ProcessThread(object):
                 stop_time = time.time()
                 out.write('\nTime: {0} sec'.format(stop_time - start_time)) 
 
-        time.sleep(0.01)
+    @staticmethod
+    def delete_file_to_delete(file_to_delete):
+        time.sleep(0.1)
         if file_to_delete is not None:
             try:
                 os.remove(file_to_delete)
@@ -3901,14 +3916,7 @@ class ProcessThread(object):
             except PermissionError:
                 with open(file_to_delete, 'w'):
                     pass
-
-        if gpu_list:
-            for main, entry in gpu_list:
-                if '_' in entry:
-                    shared_dict['gpu_lock'][main][count_idx].value -= 1
-                shared_dict['gpu_lock'][entry][mutex_idx].release()
-
-        return log_file, err_file
+        time.sleep(0.1)
 
     def send_out_of_range_error(self, warning, file_name, error_type):
         message_const = 'If this is not the only message, you might consider changing microscope settings!'
