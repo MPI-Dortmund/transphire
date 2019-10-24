@@ -3847,9 +3847,9 @@ class ProcessThread(object):
                 ]
 
             for main, entry in gpu_list:
-                shared_dict['gpu_lock'][entry][mutex_idx].acquire()
                 if '_' in entry:
-                    shared_dict['gpu_lock'][main][mutex_idx].acquire()
+                    self.shared_dict['gpu_lock'][main][mutex_idx].acquire()
+                self.shared_dict['gpu_lock'][entry][mutex_idx].acquire()
 
             for main, entry in gpu_list:
                 if '_' in entry:
@@ -3883,27 +3883,15 @@ class ProcessThread(object):
                     continue
             break
 
-        time.sleep(0.01)
-        with open(log_file, 'w') as out:
-            out.write(command)
-            with open(err_file, 'w') as err:
-                start_time = time.time()
-                if shell:
-                    cmd = sp.Popen(command, shell=True, stdout=out, stderr=err)
-                else:
-                    cmd = sp.Popen(command.split(), stdout=out, stderr=err)
-                time.sleep(0.01) 
-                if file_to_delete is not None:
-                    try:
-                        os.remove(file_to_delete)
-                    except FileNotFoundError:
-                        pass
-                    except PermissionError:
-                        with open(file_to_delete, 'w'):
-                            pass
-                cmd.wait()
-                stop_time = time.time()
-                out.write('\nTime: {0} sec'.format(stop_time - start_time)) 
+        self.delete_file_to_delete(file_to_delete)
+
+        if gpu_list:
+            for main, entry in gpu_list:
+                if '_' in entry:
+                    self.shared_dict['gpu_lock'][main][count_idx].value -= 1
+                self.shared_dict['gpu_lock'][entry][mutex_idx].release()
+
+        return log_file, err_file
 
     @staticmethod
     def delete_file_to_delete(file_to_delete):
