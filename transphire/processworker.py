@@ -67,6 +67,34 @@ class ProcessWorker(QObject):
     sig_plot_9 = pyqtSignal(str, object, object, str)
     sig_plot_10 = pyqtSignal(str, object, object, str)
     sig_plot_11 = pyqtSignal(str, object, object, str)
+    sig_plot_12 = pyqtSignal(str, object, object, str)
+    sig_plot_13 = pyqtSignal(str, object, object, str)
+    sig_plot_14 = pyqtSignal(str, object, object, str)
+    sig_plot_15 = pyqtSignal(str, object, object, str)
+    sig_plot_16 = pyqtSignal(str, object, object, str)
+    sig_plot_17 = pyqtSignal(str, object, object, str)
+    sig_plot_18 = pyqtSignal(str, object, object, str)
+    sig_plot_19 = pyqtSignal(str, object, object, str)
+    sig_plot_20 = pyqtSignal(str, object, object, str)
+    sig_plot_21 = pyqtSignal(str, object, object, str)
+    sig_plot_22 = pyqtSignal(str, object, object, str)
+    sig_plot_23 = pyqtSignal(str, object, object, str)
+    sig_plot_24 = pyqtSignal(str, object, object, str)
+    sig_plot_25 = pyqtSignal(str, object, object, str)
+    sig_plot_26 = pyqtSignal(str, object, object, str)
+    sig_plot_27 = pyqtSignal(str, object, object, str)
+    sig_plot_28 = pyqtSignal(str, object, object, str)
+    sig_plot_29 = pyqtSignal(str, object, object, str)
+    sig_plot_30 = pyqtSignal(str, object, object, str)
+    sig_plot_31 = pyqtSignal(str, object, object, str)
+    sig_plot_32 = pyqtSignal(str, object, object, str)
+    sig_plot_33 = pyqtSignal(str, object, object, str)
+    sig_plot_34 = pyqtSignal(str, object, object, str)
+    sig_plot_35 = pyqtSignal(str, object, object, str)
+    sig_plot_36 = pyqtSignal(str, object, object, str)
+    sig_plot_37 = pyqtSignal(str, object, object, str)
+    sig_plot_38 = pyqtSignal(str, object, object, str)
+    sig_plot_39 = pyqtSignal(str, object, object, str)
 
     def __init__(self, password, content_process, mount_directory, parent=None):
         """
@@ -109,6 +137,7 @@ class ProcessWorker(QObject):
         for name in names:
             self.settings['{0}_folder_feedback'.format(name)] = {}
             self.settings['{0}_folder'.format(name)] = {}
+
             for entry in self.settings['Copy']['{0}_entries'.format(name)]:
                 program_name = entry.replace(' ', '_').replace('>=', '')
                 self.settings['{0}_folder_feedback'.format(name)][entry] = os.path.join(
@@ -119,6 +148,7 @@ class ProcessWorker(QObject):
                     self.settings['project_folder'],
                     program_name
                     )
+
                 try:
                     self.signals[name.lower()].emit(
                         entry,
@@ -128,14 +158,15 @@ class ProcessWorker(QObject):
                         )
                 except KeyError:
                     pass
+
                 try:
                     self.signals['{0}_feedback'.format(name.lower())].emit(
-                        entry,
+                        '{0} feedback'.format(entry),
                         self.settings['{0}_folder_feedback'.format(name)][entry],
                         self.settings,
-                        self.settings['Copy'][name]
+                        '{0} feedback'.format(self.settings['Copy'][name])
                         )
-                except KeyError:
+                except KeyError as e:
                     pass
 
     @pyqtSlot(object)

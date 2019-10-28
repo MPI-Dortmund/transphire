@@ -169,6 +169,7 @@ class MainWindow(QMainWindow):
         for value in function_dict.values():
             if value['typ'] is not None and value['typ'] not in self.types:
                 self.types.append(value['typ'])
+                self.types.append('{0}_feedback'.format(value['typ']))
 
         # Settings folder
         self.settings_folder = settings_folder
@@ -345,11 +346,6 @@ class MainWindow(QMainWindow):
             signal = getattr(self.workers['process'], 'sig_plot_{0}'.format(2*idx))
             signal.connect(self.workers[entry].set_settings)
             self.workers['process'].signals[entry] = signal
-
-            entry_feedback = '{0}_feedback'.format(entry)
-            signal = getattr(self.workers['process'], 'sig_plot_{0}'.format(2*idx + 1))
-            signal.connect(self.workers[entry_feedback].set_settings)
-            self.workers['process'].signals[entry_feedback] = signal
 
             self.timers[entry] = QTimer(self)
             self.timers[entry].setInterval(30000)
@@ -537,7 +533,7 @@ class MainWindow(QMainWindow):
             try:
                 plot_name = layout.replace('Plot ', '')
                 plot_labels = ti.get_dtype_dict()[
-                    tu.get_function_dict()[plot_name]['typ']
+                    tu.get_function_dict()[plot_name.replace(' feedback', '')]['typ']
                     ]
             except KeyError:
                 pass
@@ -597,7 +593,9 @@ class MainWindow(QMainWindow):
                 self.content[key].worker.sig_data.connect(
                     self.content[key].update_figure
                     )
-                self.content[key].sig_update_done.connect(self.content[key].worker.reset_running)
+                self.content[key].sig_update_done.connect(
+                    self.content[key].worker.reset_running
+                    )
                 self.content[key].worker.sig_visible.connect(
                     self.content[key].set_visibility
                     )

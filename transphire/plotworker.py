@@ -34,7 +34,7 @@ class PlotWorker(QObject):
     sig_data - Emitted, if data for plotting is found (name|str, data|object, directory|str, settings|object)
     sig_notification - Emitted, if phase plate limit is reached. (text|str)
     """
-    sig_data = pyqtSignal(str, object, str, object)
+    sig_data = pyqtSignal(str, str, object, str, object)
     sig_visible = pyqtSignal(bool, str)
     sig_calculate = pyqtSignal()
     sig_reset_list = pyqtSignal()
@@ -71,12 +71,15 @@ class PlotWorker(QObject):
         Returns:
         None
         """
-        if name not in ('Later', 'False'):
+        name_no_feedback = name.replace(' feedback', '')
+        if name not in ('Later', 'Later feedback', 'False', 'False feedback'):
             if name == current_name:
-                self.settings.append([name, directory_name, settings])
+                self.settings.append([name, name_no_feedback, directory_name, settings])
+
             if os.path.isdir(directory_name):
                 self.calculate_array_now(
                     name=name,
+                    name_no_feedback=name_no_feedback,
                     directory_name=directory_name,
                     settings=settings
                     )
@@ -98,21 +101,23 @@ class PlotWorker(QObject):
         None
         """
         if not self.running:
-            for name, directory_name, settings in self.settings:
+            for name, name_no_feedback, directory_name, settings in self.settings:
                 self.running = True
                 self.calculate_array_now(
                     name=name,
+                    name_no_feedback=name_no_feedback,
                     directory_name=directory_name,
                     settings=settings
                     )
 
-    def calculate_array_now(self, name, directory_name, settings):
+    def calculate_array_now(self, name, name_no_feedback, directory_name, settings):
         try:
-            data, _ = tu.get_function_dict()[name]['plot_data'](
+            data, _ = tu.get_function_dict()[name_no_feedback]['plot_data'](
                 name=name,
+                name_no_feedback=name_no_feedback,
                 directory_name=directory_name
                 )
-        except KeyError:
+        except KeyError as e:
             self.running = False
         else:
             if data is None:
@@ -120,4 +125,4 @@ class PlotWorker(QObject):
             elif data.size == 0:
                 self.running = False
             else:
-                self.sig_data.emit(name, data, directory_name, settings)
+                self.sig_data.emit(name, name_no_feedback, data, directory_name, settings)

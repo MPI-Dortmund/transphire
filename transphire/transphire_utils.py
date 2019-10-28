@@ -501,6 +501,7 @@ def get_exclude_set(content):
                     elif widget_2 == 'Advanced' or widget_2 == 'Rare':
                         exclude_list.append(key)
                         exclude_list.append('Plot {0}'.format(key))
+                        exclude_list.append('Plot {0}'.format('{0} feedback'.format(key)))
                     else:
                         print(
                             'TransphireUtils: widget_2 content unknown! Exit here!',
@@ -833,6 +834,34 @@ def get_content_gui(content, template_name):
                     'content': 'histogram',
                     'plot_type': typ.lower(),
                     'layout': 'Plot {0}'.format(input_content),
+                    })
+
+                feedback_content = '{0} feedback'.format(input_content)
+                gui_content.append({
+                    'name': 'Plot {0}'.format(feedback_content),
+                    'widget': TabDocker,
+                    'layout': 'Plot {0}'.format(typ),
+                    })
+                gui_content.append({
+                    'name': 'Show images',
+                    'widget': PlotContainer,
+                    'content': 'image',
+                    'plot_type': '{0}_feedback'.format(typ.lower()),
+                    'layout': 'Plot {0}'.format(feedback_content),
+                    })
+                gui_content.append({
+                    'name': 'Plot per micrograph',
+                    'widget': PlotContainer,
+                    'content': 'values',
+                    'plot_type': '{0}_feedback'.format(typ.lower()),
+                    'layout': 'Plot {0}'.format(feedback_content),
+                    })
+                gui_content.append({
+                    'name': 'Plot histogram',
+                    'widget': PlotContainer,
+                    'content': 'histogram',
+                    'plot_type': '{0}_feedback'.format(typ.lower()),
+                    'layout': 'Plot {0}'.format(feedback_content),
                     })
         if typ == 'Motion':
             gui_content.append({

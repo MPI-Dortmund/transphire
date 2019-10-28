@@ -2417,6 +2417,7 @@ class ProcessThread(object):
         import_name = tu.get_name(file_for_jpg)
         data, data_original = tu.get_function_dict()[self.settings['Copy']['Motion']]['plot_data'](
             self.settings['Copy']['Motion'],
+            self.settings['Copy']['Motion'],
             self.settings['Motion_folder'][self.settings['Copy']['Motion']],
             import_name
             )
@@ -2728,6 +2729,7 @@ class ProcessThread(object):
 
         import_name = tu.get_name(file_sum)
         data, data_orig = tu.get_function_dict()[self.settings['Copy']['CTF']]['plot_data'](
+            self.settings['Copy']['CTF'],
             self.settings['Copy']['CTF'],
             self.settings['ctf_folder'],
             import_name
@@ -3334,6 +3336,7 @@ class ProcessThread(object):
             for file_use, file_name, file_log in zip(file_use_list, file_name_list, file_logs):
                 import_name = tu.get_name(file_use)
                 data, data_orig = tu.get_function_dict()[self.settings['Copy']['Picking']]['plot_data'](
+                    self.settings['Copy']['Picking'],
                     self.settings['Copy']['Picking'],
                     self.settings[entry_name][self.settings['Copy']['Picking']],
                     import_name

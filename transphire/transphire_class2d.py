@@ -209,7 +209,7 @@ def create_jpg_file(file_name, output_dir):
     columns = np.sqrt(2*len(files))
     columns = int(columns+bool(columns % 2))
     columns += bool(columns % 2)
-    rows = int(len(files) / columns + 0.5)
+    rows = int(len(files) / columns + 1)
 
     image = img.imread(files[0])
     dpi = 600

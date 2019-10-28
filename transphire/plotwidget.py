@@ -373,8 +373,8 @@ class PlotWidget(QWidget):
         return lower_lim, upper_lim, bins
 
 
-    @pyqtSlot(str, object, str, object)
-    def update_figure(self, name, data, directory_name, settings):
+    @pyqtSlot(str, str, object, str, object)
+    def update_figure(self, name, name_no_feedback, data, directory_name, settings):
         """
         Update the figure with data plot.
 
@@ -388,7 +388,7 @@ class PlotWidget(QWidget):
         None
         """
         if self.plot_typ == 'values' or self.plot_typ == 'histogram':
-            x_values_raw, y_values_raw, label, title = tu.get_function_dict()[name]['plot'](
+            x_values_raw, y_values_raw, label, title = tu.get_function_dict()[name_no_feedback]['plot'](
                 data=data,
                 settings=settings,
                 label=self.plot_label,

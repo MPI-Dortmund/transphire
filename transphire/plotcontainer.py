@@ -86,8 +86,8 @@ class PlotContainer(QMainWindow):
             self.tabifyDockWidget(self.dock_widgets[0], self.dock_widgets[idx])
         self.tabifiedDockWidgetActivated.connect(self.synchronize_tabs)
 
-    @pyqtSlot(str, object, str, object)
-    def update_figure(self, name, data, directory_name, settings):
+    @pyqtSlot(str, str, object, str, object)
+    def update_figure(self, name, name_no_feedback, data, directory_name, settings):
         """
         Update the figure in the canvas
 
@@ -103,6 +103,7 @@ class PlotContainer(QMainWindow):
             for entry in self.content:
                 entry.update_figure(
                     name=name,
+                    name_no_feedback=name_no_feedback,
                     data=data,
                     directory_name=directory_name,
                     settings=settings
