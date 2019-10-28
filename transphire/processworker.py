@@ -107,16 +107,31 @@ class ProcessWorker(QObject):
             ]
 
         for name in names:
+            self.settings['{0}_folder_feedback'.format(name)] = {}
             self.settings['{0}_folder'.format(name)] = {}
             for entry in self.settings['Copy']['{0}_entries'.format(name)]:
+                program_name = entry.replace(' ', '_').replace('>=', '')
+                self.settings['{0}_folder_feedback'.format(name)][entry] = os.path.join(
+                    self.settings['project_folder'],
+                    '{0}_feedback'.format(program_name)
+                    )
                 self.settings['{0}_folder'.format(name)][entry] = os.path.join(
                     self.settings['project_folder'],
-                    entry.replace(' ', '_').replace('>=', '')
+                    program_name
                     )
                 try:
                     self.signals[name.lower()].emit(
                         entry,
                         self.settings['{0}_folder'.format(name)][entry],
+                        self.settings,
+                        self.settings['Copy'][name]
+                        )
+                except KeyError:
+                    pass
+                try:
+                    self.signals['{0}_feedback'.format(name.lower())].emit(
+                        entry,
+                        self.settings['{0}_folder_feedback'.format(name)][entry],
                         self.settings,
                         self.settings['Copy'][name]
                         )
@@ -474,6 +489,10 @@ class ProcessWorker(QObject):
                 tu.mkdir_p(self.settings[entry])
             except PermissionError:
                 continue
+            try:
+                tu.mkdir_p(self.settings['{0}_feedback'.format(entry)])
+            except KeyError:
+                continue
             except OSError as err:
                 print(str(err))
                 self.sig_error.emit(str(err))
@@ -506,6 +525,19 @@ class ProcessWorker(QObject):
             'gpu_lock_lock': manager.Lock(),
             'typ': typ_dict,
             }
+
+        try:
+            with open(self.settings['feedback_file'], 'r') as read:
+                content = read.read()
+                if content.strip() == 'False':
+                    self.settings['do_feedback_loop'] = False
+                elif content.strip() == 'True':
+                    self.settings['do_feedback_loop'] = True
+                else:
+                    assert False, ('Content of file not True or False', content)
+        except FileNotFoundError:
+            with open(self.settings['feedback_file'], 'w') as write:
+                    write.write(str(self.settings['do_feedback_loop']))
 
         # Fill process queues
         for entry in content_process:

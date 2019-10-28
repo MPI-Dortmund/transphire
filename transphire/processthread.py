@@ -2850,6 +2850,11 @@ class ProcessThread(object):
                 self.shared_dict_typ['queue_list_lock'].release()
             return None
 
+        if self.settings['do_feedback_loop']:
+            folder_name = 'extract_folder_feedback'
+        else:
+            folder_name = 'extract_folder'
+
         start_prog = time.time()
         self.queue_com['log'].put(tu.create_log(self.name, 'run_extract', root_name, 'start process'))
 
@@ -2868,7 +2873,7 @@ class ProcessThread(object):
             self.shared_dict_typ['queue_list_lock'].release()
 
         # Create the command
-        output_dir = os.path.join(self.settings['extract_folder'], file_name)
+        output_dir = os.path.join(self.settings[folder_name], file_name)
         tmp_matches = matches_in_queue[:]
         file_ctf = [entry for entry in tmp_matches if 'partres.txt' in entry][0]
         tmp_matches.remove(file_ctf)
@@ -2890,7 +2895,7 @@ class ProcessThread(object):
 
         # Log files
         log_prefix = os.path.join(
-                self.settings['extract_folder'],
+                self.settings[folder_name],
                 file_name
                 )
 
@@ -2917,7 +2922,7 @@ class ProcessThread(object):
             zero_list=zero_list,
             non_zero_list=non_zero_list,
             exists_list=log_files,
-            folder=self.settings['extract_folder'],
+            folder=self.settings[folder_name],
             command=command
             )
 
@@ -2937,7 +2942,7 @@ class ProcessThread(object):
         copied_log_files.extend(zero_list)
         copied_log_files = list(set(copied_log_files))
 
-        tue.create_jpg_file(file_name, self.settings['extract_folder'])
+        tue.create_jpg_file(file_name, self.settings[folder_name])
 
         skip_list = False
         if skip_list:
@@ -2984,6 +2989,11 @@ class ProcessThread(object):
             finally:
                 self.shared_dict_typ['queue_list_lock'].release()
             return None
+
+        if self.settings['do_feedback_loop']:
+            folder_name = 'class2d_folder_feedback'
+        else:
+            folder_name = 'class2d_folder'
 
         start_prog = time.time()
         self.queue_com['log'].put(tu.create_log(self.name, 'run_class2d', root_name, 'start process'))
@@ -3035,7 +3045,7 @@ class ProcessThread(object):
                 class2d_name=class2d_name,
                 file_names=[entry.strip().split('|||')[0] for entry in file_names if entry.strip()],
                 file_name=file_name,
-                output_dir=self.settings['class2d_folder'],
+                output_dir=self.settings[folder_name],
                 settings=self.settings,
                 queue_com=self.queue_com,
                 name=self.name,
@@ -3043,7 +3053,7 @@ class ProcessThread(object):
 
             # Log files
             log_prefix = os.path.join(
-                    self.settings['class2d_folder'],
+                    self.settings[folder_name],
                     '{0}_combine'.format(file_name)
                     )
 
@@ -3059,7 +3069,7 @@ class ProcessThread(object):
                 class2d_name=class2d_name,
                 stack_name=new_stack,
                 file_name=file_name,
-                output_dir=self.settings['class2d_folder'],
+                output_dir=self.settings[folder_name],
                 settings=self.settings,
                 queue_com=self.queue_com,
                 name=self.name,
@@ -3067,7 +3077,7 @@ class ProcessThread(object):
 
             # Log files
             log_prefix = os.path.join(
-                    self.settings['class2d_folder'],
+                    self.settings[folder_name],
                     '{0}'.format(file_name)
                     )
 
@@ -3084,7 +3094,7 @@ class ProcessThread(object):
             non_zero_list.extend(check_files)
 
             log_files, copied_log_files = tuclass.find_logfiles(
-                root_path=os.path.join(self.settings['class2d_folder'], file_name),
+                root_path=os.path.join(self.settings[folder_name], file_name),
                 settings=self.settings,
                 queue_com=self.queue_com,
                 name=self.name
@@ -3094,7 +3104,7 @@ class ProcessThread(object):
                 zero_list=zero_list,
                 non_zero_list=non_zero_list,
                 exists_list=log_files,
-                folder=self.settings['class2d_folder'],
+                folder=self.settings[folder_name],
                 command=command
                 )
 
@@ -3114,7 +3124,7 @@ class ProcessThread(object):
             copied_log_files.extend(zero_list)
             copied_log_files = list(set(copied_log_files))
 
-            tuclass.create_jpg_file(file_name, self.settings['class2d_folder'])
+            tuclass.create_jpg_file(file_name, self.settings[folder_name])
 
             skip_list = False
             if skip_list:
@@ -3171,6 +3181,13 @@ class ProcessThread(object):
         start_prog = time.time()
         self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name, 'start process'))
 
+        if self.settings['do_feedback_loop']:
+            folder_name = 'picking_folder_feedback'
+            entry_name = 'Picking_folder_feedback'
+        else:
+            folder_name = 'picking_folder'
+            entry_name = 'Picking_folder'
+
         if root_name == 'None':
             pass
         else:
@@ -3191,7 +3208,7 @@ class ProcessThread(object):
 
             # Log files
             log_prefix = os.path.join(
-                    self.settings['picking_folder'],
+                    self.settings[folder_name],
                     '{0}_filter'.format(file_name)
                     )
 
@@ -3211,7 +3228,7 @@ class ProcessThread(object):
                 zero_list=zero_list,
                 non_zero_list=non_zero_list,
                 exists_list=[],
-                folder=self.settings['picking_folder'],
+                folder=self.settings[folder_name],
                 command=command
                 )
             self.shared_dict_typ['queue_list_lock'].acquire()
@@ -3260,7 +3277,7 @@ class ProcessThread(object):
             # Create the command for picking
             command, check_files, block_gpu, gpu_list = tup.get_picking_command(
                 file_input=file_use_list,
-                new_name=self.settings['picking_folder'],
+                new_name=self.settings[folder_name],
                 settings=self.settings,
                 queue_com=self.queue_com,
                 name=self.name
@@ -3268,7 +3285,7 @@ class ProcessThread(object):
 
             # Log files
             log_prefix = os.path.join(
-                    self.settings['picking_folder'],
+                    self.settings[folder_name],
                     file_name_list[-1]
                     )
 
@@ -3299,7 +3316,7 @@ class ProcessThread(object):
                     zero_list=zero_list,
                     non_zero_list=non_zero_list,
                     exists_list=log_files,
-                    folder=self.settings['picking_folder'],
+                    folder=self.settings[folder_name],
                     command=command
                     )
                 log_files.extend(non_zero_list)
@@ -3318,7 +3335,7 @@ class ProcessThread(object):
                 import_name = tu.get_name(file_use)
                 data, data_orig = tu.get_function_dict()[self.settings['Copy']['Picking']]['plot_data'](
                     self.settings['Copy']['Picking'],
-                    self.settings['Picking_folder'][self.settings['Copy']['Picking']],
+                    self.settings[entry_name][self.settings['Copy']['Picking']],
                     import_name
                     )
 

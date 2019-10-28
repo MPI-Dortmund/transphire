@@ -117,10 +117,14 @@ def find_logfiles(root_path, file_name, settings, queue_com, name):
     Returns:
     list of log files
     """
+    if settings['do_feedback_loop']:
+        folder_name = 'picking_folder_feedback'
+    else:
+        folder_name = 'picking_folder'
     log_files = None
     copied_log_files = None
     picking_name = settings['Copy']['Picking']
-    picking_root_path = os.path.join(settings['picking_folder'], file_name)
+    picking_root_path = os.path.join(settings[folder_name], file_name)
     if tu.is_higher_version(picking_name, '1.4.1'):
         if settings[picking_name]['--filament'] == 'True':
             folder_names = (
@@ -205,6 +209,11 @@ def create_filter_command(
     block_gpu = False
     gpu_list = []
 
+    if settings['do_feedback_loop']:
+        folder_name = 'picking_folder_feedback'
+    else:
+        folder_name = 'picking_folder'
+
     file_output_tmp = file_input
     if settings[picking_name]['Filter micrographs'] == 'True':
 
@@ -216,7 +225,7 @@ def create_filter_command(
         filter_low_abs = pixel_size / filter_low
 
         file_output_tmp = os.path.join(
-                settings['picking_folder'],
+                settings[folder_name],
                 os.path.basename(file_input)
                 )
 
@@ -228,7 +237,7 @@ def create_filter_command(
         command.append(';')
 
     file_output_jpg = os.path.join(
-            settings['picking_folder'],
+            settings[folder_name],
             '{0}.png'.format(os.path.splitext(os.path.basename(file_input))[0])
             )
     command.append('{0}'.format(settings['Path']['e2proc2d.py']))
@@ -437,11 +446,15 @@ def create_box_jpg(file_name, settings, queue_com, name):
     Return:
     It creates a file.
     """
+    if settings['do_feedback_loop']:
+        folder_name = 'picking_folder_feedback'
+    else:
+        folder_name = 'picking_folder'
     picking_name = settings['Copy']['Picking']
     box_file = [entry for entry in find_logfiles(file_name, file_name, settings, queue_com, name)[0] if entry.endswith('.box') and '/EMAN_START_END/' not in entry][0]
-    jpg_file = os.path.join(settings['picking_folder'], '{0}.png'.format(file_name))
-    new_jpg_file = os.path.join(settings['picking_folder'], 'jpg', '{0}.jpg'.format(file_name))
-    tu.mkdir_p(os.path.join(settings['picking_folder'], 'jpg'))
+    jpg_file = os.path.join(settings[folder_name], '{0}.png'.format(file_name))
+    new_jpg_file = os.path.join(settings[folder_name], 'jpg', '{0}.jpg'.format(file_name))
+    tu.mkdir_p(os.path.join(settings[folder_name], 'jpg'))
 
     box_data = np.atleast_2d(np.genfromtxt(box_file).astype(int))
     jpg_data = imageio.imread(jpg_file, as_gray=False, pilmode='RGB')

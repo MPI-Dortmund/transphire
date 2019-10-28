@@ -342,9 +342,14 @@ class MainWindow(QMainWindow):
             if entry in ('mount', 'process'):
                 continue
 
-            signal = getattr(self.workers['process'], 'sig_plot_{0}'.format(idx))
+            signal = getattr(self.workers['process'], 'sig_plot_{0}'.format(2*idx))
             signal.connect(self.workers[entry].set_settings)
             self.workers['process'].signals[entry] = signal
+
+            entry_feedback = '{0}_feedback'.format(entry)
+            signal = getattr(self.workers['process'], 'sig_plot_{0}'.format(2*idx + 1))
+            signal.connect(self.workers[entry_feedback].set_settings)
+            self.workers['process'].signals[entry_feedback] = signal
 
             self.timers[entry] = QTimer(self)
             self.timers[entry].setInterval(30000)
@@ -1039,6 +1044,9 @@ class MainWindow(QMainWindow):
             settings['project_folder'], 'Software_meta'
             )
 
+        settings['do_feedback_loop'] = bool(settings['General']['Skip crYOLO retrain'] == 'False')
+        settings['feedback_file'] = os.path.join(settings['project_folder'], 'do_feedback')
+
         names = [
             entry.replace('_entries', '')
             for entry in settings['Copy']
@@ -1063,10 +1071,18 @@ class MainWindow(QMainWindow):
                 base_dir,
                 folder_name
                 )
+            settings['{0}_folder_feedback'.format(entry.lower())] = os.path.join(
+                base_dir,
+                '{0}_feedback'.format(folder_name)
+                )
             if base_dir2 is not None:
                 settings['scratch_{0}_folder'.format(entry.lower())] = os.path.join(
                     base_dir2,
                     folder_name
+                    )
+                settings['scratch_{0}_folder_feedback'.format(entry.lower())] = os.path.join(
+                    base_dir2,
+                    '{0}_feedback'.format(folder_name)
                     )
 
         return settings
