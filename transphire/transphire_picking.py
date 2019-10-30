@@ -229,6 +229,7 @@ def create_filter_command(
                 os.path.basename(file_input)
                 )
 
+        command.append("PATH=$(dirname $(which {0})):${{PATH}}".format(settings['Path']['e2proc2d.py']))
         command.append('{0}'.format(settings['Path']['e2proc2d.py']))
         command.append('{0}'.format(file_input))
         command.append('{0}'.format(file_output_tmp))
@@ -240,6 +241,7 @@ def create_filter_command(
             settings[folder_name],
             '{0}.png'.format(os.path.splitext(os.path.basename(file_input))[0])
             )
+    command.append("PATH=$(dirname $(which {0})):${{PATH}}".format(settings['Path']['e2proc2d.py']))
     command.append('{0}'.format(settings['Path']['e2proc2d.py']))
     command.append('{0}'.format(file_output_tmp))
     command.append('{0}'.format(file_output_jpg))

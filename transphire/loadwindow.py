@@ -140,6 +140,15 @@ class DefaultSettings(QDialog):
                             },
                         'content': [],
                         },
+                    'Select2d': {
+                        'sub_content': {
+                            'Cinderella': {
+                                'sub_content': {},
+                                'content': ['Cinderella'],
+                                },
+                            },
+                        'content': [],
+                        },
                     'Compress': {
                         'sub_content': {
                             'Compress cmd': {

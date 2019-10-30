@@ -90,7 +90,7 @@ def create_window_1_2_command(extract_name, file_sum, file_box, file_ctf, output
 
     command = []
     # Add SPHIRE to the PATH
-    command.append("PATH=$(dirname $(head $(which {0}) -n 1 | cut -c 3-) | sed 's/ //g'):${{PATH}}".format(settings['Path'][extract_name]))
+    command.append("PATH=$(dirname $(which {0})):${{PATH}}".format(settings['Path'][extract_name]))
     # Start the program
     mic_number = tu.get_name(file_sum)
     command.append(settings['Path'][extract_name])
@@ -118,6 +118,7 @@ def create_window_1_2_command(extract_name, file_sum, file_box, file_ctf, output
     command.append(';')
     command.append('mkdir -p {0}'.format(os.path.join(output_dir, 'png')))
     command.append(';')
+    command.append("PATH=$(dirname $(which {0})):${{PATH}}".format(settings['Path']['e2proc2d.py']))
     command.append(settings['Path']['e2proc2d.py'])
     file_name = os.path.basename(output_dir)
     command.append(os.path.join(output_dir, '{0}_ptcls.mrcs'.format(file_name)))

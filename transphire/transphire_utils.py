@@ -272,7 +272,7 @@ def get_function_dict():
             'typ': 'ctf',
             'allow_empty': [],
             }
-    function_dict['CTER >=v1.2'] = function_dict['CTER >=v1.0']
+    function_dict['CTER >=v1.3'] = function_dict['CTER >=v1.0']
 
     function_dict['MotionCor2 >=v1.0.0'] = {
             'plot': tp.update_motion_cor_2_v1_0_0,
@@ -313,6 +313,16 @@ def get_function_dict():
 
     function_dict['crYOLO >=v1.4.1'] = copy_mod.deepcopy(function_dict['crYOLO >=v1.2.2'])
     function_dict['crYOLO >=v1.4.1']['content'] = tc.default_cryolo_v1_4_1
+
+    function_dict['Cinderella >=v0.3.1'] = {
+            'plot': tp.update_cryolo_v1_0_4,
+            'plot_data': ti.import_cinderella_v0_3_1,
+            'content': tc.default_cinderella_v0_3_1,
+            'executable': True,
+            'has_path': 'sp_cinderella_predict.py',
+            'typ': 'select2d',
+            'allow_empty': [],
+            }
 
     function_dict['Compress cmd'] = {
             'content': tc.default_compress_command_line,
@@ -569,6 +579,8 @@ def reduce_copy_entries(exclude_set, content):
                 name = 'Extract'
             elif 'Class2d' in sub_item:
                 name = 'Class2d'
+            elif 'Select2d' in sub_item:
+                name = 'Select2d'
             else:
                 continue
 
@@ -758,6 +770,11 @@ def get_content_gui(content, template_name):
             'layout': 'Settings',
             },
         {
+            'name': 'Select2d',
+            'widget': TabDocker,
+            'layout': 'Settings',
+            },
+        {
             'name': 'Status',
             'widget': StatusContainer,
             'content': content[template_name]['Others'],
@@ -791,6 +808,11 @@ def get_content_gui(content, template_name):
             'widget': TabDocker,
             'layout': 'Visualisation',
             },
+        {
+            'name': 'Plot Select2d',
+            'widget': TabDocker,
+            'layout': 'Visualisation',
+            },
         ]
 
     all_content = []
@@ -800,6 +822,7 @@ def get_content_gui(content, template_name):
     all_content.append(['Picking', content_extern['picking']])
     all_content.append(['Extract', content_extern['extract']])
     all_content.append(['Class2d', content_extern['class2d']])
+    all_content.append(['Select2d', content_extern['select2d']])
     for typ, content_typ in all_content:
         for input_content in content_typ:
             gui_content.append({

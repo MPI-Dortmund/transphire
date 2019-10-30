@@ -110,6 +110,16 @@ def get_dtype_dict():
         ('image', '|U1200'),
         ]
 
+    dtype['select2d'] = [
+        ('classes', '<i8'),
+        ('accepted', '<i8'),
+        ('particles_accepted', '<i8'),
+        ('rejected', '<i8'),
+        ('particles_rejected', '<i8'),
+        ('file_name', '|U1200'),
+        ('image', '|U1200'),
+        ]
+
     dtype['Gctf >=v1.06'] = [
         ('defocus_1', '<f8'),
         ('defocus_2', '<f8'),
@@ -328,6 +338,73 @@ def import_isac_v1_2(name, name_no_feedback, directory_name, import_name=''):
         data['accepted'][idx] = entry[1]
         data['rejected'][idx] = entry[2]
         data['classes'][idx] = entry[3]
+    data['image'] = jpg_names
+
+    data = np.sort(data, order='file_name')
+    return data, data
+
+
+def import_cinderella_v0_3_1(name, name_no_feedback, directory_name, import_name=''):
+    files = [
+        entry for entry in glob.glob(
+        '{0}/{1}*_transphire.log'.format(directory_name, import_name)
+        )
+        ]
+    useable_files = []
+    for file_name in files:
+        try:
+            with open(file_name, 'r') as read:
+                match = re.search(
+                    '^\s*Good classes:\s*(\d+) .*$(?:\n|\r\n)(?:\n|\r\n)(?:\n|\r\n)^\s*Bad classes:\s*(\d+) .*$(?:\n|\r\n)(?:\n|\r\n)^Bad Particles(?:\n|\r\n)(\d+)(?:\n|\r\n)Good Particles(?:\n|\r\n)(\d+)$',
+                    read.read(),
+                    re.MULTILINE
+                    )
+        except FileNotFoundError:
+            continue
+        if match is not None:
+            print(match.groups())
+            useable_files.append([file_name, match.group(1), match.group(2), match.group(3), match.group(4)])
+
+    useable_files_jpg = [
+        tu.get_name(entry).replace('_good', '').replace('_bad', '')
+        for entry in glob.glob(os.path.join(directory_name, 'jpg*', '*.jpg'))
+        ]
+
+    useable_files = [
+        [entry[0].replace('_transphire', ''), entry[1], entry[2], entry[3], entry[4]]
+        for entry in sorted(useable_files)
+        if tu.get_name(entry[0]).replace('_transphire', '') in useable_files_jpg
+        ]
+
+    data = np.zeros(
+        len(useable_files),
+        dtype=get_dtype_dict()['select2d']
+        )
+    data = np.atleast_1d(data)
+    data.fill(0)
+
+    file_names_jpg = [tu.get_name(entry[0]) for entry in useable_files]
+    jpgs = sorted([
+        os.path.basename(entry)
+        for entry in glob.glob(os.path.join(directory_name, 'jpg*'))
+        ])
+    jpg_names = [
+        ';;;'.join([
+            os.path.join(directory_name, jpg_dir_name, '{0}_bad.jpg'.format(entry))
+            if idx == 0
+            else
+            os.path.join(directory_name, jpg_dir_name, '{0}_good.jpg'.format(entry))
+            for idx, jpg_dir_name in enumerate(jpgs)
+            ])
+        for entry in file_names_jpg
+        ]
+
+    for idx, entry in enumerate(useable_files):
+        data['file_name'][idx] = entry[0]
+        data['accepted'][idx] = entry[1]
+        data['rejected'][idx] = entry[2]
+        data['particles_accepted'][idx] = entry[3]
+        data['particles_rejected'][idx] = entry[4]
     data['image'] = jpg_names
 
     data = np.sort(data, order='file_name')

@@ -95,9 +95,9 @@ def get_ctf_command(file_sum, file_input, new_name, settings, queue_com, name):
             shell = False
 
     elif 'CTER' in ctf_name:
-        if tu.is_higher_version(ctf_name, '1.2'):
+        if tu.is_higher_version(ctf_name, '1.3'):
             output_dir, _ = os.path.splitext(new_name)
-            command = create_cter_1_2_command(
+            command = create_cter_1_3_command(
                 ctf_name=ctf_name,
                 file_sum=file_sum,
                 file_input=file_input,
@@ -286,10 +286,10 @@ def create_gctf_v1_06_command(
     return ' '.join(command), gpu
 
 
-def create_cter_1_2_command(
+def create_cter_1_3_command(
         ctf_name, file_sum, file_input, output_dir, settings
         ):
-    """Create the CTER v1.2 command"""
+    """Create the CTER v1.3 command"""
 
     try:
         shutil.rmtree(output_dir)
@@ -297,6 +297,7 @@ def create_cter_1_2_command(
         pass
 
     command = []
+    command.append("PATH=$(dirname $(which {0})):${{PATH}}".format(settings['Path'][ctf_name]))
     # Start the program
     command.append('{0}'.format(settings['Path'][ctf_name]))
     command.append("'{0}*'".format(file_sum[:-1]))
@@ -330,6 +331,7 @@ def create_cter_1_2_command(
 
     # Prepare HDF
     command.append(';')
+    command.append("PATH=$(dirname $(which {0})):${{PATH}}".format(settings['Path']['e2proc2d.py']))
     command.append(settings['Path']['e2proc2d.py'])
     command.append(os.path.join(output_dir, 'power2d', '{0}_pws.hdf'.format(tu.get_name(file_sum))))
     command.append(os.path.join(output_dir, 'power2d', '{0}_pws.mrc'.format(tu.get_name(file_sum))))
@@ -1023,7 +1025,7 @@ def create_jpg_file(input_mrc_file, settings, ctf_name):
         input_ctf_file = os.path.join(settings['ctf_folder'], '{0}.ctf'.format(file_name))
         input_1d_file = os.path.join(settings['ctf_folder'], '{0}_EPA.log'.format(file_name))
     elif 'CTER' in ctf_name:
-        if tu.is_higher_version(ctf_name, '1.2'):
+        if tu.is_higher_version(ctf_name, '1.3'):
             input_ctf_file = os.path.join(settings['ctf_folder'], file_name, 'power2d', '{0}_pws.mrc'.format(file_name))
             input_1d_file = os.path.join(settings['ctf_folder'], file_name, 'pwrot', '{0}_rotinf.txt'.format(file_name))
         elif tu.is_higher_version(ctf_name, '1.0'):

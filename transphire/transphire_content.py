@@ -101,6 +101,29 @@ def default_window_1_2():
     return items
 
 
+def default_cinderella_v0_3_1():
+    """
+    Content of cinderella v0.3.1
+
+    Arguments:
+    None
+
+    Return:
+    Content items as list
+    """
+    items = [
+        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['--weights', '', str, '', 'FILE', 'Main', 'Path network weights.'],
+        ['--confidence_threshold', '0.5', float, '', 'PLAIN', 'Main', 'Classes with a confidence higher as that threshold are classified as good.'],
+        ['--batch_size', '32', int, '', 'PLAIN', 'Main', 'Classes with a confidence higher as that threshold are classified as good.'],
+        ['--gpu', '0', [int]*99, '', 'PLAIN', 'Advanced', 'Specifiy which gpu\'s should be used.'],
+        ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT A CRYOLO OPTION. Split the gpu values specified in --gpu to be able to run mutliple crYOLO jobs in parallel.'],
+        ]
+    return items
+
+
 def default_cryolo_v1_4_1():
     """
     Content of crYOLO version 1.4.1
@@ -431,6 +454,7 @@ def default_path():
         ['IMOD newstack', 'newstack', str, '', 'FILE', 'Main', ''],
         ['IMOD dm2mrc', 'dm2mrc', str, '', 'FILE', 'Main', ''],
         ['e2proc2d.py', 'e2proc2d.py', str, '', 'FILE', 'Main', ''],
+        ['sp_header.py', 'sp_header.py', str, '', 'FILE', 'Main', ''],
         ['e2bdb.py', 'e2bdb.py', str, '', 'FILE', 'Main', ''],
         ['mpirun', 'mpirun', str, '', 'FILE', 'Main', ''],
         ['SumMovie v1.0.2', 'summovie', str, '', 'FILE', 'Main', ''],
@@ -686,9 +710,22 @@ def default_pipeline():
             '1',
             int,
             'Class2d;' +
+            'Select2d:Select2d,' +
             'Class2d to work:Copy to work:Copy_to_work,' +
             'Class2d to HDD:Copy to HDD:Copy_to_hdd,' +
             'Class2d to backup:Copy to backup:Copy_to_backup',
+            'PLAIN',
+            'Main',
+            ''
+            ],
+        [
+            'Select2d',
+            '1',
+            int,
+            'Select2d;' +
+            'Select2d to work:Copy to work:Copy_to_work,' +
+            'Select2d to HDD:Copy to HDD:Copy_to_hdd,' +
+            'Select2d to backup:Copy to backup:Copy_to_backup',
             'PLAIN',
             'Main',
             ''
@@ -1012,7 +1049,8 @@ def default_copy(settings_folder):
         ['Picking', programs_extern['picking'], bool, '', 'COMBO', 'Main', 'Software for particle picking.'],
         ['Compress', programs_extern['compress'], bool, '', 'COMBO', 'Main', 'Compress the micrograph movie.'],
         ['Extract', programs_extern['extract'], bool, '', 'COMBO', 'Main', 'Extract particles'],
-        ['Class2d', programs_extern['class2d'], bool, '', 'COMBO', 'Main', 'Extract particles'],
+        ['Class2d', programs_extern['class2d'], bool, '', 'COMBO', 'Main', '2D classification'],
+        ['Select2d', programs_extern['select2d'], bool, '', 'COMBO', 'Main', '2D class selection'],
         ['Session to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the non-micrograph data (EPU session, ...) to the work drive if "Copy to work" is specified.'],
         ['Session to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the non-micrograph data (EPU session, ...) to the backup drive if "Copy to backup" is specified.'],
         ['Session to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the non-micrograph data (EPU session, ...) to the HDD drive if "Copy to HDD" is specified.'],
@@ -1040,6 +1078,9 @@ def default_copy(settings_folder):
         ['Class2d to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the class2d data to the work drive if "Copy to work" is specified.'],
         ['Class2d to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the class2d data to the backup drive if "Copy to backup" is specified.'],
         ['Class2d to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the class2d data to the HDD drive if "Copy to HDD" is specified.'],
+        ['Select2d to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the Select2d data to the work drive if "Copy to work" is specified.'],
+        ['Select2d to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the Select2d data to the backup drive if "Copy to backup" is specified.'],
+        ['Select2d to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the Select2d data to the HDD drive if "Copy to HDD" is specified.'],
         ['Tar to work', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Copy the information to work drive in tar format if "Copy to work" is specified.'],
         ['Tar to backup', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Copy the information to backup drive in tar format if "Copy to backup" is specified.'],
         ['Tar to HDD', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Copy the information to HDD drive in tar format if "Copy to HDD" is specified.'],

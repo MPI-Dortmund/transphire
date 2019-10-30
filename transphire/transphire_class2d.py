@@ -25,7 +25,6 @@ matplotlib.use('qt5agg')
 import matplotlib.pyplot as plt
 import matplotlib.image as img
 from transphire import transphire_utils as tu
-from transphire import transphire_plot as tp
 
 def create_stack_combine_command(class2d_name, file_names, file_name, output_dir, settings, queue_com, name):
     """
@@ -164,7 +163,7 @@ def create_isac2_1_2_command(class2d_name, stack_name, file_name, output_dir, se
 
     command = []
 
-    command.append("PATH=$(dirname $(head $(which {0}) -n 1 | cut -c 3-) | sed 's/ //g'):${{PATH}}".format(settings['Path'][class2d_name]))
+    command.append("PATH=$(dirname $(which {0})):${{PATH}}".format(settings['Path'][class2d_name]))
     command.append('CUDA_VISIBLE_DEVICES={0}'.format(','.join(gpu)))
     command.append(settings['Path']['mpirun'])
     command.append('-np {0}'.format(settings[class2d_name]['MPI processes']))
@@ -195,6 +194,7 @@ def create_isac2_1_2_command(class2d_name, stack_name, file_name, output_dir, se
     command.append(';')
     command.append('mkdir -p {0}'.format(os.path.join(output_dir, file_name, 'png')))
     command.append(';')
+    command.append("PATH=$(dirname $(which {0})):${{PATH}}".format(settings['Path']['e2proc2d.py']))
     command.append(settings['Path']['e2proc2d.py'])
     command.append(os.path.join(isac_output_dir, 'ordered_class_averages.hdf'))
     command.append(os.path.join(output_dir, file_name, 'png', 'ordered_class_averages.png'))
