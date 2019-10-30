@@ -66,6 +66,10 @@ def get_mic_number(array, settings, as_int=True):
     return np.array(number_list).astype(out_type)
 
 
+def dummy(data, settings, label):
+    pass
+
+
 def update_ctffind_4_v4_1_8(data, settings, label):
     """
     Update the plot for CTFFIND v4.1.8.

@@ -149,6 +149,15 @@ class DefaultSettings(QDialog):
                             },
                         'content': [],
                         },
+                    'Train2d': {
+                        'sub_content': {
+                            'crYOLO_train': {
+                                'sub_content': {},
+                                'content': ['crYOLO_train'],
+                                },
+                            },
+                        'content': [],
+                        },
                     'Compress': {
                         'sub_content': {
                             'Compress cmd': {
@@ -175,6 +184,7 @@ class DefaultSettings(QDialog):
                     'Path',
                     'Mount',
                     'Notification',
+                    'Notification_widget',
                     'Others',
                     'Font',
                     ],
@@ -211,7 +221,7 @@ class DefaultSettings(QDialog):
         return_value = False
         for tab_name in tab_dict:
             for entry in tab_dict[tab_name]['content']: 
-                if name.startswith(entry):
+                if name.split(' >=')[0] == entry:
                     return tab_name
 
             found = self.is_in_content(tab_dict[tab_name]['sub_content'], name)

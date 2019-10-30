@@ -124,6 +124,33 @@ def default_cinderella_v0_3_1():
     return items
 
 
+def default_cryolo_train_v1_5_4():
+    """
+    Content of crYOLO_train version 1.5.4
+
+    Arguments:
+    None
+
+    Return:
+    Content items as list
+    """
+    items = [
+        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['--conf', '', str, '', 'FILE', 'Main', '', 'Path to configuration file'],
+        ['--warmup', '5', int, '', 'PLAIN', 'Main', 'Number of warmup epochs. Set it to zero if you fine tune a model.'],
+        ['--num_cpu', '-1', int, '', 'PLAIN', 'Main', 'Number of CPUs used during training. By default it will use half of the available CPUs.'],
+        ['--early', '10', int, '', 'PLAIN', 'Main', 'Number of CPUs used during training. By default it will use half of the available CPUs.'],
+        ['--fine_tune', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Set it to true if you only want to use the fine tune mode. When using the fine tune mode, only the last layers of your network are trained and youhave to specify pretrained_weights (see action "config"->"Training options") You typically use a general model as pretrained weights.'],
+        ['--layers_fine_tune', '2', int, '--fine_tune:True', 'PLAIN', 'Main', 'Layers to be trained when using fine tuning.'],
+        ['--gpu', '0', [int]*99, '', 'PLAIN', 'Advanced', 'Specifiy which gpu\'s should be used.'],
+        ['--gpu_fraction', '1.0', float, '', 'PLAIN', 'Advanced', 'Specify the fraction of memory per GPU used by crYOLO during prediction. Only values between 0.0 and 1.0 are allowed.'],
+        ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT A CRYOLO OPTION. Split the gpu values specified in --gpu to be able to run mutliple crYOLO jobs in parallel.'],
+        ]
+    return items
+
+
 def default_cryolo_v1_4_1():
     """
     Content of crYOLO version 1.4.1
@@ -659,6 +686,7 @@ def default_pipeline():
             'CTF_sum:CTF,' +
             'Picking:Picking,' +
             'Extract:Extract,' +
+            'Train2d:Train2d,' +
             'Sum to work:Copy to work:Copy_to_work,' +
             'Sum to HDD:Copy to HDD:Copy_to_hdd,' +
             'Sum to backup:Copy to backup:Copy_to_backup',
@@ -723,9 +751,23 @@ def default_pipeline():
             '1',
             int,
             'Select2d;' +
+            'Train2d:Train2d,' +
             'Select2d to work:Copy to work:Copy_to_work,' +
             'Select2d to HDD:Copy to HDD:Copy_to_hdd,' +
             'Select2d to backup:Copy to backup:Copy_to_backup',
+            'PLAIN',
+            'Main',
+            ''
+            ],
+        [
+            'Train2d',
+            '1',
+            int,
+            ';' +
+            'Train2d;' +
+            'Train2d to work:Copy to work:Copy_to_work,' +
+            'Train2d to HDD:Copy to HDD:Copy_to_hdd,' +
+            'Train2d to backup:Copy to backup:Copy_to_backup',
             'PLAIN',
             'Main',
             ''
@@ -1050,7 +1092,8 @@ def default_copy(settings_folder):
         ['Compress', programs_extern['compress'], bool, '', 'COMBO', 'Main', 'Compress the micrograph movie.'],
         ['Extract', programs_extern['extract'], bool, '', 'COMBO', 'Main', 'Extract particles'],
         ['Class2d', programs_extern['class2d'], bool, '', 'COMBO', 'Main', '2D classification'],
-        ['Select2d', programs_extern['select2d'], bool, '', 'COMBO', 'Main', '2D class selection'],
+        ['Select2d', programs_extern['select2d'], bool, '', 'COMBO', 'Main', '2D class selection.'],
+        ['Train2d', programs_extern['train2d'], bool, '', 'COMBO', 'Main', 'Retrain particle picking.'],
         ['Session to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the non-micrograph data (EPU session, ...) to the work drive if "Copy to work" is specified.'],
         ['Session to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the non-micrograph data (EPU session, ...) to the backup drive if "Copy to backup" is specified.'],
         ['Session to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the non-micrograph data (EPU session, ...) to the HDD drive if "Copy to HDD" is specified.'],
@@ -1081,6 +1124,9 @@ def default_copy(settings_folder):
         ['Select2d to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the Select2d data to the work drive if "Copy to work" is specified.'],
         ['Select2d to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the Select2d data to the backup drive if "Copy to backup" is specified.'],
         ['Select2d to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the Select2d data to the HDD drive if "Copy to HDD" is specified.'],
+        ['Train2d to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the Train2d data to the work drive if "Copy to work" is specified.'],
+        ['Train2d to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the Train2d data to the backup drive if "Copy to backup" is specified.'],
+        ['Train2d to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the Train2d data to the HDD drive if "Copy to HDD" is specified.'],
         ['Tar to work', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Copy the information to work drive in tar format if "Copy to work" is specified.'],
         ['Tar to backup', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Copy the information to backup drive in tar format if "Copy to backup" is specified.'],
         ['Tar to HDD', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Copy the information to HDD drive in tar format if "Copy to HDD" is specified.'],

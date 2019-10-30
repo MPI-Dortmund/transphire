@@ -35,8 +35,9 @@ from transphire import transphire_motion as tum
 from transphire import transphire_ctf as tuc
 from transphire import transphire_picking as tup
 from transphire import transphire_extract as tue
-from transphire import transphire_class2d as tuclass
-from transphire import transphire_select2d as tselect
+from transphire import transphire_class2d as tuclass2d
+from transphire import transphire_select2d as tselect2d
+from transphire import transphire_train2d as ttrain2d
 
 
 class ProcessThread(object):
@@ -485,7 +486,7 @@ class ProcessThread(object):
                     pass
         return False
 
-    def reset_queue(self, aim=None, switch_feedback=False):
+    def reset_queue(self, aim=None, switch_feedback=False, remove_pattern='THIS IS A DUMMY PATTERN'):
         if aim is None:
             aim = self.typ
         self.shared_dict['typ'][aim]['queue_lock'].acquire()
@@ -513,7 +514,8 @@ class ProcessThread(object):
                     '{0}_feedback'.format(self.shared_dict['typ'][aim]['done_file'])
                     )
 
-            combined_content = content_done + content_save
+            pattern = re.compile(remove_pattern)
+            combined_content = [entry for entry in content_done + content_save if pattern.search(entry) is None]
 
             with open(self.shared_dict['typ'][aim]['save_file'], 'w') as write:
                 write.write('{0}\n'.format('\n'.join(combined_content)))
@@ -781,6 +783,10 @@ class ProcessThread(object):
                 },
             'Select2d': {
                 'method': self.run_select2d,
+                'lost_connect': 'full_transphire'
+                },
+            'Train2d': {
+                'method': self.run_train2d,
                 'lost_connect': 'full_transphire'
                 },
             'Compress': {
@@ -2608,7 +2614,7 @@ class ProcessThread(object):
                                 self.add_to_queue(aim=aim_name, root_name=file_input)
                             else:
                                 pass
-                        elif 'Extract' in compare:
+                        elif 'Extract' in compare or 'Train2d' in compare:
                             if motion_idx == 0:
                                 if sum_dw_files:
                                     dw_file = sum_dw_files[0]
@@ -3040,6 +3046,151 @@ class ProcessThread(object):
         self.remove_from_queue_file(matches_in_queue, self.shared_dict_typ['list_file'])
         self.queue_com['log'].put(tu.create_log(self.name, 'run_extract', root_name, 'stop process', time.time() - start_prog))
 
+    def run_train2d(self, root_name):
+        """
+        Run Particle extraction.
+
+        root_name - name of the file to process.
+
+        Returns:
+        None
+        """
+        if root_name == 'None':
+            self.shared_dict_typ['queue_list_lock'].acquire()
+            try:
+                self.shared_dict_typ['queue_list_time'] = time.time() * 100
+                self.shared_dict_typ['queue_list'][:] = []
+            finally:
+                self.shared_dict_typ['queue_list_lock'].release()
+            return None
+
+        if self.settings['do_feedback_loop']:
+            folder_name = 'train2d_folder_feedback'
+        else:
+            folder_name = 'train2d_folder'
+
+        start_prog = time.time()
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_train2d', root_name, 'start process'))
+
+        self.shared_dict_typ['queue_list_lock'].acquire()
+        try:
+            self.add_to_queue_file(
+                root_name=root_name,
+                file_name=self.shared_dict_typ['list_file'],
+                )
+            file_name = tu.get_name(tu.get_name(tu.get_name(root_name)))
+            matches_in_queue = self.all_in_queue_file(self.typ, file_name, lock=False)
+            print(matches_in_queue)
+            if len(matches_in_queue) != 2:
+                self.queue_com['log'].put(tu.create_log(self.name, 'run_train2d', root_name, 'stop early 1'))
+                return None
+        finally:
+            self.shared_dict_typ['queue_list_lock'].release()
+
+        # Create the command
+        output_dir = os.path.join(self.settings[folder_name], file_name)
+        tmp_matches = matches_in_queue[:]
+        file_sums = [entry for entry in tmp_matches if '.mrc' in entry]
+        assert not tmp_matches, (tmp_matches, matches_in_queue, file_sums, output_dir)
+
+        #command, check_files, block_gpu, gpu_list, shell = tue.get_extract_command(
+        #    file_sum=file_sum,
+        #    file_box=file_box,
+        #    file_ctf=file_ctf,
+        #    output_dir=output_dir,
+        #    settings=self.settings,
+        #    queue_com=self.queue_com,
+        #    name=self.name
+        #    )
+
+        ## Log files
+        #log_prefix = os.path.join(
+        #        self.settings[folder_name],
+        #        file_name
+        #        )
+
+        #log_file, err_file = self.run_command(
+        #    command=command,
+        #    log_prefix=log_prefix,
+        #    block_gpu=block_gpu,
+        #    gpu_list=gpu_list,
+        #    shell=shell
+        #    )
+
+        #zero_list = [err_file]
+        #non_zero_list = [log_file]
+        #non_zero_list.extend(check_files)
+
+        #log_files, copied_log_files = tue.find_logfiles(
+        #    root_path=output_dir,
+        #    settings=self.settings,
+        #    queue_com=self.queue_com,
+        #    name=self.name
+        #    )
+
+        #tus.check_outputs(
+        #    zero_list=zero_list,
+        #    non_zero_list=non_zero_list,
+        #    exists_list=log_files,
+        #    folder=self.settings[folder_name],
+        #    command=command
+        #    )
+
+        #try:
+        #    log_files.remove(err_file)
+        #    copied_log_files.remove(err_file)
+        #except ValueError:
+        #    pass
+
+        #for old_file, new_file in zip(log_files, copied_log_files):
+        #    if os.path.realpath(old_file) != os.path.realpath(new_file):
+        #        os.remove(old_file)
+        #    else:
+        #        pass
+
+        #copied_log_files.extend(non_zero_list)
+        #copied_log_files.extend(zero_list)
+        #copied_log_files = list(set(copied_log_files))
+
+        #tue.create_jpg_file(file_name, self.settings[folder_name])
+
+        skip_list = False
+        if skip_list:
+            pass
+        else:
+            # Add to queue
+            for aim in self.content_settings['aim']:
+                *compare, aim_name = aim.split(':')
+                var = True
+                for typ in compare:
+                    name = typ.split('!')[-1]
+                    if typ.startswith('!'):
+                        if self.settings['Copy'][name] == 'False':
+                            continue
+                        else:
+                            var = False
+                            break
+                    else:
+                        if not self.settings['Copy'][name] == 'False':
+                            continue
+                        else:
+                            var = False
+                            break
+                if var:
+                    pass
+                    #if 'Picking' in compare:
+                    #    for log_file in copied_log_files:
+                    #        if '.bdb' in log_file and not log_file.endswith('data.bdb'):
+                    #            self.add_to_queue(aim=aim_name, root_name='|||'.join([log_file, file_box]))
+                    #else:
+                    #    for log_file in copied_log_files:
+                    #        self.add_to_queue(aim=aim_name, root_name=log_file)
+                else:
+                    pass
+
+        self.remove_from_queue_file(matches_in_queue, self.shared_dict_typ['list_file'])
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_train2d', root_name, 'stop process', time.time() - start_prog))
+
     def run_class2d(self, root_name):
         if root_name == 'None':
             self.shared_dict_typ['queue_list_lock'].acquire()
@@ -3100,7 +3251,7 @@ class ProcessThread(object):
         # Combine Stacks to one stack for ISAC
         try:
             file_name = '{0:03d}'.format(class_idx)
-            command, check_files, block_gpu, gpu_list, shell, new_stack = tuclass.create_stack_combine_command(
+            command, check_files, block_gpu, gpu_list, shell, new_stack = tuclass2d.create_stack_combine_command(
                 class2d_name=class2d_name,
                 file_names=[entry.strip().split('|||')[0] for entry in file_names if entry.strip()],
                 file_name=file_name,
@@ -3124,7 +3275,7 @@ class ProcessThread(object):
                 shell=shell
                 )
 
-            command, check_files, block_gpu, gpu_list, shell = tuclass.create_class2d_command(
+            command, check_files, block_gpu, gpu_list, shell = tuclass2d.create_class2d_command(
                 class2d_name=class2d_name,
                 stack_name=new_stack,
                 file_name=file_name,
@@ -3152,7 +3303,7 @@ class ProcessThread(object):
             non_zero_list = [log_file]
             non_zero_list.extend(check_files)
 
-            log_files, copied_log_files = tuclass.find_logfiles(
+            log_files, copied_log_files = tuclass2d.find_logfiles(
                 root_path=os.path.join(self.settings[folder_name], file_name),
                 settings=self.settings,
                 queue_com=self.queue_com,
@@ -3183,7 +3334,7 @@ class ProcessThread(object):
             copied_log_files.extend(zero_list)
             copied_log_files = list(set(copied_log_files))
 
-            tuclass.create_jpg_file(file_name, self.settings[folder_name])
+            tuclass2d.create_jpg_file(file_name, self.settings[folder_name])
 
             skip_list = False
             if skip_list:
@@ -3208,7 +3359,7 @@ class ProcessThread(object):
                                 var = False
                                 break
                     if var:
-                        if 'Select2d' in aim:
+                        if 'Select2d' in compare:
                             self.add_to_queue(aim=aim_name, root_name=log_prefix)
                         else:
                             for log_file in copied_log_files:
@@ -3261,7 +3412,7 @@ class ProcessThread(object):
         # Create the command
         output_dir = os.path.join(self.settings[folder_name], file_name)
 
-        command, check_files, block_gpu, gpu_list, shell = tselect.get_select2d_command(
+        command, check_files, block_gpu, gpu_list, shell = tselect2d.get_select2d_command(
             file_input=root_name,
             output_dir=output_dir,
             settings=self.settings,
@@ -3287,7 +3438,7 @@ class ProcessThread(object):
         non_zero_list = [log_file, err_file]
         non_zero_list.extend(check_files)
 
-        log_files, copied_log_files = tselect.find_logfiles(
+        log_files, copied_log_files = tselect2d.find_logfiles(
             root_path=output_dir,
             settings=self.settings,
             queue_com=self.queue_com,
@@ -3318,7 +3469,7 @@ class ProcessThread(object):
         copied_log_files.extend(zero_list)
         copied_log_files = list(set(copied_log_files))
 
-        tselect.create_jpg_file(file_name, self.settings[folder_name])
+        tselect2d.create_jpg_file(file_name, self.settings[folder_name])
 
         skip_list = False
         if skip_list:
@@ -3343,7 +3494,7 @@ class ProcessThread(object):
                             var = False
                             break
                 if var:
-                    if self.settings['do_feedback_loop'] and 'Train2d' in aim:
+                    if self.settings['do_feedback_loop'] and 'Train2d' in compare:
                         self.add_to_queue(aim=aim_name, root_name=os.path.join(file_name, 'ordered_class_averages_good.hdf'))
                     else:
                         for log_file in copied_log_files:

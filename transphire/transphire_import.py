@@ -279,6 +279,10 @@ def get_dtype_import_dict():
     return dtype_import
 
 
+def dummy(name, name_no_feedback, directory_name, import_name=''):
+    pass
+
+
 def import_isac_v1_2(name, name_no_feedback, directory_name, import_name=''):
     files = [
         entry for entry in glob.glob(

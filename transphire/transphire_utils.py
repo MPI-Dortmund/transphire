@@ -324,6 +324,16 @@ def get_function_dict():
             'allow_empty': [],
             }
 
+    function_dict['crYOLO_train >=v1.5.4'] = {
+            'plot': tp.dummy,
+            'plot_data': ti.dummy,
+            'content': tc.default_cryolo_train_v1_5_4,
+            'executable': True,
+            'has_path': 'cryolo_train.py',
+            'typ': 'train2d',
+            'allow_empty': [],
+            }
+
     function_dict['Compress cmd'] = {
             'content': tc.default_compress_command_line,
             'executable': True,
@@ -581,6 +591,8 @@ def reduce_copy_entries(exclude_set, content):
                 name = 'Class2d'
             elif 'Select2d' in sub_item:
                 name = 'Select2d'
+            elif 'Train2d' in sub_item:
+                name = 'Train2d'
             else:
                 continue
 
@@ -775,6 +787,11 @@ def get_content_gui(content, template_name):
             'layout': 'Settings',
             },
         {
+            'name': 'Train2d',
+            'widget': TabDocker,
+            'layout': 'Settings',
+            },
+        {
             'name': 'Status',
             'widget': StatusContainer,
             'content': content[template_name]['Others'],
@@ -813,6 +830,11 @@ def get_content_gui(content, template_name):
             'widget': TabDocker,
             'layout': 'Visualisation',
             },
+        {
+            'name': 'Plot Train2d',
+            'widget': TabDocker,
+            'layout': 'Visualisation',
+            },
         ]
 
     all_content = []
@@ -823,6 +845,7 @@ def get_content_gui(content, template_name):
     all_content.append(['Extract', content_extern['extract']])
     all_content.append(['Class2d', content_extern['class2d']])
     all_content.append(['Select2d', content_extern['select2d']])
+    all_content.append(['Train2d', content_extern['train2d']])
     for typ, content_typ in all_content:
         for input_content in content_typ:
             gui_content.append({
