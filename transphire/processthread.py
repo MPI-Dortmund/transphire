@@ -3310,9 +3310,10 @@ class ProcessThread(object):
 
         # Combine Stacks to one stack for ISAC
         try:
-            for type_name in ('Picking', 'Extract', 'Class2d'):
-                with open(self.shared_dict['typ'][type_name]['feedback_lock_file'], 'w') as write:
-                    write.write('1')
+            if self.settings['do_feedback_loop']:
+                for type_name in ('Picking', 'Extract', 'Class2d'):
+                    with open(self.shared_dict['typ'][type_name]['feedback_lock_file'], 'w') as write:
+                        write.write('1')
 
             file_name = '{0:03d}'.format(class_idx)
             command, check_files, block_gpu, gpu_list, shell, new_stack = tuclass2d.create_stack_combine_command(
@@ -3432,9 +3433,10 @@ class ProcessThread(object):
                         pass
 
         except Exception:
-            for type_name in ('Picking', 'Extract', 'Class2d'):
-                with open(self.shared_dict['typ'][type_name]['feedback_lock_file'], 'w') as write:
-                    write.write('0')
+            if self.settings['do_feedback_loop']:
+                for type_name in ('Picking', 'Extract', 'Class2d'):
+                    with open(self.shared_dict['typ'][type_name]['feedback_lock_file'], 'w') as write:
+                        write.write('0')
             self.shared_dict_typ['queue_list'].extend(file_queue_list)
             raise
 
