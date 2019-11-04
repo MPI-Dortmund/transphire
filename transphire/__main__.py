@@ -230,7 +230,7 @@ def check_update():
                 if vers > V(latest_version) and len(vers.version) == 3:
                     latest_version = ver
     except Exception as e:
-        print('Could not check for updates! Please check your internet connection or for erros in the command:  {0}'.format(version_string))
+        print('Could not check for updates! Please check your internet connection or for erros in the command:  {0}'.format(current_version))
         print('If you have questions, please contact the TranSPHIRE authors.')
         return
 

@@ -571,7 +571,7 @@ class ProcessWorker(QObject):
                     assert False, ('Content of file not True or False', content)
         except FileNotFoundError:
             with open(self.settings['feedback_file'], 'w') as write:
-                    write.write(str(self.settings['do_feedback_loop']))
+                write.write(str(self.settings['do_feedback_loop']))
 
         # Fill process queues
         for entry in content_process:

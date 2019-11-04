@@ -304,7 +304,7 @@ def create_cryolo_v1_4_1_command(
         gpu_raw = settings[picking_name]['--gpu']
 
     gpu = ' '.join(list(set([entry.split('_')[0] for entry in gpu_raw.split()])))
-    if len(gpu.split()) != len(gpu_raw.split()) and settings[motion_name]['Split Gpu?'] == 'False':
+    if len(gpu.split()) != len(gpu_raw.split()) and settings[picking_name]['Split Gpu?'] == 'False':
         raise UserWarning('One cannot use multi GPU in combination with the disabled Split GPU option!')
 
     command.append('--gpu')

@@ -127,7 +127,6 @@ class ProcessThread(object):
         # This list saves the per process locks to prevent garbage collection
         self.GLOBAL_LOCKS = []
 
-
     def run(self):
         """
         Run the thread.
@@ -1365,8 +1364,8 @@ class ProcessThread(object):
                             self.shared_dict_typ['file_number']
                             ) + \
                             'Check Startnumber! Last one used: {0}'.format(self.shared_dict_typ['file_number'])
-                        queue_com['error'].put(message)
-                        queue_com['notification'].put(message)
+                        self.queue_com['error'].put(message)
+                        self.queue_com['notification'].put(message)
                     else:
                         with open(self.shared_dict_typ['number_file'], 'w') as write:
                             write.write(str(self.shared_dict_typ['file_number']))
@@ -3208,11 +3207,28 @@ class ProcessThread(object):
             command=command
             )
 
-        settings[settings['Copy']['Picking']]['--weights'] = new_model
-        settings[settings['Copy']['Picking']]['--conf'] = new_config
+        self.settings[self.settings['Copy']['Picking']]['--weights'] = new_model
+        self.settings[self.settings['Copy']['Picking']]['--conf'] = new_config
 
-        for aim in ('Picking', 'Class2d', 'Select2d', 'Train2d'):
-            tu.reset_queue()
+        for aim in ('Picking', 'Extract', 'Class2d', 'Select2d', 'Train2d'):
+            if aim in ('Extract'):
+                remove_pattern = '.*\.box'
+            elif aim in ('Train2d'):
+                remove_pattern = '.*\.hdf'
+            else:
+                remove_pattern = '.*'
+            tu.reset_queue(
+                aim=aim,
+                switch_feedback=True,
+                remove_pattern=remove_pattern,
+                )
+
+        self.settings['do_feedback_loop'] = False
+        with open(self.settings['feedback_file'], 'w') as write:
+            write.write(str(self.settings['do_feedback_loop']))
+
+        with open(self.shared_dict['typ']['Picking']['number_file'], 'w') as write:
+            write.write('|||'.join([new_model, new_config]))
 
         skip_list = False
         if skip_list:
@@ -3607,6 +3623,18 @@ class ProcessThread(object):
         """
         start_prog = time.time()
         self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name, 'start process'))
+
+        try:
+            with open(self.shared_dict_typ['number_file'], 'r') as read:
+                new_model, new_config = read.readline().strip('|||')
+        except FileNotFoundError:
+            pass
+        except AttributeError:
+            pass
+        else:
+            self.settings[self.settings['Copy']['Picking']]['--weights'] = new_model
+            self.settings[self.settings['Copy']['Picking']]['--conf'] = new_config
+
 
         if self.settings['do_feedback_loop']:
             folder_name = 'picking_folder_feedback'
