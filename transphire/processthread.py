@@ -3217,7 +3217,7 @@ class ProcessThread(object):
                 remove_pattern = '.*\.hdf'
             else:
                 remove_pattern = '.*'
-            tu.reset_queue(
+            self.reset_queue(
                 aim=aim,
                 switch_feedback=True,
                 remove_pattern=remove_pattern,
