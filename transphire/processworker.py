@@ -250,6 +250,9 @@ class ProcessWorker(QObject):
                         'done_file': '{0}/Queue_{1}_done'.format(
                             self.settings['queue_folder'], key
                             ),
+                        'feedback_lock_file': '{0}/Queue_{1}_feedback_lock'.format(
+                            self.settings['queue_folder'], key
+                            ),
                         'list_file': '{0}/Queue_{1}_list'.format(
                             self.settings['queue_folder'], key
                             ),
