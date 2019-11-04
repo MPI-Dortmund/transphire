@@ -67,7 +67,7 @@ def get_mic_number(array, settings, as_int=True):
 
 
 def dummy(data, settings, label):
-    pass
+    return '', '', '', ''
 
 
 def update_ctffind_4_v4_1_8(data, settings, label):

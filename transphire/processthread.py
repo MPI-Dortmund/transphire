@@ -2721,9 +2721,9 @@ class ProcessThread(object):
 
         # Log files
         log_prefix = os.path.join(
-                self.settings['ctf_folder'],
-                file_name
-                )
+            self.settings['ctf_folder'],
+            file_name
+            )
 
         log_file, err_file = self.run_command(
             command=command,
@@ -3072,87 +3072,137 @@ class ProcessThread(object):
         start_prog = time.time()
         self.queue_com['log'].put(tu.create_log(self.name, 'run_train2d', root_name, 'start process'))
 
-        self.shared_dict_typ['queue_list_lock'].acquire()
-        try:
-            self.add_to_queue_file(
-                root_name=root_name,
-                file_name=self.shared_dict_typ['list_file'],
+        if root_name.endswith('_good.hdf'):
+            isac_folder, particle_stack, class_average_file = root_name.split('|||')
+            file_name = tu.get_name(isac_folder)
+            log_prefix = os.path.join(self.settings[folder_name], file_name)
+
+            command, check_files, block_gpu, gpu_list, shell, stack_name = ttrain2d.create_substack_command(
+                class_average_name=class_average_file,
+                input_stack=particle_stack,
+                isac_dir=isac_folder,
+                output_dir=log_prefix,
+                settings=self.settings,
                 )
-            file_name = tu.get_name(tu.get_name(tu.get_name(root_name)))
-            matches_in_queue = self.all_in_queue_file(self.typ, file_name, lock=False)
-            print(matches_in_queue)
-            if len(matches_in_queue) != 2:
-                self.queue_com['log'].put(tu.create_log(self.name, 'run_train2d', root_name, 'stop early 1'))
-                return None
-        finally:
-            self.shared_dict_typ['queue_list_lock'].release()
+
+            log_file, err_file = self.run_command(
+                command=command,
+                log_prefix='{0}_substack'.format(log_prefix),
+                block_gpu=block_gpu,
+                gpu_list=gpu_list,
+                shell=shell
+                )
+
+            zero_list = [err_file]
+            non_zero_list = [log_file]
+            non_zero_list.extend(check_files)
+
+            tus.check_outputs(
+                zero_list=zero_list,
+                non_zero_list=non_zero_list,
+                exists_list=[],
+                folder=self.settings[folder_name],
+                command=command
+                )
+
+            command, check_files, block_gpu, gpu_list, shell, box_dir = ttrain2d.create_restack_command(
+                stack_name=stack_name,
+                output_dir=log_prefix,
+                settings=self.settings,
+                )
+
+            log_file, err_file = self.run_command(
+                command=command,
+                log_prefix='{0}_restack'.format(log_prefix),
+                block_gpu=block_gpu,
+                gpu_list=gpu_list,
+                shell=shell
+                )
+
+            zero_list = [err_file]
+            non_zero_list = [log_file]
+            non_zero_list.extend(check_files)
+
+            tus.check_outputs(
+                zero_list=zero_list,
+                non_zero_list=non_zero_list,
+                exists_list=[],
+                folder=self.settings[folder_name],
+                command=command
+                )
+            new_box_dir = box_dir.replace('/BOX/original', '/BOX/renamed')
+            tu.mkdir_p(new_box_dir)
+
+            for file_name in sorted(glob.glob(os.path.join(box_dir, '*'))):
+                os.symlink(
+                    file_name,
+                    file_name.replace(box_dir, new_box_dir).replace('_original.box', '.box')
+                    )
+
+            self.shared_dict_typ['queue_list_lock'].acquire()
+            try:
+                matches_in_queue = []
+                for entry in sorted(glob.glob(os.path.join(new_box_dir, '*'))):
+                    self.add_to_queue_file(
+                        root_name=entry,
+                        file_name=self.shared_dict_typ['list_file'],
+                        )
+                    file_name = tu.get_name(tu.get_name(tu.get_name(entry)))[:-len('_original')]
+                    matches_in_queue.extend(self.all_in_queue_file(self.typ, file_name, lock=False))
+            finally:
+                self.shared_dict_typ['queue_list_lock'].release()
+
+        else:
+            self.shared_dict_typ['queue_list_lock'].acquire()
+            try:
+                self.add_to_queue_file(
+                    root_name=root_name,
+                    file_name=self.shared_dict_typ['list_file'],
+                    )
+            finally:
+                self.shared_dict_typ['queue_list_lock'].release()
+            return None
+
+
 
         # Create the command
-        output_dir = os.path.join(self.settings[folder_name], file_name)
         tmp_matches = matches_in_queue[:]
-        file_sums = [entry for entry in tmp_matches if '.mrc' in entry]
-        assert not tmp_matches, (tmp_matches, matches_in_queue, file_sums, output_dir)
+        sum_folder = np.unique([os.path.dirname(entry) for entry in tmp_matches if '.mrc' in entry]).tolist()[0]
+        box_folder = np.unique([os.path.dirname(entry) for entry in tmp_matches if '.box' in entry]).tolist()[0]
 
-        #command, check_files, block_gpu, gpu_list, shell = tue.get_extract_command(
-        #    file_sum=file_sum,
-        #    file_box=file_box,
-        #    file_ctf=file_ctf,
-        #    output_dir=output_dir,
-        #    settings=self.settings,
-        #    queue_com=self.queue_com,
-        #    name=self.name
-        #    )
+        command, check_files, block_gpu, gpu_list, shell, new_model, new_config = ttrain2d.create_train_command(
+            sum_folder=sum_folder,
+            box_folder=box_folder,
+            output_dir=log_prefix,
+            name=self.name,
+            settings=self.settings,
+            )
 
-        ## Log files
-        #log_prefix = os.path.join(
-        #        self.settings[folder_name],
-        #        file_name
-        #        )
+        log_file, err_file = self.run_command(
+            command=command,
+            log_prefix='{0}_train'.format(log_prefix),
+            block_gpu=block_gpu,
+            gpu_list=gpu_list,
+            shell=shell
+            )
 
-        #log_file, err_file = self.run_command(
-        #    command=command,
-        #    log_prefix=log_prefix,
-        #    block_gpu=block_gpu,
-        #    gpu_list=gpu_list,
-        #    shell=shell
-        #    )
+        zero_list = []
+        non_zero_list = [err_file, log_file]
+        non_zero_list.extend(check_files)
 
-        #zero_list = [err_file]
-        #non_zero_list = [log_file]
-        #non_zero_list.extend(check_files)
+        tus.check_outputs(
+            zero_list=zero_list,
+            non_zero_list=non_zero_list,
+            exists_list=[],
+            folder=self.settings[folder_name],
+            command=command
+            )
 
-        #log_files, copied_log_files = tue.find_logfiles(
-        #    root_path=output_dir,
-        #    settings=self.settings,
-        #    queue_com=self.queue_com,
-        #    name=self.name
-        #    )
+        settings[settings['Copy']['Picking']]['--weights'] = new_model
+        settings[settings['Copy']['Picking']]['--conf'] = new_config
 
-        #tus.check_outputs(
-        #    zero_list=zero_list,
-        #    non_zero_list=non_zero_list,
-        #    exists_list=log_files,
-        #    folder=self.settings[folder_name],
-        #    command=command
-        #    )
-
-        #try:
-        #    log_files.remove(err_file)
-        #    copied_log_files.remove(err_file)
-        #except ValueError:
-        #    pass
-
-        #for old_file, new_file in zip(log_files, copied_log_files):
-        #    if os.path.realpath(old_file) != os.path.realpath(new_file):
-        #        os.remove(old_file)
-        #    else:
-        #        pass
-
-        #copied_log_files.extend(non_zero_list)
-        #copied_log_files.extend(zero_list)
-        #copied_log_files = list(set(copied_log_files))
-
-        #tue.create_jpg_file(file_name, self.settings[folder_name])
+        for aim in ('Picking', 'Class2d', 'Select2d', 'Train2d'):
+            tu.reset_queue()
 
         skip_list = False
         if skip_list:
@@ -3188,7 +3238,7 @@ class ProcessThread(object):
                 else:
                     pass
 
-        self.remove_from_queue_file(matches_in_queue, self.shared_dict_typ['list_file'])
+        #self.remove_from_queue_file(matches_in_queue, self.shared_dict_typ['list_file'])
         self.queue_com['log'].put(tu.create_log(self.name, 'run_train2d', root_name, 'stop process', time.time() - start_prog))
 
     def run_class2d(self, root_name):
@@ -3360,7 +3410,7 @@ class ProcessThread(object):
                                 break
                     if var:
                         if 'Select2d' in compare:
-                            self.add_to_queue(aim=aim_name, root_name=log_prefix)
+                            self.add_to_queue(aim=aim_name, root_name='|||'.join([log_prefix, new_stack]))
                         else:
                             for log_file in copied_log_files:
                                 self.add_to_queue(aim=aim_name, root_name=log_file)
@@ -3399,6 +3449,10 @@ class ProcessThread(object):
             finally:
                 self.shared_dict_typ['queue_list_lock'].release()
             return None
+
+        root_name_raw = root_name
+        # Input is ISAC_DIR|||STACK_NAME
+        root_name, _ = root_name.split('|||')
 
         if self.settings['do_feedback_loop']:
             folder_name = 'select2d_folder_feedback'
@@ -3495,7 +3549,17 @@ class ProcessThread(object):
                             break
                 if var:
                     if self.settings['do_feedback_loop'] and 'Train2d' in compare:
-                        self.add_to_queue(aim=aim_name, root_name=os.path.join(file_name, 'ordered_class_averages_good.hdf'))
+                        self.add_to_queue(
+                            aim=aim_name,
+                            root_name='|||'.join([
+                                root_name_raw,
+                                os.path.join(
+                                    self.settings[folder_name],
+                                    file_name,
+                                    'ordered_class_averages_good.hdf'
+                                    )
+                                ])
+                            )
                     else:
                         for log_file in copied_log_files:
                             self.add_to_queue(aim=aim_name, root_name=log_file)

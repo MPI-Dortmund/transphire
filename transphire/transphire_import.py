@@ -110,6 +110,11 @@ def get_dtype_dict():
         ('image', '|U1200'),
         ]
 
+    dtype['train2d'] = [
+        ('loss', '<f8'),
+        ('file_name', '|U1200'),
+        ]
+
     dtype['select2d'] = [
         ('classes', '<i8'),
         ('accepted', '<i8'),
@@ -280,7 +285,7 @@ def get_dtype_import_dict():
 
 
 def dummy(name, name_no_feedback, directory_name, import_name=''):
-    pass
+    return None, None
 
 
 def import_isac_v1_2(name, name_no_feedback, directory_name, import_name=''):
@@ -366,7 +371,6 @@ def import_cinderella_v0_3_1(name, name_no_feedback, directory_name, import_name
         except FileNotFoundError:
             continue
         if match is not None:
-            print(match.groups())
             useable_files.append([file_name, match.group(1), match.group(2), match.group(3), match.group(4)])
 
     useable_files_jpg = [

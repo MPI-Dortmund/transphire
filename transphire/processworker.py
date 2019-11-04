@@ -743,7 +743,19 @@ class ProcessWorker(QObject):
         check_files.append(['Path', self.settings['Copy']['Motion']])
         check_files.append(['Path', self.settings['Copy']['CTF']])
         check_files.append(['Path', self.settings['Copy']['Picking']])
+        check_files.append(['Path', self.settings['Copy']['Extract']])
+        check_files.append(['Path', self.settings['Copy']['Class2d']])
+        check_files.append(['Path', self.settings['Copy']['Select2d']])
+        check_files.append(['Path', self.settings['Copy']['Train2d']])
         check_files.append(['Path', 'IMOD header'])
+
+        try:
+            if self.settings['Copy']['Train2d'] not in ('False', 'Later'):
+                check_files.append(['Path', 'cryolo_gui.py'])
+            else:
+                pass
+        except KeyError:
+            pass
 
         try:
             if self.settings[self.settings['Copy']['Picking']]['Filter micrographs'] == 'True':

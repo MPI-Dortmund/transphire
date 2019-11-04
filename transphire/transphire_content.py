@@ -138,7 +138,6 @@ def default_cryolo_train_v1_5_4():
         ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
         ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
         ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
-        ['--conf', '', str, '', 'FILE', 'Main', '', 'Path to configuration file'],
         ['--warmup', '5', int, '', 'PLAIN', 'Main', 'Number of warmup epochs. Set it to zero if you fine tune a model.'],
         ['--num_cpu', '-1', int, '', 'PLAIN', 'Main', 'Number of CPUs used during training. By default it will use half of the available CPUs.'],
         ['--early', '10', int, '', 'PLAIN', 'Main', 'Number of CPUs used during training. By default it will use half of the available CPUs.'],
@@ -482,9 +481,11 @@ def default_path():
         ['IMOD dm2mrc', 'dm2mrc', str, '', 'FILE', 'Main', ''],
         ['e2proc2d.py', 'e2proc2d.py', str, '', 'FILE', 'Main', ''],
         ['sp_header.py', 'sp_header.py', str, '', 'FILE', 'Main', ''],
+        ['sp_pipe.py', 'sp_pipe.py', str, '', 'FILE', 'Main', ''],
         ['e2bdb.py', 'e2bdb.py', str, '', 'FILE', 'Main', ''],
         ['mpirun', 'mpirun', str, '', 'FILE', 'Main', ''],
         ['SumMovie v1.0.2', 'summovie', str, '', 'FILE', 'Main', ''],
+        ['cryolo_gui.py', 'cryolo_gui.py', str, '', 'FILE', 'Main', ''],
         ]
     function_dict = tu.get_function_dict()
     for key in sorted(function_dict.keys()):
@@ -763,7 +764,6 @@ def default_pipeline():
             'Train2d',
             '1',
             int,
-            ';' +
             'Train2d;' +
             'Train2d to work:Copy to work:Copy_to_work,' +
             'Train2d to HDD:Copy to HDD:Copy_to_hdd,' +
@@ -1089,11 +1089,11 @@ def default_copy(settings_folder):
         ['Motion', programs_extern['motion'], bool, '', 'COMBO', 'Main', 'Software for motion correction.'],
         ['CTF', programs_extern['ctf'], bool, '', 'COMBO', 'Main', 'Software for CTF estimation.'],
         ['Picking', programs_extern['picking'], bool, '', 'COMBO', 'Main', 'Software for particle picking.'],
-        ['Compress', programs_extern['compress'], bool, '', 'COMBO', 'Main', 'Compress the micrograph movie.'],
         ['Extract', programs_extern['extract'], bool, '', 'COMBO', 'Main', 'Extract particles'],
         ['Class2d', programs_extern['class2d'], bool, '', 'COMBO', 'Main', '2D classification'],
         ['Select2d', programs_extern['select2d'], bool, '', 'COMBO', 'Main', '2D class selection.'],
         ['Train2d', programs_extern['train2d'], bool, '', 'COMBO', 'Main', 'Retrain particle picking.'],
+        ['Compress', programs_extern['compress'], bool, '', 'COMBO', 'Main', 'Compress the micrograph movie.'],
         ['Session to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the non-micrograph data (EPU session, ...) to the work drive if "Copy to work" is specified.'],
         ['Session to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the non-micrograph data (EPU session, ...) to the backup drive if "Copy to backup" is specified.'],
         ['Session to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the non-micrograph data (EPU session, ...) to the HDD drive if "Copy to HDD" is specified.'],
