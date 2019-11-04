@@ -3312,8 +3312,12 @@ class ProcessThread(object):
         try:
             if self.settings['do_feedback_loop']:
                 for type_name in ('Picking', 'Extract', 'Class2d'):
-                    with open(self.shared_dict['typ'][type_name]['feedback_lock_file'], 'w') as write:
-                        write.write('1')
+                    self.shared_dict['typ'][type_name]['queue_lock'].acquire()
+                    try:
+                        with open(self.shared_dict['typ'][type_name]['feedback_lock_file'], 'w') as write:
+                            write.write('1')
+                    finally:
+                        self.shared_dict['typ'][type_name]['queue_lock'].release()
 
             file_name = '{0:03d}'.format(class_idx)
             command, check_files, block_gpu, gpu_list, shell, new_stack = tuclass2d.create_stack_combine_command(
@@ -3435,8 +3439,13 @@ class ProcessThread(object):
         except Exception:
             if self.settings['do_feedback_loop']:
                 for type_name in ('Picking', 'Extract', 'Class2d'):
-                    with open(self.shared_dict['typ'][type_name]['feedback_lock_file'], 'w') as write:
-                        write.write('0')
+                    self.shared_dict['typ'][type_name]['queue_lock'].acquire()
+                    try:
+                        with open(self.shared_dict['typ'][type_name]['feedback_lock_file'], 'w') as write:
+                            write.write('0')
+                    finally:
+                        self.shared_dict['typ'][type_name]['queue_lock'].release()
+
             self.shared_dict_typ['queue_list'].extend(file_queue_list)
             raise
 
