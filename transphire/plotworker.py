@@ -117,7 +117,7 @@ class PlotWorker(QObject):
                 name_no_feedback=name_no_feedback,
                 directory_name=directory_name
                 )
-        except KeyError as e:
+        except KeyError:
             self.running = False
         else:
             if data is None:
