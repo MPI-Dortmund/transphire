@@ -1001,7 +1001,7 @@ class ProcessThread(object):
                 if self.settings['Copy'][option] == 'True':
                     try:
                         os.remove(file_to_delete)
-                    except Exception as e:
+                    except Exception:
                         pass
 
     def write_error(self, msg, root_name):
