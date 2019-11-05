@@ -25,7 +25,6 @@ import traceback as tb
 import pexpect as pe
 from hyperspy.io_plugins.digital_micrograph import DigitalMicrographReader
 from transphire import transphire_import as ti
-from transphire import transphire_utils as tu
 
 
 def extract_time_and_grid_information(root_name, settings, queue_com, name):
