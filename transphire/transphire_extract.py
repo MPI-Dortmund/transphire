@@ -25,7 +25,6 @@ matplotlib.use('qt5agg')
 import matplotlib.pyplot as plt
 import matplotlib.image as img
 from transphire import transphire_utils as tu
-from transphire import transphire_plot as tp
 
 def get_extract_command(file_sum, file_box, file_ctf, output_dir, settings, queue_com, name):
     """
