@@ -685,14 +685,14 @@ class MainWindow(QMainWindow):
         for key in settings:
             try:
                 self.content[key].set_design(settings[key])
-            except KeyError as e:
+            except KeyError:
                 try: # This block has been introduced for backwards compatibility changes.
                     new_key = key.replace(' v', ' >=v')
                     self.content[new_key].set_design(settings[key])
                 except KeyError:
                     print('Key', key, 'no longer exists')
                     continue
-            except AttributeError as e:
+            except AttributeError:
                 pass
 
     def set_settings(self, settings):
@@ -928,7 +928,7 @@ class MainWindow(QMainWindow):
         for key in self.content:
             try:
                 settings_widget = self.content[key].get_settings()
-            except AttributeError as e:
+            except AttributeError:
                 continue
             else:
                 settings[key] = {}
