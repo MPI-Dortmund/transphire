@@ -2,11 +2,11 @@ import os
 import glob
 import shutil
 try:
-    from PyQt4.QtGui import QDialog, QVBoxLayout, QPushButton, QWidget, QComboBox, QLineEdit, QLabel, QHBoxLayout
-    from PyQt4.QtCore import pyqtSlot, pyqtSignal
+    from PyQt4.QtGui import QDialog, QVBoxLayout, QPushButton, QWidget, QComboBox, QLabel
+    from PyQt4.QtCore import pyqtSlot
 except ImportError:
-    from PyQt5.QtWidgets import QDialog, QVBoxLayout, QPushButton, QWidget, QComboBox, QLineEdit, QLabel, QHBoxLayout
-    from PyQt5.QtCore import pyqtSlot, pyqtSignal
+    from PyQt5.QtWidgets import QDialog, QVBoxLayout, QPushButton, QWidget, QComboBox, QLabel
+    from PyQt5.QtCore import pyqtSlot
 
 from transphire import transphire_utils as tu
 from transphire.inputbox import InputBox
