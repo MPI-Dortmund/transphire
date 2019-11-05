@@ -561,16 +561,18 @@ class ProcessWorker(QObject):
 
         try:
             with open(self.settings['feedback_file'], 'r') as read:
-                content = read.read()
-                if content.strip() == 'False':
+                content = read.read().strip()
+                if content == '0':
                     self.settings['do_feedback_loop'] = False
-                elif content.strip() == 'True':
+                elif content == '1':
                     self.settings['do_feedback_loop'] = True
                 else:
-                    assert False, ('Content of file not True or False', content)
+                    assert False, ('Content of file not 1 or 0', content)
         except FileNotFoundError:
             with open(self.settings['feedback_file'], 'w') as write:
                 write.write(str(self.settings['do_feedback_loop']))
+
+        self.settings['do_feedback_loop'] = mp.Value('i', self.settings['do_feedback_loop'])
 
         # Fill process queues
         for entry in content_process:

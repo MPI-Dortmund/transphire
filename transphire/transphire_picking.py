@@ -116,7 +116,7 @@ def find_logfiles(root_path, file_name, settings, queue_com, name):
     Returns:
     list of log files
     """
-    if settings['do_feedback_loop']:
+    if settings['do_feedback_loop'].value:
         folder_name = 'picking_folder_feedback'
     else:
         folder_name = 'picking_folder'
@@ -208,7 +208,7 @@ def create_filter_command(
     block_gpu = False
     gpu_list = []
 
-    if settings['do_feedback_loop']:
+    if settings['do_feedback_loop'].value:
         folder_name = 'picking_folder_feedback'
     else:
         folder_name = 'picking_folder'
@@ -447,7 +447,7 @@ def create_box_jpg(file_name, settings, queue_com, name):
     Return:
     It creates a file.
     """
-    if settings['do_feedback_loop']:
+    if settings['do_feedback_loop'].value:
         folder_name = 'picking_folder_feedback'
     else:
         folder_name = 'picking_folder'

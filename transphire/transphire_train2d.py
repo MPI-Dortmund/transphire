@@ -68,10 +68,8 @@ def create_train_command(sum_folder, box_folder, output_dir, name, settings):
     extract_name = settings['Copy']['Extract']
     command = []
     block_gpu = False
-    gpu_list = []
     shell = True
     check_files = []
-    gpu_list = []
 
     config_file = os.path.join(output_dir, 'config.json')
     weight_file = os.path.join(output_dir, 'weight.h5')
@@ -123,4 +121,4 @@ def create_train_command(sum_folder, box_folder, output_dir, name, settings):
                 '{0}'.format(settings[prog_name][key])
                 )
 
-    return ' '.join(command), check_files, block_gpu, gpu_list, shell, weight_file, config_file
+    return ' '.join(command), check_files, block_gpu, gpu.split(), shell, weight_file, config_file

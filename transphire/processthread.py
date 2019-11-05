@@ -674,7 +674,15 @@ class ProcessThread(object):
                 pass
 
             if error:
-                pass
+                self.queue_com['status'].put([
+                    'Pending feedback',
+                    [
+                        self.queue.qsize(),
+                        self.shared_dict_typ['file_number']
+                        ],
+                    self.typ,
+                    '#ffc14d',
+                    ])
             elif clear_list:
                 dummy = True
                 self.shared_dict_typ['queue_list_time'] -= 60
@@ -2924,7 +2932,7 @@ class ProcessThread(object):
                 self.shared_dict_typ['queue_list_lock'].release()
             return None
 
-        if self.settings['do_feedback_loop']:
+        if self.settings['do_feedback_loop'].value:
             folder_name = 'extract_folder_feedback'
         else:
             folder_name = 'extract_folder'
@@ -3073,7 +3081,7 @@ class ProcessThread(object):
                 self.shared_dict_typ['queue_list_lock'].release()
             return None
 
-        if self.settings['do_feedback_loop']:
+        if self.settings['do_feedback_loop'].value:
             folder_name = 'train2d_folder_feedback'
         else:
             folder_name = 'train2d_folder'
@@ -3211,7 +3219,9 @@ class ProcessThread(object):
         self.settings[self.settings['Copy']['Picking']]['--conf'] = new_config
 
         for aim in ('Picking', 'Extract', 'Class2d', 'Select2d', 'Train2d'):
-            if aim in ('Extract'):
+            if aim in ('Picking'):
+                remove_pattern = 'THIS IS A DUMMY PATTERN!'
+            elif aim in ('Extract'):
                 remove_pattern = '.*\.box'
             elif aim in ('Train2d'):
                 remove_pattern = '.*\.hdf'
@@ -3222,10 +3232,6 @@ class ProcessThread(object):
                 switch_feedback=True,
                 remove_pattern=remove_pattern,
                 )
-
-        self.settings['do_feedback_loop'] = False
-        with open(self.settings['feedback_file'], 'w') as write:
-            write.write(str(self.settings['do_feedback_loop']))
 
         with open(self.shared_dict['typ']['Picking']['number_file'], 'w') as write:
             write.write('|||'.join([new_model, new_config]))
@@ -3254,17 +3260,23 @@ class ProcessThread(object):
                             break
                 if var:
                     pass
-                    #if 'Picking' in compare:
-                    #    for log_file in copied_log_files:
-                    #        if '.bdb' in log_file and not log_file.endswith('data.bdb'):
-                    #            self.add_to_queue(aim=aim_name, root_name='|||'.join([log_file, file_box]))
-                    #else:
-                    #    for log_file in copied_log_files:
-                    #        self.add_to_queue(aim=aim_name, root_name=log_file)
                 else:
                     pass
 
         #self.remove_from_queue_file(matches_in_queue, self.shared_dict_typ['list_file'])
+        if self.settings['do_feedback_loop'].value:
+            for type_name in ('Picking', 'Extract', 'Class2d'):
+                self.shared_dict['typ'][type_name]['queue_lock'].acquire()
+                try:
+                    with open(self.shared_dict['typ'][type_name]['feedback_lock_file'], 'w') as write:
+                        write.write('0')
+                finally:
+                    self.shared_dict['typ'][type_name]['queue_lock'].release()
+
+        self.settings['do_feedback_loop'].value = False
+        with open(self.settings['feedback_file'], 'w') as write:
+            write.write(str(self.settings['do_feedback_loop'].value))
+
         self.queue_com['log'].put(tu.create_log(self.name, 'run_train2d', root_name, 'stop process', time.time() - start_prog))
 
     def run_class2d(self, root_name):
@@ -3276,7 +3288,7 @@ class ProcessThread(object):
                 self.shared_dict_typ['queue_list_lock'].release()
             return None
 
-        if self.settings['do_feedback_loop']:
+        if self.settings['do_feedback_loop'].value:
             folder_name = 'class2d_folder_feedback'
         else:
             folder_name = 'class2d_folder'
@@ -3326,7 +3338,7 @@ class ProcessThread(object):
 
         # Combine Stacks to one stack for ISAC
         try:
-            if self.settings['do_feedback_loop']:
+            if self.settings['do_feedback_loop'].value:
                 for type_name in ('Picking', 'Extract', 'Class2d'):
                     self.shared_dict['typ'][type_name]['queue_lock'].acquire()
                     try:
@@ -3453,7 +3465,7 @@ class ProcessThread(object):
                         pass
 
         except Exception:
-            if self.settings['do_feedback_loop']:
+            if self.settings['do_feedback_loop'].value:
                 for type_name in ('Picking', 'Extract', 'Class2d'):
                     self.shared_dict['typ'][type_name]['queue_lock'].acquire()
                     try:
@@ -3498,7 +3510,7 @@ class ProcessThread(object):
         # Input is ISAC_DIR|||STACK_NAME
         root_name, _ = root_name.split('|||')
 
-        if self.settings['do_feedback_loop']:
+        if self.settings['do_feedback_loop'].value:
             folder_name = 'select2d_folder_feedback'
         else:
             folder_name = 'select2d_folder'
@@ -3592,7 +3604,7 @@ class ProcessThread(object):
                             var = False
                             break
                 if var:
-                    if self.settings['do_feedback_loop'] and 'Train2d' in compare:
+                    if self.settings['do_feedback_loop'].value and 'Train2d' in compare:
                         self.add_to_queue(
                             aim=aim_name,
                             root_name='|||'.join([
@@ -3604,6 +3616,8 @@ class ProcessThread(object):
                                     )
                                 ])
                             )
+                    elif 'Train2d' in compare:
+                        pass
                     else:
                         for log_file in copied_log_files:
                             self.add_to_queue(aim=aim_name, root_name=log_file)
@@ -3626,7 +3640,7 @@ class ProcessThread(object):
 
         try:
             with open(self.shared_dict_typ['number_file'], 'r') as read:
-                new_model, new_config = read.readline().strip('|||')
+                new_model, new_config = read.readline().strip().split('|||')
         except FileNotFoundError:
             pass
         except AttributeError:
@@ -3636,7 +3650,7 @@ class ProcessThread(object):
             self.settings[self.settings['Copy']['Picking']]['--conf'] = new_config
 
 
-        if self.settings['do_feedback_loop']:
+        if self.settings['do_feedback_loop'].value:
             folder_name = 'picking_folder_feedback'
             entry_name = 'Picking_folder_feedback'
         else:
