@@ -23,7 +23,6 @@ try:
 except ImportError:
     from PyQt5.QtWidgets import QHBoxLayout, QWidget, QPushButton, QApplication, QVBoxLayout, QLabel, QComboBox
     from PyQt5.QtCore import pyqtSlot, pyqtSignal
-from transphire.templatedialog import TemplateDialog
 from transphire.loadwindow import DefaultSettings
 from transphire import transphire_utils as tu
 

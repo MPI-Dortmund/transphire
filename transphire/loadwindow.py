@@ -20,10 +20,10 @@ import glob
 import json
 try:
     from PyQt4.QtGui import QDialog, QVBoxLayout, QPushButton, QWidget, QComboBox, QLineEdit, QLabel, QHBoxLayout
-    from PyQt4.QtCore import pyqtSlot, pyqtSignal
+    from PyQt4.QtCore import pyqtSlot
 except ImportError:
     from PyQt5.QtWidgets import QDialog, QVBoxLayout, QPushButton, QWidget, QComboBox, QLineEdit, QLabel, QHBoxLayout
-    from PyQt5.QtCore import pyqtSlot, pyqtSignal
+    from PyQt5.QtCore import pyqtSlot
 
 from transphire.loadcontentcontainer import LoadContentContainer
 from transphire.separator import Separator
@@ -218,7 +218,6 @@ class DefaultSettings(QDialog):
             self.create_initial_tabs(tab_dict[tab_name]['sub_content'], self.tab_content[tab_name])
 
     def is_in_content(self, tab_dict, name):
-        return_value = False
         for tab_name in tab_dict:
             for entry in tab_dict[tab_name]['content']: 
                 if name.split(' >=')[0] == entry:
@@ -454,7 +453,6 @@ class DefaultSettings(QDialog):
         """
 
         # Initialise default settings
-        template_folder=os.path.join(settings_folder, template_name)
         setting_names = sorted(tu.get_function_dict().keys())
         default_widget = DefaultSettings(apply=apply, settings_directory=settings_folder, template_name=template_name)
 
