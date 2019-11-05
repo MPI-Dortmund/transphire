@@ -427,7 +427,7 @@ class NotificationContainer(QWidget):
                         except smtplib.SMTPServerDisconnected:
                             print('Could not send to:', name)
                             continue
-                        except Exception as e:
+                        except Exception:
                             print('Unknown exception! Could not send to:', name)
                             continue
 
@@ -439,7 +439,7 @@ class NotificationContainer(QWidget):
                         except smtplib.SMTPRecipientsRefused:
                             print('Could not send to:', name)
                             continue
-                        except Exception as e:
+                        except Exception:
                             print('Unknown exception! Could not send to:', name)
                             continue
 
@@ -448,7 +448,7 @@ class NotificationContainer(QWidget):
                         except smtplib.SMTPServerDisconnected:
                             print('Could not send to:', name)
                             continue
-                        except Exception as e:
+                        except Exception:
                             print('Unknown exception! Could not send to:', name)
                             continue
                     else:
