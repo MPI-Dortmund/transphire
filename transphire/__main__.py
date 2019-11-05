@@ -20,7 +20,6 @@ import sys
 import os
 import json
 import argparse
-import re
 import urllib
 try:
     from PyQt4.QtGui import QApplication
@@ -90,7 +89,7 @@ def main(font, root_directory, settings_directory, mount_directory, adjust_width
         if not os.path.isdir(os.path.join(settings_directory, template_name)) and \
                 template_name != 'DEFAULT':
             print('Default template no longer exists!')
-            template_folder = 'DEFAULT'
+            template_name = 'DEFAULT'
 
 
     # Get default settings 0: content 
@@ -229,7 +228,7 @@ def check_update():
                 vers = V(ver)
                 if vers > V(latest_version) and len(vers.version) == 3:
                     latest_version = ver
-    except Exception as e:
+    except Exception:
         print('Could not check for updates! Please check your internet connection or for erros in the command:  {0}'.format(current_version))
         print('If you have questions, please contact the TranSPHIRE authors.')
         return
