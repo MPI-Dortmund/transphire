@@ -21,7 +21,6 @@ import shutil
 import re
 import glob
 import copy as cp
-import queue as qu
 try:
     from PyQt4.QtCore import QObject, pyqtSignal, pyqtSlot
 except ImportError:
@@ -166,7 +165,7 @@ class ProcessWorker(QObject):
                         self.settings,
                         '{0} feedback'.format(self.settings['Copy'][name])
                         )
-                except KeyError as e:
+                except KeyError:
                     pass
 
     @pyqtSlot(object)
