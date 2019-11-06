@@ -3071,6 +3071,7 @@ class ProcessThread(object):
     def symlink_rel(src, dst):
         rel_path_src = os.path.relpath(src, os.path.dirname(dst))
         os.symlink(rel_path_src, dst)
+        return os.path.join(rel_path_src, dst)
 
     def run_train2d(self, root_name):
         """
@@ -3099,6 +3100,8 @@ class ProcessThread(object):
         self.queue_com['log'].put(tu.create_log(self.name, 'run_train2d', root_name, 'start process'))
 
         if root_name.endswith('_good.hdf'):
+            all_logs = []
+
             isac_folder, particle_stack, class_average_file = root_name.split('|||')
             file_name = tu.get_name(isac_folder)
             log_prefix = os.path.join(self.settings[folder_name], file_name)
@@ -3110,6 +3113,7 @@ class ProcessThread(object):
                 output_dir=log_prefix,
                 settings=self.settings,
                 )
+            all_logs.append(stack_name)
 
             log_file, err_file = self.run_command(
                 command=command,
@@ -3118,6 +3122,8 @@ class ProcessThread(object):
                 gpu_list=gpu_list,
                 shell=shell
                 )
+            all_logs.append(err_file)
+            all_logs.append(log_file)
 
             zero_list = [err_file]
             non_zero_list = [log_file]
@@ -3144,6 +3150,10 @@ class ProcessThread(object):
                 gpu_list=gpu_list,
                 shell=shell
                 )
+            for entry in sorted(glob.glob(os.path.join(box_dir, '*'))):
+                all_logs.append(entry)
+            all_logs.append(err_file)
+            all_logs.append(log_file)
 
             zero_list = [err_file]
             non_zero_list = [log_file]
@@ -3160,10 +3170,10 @@ class ProcessThread(object):
             tu.mkdir_p(new_box_dir)
 
             for file_name in sorted(glob.glob(os.path.join(box_dir, '*'))):
-                os.symlink_rel(
                     file_name,
                     file_name.replace(box_dir, new_box_dir).replace('_original.box', '.box')
                     )
+                all_logs.append(file_name.replace(box_dir, new_box_dir).replace('_original.box', '.box'))
 
             self.shared_dict_typ['queue_list_lock'].acquire()
             try:
@@ -3211,6 +3221,10 @@ class ProcessThread(object):
             gpu_list=gpu_list,
             shell=shell
             )
+        all_logs.append(new_model)
+        all_logs.append(new_config)
+        all_logs.append(log_file)
+        all_logs.append(err_file)
 
         zero_list = []
         non_zero_list = [err_file, log_file]
@@ -3268,7 +3282,8 @@ class ProcessThread(object):
                             var = False
                             break
                 if var:
-                    pass
+                    for entry in all_logs:
+                        self.add_to_queue(aim=aim_name, root_name=entry)
                 else:
                     pass
 

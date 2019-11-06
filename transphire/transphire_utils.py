@@ -281,7 +281,6 @@ def get_function_dict():
             }
     function_dict['CTER >=v1.3'] = function_dict['CTER >=v1.0']
 
-
     ### Picking programs
 
     function_dict['crYOLO >=v1.0.4'] = {
@@ -306,7 +305,6 @@ def get_function_dict():
 
     function_dict['crYOLO >=v1.4.1'] = copy_mod.deepcopy(function_dict['crYOLO >=v1.2.2'])
     function_dict['crYOLO >=v1.4.1']['content'] = tc.default_cryolo_v1_4_1
-
 
 
     ### Extract programs
