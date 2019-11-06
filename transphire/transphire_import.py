@@ -373,6 +373,7 @@ def import_cinderella_v0_3_1(name, name_no_feedback, directory_name, import_name
                     read.read(),
                     re.MULTILINE
                     )
+                print(match.groups())
         except FileNotFoundError:
             continue
         if match is not None:
@@ -391,7 +392,7 @@ def import_cinderella_v0_3_1(name, name_no_feedback, directory_name, import_name
 
     data = np.zeros(
         len(useable_files),
-        dtype=get_dtype_dict()['select2d']
+        dtype=get_dtype_dict()['Select2d']
         )
     data = np.atleast_1d(data)
     data.fill(0)
