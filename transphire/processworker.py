@@ -718,6 +718,7 @@ class ProcessWorker(QObject):
                 time.sleep(1)
                 self.check_queue(queue_com=queue_com)
         self.check_queue(queue_com=queue_com)
+        print('All done!')
 
         final_sizes = []
         for key, settings_content in full_content:

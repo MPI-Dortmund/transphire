@@ -373,7 +373,6 @@ def import_cinderella_v0_3_1(name, name_no_feedback, directory_name, import_name
                     read.read(),
                     re.MULTILINE
                     )
-                print(match.groups())
         except FileNotFoundError:
             continue
         if match is not None:

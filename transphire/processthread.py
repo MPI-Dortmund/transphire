@@ -3170,6 +3170,7 @@ class ProcessThread(object):
             tu.mkdir_p(new_box_dir)
 
             for file_name in sorted(glob.glob(os.path.join(box_dir, '*'))):
+                symlink_rel(
                     file_name,
                     file_name.replace(box_dir, new_box_dir).replace('_original.box', '.box')
                     )
