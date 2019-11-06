@@ -830,6 +830,8 @@ class MainWindow(QMainWindow):
                     write.write('###\t{0}\n'.format(key))
                     for entry in settings:
                         for key_entry in entry:
+                            if key_entry == 'SSH password':
+                                continue
                             write.write(
                                 '{0}\t{1}\n'.format(key_entry, entry[key_entry])
                                 )

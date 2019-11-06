@@ -369,7 +369,7 @@ def get_function_dict():
             'executable': True,
             'has_path': 'sp_auto',
             'typ': 'Auto3d',
-            'allow_empty': [],
+            'allow_empty': ['SSH username', 'SSH password', '--mtf'],
             }
 
     ### Compression programs

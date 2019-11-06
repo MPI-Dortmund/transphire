@@ -329,7 +329,7 @@ def import_isac_v1_2(name, name_no_feedback, directory_name, import_name=''):
 
     data = np.zeros(
         len(useable_files),
-        dtype=get_dtype_dict()['class2d']
+        dtype=get_dtype_dict()['Class2d']
         )
     data = np.atleast_1d(data)
     data.fill(0)
@@ -457,7 +457,7 @@ def import_window_v1_2(name, name_no_feedback, directory_name, import_name=''):
 
     data = np.zeros(
         len(useable_files),
-        dtype=get_dtype_dict()['extract']
+        dtype=get_dtype_dict()['Extract']
         )
     data = np.atleast_1d(data)
     data.fill(0)
@@ -534,7 +534,7 @@ def import_ctffind_v4_1_8(name, name_no_feedback, directory_name, import_name=''
 
     data = np.zeros(
         len(useable_files),
-        dtype=get_dtype_dict()['ctf']
+        dtype=get_dtype_dict()['CTF']
         )
     data_original = np.zeros(
         len(useable_files),
@@ -628,7 +628,7 @@ def import_gctf_v1_06(name, name_no_feedback, directory_name, import_name=''):
 
     data = np.zeros(
         len(useable_files),
-        dtype=get_dtype_dict()['ctf']
+        dtype=get_dtype_dict()['CTF']
         )
     data_original = np.zeros(
         len(useable_files),
@@ -713,7 +713,7 @@ def import_cter_v1_0(name, name_no_feedback, directory_name, import_name=''):
 
     data = np.zeros(
         len(useable_files),
-        dtype=get_dtype_dict()['ctf']
+        dtype=get_dtype_dict()['CTF']
         )
     data_original = np.zeros(
         len(useable_files),
@@ -806,7 +806,7 @@ def import_motion_cor_2_v1_0_0(name, name_no_feedback, directory_name, import_na
 
     data = np.zeros(
         len(useable_files),
-        dtype=get_dtype_dict()['motion']
+        dtype=get_dtype_dict()['Motion']
         )
     data = np.atleast_1d(data)
     data_original = []
@@ -932,7 +932,7 @@ def import_cryolo_v1_0_4(name, name_no_feedback, directory_name, sub_directory=N
 
     data = np.zeros(
         len(useable_files),
-        dtype=get_dtype_dict()['picking']
+        dtype=get_dtype_dict()['Picking']
         )
     data = np.atleast_1d(data)
     file_names = [entry[0] for entry in useable_files]

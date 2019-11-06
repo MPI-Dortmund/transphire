@@ -49,8 +49,9 @@ def default_auto_sphire_v1_3():
         ['--phase_plate', ['False', 'True'], bool, '', 'COMBO', 'Main', '', 'Input is phase_plate.'],
         ['--memory_per_node', '100', int,  '', 'PLAIN', 'Main', '', 'Available memory per node.'],
 
-        ['ssh username', '', str,  '', 'PLAIN', 'Main', '', 'Username on the work directory'],
-        ['ssh password', '', str,  '', 'PASSWORD', 'Main', '', 'Password of the user (Will not be saved anywhere)'],
+        ['Use SSH', ['True', 'False'], bool,  '', 'COMBO', 'Main', '', 'Use SSH to submit a job.'],
+        ['SSH username', '', str,  'Use SSH:True', 'PLAIN', 'Main', '', 'Username on the work directory'],
+        ['SSH password', '', str,  'Use SSH:True', 'PASSWORD', 'Main', '', 'Password of the user (Will not be saved anywhere)'],
         ]
     return items
 

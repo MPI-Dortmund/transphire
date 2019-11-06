@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import pexpect as pe
 import time
 import os
 import shutil
@@ -744,10 +745,11 @@ class ProcessWorker(QObject):
         True, if programs exist, else False
         """
         default_unique_types = tu.get_unique_types()
-        default_unique_types.remove('Compress')
         error = False
         check_files = []
         for entry in default_unique_types:
+            if entry == 'Compress':
+                continue
             check_files.append(['Path', self.settings['Copy'][entry]])
 
         check_files.append(['Path', 'IMOD header'])
@@ -801,6 +803,37 @@ class ProcessWorker(QObject):
             else:
                 pass
 
+        auto3d_name = self.settings['Copy']['Auto3d']
+        if auto3d_name != 'False' and auto3d_name != 'Later':
+            if self.settings[auto3d_name]['Use SSH'] == 'True':
+                device_name = [
+                    entry
+                    for entry in self.settings['Mount'][self.settings['Copy']['Copy to work']]['IP'].split('/') if entry.strip()
+                    ][0]
+                if self.settings['Copy']['Copy to work'] != 'False' and self.settings['Copy']['Copy to work'] != 'Later':
+                    ssh_command = 'ssh -o "StrictHostKeyChecking no" {0}@{1} ls'.format(
+                        self.settings[auto3d_name]['SSH username'],
+                        device_name
+                        )
+
+                    child = pe.spawnu(ssh_command)
+                    try:
+                        child.expect(
+                            "{0}@{1}'s password:".format(self.settings[auto3d_name]['SSH username'], device_name),
+                            timeout=4
+                            )
+                    except pe.exceptions.TIMEOUT:
+                        self.sig_error.emit('SSH ls command failed! Username or Password in Auto3d might be wrong or Copy to work is not consistent!!')
+                        error = True
+                    except pe.exceptions.EOF:
+                        self.sig_error.emit('SSH ls command failed! Username or Password in Auto3d might be wrong or Copy to work is not consistent!!')
+                        error = True
+                    else:
+                        child.sendline(self.settings[auto3d_name]['SSH password'])
+                        child.expect(pe.EOF)
+                else:
+                    self.sig_error.emit('"Copy to work" not specified for Auto3d ssh command.')
+                    error = True
         return error
 
     def check_queue(self, queue_com):

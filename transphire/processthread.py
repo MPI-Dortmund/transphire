@@ -806,6 +806,10 @@ class ProcessThread(object):
                 'method': self.run_train2d,
                 'lost_connect': 'full_transphire'
                 },
+            'Auto3d': {
+                'method': self.run_auto3d,
+                'lost_connect': 'full_transphire'
+                },
             'Compress': {
                 'method': self.run_compress,
                 'lost_connect': 'full_transphire'
@@ -3618,6 +3622,20 @@ class ProcessThread(object):
                             )
                     elif 'Train2d' in compare:
                         pass
+                    elif not self.settings['do_feedback_loop'].value and 'Auto3d' in compare:
+                        self.add_to_queue(
+                            aim=aim_name,
+                            root_name='|||'.join([
+                                root_name_raw,
+                                os.path.join(
+                                    self.settings[folder_name],
+                                    file_name,
+                                    'ordered_class_averages_good.hdf'
+                                    )
+                                ])
+                            )
+                    elif 'Auto3d' in compare:
+                        pass
                     else:
                         for log_file in copied_log_files:
                             self.add_to_queue(aim=aim_name, root_name=log_file)
@@ -3994,6 +4012,119 @@ class ProcessThread(object):
         self.queue_com['log'].put(tu.create_log(self.name, 'run_compress', root_name, 'stop process', time.time() - start_prog))
 
 
+    def run_auto3d(self, root_name):
+        """
+        Run Particle extraction.
+
+        root_name - name of the file to process.
+
+        Returns:
+        None
+        """
+        if root_name == 'None':
+            self.shared_dict_typ['queue_list_lock'].acquire()
+            try:
+                self.shared_dict_typ['queue_list_time'] = time.time() * 100
+                self.shared_dict_typ['queue_list'][:] = []
+            finally:
+                self.shared_dict_typ['queue_list_lock'].release()
+            return None
+
+        if self.settings['do_feedback_loop'].value:
+            folder_name = 'auto3d_folder_feedback'
+        else:
+            folder_name = 'auto3d_folder'
+
+        start_prog = time.time()
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name, 'start process'))
+
+        if root_name.endswith('_good.hdf'):
+            isac_folder, particle_stack, class_average_file = root_name.split('|||')
+            file_name = tu.get_name(isac_folder)
+            log_prefix = os.path.join(self.settings[folder_name], file_name)
+
+            command, check_files, block_gpu, gpu_list, shell, stack_name = ttrain2d.create_substack_command(
+                class_average_name=class_average_file,
+                input_stack=particle_stack,
+                isac_dir=isac_folder,
+                output_dir=log_prefix,
+                settings=self.settings,
+                )
+
+            log_file, err_file = self.run_command(
+                command=command,
+                log_prefix='{0}_substack'.format(log_prefix),
+                block_gpu=block_gpu,
+                gpu_list=gpu_list,
+                shell=shell
+                )
+
+            zero_list = [err_file]
+            non_zero_list = [log_file]
+            non_zero_list.extend(check_files)
+
+            tus.check_outputs(
+                zero_list=zero_list,
+                non_zero_list=non_zero_list,
+                exists_list=[],
+                folder=self.settings[folder_name],
+                command=command
+                )
+
+            self.shared_dict_typ['queue_list_lock'].acquire()
+            try:
+                matches_in_queue = []
+                for entry in sorted(glob.glob(os.path.join(new_box_dir, '*')))
+                    self.add_to_queue_file(
+                        root_name=entry,
+                        file_name=self.shared_dict_typ['list_file'],
+                        )
+                    file_name = tu.get_name(tu.get_name(tu.get_name(entry)))[:-len('_original')]
+                    matches_in_queue.extend(self.all_in_queue_file(self.typ, file_name, lock=False))
+            finally:
+                self.shared_dict_typ['queue_list_lock'].release()
+
+        else:
+            self.shared_dict_typ['queue_list_lock'].acquire()
+            try:
+                self.add_to_queue_file(
+                    root_name=root_name,
+                    file_name=self.shared_dict_typ['list_file'],
+                    )
+            finally:
+                self.shared_dict_typ['queue_list_lock'].release()
+            return None
+
+        skip_list = False
+        if skip_list:
+            pass
+        else:
+            # Add to queue
+            for aim in self.content_settings['aim']:
+                *compare, aim_name = aim.split(':')
+                var = True
+                for typ in compare:
+                    name = typ.split('!')[-1]
+                    if typ.startswith('!'):
+                        if self.settings['Copy'][name] == 'False':
+                            continue
+                        else:
+                            var = False
+                            break
+                    else:
+                        if not self.settings['Copy'][name] == 'False':
+                            continue
+                        else:
+                            var = False
+                            break
+                if var:
+                    pass
+                else:
+                    pass
+
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name, 'stop process', time.time() - start_prog))
+
+
     def run_copy_extern(self, root_name):
         """
         Copy to Work/Backup/HDD
@@ -4196,65 +4327,6 @@ class ProcessThread(object):
         True, if ready
         """
         return True
-        #if 'Translation_file.txt' in file_out:
-        #    while True:
-        #        is_locked = bool(not self.shared_dict['translate_lock'].tryLock())
-        #        if not is_locked:
-        #            self.shared_dict['translate_lock'].release()
-        #            break
-        #        else:
-        #            time.msleep(100)
-        #elif 'Translation_file_bad.txt' in file_out:
-        #    while True:
-        #        is_locked = bool(not self.shared_dict['translate_lock'].tryLock())
-        #        if not is_locked:
-        #            self.shared_dict['translate_lock'].release()
-        #            break
-        #        else:
-        #            time.msleep(100)
-        #elif '_transphire_ctf_partres.txt' in file_out:
-        #    while True:
-        #        is_locked = bool(not self.shared_dict['ctf_partres_lock'].tryLock())
-        #        if not is_locked:
-        #            self.shared_dict['ctf_partres_lock'].release()
-        #            break
-        #        else:
-        #            time.msleep(100)
-        #elif '_transphire_ctf.star' in file_out:
-        #    while True:
-        #        is_locked = bool(not self.shared_dict['ctf_star_lock'].tryLock())
-        #        if not is_locked:
-        #            self.shared_dict['ctf_star_lock'].release()
-        #            break
-        #        else:
-        #            time.msleep(100)
-        #elif '_transphire_motion.txt' in file_out:
-        #    while True:
-        #        is_locked = bool(not self.shared_dict['motion_txt_lock'].tryLock())
-        #        if not is_locked:
-        #            self.shared_dict['motion_txt_lock'].release()
-        #            break
-        #        else:
-        #            time.msleep(100)
-        #elif '_transphire_motion.star' in file_out:
-        #    while True:
-        #        is_locked = bool(not self.shared_dict['motion_star_lock'].tryLock())
-        #        if not is_locked:
-        #            self.shared_dict['motion_star_lock'].release()
-        #            break
-        #        else:
-        #            time.msleep(100)
-        #elif '_transphire_motion_relion3.star' in file_out:
-        #    while True:
-        #        is_locked = bool(not self.shared_dict['motion_star_relion3_lock'].tryLock())
-        #        if not is_locked:
-        #            self.shared_dict['motion_star_relion3_lock'].release()
-        #            break
-        #        else:
-        #            time.msleep(100)
-        #else:
-        #    pass
-        #return True
 
     def copy_as_another_user(self, file_in, file_out):
         """
