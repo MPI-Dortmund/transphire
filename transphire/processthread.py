@@ -2507,7 +2507,7 @@ class ProcessThread(object):
             )
 
         warnings, skip_list = tus.check_for_outlier(
-            dict_name='motion',
+            dict_name='Motion',
             data=data,
             file_name=queue_dict[0]['sum'][0],
             settings=self.settings
@@ -2821,7 +2821,7 @@ class ProcessThread(object):
 
         try:
             warnings, skip_list = tus.check_for_outlier(
-                dict_name='ctf',
+                dict_name='CTF',
                 data=data,
                 file_name=file_sum,
                 settings=self.settings
@@ -3828,7 +3828,7 @@ class ProcessThread(object):
                     )
 
                 warnings, skip_list = tus.check_for_outlier(
-                    dict_name='picking',
+                    dict_name='Picking',
                     data=data,
                     file_name=file_use,
                     settings=self.settings
@@ -4074,7 +4074,7 @@ class ProcessThread(object):
             self.shared_dict_typ['queue_list_lock'].acquire()
             try:
                 matches_in_queue = []
-                for entry in sorted(glob.glob(os.path.join(new_box_dir, '*')))
+                for entry in sorted(glob.glob(os.path.join(new_box_dir, '*'))):
                     self.add_to_queue_file(
                         root_name=entry,
                         file_name=self.shared_dict_typ['list_file'],

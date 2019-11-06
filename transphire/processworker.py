@@ -150,7 +150,7 @@ class ProcessWorker(QObject):
                     )
 
                 try:
-                    self.signals[name.lower()].emit(
+                    self.signals[name].emit(
                         entry,
                         self.settings['{0}_folder'.format(name)][entry],
                         self.settings,
@@ -160,7 +160,7 @@ class ProcessWorker(QObject):
                     pass
 
                 try:
-                    self.signals['{0}_feedback'.format(name.lower())].emit(
+                    self.signals['{0}_feedback'.format(name)].emit(
                         '{0} feedback'.format(entry),
                         self.settings['{0}_folder_feedback'.format(name)][entry],
                         self.settings,
