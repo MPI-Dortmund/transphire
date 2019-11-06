@@ -154,6 +154,10 @@ class LoadContent(QWidget):
             elif entry[self.idx_type] == 'PLAIN':
                 widget = QLineEdit(entry[self.idx_values], self)
                 widget.textChanged.connect(self._change_color_to_changed)
+            elif entry[self.idx_type] == 'PASSWORD':
+                widget = QLineEdit(entry[self.idx_values], self)
+                widget.textChanged.connect(self._change_color_to_changed)
+                widget.setEnabled(False)
             else:
                 raise IOError('{0}: {1} not known!'.format(entry[self.idx_name], entry[self.idx_type]))
             widget.setObjectName('setting')

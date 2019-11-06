@@ -96,11 +96,16 @@ class SettingsWidget(QWidget):
         else:
             self.tooltip = self.name
 
-        if self.typ == 'PLAIN':
+        self.tooltip = '{0}\nDefault: \'{1}\''.format(self.tooltip, self.default)
+
+        if self.typ == 'PLAIN' or self.typ == 'PASSWORD':
             self.edit = QLineEdit(self.name, self)
             self.edit.setToolTip(self.tooltip)
             self.edit.textChanged.connect(self.change_tooltip)
             self.edit.setText(self.default)
+
+            if self.typ == 'PASSWORD':
+                self.edit.setEchoMode(self.edit.Password)
 
         elif self.typ == 'FILE':
             self.edit = QLineEdit(self.name, self)
@@ -129,6 +134,7 @@ class SettingsWidget(QWidget):
         elif self.typ == 'COMBO':
             self.edit = QComboBox(self)
             self.edit.setToolTip(self.tooltip)
+            self.edit.currentIndexChanged.connect(self.change_tooltip)
             self.edit.currentIndexChanged.connect(lambda: self.sig_index_changed.emit(self.name))
             self.edit.addItems(self.values)
             self.edit.setCurrentIndex(self.edit.findText(self.default))
@@ -240,6 +246,12 @@ class SettingsWidget(QWidget):
         None, if an error occured.
         Settings as dictionary.
         """
+
+        if self.label == 'ssh password':
+            print(self.name, self.label)
+            return None
+
+
         settings = {}
         if isinstance(self.edit, QComboBox):
             value = self.edit.currentText()

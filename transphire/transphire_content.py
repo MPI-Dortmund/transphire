@@ -22,6 +22,39 @@ from transphire import transphire_utils as tu
 from transphire import transphire_import as ti
 
 
+def default_auto_sphire_v1_3():
+    """
+    Content for auto sphire
+
+    Arguments:
+    None
+
+    Return:
+    Content items as list
+    """
+    items = [
+        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+
+        ['--mpi_procs', '24', int, '', 'PLAIN', 'Main', '', 'Number of processors to use.'],
+        ['--mpi_submission_command', 'sbatch', str, '', 'PLAIN', 'Main', '', 'Submission command, e.g. sbatch, qsub, ...'],
+        ['--mpi_submission_template', '', str, '', 'FILE', 'Main', '', 'Submission template.'],
+
+        ['--apix', '1.0', float, '', 'PLAIN', 'Main', '', 'Pixel size in A/pixel.'],
+        ['--mol_mass', '250.0', float, '', 'PLAIN', 'Main', '', 'Molecular mass of the protein in kDa. Used to calculate the masking density threshold.'],
+        ['--radius', '80', int, '', 'PLAIN', 'Main', '', 'Particle radius in pixels. Used for normalization.'],
+        ['--symmetry', 'c1', str, '', 'PLAIN', 'Main', '', 'Symmetry of the particle.'],
+        ['--mtf', '', str, '', 'FILE', 'Main', '', 'MTF file for the sharpening step'],
+        ['--phase_plate', ['False', 'True'], bool, '', 'COMBO', 'Main', '', 'Input is phase_plate.'],
+        ['--memory_per_node', '100', int,  '', 'PLAIN', 'Main', '', 'Available memory per node.'],
+
+        ['ssh username', '', str,  '', 'PLAIN', 'Main', '', 'Username on the work directory'],
+        ['ssh password', '', str,  '', 'PASSWORD', 'Main', '', 'Password of the user (Will not be saved anywhere)'],
+        ]
+    return items
+
+
 def default_compress_command_line():
     """
     Content for compression
@@ -302,7 +335,7 @@ def default_cter_v1_0():
         ['WIDGETS MAIN', '7', int, '', 'PLAIN', '', ''],
         ['WIDGETS ADVANCED', '7', int, '', 'PLAIN', '', ''],
         ['WIDGETS RARE', '7', int, '', 'PLAIN', '', ''],
-        ['--apix', '-1', float, '', 'PLAIN', 'Main', 'Pixel size [A/Pixels]: The pixel size of input micrograph(s) or images in input particle stack.'],
+        ['--apix', '1.0', float, '', 'PLAIN', 'Main', 'Pixel size [A/Pixels]: The pixel size of input micrograph(s) or images in input particle stack.'],
         ['--Cs', '2.0', float, '', 'PLAIN', 'Main', 'Microscope spherical aberration (Cs) [mm]: The spherical aberration (Cs) of microscope used for imaging.'],
         ['--voltage', '300', float, '', 'PLAIN', 'Main', 'Microscope voltage [kV]: The acceleration voltage of microscope used for imaging.'],
         ['--ac', '10', float, '', 'PLAIN', 'Main', 'Amplitude contrast [%]: The typical amplitude contrast is in the range of 7% - 14%. The value mainly depends on the thickness of the ice embedding the particles.'],
@@ -582,18 +615,21 @@ def default_notification():
         'image',
         'object'
         ])
-    for name in ['ctf', 'motion', 'picking']:
-        for key in dtype_dict[name]:
-            key = key[0]
-            if key in skip_set:
-                continue
-            else:
-                items.append(
-                    ['{0} warning'.format(key), '-1000000 1000000', [float, float], '', 'PLAIN', 'Main', ''],
-                    )
-                items.append(
-                    ['{0} skip'.format(key), '-1000000 1000000', [float, float], '', 'PLAIN', 'Main', ''],
-                    )
+    for name in tu.get_unique_types():
+        try:
+            for key in dtype_dict[name]:
+                key = key[0]
+                if key in skip_set:
+                    continue
+                else:
+                    items.append(
+                        ['{0} warning'.format(key), '-1000000 1000000', [float, float], '', 'PLAIN', 'Main', ''],
+                        )
+                    items.append(
+                        ['{0} skip'.format(key), '-1000000 1000000', [float, float], '', 'PLAIN', 'Main', ''],
+                        )
+        except KeyError as e:
+            pass
     return items
 
 
@@ -688,9 +724,9 @@ def default_pipeline():
             'Picking:Picking,' +
             'Extract:Extract,' +
             'Train2d:Train2d,' +
-            'Sum to work:Copy to work:Copy_to_work,' +
-            'Sum to HDD:Copy to HDD:Copy_to_hdd,' +
-            'Sum to backup:Copy to backup:Copy_to_backup',
+            'Motion to work:Copy to work:Copy_to_work,' +
+            'Motion to HDD:Copy to HDD:Copy_to_hdd,' +
+            'Motion to backup:Copy to backup:Copy_to_backup',
             'PLAIN',
             'Main',
             ''
@@ -1079,6 +1115,9 @@ def default_copy(settings_folder):
     for value in programs_extern.values():
         value.extend(extend_list)
 
+    #valid_sub_items = [entry['typ'] for entry in value for value in tu.get_function_dict().values() in entry['typ'] is not None]
+    valid_sub_items = tu.get_unique_types()
+
     items = [
         ['WIDGETS MAIN', '8', int, '', 'PLAIN', '', ''],
         ['WIDGETS ADVANCED', '8', int, '', 'PLAIN', '', ''],
@@ -1086,47 +1125,29 @@ def default_copy(settings_folder):
         ['Copy to work', copy_to_work, bool, '', 'COMBO', 'Main', 'Copy data to the work drive.'],
         ['Copy to backup', copy_to_backup, bool, '', 'COMBO', 'Main', 'Copy data to the backup drive.'],
         ['Copy to HDD', copy_to_hdd, bool, '', 'COMBO', 'Main', 'Copy data to an external hard disc.'],
-        ['Motion', programs_extern['motion'], bool, '', 'COMBO', 'Main', 'Software for motion correction.'],
-        ['CTF', programs_extern['ctf'], bool, '', 'COMBO', 'Main', 'Software for CTF estimation.'],
-        ['Picking', programs_extern['picking'], bool, '', 'COMBO', 'Main', 'Software for particle picking.'],
-        ['Extract', programs_extern['extract'], bool, '', 'COMBO', 'Main', 'Extract particles'],
-        ['Class2d', programs_extern['class2d'], bool, '', 'COMBO', 'Main', '2D classification'],
-        ['Select2d', programs_extern['select2d'], bool, '', 'COMBO', 'Main', '2D class selection.'],
-        ['Train2d', programs_extern['train2d'], bool, '', 'COMBO', 'Main', 'Retrain particle picking.'],
-        ['Compress', programs_extern['compress'], bool, '', 'COMBO', 'Main', 'Compress the micrograph movie.'],
+        ]
+
+    for entry in valid_sub_items:
+        items.append([entry, programs_extern[entry], bool, '', 'COMBO', 'Main', 'Software for {0}.'.format(entry)])
+
+    items.extend([
         ['Session to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the non-micrograph data (EPU session, ...) to the work drive if "Copy to work" is specified.'],
         ['Session to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the non-micrograph data (EPU session, ...) to the backup drive if "Copy to backup" is specified.'],
         ['Session to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the non-micrograph data (EPU session, ...) to the HDD drive if "Copy to HDD" is specified.'],
         ['Frames to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the micograph movies to the work drive if "Copy to work" is specified.'],
         ['Frames to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the micograph movies to the backup drive if "Copy to backup" is specified.'],
         ['Frames to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the micograph movies to the HDD drive if "Copy to HDD" is specified.'],
-        ['Compress to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the compressed micograph movies to the work drive if "Copy to work" is specified.'],
-        ['Compress to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the compressed micograph movies to the backup drive if "Copy to backup" is specified.'],
-        ['Compress to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the compressed micograph movies to the HDD drive if "Copy to HDD" is specified.'],
         ['Meta to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the micrograph meta data to the work drive if "Copy to work" is specified.'],
         ['Meta to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the micrograph meta data to the backup drive if "Copy to backup" is specified.'],
         ['Meta to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the micrograph meta data to the HDD drive if "Copy to HDD" is specified.'],
-        ['Sum to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the microgaph sum data to the work drive if "Copy to work" is specified.'],
-        ['Sum to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the microgaph sum data to the backup drive if "Copy to backup" is specified.'],
-        ['Sum to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the microgaph sum data to the HDD drive if "Copy to HDD" is specified.'],
-        ['CTF to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the microgaph ctf data to the work drive if "Copy to work" is specified.'],
-        ['CTF to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the microgaph ctf data to the backup drive if "Copy to backup" is specified.'],
-        ['CTF to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the microgaph ctf data to the HDD drive if "Copy to HDD" is specified.'],
-        ['Picking to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the microgaph picking data to the work drive if "Copy to work" is specified.'],
-        ['Picking to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the microgaph picking data to the backup drive if "Copy to backup" is specified.'],
-        ['Picking to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the microgaph picking data to the HDD drive if "Copy to HDD" is specified.'],
-        ['Extract to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the particle data to the work drive if "Copy to work" is specified.'],
-        ['Extract to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the particle data to the backup drive if "Copy to backup" is specified.'],
-        ['Extract to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the particle data to the HDD drive if "Copy to HDD" is specified.'],
-        ['Class2d to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the class2d data to the work drive if "Copy to work" is specified.'],
-        ['Class2d to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the class2d data to the backup drive if "Copy to backup" is specified.'],
-        ['Class2d to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the class2d data to the HDD drive if "Copy to HDD" is specified.'],
-        ['Select2d to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the Select2d data to the work drive if "Copy to work" is specified.'],
-        ['Select2d to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the Select2d data to the backup drive if "Copy to backup" is specified.'],
-        ['Select2d to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the Select2d data to the HDD drive if "Copy to HDD" is specified.'],
-        ['Train2d to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the Train2d data to the work drive if "Copy to work" is specified.'],
-        ['Train2d to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the Train2d data to the backup drive if "Copy to backup" is specified.'],
-        ['Train2d to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the Train2d data to the HDD drive if "Copy to HDD" is specified.'],
+        ])
+
+    for entry in valid_sub_items:
+        items.append(['{0} to work'.format(entry), ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the {0} data to the work drive if "Copy to work" is specified.'.format(entry)])
+        items.append(['{0} to backup'.format(entry), ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the {0} data to the backup drive if "Copy to backup" is specified.'.format(entry)])
+        items.append(['{0} to HDD'.format(entry), ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the {0} data the HDD drive if "Copy to HDD" is specified.'.format(entry)])
+
+    items.extend([
         ['Tar to work', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Copy the information to work drive in tar format if "Copy to work" is specified.'],
         ['Tar to backup', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Copy the information to backup drive in tar format if "Copy to backup" is specified.'],
         ['Tar to HDD', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Copy the information to HDD drive in tar format if "Copy to HDD" is specified.'],
@@ -1134,5 +1155,5 @@ def default_copy(settings_folder):
         ['Delete data after import?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Delete the data from the camera computer after the import.'],
         ['Delete stack after compression?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Delete the mrc stack after compression.'],
         ['Delete compressed stack after copy?', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Delete the compressed stack after copying to another location.'],
-        ]
+        ])
     return items

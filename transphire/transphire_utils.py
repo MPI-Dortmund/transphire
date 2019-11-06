@@ -49,6 +49,12 @@ from transphire import transphire_import as ti
 VERSION_RE = re.compile('(.*) >=v([\d.]+)')
 
 
+def get_unique_types():
+    valid_sub_items = np.array([value['typ'] for value in get_function_dict().values() if value['typ'] is not None])
+    _, unique_idx = np.unique(valid_sub_items, return_index=True)
+    return valid_sub_items[np.sort(unique_idx)]
+
+
 def create_log(*args):
     """
     Add a time string to print statement.
@@ -210,25 +216,26 @@ def get_function_dict():
     None
     """
     function_dict = {}
-    function_dict['ISAC2 >=v1.2'] = {
-            'plot': tp.update_cryolo_v1_0_4,
-            'plot_data': ti.import_isac_v1_2,
-            'content': tc.default_isac2_1_2,
-            'executable': True,
-            'has_path': 'sp_isac2_gpu.py',
-            'typ': 'class2d',
-            'allow_empty': [''],
-            }
+    ### Motion programs
 
-    function_dict['WINDOW >=v1.2'] = {
-            'plot': tp.update_cryolo_v1_0_4,
-            'plot_data': ti.import_window_v1_2,
-            'content': tc.default_window_1_2,
+    function_dict['MotionCor2 >=v1.0.0'] = {
+            'plot': tp.update_motion_cor_2_v1_0_0,
+            'plot_data': ti.import_motion_cor_2_v1_0_0,
+            'content': tc.default_motion_cor_2_v1_0_0,
             'executable': True,
-            'has_path': 'sp_window.py',
-            'typ': 'extract',
-            'allow_empty': [''],
+            'has_path': 'MotionCor2',
+            'typ': 'Motion',
+            'allow_empty': ['-DefectFile', '-Gain', '-Dark'],
             }
+    function_dict['MotionCor2 >=v1.0.5'] = copy_mod.deepcopy(function_dict['MotionCor2 >=v1.0.0'])
+    function_dict['MotionCor2 >=v1.0.5']['content'] = tc.default_motion_cor_2_v1_0_5
+
+    function_dict['MotionCor2 >=v1.1.0'] = copy_mod.deepcopy(function_dict['MotionCor2 >=v1.0.0'])
+    function_dict['MotionCor2 >=v1.1.0']['content'] = tc.default_motion_cor_2_v1_1_0
+
+    function_dict['MotionCor2 >=v1.2.6'] = copy_mod.deepcopy(function_dict['MotionCor2 >=v1.1.0'])
+
+    ### CTF Programs
 
     function_dict['CTFFIND4 >=v4.1.8'] = {
             'plot': tp.update_ctffind_4_v4_1_8,
@@ -236,7 +243,7 @@ def get_function_dict():
             'content': tc.default_ctffind_4_v4_1_8,
             'executable': True,
             'has_path': 'ctffind',
-            'typ': 'ctf',
+            'typ': 'CTF',
             'allow_empty': ['Gain file'],
             }
     function_dict['CTFFIND4 >=v4.1.10'] = function_dict['CTFFIND4 >=v4.1.8']
@@ -248,7 +255,7 @@ def get_function_dict():
             'content': tc.default_gctf_v1_06,
             'executable': True,
             'has_path': 'Gctf',
-            'typ': 'ctf',
+            'typ': 'CTF',
             'allow_empty': [],
             }
     function_dict['Gctf >=v1.18'] = {
@@ -257,7 +264,7 @@ def get_function_dict():
             'content': tc.default_gctf_v1_18,
             'executable': True,
             'has_path': 'Gctf_v1.18',
-            'typ': 'ctf',
+            'typ': 'CTF',
             'allow_empty': [],
             }
     function_dict['Gctf >=v1.18'] = copy_mod.deepcopy(function_dict['Gctf >=v1.06'])
@@ -269,27 +276,13 @@ def get_function_dict():
             'content': tc.default_cter_v1_0,
             'executable': True,
             'has_path': 'sp_cter.py',
-            'typ': 'ctf',
+            'typ': 'CTF',
             'allow_empty': [],
             }
     function_dict['CTER >=v1.3'] = function_dict['CTER >=v1.0']
 
-    function_dict['MotionCor2 >=v1.0.0'] = {
-            'plot': tp.update_motion_cor_2_v1_0_0,
-            'plot_data': ti.import_motion_cor_2_v1_0_0,
-            'content': tc.default_motion_cor_2_v1_0_0,
-            'executable': True,
-            'has_path': 'MotionCor2',
-            'typ': 'motion',
-            'allow_empty': ['-DefectFile', '-Gain', '-Dark'],
-            }
-    function_dict['MotionCor2 >=v1.0.5'] = copy_mod.deepcopy(function_dict['MotionCor2 >=v1.0.0'])
-    function_dict['MotionCor2 >=v1.0.5']['content'] = tc.default_motion_cor_2_v1_0_5
 
-    function_dict['MotionCor2 >=v1.1.0'] = copy_mod.deepcopy(function_dict['MotionCor2 >=v1.0.0'])
-    function_dict['MotionCor2 >=v1.1.0']['content'] = tc.default_motion_cor_2_v1_1_0
-
-    function_dict['MotionCor2 >=v1.2.6'] = copy_mod.deepcopy(function_dict['MotionCor2 >=v1.1.0'])
+    ### Picking programs
 
     function_dict['crYOLO >=v1.0.4'] = {
             'plot': tp.update_cryolo_v1_0_4,
@@ -297,7 +290,7 @@ def get_function_dict():
             'content': tc.default_cryolo_v1_0_4,
             'executable': True,
             'has_path': 'cryolo_predict.py',
-            'typ': 'picking',
+            'typ': 'Picking',
             'allow_empty': [],
             }
     function_dict['crYOLO >=v1.0.5'] = copy_mod.deepcopy(function_dict['crYOLO >=v1.0.4'])
@@ -314,15 +307,47 @@ def get_function_dict():
     function_dict['crYOLO >=v1.4.1'] = copy_mod.deepcopy(function_dict['crYOLO >=v1.2.2'])
     function_dict['crYOLO >=v1.4.1']['content'] = tc.default_cryolo_v1_4_1
 
+
+
+    ### Extract programs
+
+    function_dict['WINDOW >=v1.2'] = {
+            'plot': tp.update_cryolo_v1_0_4,
+            'plot_data': ti.import_window_v1_2,
+            'content': tc.default_window_1_2,
+            'executable': True,
+            'has_path': 'sp_window.py',
+            'typ': 'Extract',
+            'allow_empty': [''],
+            }
+
+
+    ### 2D classification programs
+
+    function_dict['ISAC2 >=v1.2'] = {
+            'plot': tp.update_cryolo_v1_0_4,
+            'plot_data': ti.import_isac_v1_2,
+            'content': tc.default_isac2_1_2,
+            'executable': True,
+            'has_path': 'sp_isac2_gpu.py',
+            'typ': 'Class2d',
+            'allow_empty': [''],
+            }
+
+
+    ### 2D selection programs
+
     function_dict['Cinderella >=v0.3.1'] = {
             'plot': tp.update_cryolo_v1_0_4,
             'plot_data': ti.import_cinderella_v0_3_1,
             'content': tc.default_cinderella_v0_3_1,
             'executable': True,
             'has_path': 'sp_cinderella_predict.py',
-            'typ': 'select2d',
+            'typ': 'Select2d',
             'allow_empty': [],
             }
+
+    ### 2D train programs
 
     function_dict['crYOLO_train >=v1.5.4'] = {
             'plot': tp.dummy,
@@ -330,17 +355,35 @@ def get_function_dict():
             'content': tc.default_cryolo_train_v1_5_4,
             'executable': True,
             'has_path': 'cryolo_train.py',
-            'typ': 'train2d',
+            'typ': 'Train2d',
             'allow_empty': [],
             }
+
+
+    ### auto processing programs
+
+    function_dict['sp_auto >=v1.3'] = {
+            'plot': tp.dummy,
+            'plot_data': ti.dummy,
+            'content': tc.default_auto_sphire_v1_3,
+            'executable': True,
+            'has_path': 'sp_auto',
+            'typ': 'Auto3d',
+            'allow_empty': [],
+            }
+
+    ### Compression programs
 
     function_dict['Compress cmd'] = {
             'content': tc.default_compress_command_line,
             'executable': True,
             'has_path': False,
-            'typ': 'compress',
+            'typ': 'Compress',
             'allow_empty': ['--command_uncompress'],
             }
+
+    ### Other no executable stuff
+
     function_dict['Mount'] = {
             'plot': None,
             'plot_data': None,
@@ -577,29 +620,21 @@ def reduce_copy_entries(exclude_set, content):
     Return:
     None
     """
+    valid_sub_items = get_unique_types()
     for item in content:
         for sub_item in item:
-            if 'Motion' in sub_item:
-                name = 'Motion'
-            elif 'CTF' in sub_item:
-                name = 'CTF'
-            elif 'Picking' in sub_item:
-                name = 'Picking'
-            elif 'Extract' in sub_item:
-                name = 'Extract'
-            elif 'Class2d' in sub_item:
-                name = 'Class2d'
-            elif 'Select2d' in sub_item:
-                name = 'Select2d'
-            elif 'Train2d' in sub_item:
-                name = 'Train2d'
-            else:
-                continue
-
-            values = sub_item[name][1]['values']
-            for key in exclude_set:
-                if key in values:
-                    values.remove(key)
+            values = None
+            for entry in valid_sub_items:
+                try:
+                    values = sub_item[entry][1]['values']
+                except KeyError:
+                    continue
+                else:
+                    break
+            if values is not None:
+                for key in exclude_set:
+                    if key in values:
+                        values.remove(key)
 
 
 def reduce_path_widget(exclude_set, content):
@@ -751,46 +786,18 @@ def get_content_gui(content, template_name):
             'content': content[template_name]['Pipeline'],
             'layout': 'Settings',
             },
-        {
-            'name': 'Compress',
-            'widget': TabDocker,
-            'layout': 'Settings',
-            },
-        {
-            'name': 'Motion',
-            'widget': TabDocker,
-            'layout': 'Settings',
-            },
-        {
-            'name': 'CTF',
-            'widget': TabDocker,
-            'layout': 'Settings',
-            },
-        {
-            'name': 'Picking',
-            'widget': TabDocker,
-            'layout': 'Settings',
-            },
-        {
-            'name': 'Extract',
-            'widget': TabDocker,
-            'layout': 'Settings',
-            },
-        {
-            'name': 'Class2d',
-            'widget': TabDocker,
-            'layout': 'Settings',
-            },
-        {
-            'name': 'Select2d',
-            'widget': TabDocker,
-            'layout': 'Settings',
-            },
-        {
-            'name': 'Train2d',
-            'widget': TabDocker,
-            'layout': 'Settings',
-            },
+        ]
+
+    for entry in get_unique_types():
+        gui_content.append(
+            {
+                'name':entry,
+                'widget': TabDocker,
+                'layout': 'Settings',
+                },
+            )
+
+    gui_content.extend([
         {
             'name': 'Status',
             'widget': StatusContainer,
@@ -800,52 +807,19 @@ def get_content_gui(content, template_name):
             'content_font': content[template_name]['Font'],
             'layout': 'v2',
             },
-        {
-            'name': 'Plot Motion',
-            'widget': TabDocker,
-            'layout': 'Visualisation',
-            },
-        {
-            'name': 'Plot CTF',
-            'widget': TabDocker,
-            'layout': 'Visualisation',
-            },
-        {
-            'name': 'Plot Picking',
-            'widget': TabDocker,
-            'layout': 'Visualisation',
-            },
-        {
-            'name': 'Plot Extract',
-            'widget': TabDocker,
-            'layout': 'Visualisation',
-            },
-        {
-            'name': 'Plot Class2d',
-            'widget': TabDocker,
-            'layout': 'Visualisation',
-            },
-        {
-            'name': 'Plot Select2d',
-            'widget': TabDocker,
-            'layout': 'Visualisation',
-            },
-        {
-            'name': 'Plot Train2d',
-            'widget': TabDocker,
-            'layout': 'Visualisation',
-            },
-        ]
+        ])
 
     all_content = []
-    all_content.append(['Compress', content_extern['compress']])
-    all_content.append(['Motion', content_extern['motion']])
-    all_content.append(['CTF', content_extern['ctf']])
-    all_content.append(['Picking', content_extern['picking']])
-    all_content.append(['Extract', content_extern['extract']])
-    all_content.append(['Class2d', content_extern['class2d']])
-    all_content.append(['Select2d', content_extern['select2d']])
-    all_content.append(['Train2d', content_extern['train2d']])
+    for entry in get_unique_types():
+        gui_content.append(
+            {
+                'name': 'Plot {0}'.format(entry),
+                'widget': TabDocker,
+                'layout': 'Visualisation',
+                },
+            )
+        all_content.append([entry, content_extern[entry]])
+
     for typ, content_typ in all_content:
         for input_content in content_typ:
             gui_content.append({
@@ -864,21 +838,21 @@ def get_content_gui(content, template_name):
                     'name': 'Show images',
                     'widget': PlotContainer,
                     'content': 'image',
-                    'plot_type': typ.lower(),
+                    'plot_type': typ,
                     'layout': 'Plot {0}'.format(input_content),
                     })
                 gui_content.append({
                     'name': 'Plot per micrograph',
                     'widget': PlotContainer,
                     'content': 'values',
-                    'plot_type': typ.lower(),
+                    'plot_type': typ,
                     'layout': 'Plot {0}'.format(input_content),
                     })
                 gui_content.append({
                     'name': 'Plot histogram',
                     'widget': PlotContainer,
                     'content': 'histogram',
-                    'plot_type': typ.lower(),
+                    'plot_type': typ,
                     'layout': 'Plot {0}'.format(input_content),
                     })
 
@@ -892,21 +866,21 @@ def get_content_gui(content, template_name):
                     'name': 'Show images',
                     'widget': PlotContainer,
                     'content': 'image',
-                    'plot_type': '{0}_feedback'.format(typ.lower()),
+                    'plot_type': '{0}_feedback'.format(typ),
                     'layout': 'Plot {0}'.format(feedback_content),
                     })
                 gui_content.append({
                     'name': 'Plot per micrograph',
                     'widget': PlotContainer,
                     'content': 'values',
-                    'plot_type': '{0}_feedback'.format(typ.lower()),
+                    'plot_type': '{0}_feedback'.format(typ),
                     'layout': 'Plot {0}'.format(feedback_content),
                     })
                 gui_content.append({
                     'name': 'Plot histogram',
                     'widget': PlotContainer,
                     'content': 'histogram',
-                    'plot_type': '{0}_feedback'.format(typ.lower()),
+                    'plot_type': '{0}_feedback'.format(typ),
                     'layout': 'Plot {0}'.format(feedback_content),
                     })
         if typ == 'Motion':

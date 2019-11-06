@@ -158,6 +158,15 @@ class DefaultSettings(QDialog):
                             },
                         'content': [],
                         },
+                    'Auto3d': {
+                        'sub_content': {
+                            'sp_auto': {
+                                'sub_content': {},
+                                'content': ['sp_auto'],
+                                },
+                            },
+                        'content': [],
+                        },
                     'Compress': {
                         'sub_content': {
                             'Compress cmd': {

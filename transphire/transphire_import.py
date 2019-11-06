@@ -68,7 +68,7 @@ def get_dtype_dict():
     Dtype dict
     """
     dtype = {}
-    dtype['motion'] = [
+    dtype['Motion'] = [
         ('overall drift', '<f8'),
         ('average drift per frame', '<f8'),
         ('first frame drift', '<f8'),
@@ -77,7 +77,7 @@ def get_dtype_dict():
         ('image', '|U1200'),
         ]
 
-    dtype['ctf'] = [
+    dtype['CTF'] = [
         ('mic_number', '<f8'),
         ('defocus', '<f8'),
         ('defocus_diff', '<f8'),
@@ -89,20 +89,20 @@ def get_dtype_dict():
         ('image', '|U1200'),
         ]
 
-    dtype['picking'] = [
+    dtype['Picking'] = [
         ('particles', '<i8'),
         ('file_name', '|U1200'),
         ('image', '|U1200'),
         ]
 
-    dtype['extract'] = [
+    dtype['Extract'] = [
         ('accepted', '<i8'),
         ('rejected', '<i8'),
         ('file_name', '|U1200'),
         ('image', '|U1200'),
         ]
 
-    dtype['class2d'] = [
+    dtype['Class2d'] = [
         ('classes', '<i8'),
         ('accepted', '<i8'),
         ('rejected', '<i8'),
@@ -110,12 +110,17 @@ def get_dtype_dict():
         ('image', '|U1200'),
         ]
 
-    dtype['train2d'] = [
+    dtype['Train2d'] = [
         ('loss', '<f8'),
         ('file_name', '|U1200'),
         ]
 
-    dtype['select2d'] = [
+    dtype['Auto3d'] = [
+        ('resolution', '<f8'),
+        ('file_name', '|U1200'),
+        ]
+
+    dtype['Select2d'] = [
         ('classes', '<i8'),
         ('accepted', '<i8'),
         ('particles_accepted', '<i8'),
