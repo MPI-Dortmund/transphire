@@ -3067,6 +3067,11 @@ class ProcessThread(object):
         self.remove_from_queue_file(matches_in_queue, self.shared_dict_typ['list_file'])
         self.queue_com['log'].put(tu.create_log(self.name, 'run_extract', root_name, 'stop process', time.time() - start_prog))
 
+    @staticmethod
+    def symlink_rel(src, dst):
+        rel_path_src = os.path.relpath(src, os.path.dirname(dst))
+        os.symlink(rel_path_src, dst)
+
     def run_train2d(self, root_name):
         """
         Run Particle extraction.
@@ -3155,7 +3160,7 @@ class ProcessThread(object):
             tu.mkdir_p(new_box_dir)
 
             for file_name in sorted(glob.glob(os.path.join(box_dir, '*'))):
-                os.symlink(
+                os.symlink_rel(
                     file_name,
                     file_name.replace(box_dir, new_box_dir).replace('_original.box', '.box')
                     )
