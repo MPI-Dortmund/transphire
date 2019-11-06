@@ -95,6 +95,16 @@ class ProcessWorker(QObject):
     sig_plot_37 = pyqtSignal(str, object, object, str)
     sig_plot_38 = pyqtSignal(str, object, object, str)
     sig_plot_39 = pyqtSignal(str, object, object, str)
+    sig_plot_40 = pyqtSignal(str, object, object, str)
+    sig_plot_41 = pyqtSignal(str, object, object, str)
+    sig_plot_42 = pyqtSignal(str, object, object, str)
+    sig_plot_43 = pyqtSignal(str, object, object, str)
+    sig_plot_44 = pyqtSignal(str, object, object, str)
+    sig_plot_45 = pyqtSignal(str, object, object, str)
+    sig_plot_46 = pyqtSignal(str, object, object, str)
+    sig_plot_47 = pyqtSignal(str, object, object, str)
+    sig_plot_48 = pyqtSignal(str, object, object, str)
+    sig_plot_49 = pyqtSignal(str, object, object, str)
 
     def __init__(self, password, content_process, mount_directory, parent=None):
         """
