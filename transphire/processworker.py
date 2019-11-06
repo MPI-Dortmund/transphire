@@ -743,15 +743,13 @@ class ProcessWorker(QObject):
         Return:
         True, if programs exist, else False
         """
+        default_unique_types = tu.get_unique_types()
+        default_unique_types.remove('Compress')
         error = False
         check_files = []
-        check_files.append(['Path', self.settings['Copy']['Motion']])
-        check_files.append(['Path', self.settings['Copy']['CTF']])
-        check_files.append(['Path', self.settings['Copy']['Picking']])
-        check_files.append(['Path', self.settings['Copy']['Extract']])
-        check_files.append(['Path', self.settings['Copy']['Class2d']])
-        check_files.append(['Path', self.settings['Copy']['Select2d']])
-        check_files.append(['Path', self.settings['Copy']['Train2d']])
+        for entry in default_unique_types:
+            check_files.append(['Path', self.settings['Copy'][entry]])
+
         check_files.append(['Path', 'IMOD header'])
 
         try:
