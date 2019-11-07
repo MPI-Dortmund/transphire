@@ -215,7 +215,7 @@ class ProcessWorker(QObject):
             ]
 
         for name in names:
-            for feedback_number in range(int(self.settings['General']['Number of feedbacks'])):
+            for feedback_number in range(int(self.settings['General']['Number of feedbacks'])+1):
                 new_name = '{0}_folder_feedback_{1}'.format(name, feedback_number)
                 self.settings[new_name] = {}
 
@@ -229,7 +229,7 @@ class ProcessWorker(QObject):
                     else:
                         folder_path = os.path.join(
                             self.settings['project_folder'],
-                            '{0}_feedback_{1}'.format(program_name, feedback_number-1)
+                            '{0}_feedback_{1}'.format(program_name, int(self.settings['General']['Number of feedbacks']) - feedback_number + 1)
                             )
                     self.settings[new_name][entry] = folder_path
                     folder_list.append(folder_path)

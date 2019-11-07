@@ -1045,7 +1045,7 @@ class MainWindow(QMainWindow):
             settings['project_folder'], 'Software_meta'
             )
 
-        settings['do_feedback_loop'] = 0
+        settings['do_feedback_loop'] = int(settings['General']['Number of feedbacks']) + 1
         settings['feedback_file'] = os.path.join(settings['project_folder'], 'do_feedback')
 
         names = [
@@ -1068,7 +1068,7 @@ class MainWindow(QMainWindow):
                 base_dir2 = settings['scratch_folder']
                 folder_name = settings['Copy'][entry].replace(' ', '_').replace('>=', '')
 
-            for index in range(int(settings['General']['Number of feedbacks'])):
+            for index in range(int(settings['General']['Number of feedbacks']) + 1):
                 if index == 0:
                     folder_name = folder_name
                 else:

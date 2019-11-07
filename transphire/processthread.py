@@ -502,15 +502,15 @@ class ProcessThread(object):
             if switch_feedback:
                 tu.copy(
                     self.shared_dict['typ'][aim]['save_file'],
-                    '{0}_feedback'.format(self.shared_dict['typ'][aim]['save_file'])
+                    '{0}_feedback_{1}'.format(self.shared_dict['typ'][aim]['save_file'], self.settings['do_feedback_loop'].value)
                     )
                 tu.copy(
                     self.shared_dict['typ'][aim]['list_file'],
-                    '{0}_feedback'.format(self.shared_dict['typ'][aim]['list_file'])
+                    '{0}_feedback_{1}'.format(self.shared_dict['typ'][aim]['list_file'], self.settings['do_feedback_loop'].value)
                     )
                 tu.copy(
                     self.shared_dict['typ'][aim]['done_file'],
-                    '{0}_feedback'.format(self.shared_dict['typ'][aim]['done_file'])
+                    '{0}_feedback_{1}'.format(self.shared_dict['typ'][aim]['done_file'], self.settings['do_feedback_loop'].value)
                     )
 
             pattern = re.compile(remove_pattern)
@@ -4073,18 +4073,18 @@ class ProcessThread(object):
                 command=command
                 )
 
-            self.shared_dict_typ['queue_list_lock'].acquire()
-            try:
-                matches_in_queue = []
-                for entry in sorted(glob.glob(os.path.join(new_box_dir, '*'))):
-                    self.add_to_queue_file(
-                        root_name=entry,
-                        file_name=self.shared_dict_typ['list_file'],
-                        )
-                    file_name = tu.get_name(tu.get_name(tu.get_name(entry)))[:-len('_original')]
-                    matches_in_queue.extend(self.all_in_queue_file(self.typ, file_name, lock=False))
-            finally:
-                self.shared_dict_typ['queue_list_lock'].release()
+            #self.shared_dict_typ['queue_list_lock'].acquire()
+            #try:
+            #    matches_in_queue = []
+            #    for entry in sorted(glob.glob(os.path.join(new_box_dir, '*'))):
+            #        self.add_to_queue_file(
+            #            root_name=entry,
+            #            file_name=self.shared_dict_typ['list_file'],
+            #            )
+            #        file_name = tu.get_name(tu.get_name(tu.get_name(entry)))[:-len('_original')]
+            #        matches_in_queue.extend(self.all_in_queue_file(self.typ, file_name, lock=False))
+            #finally:
+            #    self.shared_dict_typ['queue_list_lock'].release()
 
         else:
             self.shared_dict_typ['queue_list_lock'].acquire()
@@ -4166,6 +4166,15 @@ class ProcessThread(object):
                     elif root_name.endswith('cbox'):
                         dont_tar = True
 
+        if root_name.startswith('bdb:') or root_name.endswith('.bdb'):
+            if root_name.startswith('bdb:'):
+                root_name = os.path.join(
+                    os.path.dirname(root_name.replace('bdb:', '')),
+                    'EMAN2DB',
+                    os.path.basename(root_name.replace('bdb:', ''))
+                    )
+            root_name = [entry for entry in glob.glob(os.path.join(os.path.dirname(root_name), '*'))]
+
         if root_name == 'None':
             self.shared_dict_typ['queue_list_lock'].acquire()
             try:
@@ -4219,11 +4228,15 @@ class ProcessThread(object):
             finally:
                 self.shared_dict_typ['queue_list_lock'].release()
 
+            if not isinstance(root_name, list):
+                root_name = [root_name]
+
             with tarfile.open(tar_file, 'a') as tar:
-                tar.add(
-                    root_name,
-                    arcname=os.path.join('..', root_name.replace(self.settings['project_folder'], ''))
-                    )
+                for entry in root_name:
+                    tar.add(
+                        entry,
+                        arcname=os.path.join('..', root_name.replace(self.settings['project_folder'], ''))
+                        )
 
             self.shared_dict_typ['queue_list_lock'].acquire()
             try:
@@ -4253,53 +4266,57 @@ class ProcessThread(object):
             finally:
                 self.shared_dict_typ['queue_list_lock'].release()
 
+        if not isinstance(copy_file, list):
+            copy_file = [copy_file]
 
-        mount_folder_name = '{0}_folder'.format(self.typ.lower())
-        mount_name = self.settings['Copy'][self.typ]
-        sudo = self.settings['Mount'][mount_name]['Need sudo for copy?']
-        protocol = self.settings['Mount'][mount_name]['Protocol']
-        if self.settings['General']['Project directory'] != '.':
-            new_suffix = os.path.join(
-                os.path.dirname(copy_file).replace(
-                    self.settings['General']['Project directory'],
-                    ''
-                    ),
-                os.path.basename(copy_file),
-                )
-        else:
-            new_suffix = copy_file
-        new_suffix = new_suffix.split('/')
-        new_prefix = os.path.relpath(self.settings[mount_folder_name]).split('/')
+        for copy_file_name in copy_file:
+            mount_folder_name = '{0}_folder'.format(self.typ.lower())
+            mount_name = self.settings['Copy'][self.typ]
+            sudo = self.settings['Mount'][mount_name]['Need sudo for copy?']
+            protocol = self.settings['Mount'][mount_name]['Protocol']
+            if self.settings['General']['Project directory'] != '.':
+                new_suffix = os.path.join(
+                    os.path.dirname(copy_file_name).replace(
+                        self.settings['General']['Project directory'],
+                        ''
+                        ),
+                    os.path.basename(copy_file_name),
+                    )
+            else:
+                new_suffix = copy_file_name
+            new_suffix = new_suffix.split('/')
+            new_prefix = os.path.relpath(self.settings[mount_folder_name]).split('/')
 
-        if sudo == 'True':
-            copy_method = self.copy_as_another_user
-        else:
-            copy_method = self.copy_as_user
+            if sudo == 'True':
+                copy_method = self.copy_as_another_user
+            else:
+                copy_method = self.copy_as_user
 
-        if protocol == 'hdd':
-            new_name = None
-            for hdd_folder in glob.glob(
-                    '{0}/*'.format(
-                        self.settings[mount_folder_name]
-                        )
-                    ):
-                if os.path.getsize(copy_file) > \
-                        sh.disk_usage(hdd_folder).free:
-                    new_name = None
-                    continue
-                else:
-                    new_name = os.path.join(
-                        *new_prefix,
-                        os.path.basename(hdd_folder),
-                        *new_suffix
-                        )
-                    break
-            if new_name is None:
-                raise IOError('No space on HDD left!')
-        else:
-            new_name = os.path.join(*new_prefix, *new_suffix)
+            if protocol == 'hdd':
+                new_name = None
+                for hdd_folder in glob.glob(
+                        '{0}/*'.format(
+                            self.settings[mount_folder_name]
+                            )
+                        ):
+                    if os.path.getsize(copy_file_name) > \
+                            sh.disk_usage(hdd_folder).free:
+                        new_name = None
+                        continue
+                    else:
+                        new_name = os.path.join(
+                            *new_prefix,
+                            os.path.basename(hdd_folder),
+                            *new_suffix
+                            )
+                        break
+                if new_name is None:
+                    raise IOError('No space on HDD left!')
+            else:
+                new_name = os.path.join(*new_prefix, *new_suffix)
 
-        copy_method(copy_file, new_name)
+            copy_method(copy_file_name, new_name)
+
         self.shared_dict_typ['queue_list_time'] = time.time()
         self.queue_com['log'].put(tu.create_log(self.name, 'run_copy_extern', root_name, 'stop process', time.time() - start_prog))
 
