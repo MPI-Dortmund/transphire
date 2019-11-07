@@ -1303,7 +1303,6 @@ class ProcessThread(object):
                     pass
         self.queue_com['log'].put(tu.create_log(self.name, 'run_software_meta stop', time.time() - start_prog))
 
-
     def run_find(self):
         """
         Find files
@@ -3170,7 +3169,7 @@ class ProcessThread(object):
             tu.mkdir_p(new_box_dir)
 
             for file_name in sorted(glob.glob(os.path.join(box_dir, '*'))):
-                symlink_rel(
+                self.symlink_rel(
                     file_name,
                     file_name.replace(box_dir, new_box_dir).replace('_original.box', '.box')
                     )

@@ -790,6 +790,7 @@ def default_pipeline():
             int,
             'Select2d;' +
             'Train2d:Train2d,' +
+            'Auto3d:Auto3d,' +
             'Select2d to work:Copy to work:Copy_to_work,' +
             'Select2d to HDD:Copy to HDD:Copy_to_hdd,' +
             'Select2d to backup:Copy to backup:Copy_to_backup',
@@ -805,6 +806,18 @@ def default_pipeline():
             'Train2d to work:Copy to work:Copy_to_work,' +
             'Train2d to HDD:Copy to HDD:Copy_to_hdd,' +
             'Train2d to backup:Copy to backup:Copy_to_backup',
+            'PLAIN',
+            'Main',
+            ''
+            ],
+        [
+            'Auto3d',
+            '1',
+            int,
+            'Auto3d;' +
+            'Auto3d to work:Copy to work:Copy_to_work,' +
+            'Auto3d to HDD:Copy to HDD:Copy_to_hdd,' +
+            'Auto3d to backup:Copy to backup:Copy_to_backup',
             'PLAIN',
             'Main',
             ''
