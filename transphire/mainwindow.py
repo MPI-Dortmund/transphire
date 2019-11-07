@@ -169,7 +169,7 @@ class MainWindow(QMainWindow):
         for value in function_dict.values():
             if value['typ'] is not None and value['typ'] not in self.types:
                 self.types.append(value['typ'])
-                for index in range(10):
+                for index in range(5):
                     self.types.append('{0}_feedback_{1}'.format(value['typ'], index))
 
         # Settings folder
