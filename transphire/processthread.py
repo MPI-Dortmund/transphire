@@ -2935,10 +2935,7 @@ class ProcessThread(object):
                 self.shared_dict_typ['queue_list_lock'].release()
             return None
 
-        if self.settings['do_feedback_loop'].value:
-            folder_name = 'extract_folder_feedback'
-        else:
-            folder_name = 'extract_folder'
+        folder_name = 'extract_folder_feedback_{0}'.format(self.settings['do_feedback_loop'].value)
 
         start_prog = time.time()
         self.queue_com['log'].put(tu.create_log(self.name, 'run_extract', root_name, 'start process'))
@@ -3090,10 +3087,7 @@ class ProcessThread(object):
                 self.shared_dict_typ['queue_list_lock'].release()
             return None
 
-        if self.settings['do_feedback_loop'].value:
-            folder_name = 'train2d_folder_feedback'
-        else:
-            folder_name = 'train2d_folder'
+        folder_name = 'train2d_folder_feedback_{0}'.format(self.settings['do_feedback_loop'].value)
 
         start_prog = time.time()
         self.queue_com['log'].put(tu.create_log(self.name, 'run_train2d', root_name, 'start process'))
@@ -3297,7 +3291,7 @@ class ProcessThread(object):
                 finally:
                     self.shared_dict['typ'][type_name]['queue_lock'].release()
 
-        self.settings['do_feedback_loop'].value = False
+        self.settings['do_feedback_loop'].value -= 1
         with open(self.settings['feedback_file'], 'w') as write:
             write.write(str(self.settings['do_feedback_loop'].value))
 
@@ -3312,10 +3306,7 @@ class ProcessThread(object):
                 self.shared_dict_typ['queue_list_lock'].release()
             return None
 
-        if self.settings['do_feedback_loop'].value:
-            folder_name = 'class2d_folder_feedback'
-        else:
-            folder_name = 'class2d_folder'
+        folder_name = 'class2d_folder_feedback_{0}'.format(self.settings['do_feedback_loop'].value)
 
         start_prog = time.time()
         self.queue_com['log'].put(tu.create_log(self.name, 'run_class2d', root_name, 'start process'))
@@ -3534,10 +3525,7 @@ class ProcessThread(object):
         # Input is ISAC_DIR|||STACK_NAME
         root_name, _ = root_name.split('|||')
 
-        if self.settings['do_feedback_loop'].value:
-            folder_name = 'select2d_folder_feedback'
-        else:
-            folder_name = 'select2d_folder'
+        folder_name = 'select2d_folder_feedback_{0}'.format(self.settings['do_feedback_loop'].value)
 
         start_prog = time.time()
         self.queue_com['log'].put(tu.create_log(self.name, 'run_select_2d', root_name, 'start process'))
@@ -3688,12 +3676,8 @@ class ProcessThread(object):
             self.settings[self.settings['Copy']['Picking']]['--conf'] = new_config
 
 
-        if self.settings['do_feedback_loop'].value:
-            folder_name = 'picking_folder_feedback'
-            entry_name = 'Picking_folder_feedback'
-        else:
-            folder_name = 'picking_folder'
-            entry_name = 'Picking_folder'
+        folder_name = 'picking_folder_feedback_{0}'.format(self.settings['do_feedback_loop'].value)
+        entry_name = 'Picking_folder_feedback_{0}'.format(self.settings['do_feedback_loop'].value)
 
         if root_name == 'None':
             pass
@@ -4050,10 +4034,8 @@ class ProcessThread(object):
                 self.shared_dict_typ['queue_list_lock'].release()
             return None
 
-        if self.settings['do_feedback_loop'].value:
-            folder_name = 'auto3d_folder_feedback'
-        else:
-            folder_name = 'auto3d_folder'
+        folder_name = 'auto3d_folder_feedback_{0}'.format(self.settings['do_feedback_loop'].value)
+
 
         start_prog = time.time()
         self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name, 'start process'))

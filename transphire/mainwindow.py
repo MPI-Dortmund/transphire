@@ -169,7 +169,8 @@ class MainWindow(QMainWindow):
         for value in function_dict.values():
             if value['typ'] is not None and value['typ'] not in self.types:
                 self.types.append(value['typ'])
-                self.types.append('{0}_feedback'.format(value['typ']))
+                for index in range(10):
+                    self.types.append('{0}_feedback_{1}'.format(value['typ'], index))
 
         # Settings folder
         self.settings_folder = settings_folder
@@ -1044,7 +1045,7 @@ class MainWindow(QMainWindow):
             settings['project_folder'], 'Software_meta'
             )
 
-        settings['do_feedback_loop'] = bool(settings['General']['Skip crYOLO retrain'] == 'False')
+        settings['do_feedback_loop'] = 0
         settings['feedback_file'] = os.path.join(settings['project_folder'], 'do_feedback')
 
         names = [
@@ -1067,23 +1068,20 @@ class MainWindow(QMainWindow):
                 base_dir2 = settings['scratch_folder']
                 folder_name = settings['Copy'][entry].replace(' ', '_').replace('>=', '')
 
-            settings['{0}_folder'.format(entry.lower())] = os.path.join(
-                base_dir,
-                folder_name
-                )
-            settings['{0}_folder_feedback'.format(entry.lower())] = os.path.join(
-                base_dir,
-                '{0}_feedback'.format(folder_name)
-                )
-            if base_dir2 is not None:
-                settings['scratch_{0}_folder'.format(entry.lower())] = os.path.join(
-                    base_dir2,
+            for index in range(int(settings['General']['Number of feedbacks'])):
+                if index == 0:
+                    folder_name = folder_name
+                else:
+                    folder_name = '{0}_feedback_{1}'.format(folder_name, index)
+                settings['{0}_folder_feedback_{1}'.format(entry.lower(), index)] = os.path.join(
+                    base_dir,
                     folder_name
                     )
-                settings['scratch_{0}_folder_feedback'.format(entry.lower())] = os.path.join(
-                    base_dir2,
-                    '{0}_feedback'.format(folder_name)
-                    )
+                if base_dir2 is not None:
+                    settings['scratch_{0}_folder_feedback_{1}'.format(entry.lower(), index)] = os.path.join(
+                        base_dir2,
+                        folder_name
+                        )
 
         return settings
 

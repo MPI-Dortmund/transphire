@@ -135,7 +135,7 @@ class ProcessWorker(QObject):
         # Events
         self.sig_start.connect(self.run)
 
-    def emit_plot_signals(self):
+    def emit_plot_signals(self, folder_list):
         # Set CTF settings
         names = [
             entry.replace('_entries', '')
@@ -145,39 +145,34 @@ class ProcessWorker(QObject):
             ]
 
         for name in names:
-            self.settings['{0}_folder_feedback'.format(name)] = {}
-            self.settings['{0}_folder'.format(name)] = {}
+            for feedback_number in range(int(self.settings['General']['Number of feedbacks'])):
+                new_name = '{0}_folder_feedback_{1}'.format(name, feedback_number)
+                self.settings[new_name] = {}
 
-            for entry in self.settings['Copy']['{0}_entries'.format(name)]:
-                program_name = entry.replace(' ', '_').replace('>=', '')
-                self.settings['{0}_folder_feedback'.format(name)][entry] = os.path.join(
-                    self.settings['project_folder'],
-                    '{0}_feedback'.format(program_name)
-                    )
-                self.settings['{0}_folder'.format(name)][entry] = os.path.join(
-                    self.settings['project_folder'],
-                    program_name
-                    )
+                for entry in self.settings['Copy']['{0}_entries'.format(name)]:
+                    program_name = entry.replace(' ', '_').replace('>=', '')
+                    if feedback_number == 0:
+                        folder_path = os.path.join(
+                            self.settings['project_folder'],
+                            program_name
+                            )
+                    else:
+                        folder_path = os.path.join(
+                            self.settings['project_folder'],
+                            '{0}_feedback_{1}'.format(program_name, feedback_number-1)
+                            )
+                    self.settings[new_name][entry] = folder_path
+                    folder_list.append(folder_path)
 
-                try:
-                    self.signals[name].emit(
-                        entry,
-                        self.settings['{0}_folder'.format(name)][entry],
-                        self.settings,
-                        self.settings['Copy'][name]
-                        )
-                except KeyError:
-                    pass
-
-                try:
-                    self.signals['{0}_feedback'.format(name)].emit(
-                        '{0} feedback'.format(entry),
-                        self.settings['{0}_folder_feedback'.format(name)][entry],
-                        self.settings,
-                        '{0} feedback'.format(self.settings['Copy'][name])
-                        )
-                except KeyError:
-                    pass
+                    try:
+                        self.signals[name].emit(
+                            entry,
+                            self.settings[new_name][entry],
+                            self.settings,
+                            self.settings['Copy'][name]
+                            )
+                    except KeyError:
+                        pass
 
     @pyqtSlot(object)
     def run(self, settings):
@@ -503,7 +498,7 @@ class ProcessWorker(QObject):
             elif 'ctf' == entry.lower():
                 # Set CTF settings
                 if self.settings['Copy']['CTF'] != 'False':
-                    folder_list.append('ctf_folder')
+                    folder_list.append('ctf_folder_feedback_0')
                     use_threads_list.append('CTF')
                     ctf_name = self.settings['Copy']['CTF']
                     try:
@@ -520,29 +515,26 @@ class ProcessWorker(QObject):
                     self.settings['Copy']['CTF_frames'] = 'False'
                     self.settings['Copy']['CTF_sum'] = 'False'
             else:
-                # Set Compress settings
                 if self.settings['Copy'][entry] != 'False':
-                    folder_list.append('{0}_folder'.format(entry.lower()))
+                    folder_list.append('{0}_folder_feedback_0'.format(entry.lower()))
                     use_threads_list.append(entry)
                 else:
                     pass
 
-        # Create output directories
-        for entry in folder_list:
-            try:
-                tu.mkdir_p(self.settings[entry])
-            except PermissionError:
-                continue
-            try:
-                tu.mkdir_p(self.settings['{0}_feedback'.format(entry)])
-            except KeyError:
-                continue
-            except OSError as err:
-                print(str(err))
-                self.sig_error.emit(str(err))
-                return None
+        self.emit_plot_signals(folder_list=folder_list)
 
-        self.emit_plot_signals()
+        # Create output directories
+        #for entry in folder_list:
+        #    try:
+        #        tu.mkdir_p(self.settings[entry])
+        #    except PermissionError:
+        #        continue
+        #    except KeyError:
+        #        continue
+        #    except OSError as err:
+        #        print(str(err))
+        #        self.sig_error.emit(str(err))
+        #        return None
 
         # Fill different dictionarys with process information
         gpu_mutex_dict = dict([
@@ -573,12 +565,7 @@ class ProcessWorker(QObject):
         try:
             with open(self.settings['feedback_file'], 'r') as read:
                 content = read.read().strip()
-                if content == '0':
-                    self.settings['do_feedback_loop'] = False
-                elif content == '1':
-                    self.settings['do_feedback_loop'] = True
-                else:
-                    assert False, ('Content of file not 1 or 0', content)
+                self.settings['do_feedback_loop'] = int(content)
         except FileNotFoundError:
             pass
 
