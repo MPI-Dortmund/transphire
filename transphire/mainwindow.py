@@ -533,8 +533,12 @@ class MainWindow(QMainWindow):
             plot_name = ''
             try:
                 plot_name = layout.replace('Plot ', '')
+                if 'feedback' in plot_name:
+                    plot_name = plot_name[:-len(' feedback 1')]
+                else:
+                    plot_name = plot_name
                 plot_labels = ti.get_dtype_dict()[
-                    tu.get_function_dict()[plot_name.replace(' feedback', '')]['typ']
+                    tu.get_function_dict()[plot_name]['typ']
                     ]
             except KeyError:
                 pass
@@ -1057,12 +1061,15 @@ class MainWindow(QMainWindow):
         names.append('Copy_to_hdd')
         for entry in names:
             base_dir2 = None
+            no_feedback = False
             if 'copy_to_hdd' in entry.lower():
                 base_dir = self.mount_directory
                 folder_name = entry.lower()
+                no_feedback = True
             elif 'copy_to_' in entry.lower():
                 base_dir = self.mount_directory
                 folder_name = settings['Copy'][entry.replace('_', ' ')].replace(' ', '_').replace('>=', '')
+                no_feedback = True
             else:
                 base_dir = settings['project_folder']
                 base_dir2 = settings['scratch_folder']
@@ -1071,6 +1078,8 @@ class MainWindow(QMainWindow):
             for index in range(int(settings['General']['Number of feedbacks']) + 1):
                 if index == 0:
                     folder_name = folder_name
+                elif no_feedback:
+                    continue
                 else:
                     folder_name = '{0}_feedback_{1}'.format(folder_name, index)
                 settings['{0}_folder_feedback_{1}'.format(entry.lower(), index)] = os.path.join(

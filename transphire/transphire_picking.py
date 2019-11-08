@@ -116,10 +116,7 @@ def find_logfiles(root_path, file_name, settings, queue_com, name):
     Returns:
     list of log files
     """
-    if settings['do_feedback_loop'].value:
-        folder_name = 'picking_folder_feedback'
-    else:
-        folder_name = 'picking_folder'
+    folder_name = 'picking_folder_feedback_{0}'.format(settings['do_feedback_loop'].value)
     log_files = None
     copied_log_files = None
     picking_name = settings['Copy']['Picking']
@@ -208,10 +205,7 @@ def create_filter_command(
     block_gpu = False
     gpu_list = []
 
-    if settings['do_feedback_loop'].value:
-        folder_name = 'picking_folder_feedback'
-    else:
-        folder_name = 'picking_folder'
+    folder_name = 'picking_folder_feedback_{0}'.format(settings['do_feedback_loop'].value)
 
     file_output_tmp = file_input
     if settings[picking_name]['Filter micrographs'] == 'True':
@@ -447,10 +441,7 @@ def create_box_jpg(file_name, settings, queue_com, name):
     Return:
     It creates a file.
     """
-    if settings['do_feedback_loop'].value:
-        folder_name = 'picking_folder_feedback'
-    else:
-        folder_name = 'picking_folder'
+    folder_name = 'picking_folder_feedback_{0}'.format(settings['do_feedback_loop'].value)
     picking_name = settings['Copy']['Picking']
     box_file = [entry for entry in find_logfiles(file_name, file_name, settings, queue_com, name)[0] if entry.endswith('.box') and '/EMAN_START_END/' not in entry][0]
     jpg_file = os.path.join(settings[folder_name], '{0}.png'.format(file_name))

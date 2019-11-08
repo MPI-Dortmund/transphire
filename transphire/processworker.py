@@ -464,7 +464,7 @@ class ProcessWorker(QObject):
                 pass
             else:
                 try:
-                    for folder in glob.glob('{0}/*'.format(self.settings['copy_to_hdd_folder'])):
+                    for folder in glob.glob('{0}/*'.format(self.settings['copy_to_hdd_folder_feedback_0'])):
                         if not os.path.ismount(folder):
                             try:
                                 os.listdir(folder)
@@ -500,7 +500,7 @@ class ProcessWorker(QObject):
                 for name in ['work', 'backup']:
                     short_name = 'Copy_to_{0}'.format(name)
                     long_name = 'Copy to {0}'.format(name)
-                    folder_name = '{0}_folder'.format(short_name.lower())
+                    folder_name = '{0}_folder_feedback_0'.format(short_name.lower())
                     user_name = '{0}_user'.format(short_name)
                     self.settings['Copy'][short_name] = \
                         self.settings['Copy'][long_name]

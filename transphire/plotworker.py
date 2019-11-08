@@ -71,8 +71,11 @@ class PlotWorker(QObject):
         Returns:
         None
         """
-        name_no_feedback = name.replace(' feedback', '')
-        if name not in ('Later', 'Later feedback', 'False', 'False feedback'):
+        if 'feedback' in name:
+            name_no_feedback = name[:-len(' feedback 1')]
+        else:
+            name_no_feedback = name
+        if name_no_feedback not in ('Later', 'False'):
             if name == current_name:
                 self.settings.append([name, name_no_feedback, directory_name, settings])
 

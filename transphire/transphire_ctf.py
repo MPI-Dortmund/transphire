@@ -156,7 +156,7 @@ def find_logfiles(root_path, file_name, settings, queue_com, name):
     """
     log_files = None
     copied_log_files = None
-    ctf_root_path = os.path.join(settings['ctf_folder'], file_name)
+    ctf_root_path = os.path.join(settings['ctf_folder_feedback_0'], file_name)
     ctf_name = settings['Copy']['CTF']
     if 'CTFFIND4' in ctf_name:
         if tu.is_higher_version(ctf_name, '4.1.8'):
@@ -187,7 +187,7 @@ def find_logfiles(root_path, file_name, settings, queue_com, name):
                     pass
 
                 new_file = os.path.join(
-                    settings['ctf_folder'],
+                    settings['ctf_folder_feedback_0'],
                     os.path.basename(log_file)
                     )
                 log_files.append(log_file)
@@ -628,7 +628,7 @@ def combine_ctf_outputs(
 
     ctf_name = settings['Copy']['CTF']
     ctf_settings = settings[ctf_name]
-    ctf_folder = settings['ctf_folder']
+    ctf_folder = settings['ctf_folder_feedback_0']
     project_folder = '{0}/'.format(settings['project_folder'])
 
     if ctf_name.lower().startswith('cter'):
@@ -1019,17 +1019,17 @@ def create_jpg_file(input_mrc_file, settings, ctf_name):
     input_ctf_file = None
     input_1d_file = None
     if 'CTFFIND4' in ctf_name:
-        input_ctf_file = os.path.join(settings['ctf_folder'], '{0}.mrc'.format(file_name))
-        input_1d_file = os.path.join(settings['ctf_folder'], '{0}_avrot.txt'.format(file_name))
+        input_ctf_file = os.path.join(settings['ctf_folder_feedback_0'], '{0}.mrc'.format(file_name))
+        input_1d_file = os.path.join(settings['ctf_folder_feedback_0'], '{0}_avrot.txt'.format(file_name))
     elif 'Gctf' in ctf_name:
-        input_ctf_file = os.path.join(settings['ctf_folder'], '{0}.ctf'.format(file_name))
-        input_1d_file = os.path.join(settings['ctf_folder'], '{0}_EPA.log'.format(file_name))
+        input_ctf_file = os.path.join(settings['ctf_folder_feedback_0'], '{0}.ctf'.format(file_name))
+        input_1d_file = os.path.join(settings['ctf_folder_feedback_0'], '{0}_EPA.log'.format(file_name))
     elif 'CTER' in ctf_name:
         if tu.is_higher_version(ctf_name, '1.3'):
-            input_ctf_file = os.path.join(settings['ctf_folder'], file_name, 'power2d', '{0}_pws.mrc'.format(file_name))
-            input_1d_file = os.path.join(settings['ctf_folder'], file_name, 'pwrot', '{0}_rotinf.txt'.format(file_name))
+            input_ctf_file = os.path.join(settings['ctf_folder_feedback_0'], file_name, 'power2d', '{0}_pws.mrc'.format(file_name))
+            input_1d_file = os.path.join(settings['ctf_folder_feedback_0'], file_name, 'pwrot', '{0}_rotinf.txt'.format(file_name))
         elif tu.is_higher_version(ctf_name, '1.0'):
-            input_1d_file = os.path.join(settings['ctf_folder'], file_name, 'pwrot', '{0}_rotinf.txt'.format(file_name))
+            input_1d_file = os.path.join(settings['ctf_folder_feedback_0'], file_name, 'pwrot', '{0}_rotinf.txt'.format(file_name))
 
     try:
         if not os.path.exists(input_ctf_file):
@@ -1042,13 +1042,13 @@ def create_jpg_file(input_mrc_file, settings, ctf_name):
     except TypeError:
         input_1d_file = None
 
-    tu.mkdir_p(os.path.join(settings['ctf_folder'], 'jpg'))
-    tu.mkdir_p(os.path.join(settings['ctf_folder'], 'jpg_2'))
-    tu.mkdir_p(os.path.join(settings['ctf_folder'], 'jpg_3'))
+    tu.mkdir_p(os.path.join(settings['ctf_folder_feedback_0'], 'jpg'))
+    tu.mkdir_p(os.path.join(settings['ctf_folder_feedback_0'], 'jpg_2'))
+    tu.mkdir_p(os.path.join(settings['ctf_folder_feedback_0'], 'jpg_3'))
 
-    jpg_file_1 = os.path.join(settings['ctf_folder'], 'jpg', '{0}.jpg'.format(file_name))
-    jpg_file_2 = os.path.join(settings['ctf_folder'], 'jpg_2', '{0}.jpg'.format(file_name))
-    jpg_file_3 = os.path.join(settings['ctf_folder'], 'jpg_3', '{0}.jpg'.format(file_name))
+    jpg_file_1 = os.path.join(settings['ctf_folder_feedback_0'], 'jpg', '{0}.jpg'.format(file_name))
+    jpg_file_2 = os.path.join(settings['ctf_folder_feedback_0'], 'jpg_2', '{0}.jpg'.format(file_name))
+    jpg_file_3 = os.path.join(settings['ctf_folder_feedback_0'], 'jpg_3', '{0}.jpg'.format(file_name))
 
     arr_1 = None
     arr_2 = None

@@ -51,7 +51,7 @@ def create_stack_combine_command(class2d_name, file_names, file_name, output_dir
             shell = False
     else:
         message = '\n'.join([
-            '{0}: Not known!'.format(settings['Copy']['CTF']),
+            '{0}: Not known!'.format(settings['Copy']['Class2d']),
             'Please contact the TranSPHIRE authors!'
             ])
         queue_com['error'].put(

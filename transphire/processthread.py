@@ -397,9 +397,9 @@ class ProcessThread(object):
         processes = [
             ['lost_input_frames', 'Search path frames'],
             ['lost_input_meta', 'Search path meta'],
-            ['lost_work', 'copy_to_work_folder'],
-            ['lost_backup', 'copy_to_backup_folder'],
-            ['lost_hdd', 'copy_to_hdd_folder']
+            ['lost_work', 'copy_to_work_folder_feedback_0'],
+            ['lost_backup', 'copy_to_backup_folder_feedback_0'],
+            ['lost_hdd', 'copy_to_hdd_folder_feedback_0']
             ]
         for process, folder in processes:
             if self.shared_dict_typ[process]:
@@ -983,7 +983,7 @@ class ProcessThread(object):
                 )
             )
         compressed_file = os.path.join(
-            self.settings['compress_folder'],
+            self.settings['compress_folder_feedback_0'],
             '{0}.{1}'.format(
                 basename,
                 self.settings[self.settings['Copy']['Compress']]['--command_compress_extension'],
@@ -2159,7 +2159,7 @@ class ProcessThread(object):
                 raise IOError('Compressed file and Stack file does not exist!')
 
             compressed_file_name = os.path.join(
-                self.settings['compress_folder'],
+                self.settings['compress_folder_feedback_0'],
                 '{0}.{1}'.format(
                     tu.get_name(root_name[len(self.settings['stack_folder'])+1:]),
                     compress_extension
@@ -2193,7 +2193,7 @@ class ProcessThread(object):
 
             # Create an unblur shift file
             file_shift = os.path.join(
-                self.settings['motion_folder'],
+                self.settings['motion_folder_feedback_0'],
                 '.{0}_shift'.format(self.name)
                 )
 
@@ -2230,20 +2230,20 @@ class ProcessThread(object):
             # Create the folders
             # Variables
             output_transfer_root = os.path.join(
-                self.settings['motion_folder'],
+                self.settings['motion_folder_feedback_0'],
                 output_folder_name
                 )
             output_transfer_log = os.path.join(
-                self.settings['motion_folder'],
+                self.settings['motion_folder_feedback_0'],
                 output_logfile
                 )
             # Scratch
             output_transfer_scratch_root = os.path.join(
-                self.settings['scratch_motion_folder'],
+                self.settings['scratch_motion_folder_feedback_0'],
                 output_folder_name
                 )
             output_transfer_log_scratch = os.path.join(
-                self.settings['scratch_motion_folder'],
+                self.settings['scratch_motion_folder_feedback_0'],
                 output_logfile
                 )
 
@@ -2426,7 +2426,7 @@ class ProcessThread(object):
                         zero_list=[],
                         non_zero_list=[file_dws_post_move],
                         exists_list=[],
-                        folder=self.settings['motion_folder'],
+                        folder=self.settings['motion_folder_feedback_0'],
                         command='copy'
                         )
                 tu.copy(file_dw_pre_move, file_dw_post_move)
@@ -2434,12 +2434,12 @@ class ProcessThread(object):
                     zero_list=[],
                     non_zero_list=[file_dw_post_move],
                     exists_list=[],
-                    folder=self.settings['motion_folder'],
+                    folder=self.settings['motion_folder_feedback_0'],
                     command='copy'
                     )
 
-            if os.path.realpath(self.settings['scratch_motion_folder']) != \
-                    os.path.realpath(self.settings['motion_folder']):
+            if os.path.realpath(self.settings['scratch_motion_folder_feedback_0']) != \
+                    os.path.realpath(self.settings['motion_folder_feedback_0']):
                 tu.copy(file_output_scratch, file_output)
                 tu.copy(file_stdout_scratch, file_stdout)
                 tu.copy(file_stderr_scratch, file_stderr)
@@ -2454,7 +2454,7 @@ class ProcessThread(object):
                     zero_list=zero_list,
                     non_zero_list=non_zero_list,
                     exists_list=[],
-                    folder=self.settings['motion_folder'],
+                    folder=self.settings['motion_folder_feedback_0'],
                     command='copy'
                     )
 
@@ -2706,7 +2706,7 @@ class ProcessThread(object):
                         raise IOError('Compressed file and Stack file does not exist!')
 
                     compressed_file_name = os.path.join(
-                        self.settings['compress_folder'],
+                        self.settings['compress_folder_feedback_0'],
                         '{0}.{1}'.format(
                             tu.get_name(root_name[len(self.settings['stack_folder'])+1:]),
                             compress_extension
@@ -2725,7 +2725,7 @@ class ProcessThread(object):
         # New name
         file_name = os.path.basename(root_name)
         new_name = os.path.join(
-            self.settings['ctf_folder'],
+            self.settings['ctf_folder_feedback_0'],
             '{0}.mrc'.format(file_name)
             )
 
@@ -2741,7 +2741,7 @@ class ProcessThread(object):
 
         # Log files
         log_prefix = os.path.join(
-            self.settings['ctf_folder'],
+            self.settings['ctf_folder_feedback_0'],
             file_name
             )
 
@@ -2776,7 +2776,7 @@ class ProcessThread(object):
             zero_list=zero_list,
             non_zero_list=non_zero_list+log_files,
             exists_list=[],
-            folder=self.settings['ctf_folder'],
+            folder=self.settings['ctf_folder_feedback_0'],
             command=command
             )
 
@@ -2790,7 +2790,7 @@ class ProcessThread(object):
             zero_list=[],
             non_zero_list=copied_log_files,
             exists_list=[],
-            folder=self.settings['ctf_folder'],
+            folder=self.settings['ctf_folder_feedback_0'],
             command=command
             )
 
@@ -2814,7 +2814,7 @@ class ProcessThread(object):
         data, data_orig = tu.get_function_dict()[self.settings['Copy']['CTF']]['plot_data'](
             self.settings['Copy']['CTF'],
             self.settings['Copy']['CTF'],
-            self.settings['ctf_folder'],
+            self.settings['ctf_folder_feedback_0'],
             import_name
             )
 
@@ -3903,18 +3903,18 @@ class ProcessThread(object):
         new_root_name, extension = os.path.splitext(os.path.basename(root_name))
 
         log_prefix = os.path.join(
-                self.settings['compress_folder'],
+                self.settings['compress_folder_feedback_0'],
                 new_root_name
                 )
 
-        if self.settings['compress_folder'] in root_name:
+        if self.settings['compress_folder_feedback_0'] in root_name:
             new_name = root_name
             log_file, err_file = tus.get_logfiles(log_prefix)
             tus.check_outputs(
                 zero_list=[err_file],
                 non_zero_list=[log_file, new_name],
                 exists_list=[],
-                folder=self.settings['compress_folder'],
+                folder=self.settings['compress_folder_feedback_0'],
                 command='just check'
                 )
 
@@ -3939,7 +3939,7 @@ class ProcessThread(object):
             # Create the command
             if compress_name == 'Compress cmd':
                 new_name = os.path.join(
-                    self.settings['compress_folder'],
+                    self.settings['compress_folder_feedback_0'],
                     '{0}.{1}'.format(
                         new_root_name,
                         compress_settings['--command_compress_extension']
@@ -3984,7 +3984,7 @@ class ProcessThread(object):
                 zero_list=[err_file],
                 non_zero_list=[log_file, new_name],
                 exists_list=[],
-                folder=self.settings['compress_folder'],
+                folder=self.settings['compress_folder_feedback_0'],
                 command=command
                 )
 

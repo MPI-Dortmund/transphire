@@ -683,11 +683,11 @@ def create_export_data(export_data, lines):
 def create_jpg_file(input_file, settings):
     file_name = tu.get_name(input_file)
 
-    tu.mkdir_p(os.path.join(settings['motion_folder'], 'jpg'))
-    tu.mkdir_p(os.path.join(settings['motion_folder'], 'jpg_2'))
+    tu.mkdir_p(os.path.join(settings['motion_folder_feedback_0'], 'jpg'))
+    tu.mkdir_p(os.path.join(settings['motion_folder_feedback_0'], 'jpg_2'))
 
-    jpg_file_1 = os.path.join(settings['motion_folder'], 'jpg', '{0}.jpg'.format(file_name))
-    jpg_file_2 = os.path.join(settings['motion_folder'], 'jpg_2', '{0}.jpg'.format(file_name))
+    jpg_file_1 = os.path.join(settings['motion_folder_feedback_0'], 'jpg', '{0}.jpg'.format(file_name))
+    jpg_file_2 = os.path.join(settings['motion_folder_feedback_0'], 'jpg_2', '{0}.jpg'.format(file_name))
 
     arr_1 = None
     arr_2 = None

@@ -854,33 +854,34 @@ def get_content_gui(content, template_name):
                     'layout': 'Plot {0}'.format(input_content),
                     })
 
-                feedback_content = '{0} feedback'.format(input_content)
-                gui_content.append({
-                    'name': 'Plot {0}'.format(feedback_content),
-                    'widget': TabDocker,
-                    'layout': 'Plot {0}'.format(typ),
-                    })
-                gui_content.append({
-                    'name': 'Show images',
-                    'widget': PlotContainer,
-                    'content': 'image',
-                    'plot_type': '{0}_feedback'.format(typ),
-                    'layout': 'Plot {0}'.format(feedback_content),
-                    })
-                gui_content.append({
-                    'name': 'Plot per micrograph',
-                    'widget': PlotContainer,
-                    'content': 'values',
-                    'plot_type': '{0}_feedback'.format(typ),
-                    'layout': 'Plot {0}'.format(feedback_content),
-                    })
-                gui_content.append({
-                    'name': 'Plot histogram',
-                    'widget': PlotContainer,
-                    'content': 'histogram',
-                    'plot_type': '{0}_feedback'.format(typ),
-                    'layout': 'Plot {0}'.format(feedback_content),
-                    })
+                for index in range(5):
+                    feedback_content = '{0} feedback {1}'.format(input_content, index)
+                    gui_content.append({
+                        'name': 'Plot {0}'.format(feedback_content),
+                        'widget': TabDocker,
+                        'layout': 'Plot {0}'.format(typ),
+                        })
+                    gui_content.append({
+                        'name': 'Show images',
+                        'widget': PlotContainer,
+                        'content': 'image',
+                        'plot_type': typ,
+                        'layout': 'Plot {0}'.format(feedback_content),
+                        })
+                    gui_content.append({
+                        'name': 'Plot per micrograph',
+                        'widget': PlotContainer,
+                        'content': 'values',
+                        'plot_type': typ,
+                        'layout': 'Plot {0}'.format(feedback_content),
+                        })
+                    gui_content.append({
+                        'name': 'Plot histogram',
+                        'widget': PlotContainer,
+                        'content': 'histogram',
+                        'plot_type': typ,
+                        'layout': 'Plot {0}'.format(feedback_content),
+                        })
         if typ == 'Motion':
             gui_content.append({
                 'name': 'Frames',
