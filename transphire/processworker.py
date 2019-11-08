@@ -175,6 +175,86 @@ class ProcessWorker(QObject):
     sig_plot_117 = pyqtSignal(str, object, object, str)
     sig_plot_118 = pyqtSignal(str, object, object, str)
     sig_plot_119 = pyqtSignal(str, object, object, str)
+    sig_plot_120 = pyqtSignal(str, object, object, str)
+    sig_plot_121 = pyqtSignal(str, object, object, str)
+    sig_plot_122 = pyqtSignal(str, object, object, str)
+    sig_plot_123 = pyqtSignal(str, object, object, str)
+    sig_plot_124 = pyqtSignal(str, object, object, str)
+    sig_plot_125 = pyqtSignal(str, object, object, str)
+    sig_plot_126 = pyqtSignal(str, object, object, str)
+    sig_plot_127 = pyqtSignal(str, object, object, str)
+    sig_plot_128 = pyqtSignal(str, object, object, str)
+    sig_plot_129 = pyqtSignal(str, object, object, str)
+    sig_plot_130 = pyqtSignal(str, object, object, str)
+    sig_plot_131 = pyqtSignal(str, object, object, str)
+    sig_plot_132 = pyqtSignal(str, object, object, str)
+    sig_plot_133 = pyqtSignal(str, object, object, str)
+    sig_plot_134 = pyqtSignal(str, object, object, str)
+    sig_plot_135 = pyqtSignal(str, object, object, str)
+    sig_plot_136 = pyqtSignal(str, object, object, str)
+    sig_plot_137 = pyqtSignal(str, object, object, str)
+    sig_plot_138 = pyqtSignal(str, object, object, str)
+    sig_plot_139 = pyqtSignal(str, object, object, str)
+    sig_plot_140 = pyqtSignal(str, object, object, str)
+    sig_plot_141 = pyqtSignal(str, object, object, str)
+    sig_plot_142 = pyqtSignal(str, object, object, str)
+    sig_plot_143 = pyqtSignal(str, object, object, str)
+    sig_plot_144 = pyqtSignal(str, object, object, str)
+    sig_plot_145 = pyqtSignal(str, object, object, str)
+    sig_plot_146 = pyqtSignal(str, object, object, str)
+    sig_plot_147 = pyqtSignal(str, object, object, str)
+    sig_plot_148 = pyqtSignal(str, object, object, str)
+    sig_plot_149 = pyqtSignal(str, object, object, str)
+    sig_plot_150 = pyqtSignal(str, object, object, str)
+    sig_plot_151 = pyqtSignal(str, object, object, str)
+    sig_plot_152 = pyqtSignal(str, object, object, str)
+    sig_plot_153 = pyqtSignal(str, object, object, str)
+    sig_plot_154 = pyqtSignal(str, object, object, str)
+    sig_plot_155 = pyqtSignal(str, object, object, str)
+    sig_plot_156 = pyqtSignal(str, object, object, str)
+    sig_plot_157 = pyqtSignal(str, object, object, str)
+    sig_plot_158 = pyqtSignal(str, object, object, str)
+    sig_plot_159 = pyqtSignal(str, object, object, str)
+    sig_plot_160 = pyqtSignal(str, object, object, str)
+    sig_plot_161 = pyqtSignal(str, object, object, str)
+    sig_plot_162 = pyqtSignal(str, object, object, str)
+    sig_plot_163 = pyqtSignal(str, object, object, str)
+    sig_plot_164 = pyqtSignal(str, object, object, str)
+    sig_plot_165 = pyqtSignal(str, object, object, str)
+    sig_plot_166 = pyqtSignal(str, object, object, str)
+    sig_plot_167 = pyqtSignal(str, object, object, str)
+    sig_plot_168 = pyqtSignal(str, object, object, str)
+    sig_plot_169 = pyqtSignal(str, object, object, str)
+    sig_plot_170 = pyqtSignal(str, object, object, str)
+    sig_plot_171 = pyqtSignal(str, object, object, str)
+    sig_plot_172 = pyqtSignal(str, object, object, str)
+    sig_plot_173 = pyqtSignal(str, object, object, str)
+    sig_plot_174 = pyqtSignal(str, object, object, str)
+    sig_plot_175 = pyqtSignal(str, object, object, str)
+    sig_plot_176 = pyqtSignal(str, object, object, str)
+    sig_plot_177 = pyqtSignal(str, object, object, str)
+    sig_plot_178 = pyqtSignal(str, object, object, str)
+    sig_plot_179 = pyqtSignal(str, object, object, str)
+    sig_plot_180 = pyqtSignal(str, object, object, str)
+    sig_plot_181 = pyqtSignal(str, object, object, str)
+    sig_plot_182 = pyqtSignal(str, object, object, str)
+    sig_plot_183 = pyqtSignal(str, object, object, str)
+    sig_plot_184 = pyqtSignal(str, object, object, str)
+    sig_plot_185 = pyqtSignal(str, object, object, str)
+    sig_plot_186 = pyqtSignal(str, object, object, str)
+    sig_plot_187 = pyqtSignal(str, object, object, str)
+    sig_plot_188 = pyqtSignal(str, object, object, str)
+    sig_plot_189 = pyqtSignal(str, object, object, str)
+    sig_plot_190 = pyqtSignal(str, object, object, str)
+    sig_plot_191 = pyqtSignal(str, object, object, str)
+    sig_plot_192 = pyqtSignal(str, object, object, str)
+    sig_plot_193 = pyqtSignal(str, object, object, str)
+    sig_plot_194 = pyqtSignal(str, object, object, str)
+    sig_plot_195 = pyqtSignal(str, object, object, str)
+    sig_plot_196 = pyqtSignal(str, object, object, str)
+    sig_plot_197 = pyqtSignal(str, object, object, str)
+    sig_plot_198 = pyqtSignal(str, object, object, str)
+    sig_plot_199 = pyqtSignal(str, object, object, str)
 
     def __init__(self, password, content_process, mount_directory, parent=None):
         """
@@ -229,17 +309,17 @@ class ProcessWorker(QObject):
                     else:
                         folder_path = os.path.join(
                             self.settings['project_folder'],
-                            '{0}_feedback_{1}'.format(program_name, int(self.settings['General']['Number of feedbacks']) - feedback_number + 1)
+                            '{0}_feedback_{1}'.format(program_name, feedback_number)
                             )
                     self.settings[new_name][entry] = folder_path
                     folder_list.append(folder_path)
 
                     try:
-                        self.signals[name].emit(
-                            entry,
+                        self.signals['{0}_feedback_{1}'.format(name, feedback_number)].emit(
+                            '{0} feedback {1}'.format(entry, feedback_number),
                             self.settings[new_name][entry],
                             self.settings,
-                            self.settings['Copy'][name]
+                            self.settings['Copy'][name],
                             )
                     except KeyError:
                         pass
@@ -349,7 +429,7 @@ class ProcessWorker(QObject):
         # Set stop variable to the return value of the pre_check
         if settings['Monitor']:
             self.stop = False
-            self.emit_plot_signals()
+            self.emit_plot_signals([])
             self.run_monitor(
                 typ_dict=typ_dict,
                 queue_com=queue_com,

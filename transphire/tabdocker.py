@@ -74,7 +74,8 @@ class TabDocker(QWidget):
             widget.parent_widget.setObjectName('tab')
         else:
             pass
-        self.tab_widget.addTab(widget, name)
+        index = self.tab_widget.addTab(widget, name)
+        self.tab_widget.setTabToolTip(index, name)
 
     def count(self):
         """

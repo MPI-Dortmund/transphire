@@ -827,35 +827,12 @@ def get_content_gui(content, template_name):
                 'layout': typ,
                 })
             if not input_content.startswith('Compress'):
-                gui_content.append({
-                    'name': 'Plot {0}'.format(input_content),
-                    'widget': TabDocker,
-                    'layout': 'Plot {0}'.format(typ),
-                    })
-                gui_content.append({
-                    'name': 'Show images',
-                    'widget': PlotContainer,
-                    'content': 'image',
-                    'plot_type': typ,
-                    'layout': 'Plot {0}'.format(input_content),
-                    })
-                gui_content.append({
-                    'name': 'Plot per micrograph',
-                    'widget': PlotContainer,
-                    'content': 'values',
-                    'plot_type': typ,
-                    'layout': 'Plot {0}'.format(input_content),
-                    })
-                gui_content.append({
-                    'name': 'Plot histogram',
-                    'widget': PlotContainer,
-                    'content': 'histogram',
-                    'plot_type': typ,
-                    'layout': 'Plot {0}'.format(input_content),
-                    })
 
                 for index in range(5):
-                    feedback_content = '{0} feedback {1}'.format(input_content, index)
+                    if index == 0:
+                        feedback_content = input_content
+                    else:
+                        feedback_content = '{0} feedback {1}'.format(input_content, index)
                     gui_content.append({
                         'name': 'Plot {0}'.format(feedback_content),
                         'widget': TabDocker,
@@ -865,21 +842,21 @@ def get_content_gui(content, template_name):
                         'name': 'Show images',
                         'widget': PlotContainer,
                         'content': 'image',
-                        'plot_type': typ,
+                        'plot_type': '{0}_feedback_{1}'.format(typ, index),
                         'layout': 'Plot {0}'.format(feedback_content),
                         })
                     gui_content.append({
                         'name': 'Plot per micrograph',
                         'widget': PlotContainer,
                         'content': 'values',
-                        'plot_type': typ,
+                        'plot_type': '{0}_feedback_{1}'.format(typ, index),
                         'layout': 'Plot {0}'.format(feedback_content),
                         })
                     gui_content.append({
                         'name': 'Plot histogram',
                         'widget': PlotContainer,
                         'content': 'histogram',
-                        'plot_type': typ,
+                        'plot_type': '{0}_feedback_{1}'.format(typ, index),
                         'layout': 'Plot {0}'.format(feedback_content),
                         })
         if typ == 'Motion':

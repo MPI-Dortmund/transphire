@@ -25,6 +25,7 @@ import traceback as tb
 import pexpect as pe
 from hyperspy.io_plugins.digital_micrograph import DigitalMicrographReader
 from transphire import transphire_import as ti
+from transphire import transphire_utils as tu
 
 
 def extract_time_and_grid_information(root_name, settings, queue_com, name):
@@ -1257,5 +1258,6 @@ def get_logfiles(log_prefix):
     Returns:
     Name of log file, Name of error file
     """
+    tu.mkdir_p(os.path.dirname(log_prefix))
     template = '{0}_transphire.{{0}}'.format(log_prefix)
     return template.format('log'), template.format('err')

@@ -168,7 +168,7 @@ class MainWindow(QMainWindow):
         self.types = ['mount', 'process']
         for value in function_dict.values():
             if value['typ'] is not None and value['typ'] not in self.types:
-                self.types.append(value['typ'])
+                #self.types.append(value['typ'])
                 for index in range(5):
                     self.types.append('{0}_feedback_{1}'.format(value['typ'], index))
 
@@ -344,7 +344,7 @@ class MainWindow(QMainWindow):
             if entry in ('mount', 'process'):
                 continue
 
-            signal = getattr(self.workers['process'], 'sig_plot_{0}'.format(2*idx))
+            signal = getattr(self.workers['process'], 'sig_plot_{0}'.format(idx))
             signal.connect(self.workers[entry].set_settings)
             self.workers['process'].signals[entry] = signal
 
@@ -534,11 +534,11 @@ class MainWindow(QMainWindow):
             try:
                 plot_name = layout.replace('Plot ', '')
                 if 'feedback' in plot_name:
-                    plot_name = plot_name[:-len(' feedback 1')]
+                    plot_name_labels = plot_name[:-len(' feedback 1')]
                 else:
-                    plot_name = plot_name
+                    plot_name_labels = plot_name
                 plot_labels = ti.get_dtype_dict()[
-                    tu.get_function_dict()[plot_name]['typ']
+                    tu.get_function_dict()[plot_name_labels]['typ']
                     ]
             except KeyError:
                 pass
@@ -1049,7 +1049,7 @@ class MainWindow(QMainWindow):
             settings['project_folder'], 'Software_meta'
             )
 
-        settings['do_feedback_loop'] = int(settings['General']['Number of feedbacks']) + 1
+        settings['do_feedback_loop'] = int(settings['General']['Number of feedbacks'])
         settings['feedback_file'] = os.path.join(settings['project_folder'], 'do_feedback')
 
         names = [
@@ -1077,19 +1077,19 @@ class MainWindow(QMainWindow):
 
             for index in range(int(settings['General']['Number of feedbacks']) + 1):
                 if index == 0:
-                    folder_name = folder_name
+                    folder_name_tmp = folder_name
                 elif no_feedback:
                     continue
                 else:
-                    folder_name = '{0}_feedback_{1}'.format(folder_name, index)
+                    folder_name_tmp = '{0}_feedback_{1}'.format(folder_name, int(settings['General']['Number of feedbacks']) - index + 1)
                 settings['{0}_folder_feedback_{1}'.format(entry.lower(), index)] = os.path.join(
                     base_dir,
-                    folder_name
+                    folder_name_tmp
                     )
                 if base_dir2 is not None:
                     settings['scratch_{0}_folder_feedback_{1}'.format(entry.lower(), index)] = os.path.join(
                         base_dir2,
-                        folder_name
+                        folder_name_tmp
                         )
 
         return settings

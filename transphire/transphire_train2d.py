@@ -82,6 +82,7 @@ def create_train_command(sum_folder, box_folder, output_dir, name, settings):
     command.append('--train_image_folder={0}'.format(sum_folder))
     command.append('--train_annot_folder={0}'.format(box_folder))
     command.append('--saved_weights_name={0}'.format(weight_file))
+    command.append('--filtered_output={0}'.format('projects/tmp_filtered_ff'))
 
     command.append(';')
     command.append("PATH=$(dirname $(which {0})):${{PATH}}".format(settings['Path'][prog_name]))

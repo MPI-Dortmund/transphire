@@ -52,6 +52,7 @@ class PlotContainer(QMainWindow):
         self.setTabPosition(Qt.TopDockWidgetArea, QTabWidget.North)
         self.plot_name = plot_name
         self.name = name
+        print(self.plot_name)
 
         self.worker = plot_worker[plot_type]
 
@@ -85,6 +86,7 @@ class PlotContainer(QMainWindow):
         for idx in range(1, len(self.dock_widgets)):
             self.tabifyDockWidget(self.dock_widgets[0], self.dock_widgets[idx])
         self.tabifiedDockWidgetActivated.connect(self.synchronize_tabs)
+        self.parent.content[self.parent_layout].enable_tab(False)
 
     @pyqtSlot(str, str, object, str, object)
     def update_figure(self, name, name_no_feedback, data, directory_name, settings):

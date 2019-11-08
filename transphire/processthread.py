@@ -4235,7 +4235,7 @@ class ProcessThread(object):
                 for entry in root_name:
                     tar.add(
                         entry,
-                        arcname=os.path.join('..', root_name.replace(self.settings['project_folder'], ''))
+                        arcname=os.path.join('..', entry.replace(self.settings['project_folder'], ''))
                         )
 
             self.shared_dict_typ['queue_list_lock'].acquire()
@@ -4270,7 +4270,7 @@ class ProcessThread(object):
             copy_file = [copy_file]
 
         for copy_file_name in copy_file:
-            mount_folder_name = '{0}_folder'.format(self.typ.lower())
+            mount_folder_name = '{0}_folder_feedback_0'.format(self.typ.lower())
             mount_name = self.settings['Copy'][self.typ]
             sudo = self.settings['Mount'][mount_name]['Need sudo for copy?']
             protocol = self.settings['Mount'][mount_name]['Protocol']

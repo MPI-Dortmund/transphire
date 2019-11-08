@@ -416,8 +416,8 @@ def import_cinderella_v0_3_1(name, name_no_feedback, directory_name, import_name
         data['file_name'][idx] = entry[0]
         data['accepted'][idx] = entry[1]
         data['rejected'][idx] = entry[2]
-        data['particles_accepted'][idx] = entry[3]
-        data['particles_rejected'][idx] = entry[4]
+        data['particles_rejected'][idx] = entry[3]
+        data['particles_accepted'][idx] = entry[4]
     data['image'] = jpg_names
 
     data = np.sort(data, order='file_name')

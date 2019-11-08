@@ -75,8 +75,12 @@ class PlotWorker(QObject):
             name_no_feedback = name[:-len(' feedback 1')]
         else:
             name_no_feedback = name
+
         if name_no_feedback not in ('Later', 'False'):
-            if name == current_name:
+            if ' feedback 0' in name:
+                name = name_no_feedback
+
+            if name_no_feedback == current_name:
                 self.settings.append([name, name_no_feedback, directory_name, settings])
 
             if os.path.isdir(directory_name):
@@ -89,7 +93,6 @@ class PlotWorker(QObject):
                 self.sig_visible.emit(True, name)
             else:
                 self.sig_visible.emit(False, name)
-
 
     @pyqtSlot()
     def reset_running(self):
@@ -106,12 +109,16 @@ class PlotWorker(QObject):
         if not self.running:
             for name, name_no_feedback, directory_name, settings in self.settings:
                 self.running = True
-                self.calculate_array_now(
-                    name=name,
-                    name_no_feedback=name_no_feedback,
-                    directory_name=directory_name,
-                    settings=settings
-                    )
+                if os.path.isdir(directory_name):
+                    self.calculate_array_now(
+                        name=name,
+                        name_no_feedback=name_no_feedback,
+                        directory_name=directory_name,
+                        settings=settings
+                        )
+                    self.sig_visible.emit(True, name)
+                else:
+                    self.sig_visible.emit(False, name)
 
     def calculate_array_now(self, name, name_no_feedback, directory_name, settings):
         try:
