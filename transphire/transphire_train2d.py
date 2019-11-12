@@ -45,13 +45,13 @@ def create_substack_command(class_average_name, input_stack, isac_dir, output_di
 
 
 def create_restack_command(stack_name, output_dir, settings):
+    prog_name = settings['Copy']['Train2d']
     command = []
     block_gpu = False
     gpu_list = []
     shell = True
     check_files = []
     gpu_list = []
-    extract_name = settings['Copy']['Extract']
 
     command.append("PATH=$(dirname $(which {0})):${{PATH}}".format(settings['Path']['sp_pipe.py']))
     command.append(settings['Path']['sp_pipe.py'])
@@ -66,7 +66,6 @@ def create_restack_command(stack_name, output_dir, settings):
 
 def create_train_command(sum_folder, box_folder, output_dir, name, settings):
     prog_name = settings['Copy']['Train2d']
-    extract_name = settings['Copy']['Extract']
     command = []
     block_gpu = False
     shell = True
@@ -84,6 +83,7 @@ def create_train_command(sum_folder, box_folder, output_dir, name, settings):
     command.append('--train_annot_folder={0}'.format(box_folder))
     command.append('--saved_weights_name={0}'.format(weight_file))
     command.append('--filtered_output={0}'.format('projects/tmp_filtered_ff'))
+    command.append('--train_times={0}'.format(settings[prog_name]['--train_times']))
 
     command.append(';')
     command.append("PATH=$(dirname $(which {0})):${{PATH}}".format(settings['Path'][prog_name]))
@@ -98,6 +98,8 @@ def create_train_command(sum_folder, box_folder, output_dir, name, settings):
 
     ignore_list.append('Split Gpu?')
     ignore_list.append('--gpu')
+    ignore_list.append('Box size')
+    ignore_list.append('--train_times')
 
     if settings[prog_name]['Split Gpu?'] == 'True':
         try:

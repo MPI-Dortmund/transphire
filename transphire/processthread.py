@@ -2192,6 +2192,7 @@ class ProcessThread(object):
                 pass
 
             # Create an unblur shift file
+            tu.mkdir_p(self.settings['motion_folder_feedback_0'])
             file_shift = os.path.join(
                 self.settings['motion_folder_feedback_0'],
                 '.{0}_shift'.format(self.name)
@@ -2501,7 +2502,7 @@ class ProcessThread(object):
         data, data_original = tu.get_function_dict()[self.settings['Copy']['Motion']]['plot_data'](
             self.settings['Copy']['Motion'],
             self.settings['Copy']['Motion'],
-            self.settings['Motion_folder'][self.settings['Copy']['Motion']],
+            self.settings['Motion_folder_feedback_0'][self.settings['Copy']['Motion']],
             import_name
             )
 
@@ -2964,6 +2965,7 @@ class ProcessThread(object):
         file_sum = [entry for entry in tmp_matches if '.mrc' in entry][0]
         tmp_matches.remove(file_sum)
         assert not tmp_matches, (tmp_matches, matches_in_queue, file_ctf, file_box, file_sum, output_dir)
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_extract', root_name, 'DEBUG 1', time.time() - start_prog))
 
         command, check_files, block_gpu, gpu_list, shell = tue.get_extract_command(
             file_sum=file_sum,
@@ -2981,6 +2983,7 @@ class ProcessThread(object):
                 file_name
                 )
 
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_extract', root_name, 'DEBUG 2', time.time() - start_prog))
         log_file, err_file = self.run_command(
             command=command,
             log_prefix=log_prefix,
@@ -2988,6 +2991,7 @@ class ProcessThread(object):
             gpu_list=gpu_list,
             shell=shell
             )
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_extract', root_name, 'DEBUG 3', time.time() - start_prog))
 
         zero_list = [err_file]
         non_zero_list = [log_file]
@@ -2999,6 +3003,7 @@ class ProcessThread(object):
             queue_com=self.queue_com,
             name=self.name
             )
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_extract', root_name, 'DEBUG 4', time.time() - start_prog))
 
         tus.check_outputs(
             zero_list=zero_list,
@@ -3007,12 +3012,14 @@ class ProcessThread(object):
             folder=self.settings[folder_name],
             command=command
             )
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_extract', root_name, 'DEBUG 5', time.time() - start_prog))
 
         try:
             log_files.remove(err_file)
             copied_log_files.remove(err_file)
         except ValueError:
             pass
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_extract', root_name, 'DEBUG 6', time.time() - start_prog))
 
         for old_file, new_file in zip(log_files, copied_log_files):
             if os.path.realpath(old_file) != os.path.realpath(new_file):
@@ -3024,7 +3031,9 @@ class ProcessThread(object):
         copied_log_files.extend(zero_list)
         copied_log_files = list(set(copied_log_files))
 
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_extract', root_name, 'DEBUG 7', time.time() - start_prog))
         tue.create_jpg_file(file_name, self.settings[folder_name])
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_extract', root_name, 'DEBUG 8', time.time() - start_prog))
 
         skip_list = False
         if skip_list:
@@ -3058,8 +3067,8 @@ class ProcessThread(object):
                             self.add_to_queue(aim=aim_name, root_name=log_file)
                 else:
                     pass
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_extract', root_name, 'DEBUG 9', time.time() - start_prog))
 
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_extract', root_name, 'DEBUG 8'))
         self.remove_from_queue_file(matches_in_queue, self.shared_dict_typ['list_file'])
         self.queue_com['log'].put(tu.create_log(self.name, 'run_extract', root_name, 'stop process', time.time() - start_prog))
 
@@ -3253,7 +3262,7 @@ class ProcessThread(object):
                 )
 
         with open(self.shared_dict['typ']['Picking']['number_file'], 'w') as write:
-            write.write('|||'.join([new_model, new_config, new_threshold]))
+            write.write('|||'.join([new_model, new_config, str(new_threshold)]))
 
         skip_list = False
         if skip_list:
