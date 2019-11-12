@@ -3232,8 +3232,10 @@ class ProcessThread(object):
             command=command
             )
 
+        new_threshold = 0.1
         self.settings[self.settings['Copy']['Picking']]['--weights'] = new_model
         self.settings[self.settings['Copy']['Picking']]['--conf'] = new_config
+        self.settings[self.settings['Copy']['Picking']]['--threshold'] = new_threshold
 
         for aim in ('Picking', 'Extract', 'Class2d', 'Select2d', 'Train2d'):
             if aim in ('Picking'):
@@ -3251,7 +3253,7 @@ class ProcessThread(object):
                 )
 
         with open(self.shared_dict['typ']['Picking']['number_file'], 'w') as write:
-            write.write('|||'.join([new_model, new_config]))
+            write.write('|||'.join([new_model, new_config, new_threshold]))
 
         skip_list = False
         if skip_list:
@@ -3666,7 +3668,7 @@ class ProcessThread(object):
 
         try:
             with open(self.shared_dict_typ['number_file'], 'r') as read:
-                new_model, new_config = read.readline().strip().split('|||')
+                new_model, new_config, new_threshold = read.readline().strip().split('|||')
         except FileNotFoundError:
             pass
         except AttributeError:
@@ -3674,6 +3676,7 @@ class ProcessThread(object):
         else:
             self.settings[self.settings['Copy']['Picking']]['--weights'] = new_model
             self.settings[self.settings['Copy']['Picking']]['--conf'] = new_config
+            self.settings[self.settings['Copy']['Picking']]['--threshold'] = new_threshold
 
 
         folder_name = 'picking_folder_feedback_{0}'.format(self.settings['do_feedback_loop'].value)

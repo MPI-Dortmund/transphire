@@ -200,7 +200,7 @@ def default_cryolo_v1_4_1():
         ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
         ['--conf', '', str, '', 'FILE', 'Main', '', 'Path to configuration file.'],
         ['--weights', '', str, '', 'FILE', 'Main', 'Path to pretrained weights.'],
-        ['--threshold', '0.3', float, '', 'PLAIN', 'Main', 'Confidence threshold. Have to be between 0 and 1. As higher, as more conservative.'],
+        ['--threshold', '0.3', float, '', 'PLAIN', 'Main', 'Confidence threshold. Have to be between 0 and 1. The higher, the more conservative.'],
         ['Pixel size (A/px)', '1', float, 'Filter micrographs:True', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Pixel size value. Only used for visual representation.'],
         ['Box size', '200', int, '', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Box size value. Only used for visual representation.'],
         ['--filament', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Activate filament mode'],
