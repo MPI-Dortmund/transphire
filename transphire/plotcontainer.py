@@ -52,7 +52,6 @@ class PlotContainer(QMainWindow):
         self.setTabPosition(Qt.TopDockWidgetArea, QTabWidget.North)
         self.plot_name = plot_name
         self.name = name
-        print(self.plot_name)
 
         self.worker = plot_worker[plot_type]
 

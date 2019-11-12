@@ -194,6 +194,7 @@ def copy(file_in, file_out):
     None
     """
 
+    mkdir_p(os.path.dirname(file_out))
     try:
         shutil.copy2(file_in, file_out)
     except PermissionError:

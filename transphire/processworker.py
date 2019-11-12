@@ -306,8 +306,13 @@ class ProcessWorker(QObject):
                             self.settings['project_folder'],
                             program_name
                             )
+                        signal_folder = folder_path
                     else:
                         folder_path = os.path.join(
+                            self.settings['project_folder'],
+                            '{0}_feedback_{1}'.format(program_name, int(self.settings['General']['Number of feedbacks']) - feedback_number + 1 )
+                            )
+                        signal_folder = os.path.join(
                             self.settings['project_folder'],
                             '{0}_feedback_{1}'.format(program_name, feedback_number)
                             )
@@ -317,7 +322,7 @@ class ProcessWorker(QObject):
                     try:
                         self.signals['{0}_feedback_{1}'.format(name, feedback_number)].emit(
                             '{0} feedback {1}'.format(entry, feedback_number),
-                            self.settings[new_name][entry],
+                            signal_folder,
                             self.settings,
                             self.settings['Copy'][name],
                             )

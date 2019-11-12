@@ -3824,6 +3824,9 @@ class ProcessThread(object):
             export_log_files = []
             for file_use, file_name, file_log in zip(file_use_list, file_name_list, file_logs):
                 import_name = tu.get_name(file_use)
+                print(self.settings['Copy']['Picking'])
+                print(self.settings[entry_name][self.settings['Copy']['Picking']])
+                print(import_name)
                 data, data_orig = tu.get_function_dict()[self.settings['Copy']['Picking']]['plot_data'](
                     self.settings['Copy']['Picking'],
                     self.settings['Copy']['Picking'],
@@ -4150,6 +4153,8 @@ class ProcessThread(object):
         elif root_name.endswith('jpg'):
             dont_tar = True
         elif self.settings['tar_folder'] in root_name:
+            dont_tar = True
+        elif root_name.startswith('bdb:') or root_name.endswith('.bdb'):
             dont_tar = True
         elif os.path.getsize(root_name) > 40 * 1024**2:
             dont_tar = True

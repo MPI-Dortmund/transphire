@@ -51,13 +51,14 @@ def create_restack_command(stack_name, output_dir, settings):
     shell = True
     check_files = []
     gpu_list = []
+    extract_name = settings['Copy']['Extract']
 
     command.append("PATH=$(dirname $(which {0})):${{PATH}}".format(settings['Path']['sp_pipe.py']))
     command.append(settings['Path']['sp_pipe.py'])
     command.append('restacking')
     command.append(stack_name)
     command.append(os.path.join(output_dir, 'BOX'))
-    command.append('--rb_box_size=100')
+    command.append('--rb_box_size={0}'.format(settings[prog_name]['Box size']))
     command.append('--reboxing')
 
     return ' '.join(command), check_files, block_gpu, gpu_list, shell, os.path.join(output_dir, 'BOX', 'original')
@@ -78,7 +79,7 @@ def create_train_command(sum_folder, box_folder, output_dir, name, settings):
     command.append(settings['Path']['cryolo_gui.py'])
     command.append('config')
     command.append(config_file)
-    command.append(settings[extract_name]['--box_size'])
+    command.append(settings[prog_name]['Box size'])
     command.append('--train_image_folder={0}'.format(sum_folder))
     command.append('--train_annot_folder={0}'.format(box_folder))
     command.append('--saved_weights_name={0}'.format(weight_file))
