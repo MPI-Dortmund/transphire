@@ -182,6 +182,14 @@ class TabDocker(QWidget):
             }
         self.tab_widget.setTabPosition(tab_position_dict[position])
 
+    def order_tabs(self):
+        widget_tuple = tuple([(self.widget(idx).name, self.widget(idx)) for idx in range(self.count())])
+        for idx in reversed(range(self.count())):
+            self.removeTab(idx)
+        for name, widget in sorted(widget_tuple):
+            self.add_tab(widget, name)
+        widget_tuple = tuple([(self.widget(idx).name, self.widget(idx)) for idx in range(self.count())])
+
     def enable_tab(self, visible):
         """
         Enable or disable the tab.
@@ -199,3 +207,4 @@ class TabDocker(QWidget):
             self.parent.content[self.layout].removeTab(index)
         else:
             self.parent.content[self.layout].add_tab(self, self.name)
+            self.parent.content[self.layout].order_tabs()

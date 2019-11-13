@@ -167,7 +167,6 @@ class PlotContainer(QMainWindow):
     def set_visibility(self, visible, name):
         if name == self.plot_name:
             if self.parent.content[self.parent_layout].is_visible != visible:
-                print(name, visible, 'CHANGE!')
                 self.parent.content[self.parent_layout].enable_tab(visible)
                 self.parent.content[self.parent_layout].is_visible = visible
 
