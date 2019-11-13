@@ -122,6 +122,7 @@ def create_window_1_2_command(extract_name, file_sum, file_box, file_ctf, output
     file_name = os.path.basename(output_dir)
     command.append(os.path.join(output_dir, '{0}_ptcls.mrcs'.format(file_name)))
     command.append(os.path.join(output_dir, 'png', '{0}.png').format(file_name))
+    command.append('--meanshrink=4')
     command.append('--unstack')
     return ' '.join(command)
 
@@ -170,6 +171,8 @@ def recursive_file_search(directory, files):
     for name in file_names:
         if os.path.isdir(name):
             recursive_file_search('{0}/'.format(name), files)
+        elif name.endswith('.png'):
+            pass
         else:
             files.append(name)
 
@@ -186,7 +189,7 @@ def create_jpg_file(file_name, output_dir):
     if columns * rows < len(files):
         rows += 1
     image = img.imread(files[0])
-    dpi = 600
+    dpi = 300
     width = image.shape[0] * columns / dpi
     height = image.shape[1] * rows / dpi
 
@@ -201,4 +204,4 @@ def create_jpg_file(file_name, output_dir):
     plt.subplots_adjust(wspace=0.05, hspace=0.05/aspect, top=1, bottom=0, left=0, right=1)
     tu.mkdir_p(os.path.join(output_dir, 'jpg'))
     plt.savefig(os.path.join(output_dir, 'jpg', '{0}.jpg'.format(file_name)), dpi=dpi, transparent=True, edgecolor=None) 
-    plt.clf()
+    plt.close('all')

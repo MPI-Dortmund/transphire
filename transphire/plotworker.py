@@ -118,6 +118,7 @@ class PlotWorker(QObject):
                         )
                     self.sig_visible.emit(True, name)
                 else:
+                    self.running = False
                     self.sig_visible.emit(False, name)
 
     def calculate_array_now(self, name, name_no_feedback, directory_name, settings):

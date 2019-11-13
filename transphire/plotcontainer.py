@@ -166,7 +166,10 @@ class PlotContainer(QMainWindow):
     @pyqtSlot(bool, str)
     def set_visibility(self, visible, name):
         if name == self.plot_name:
-            self.parent.content[self.parent_layout].enable_tab(visible)
+            if self.parent.content[self.parent_layout].is_visible != visible:
+                print(name, visible, 'CHANGE!')
+                self.parent.content[self.parent_layout].enable_tab(visible)
+                self.parent.content[self.parent_layout].is_visible = visible
 
     def synchronize_tabs(self, widget):
         compare_name = widget.windowTitle()

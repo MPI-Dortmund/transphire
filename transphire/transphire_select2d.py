@@ -220,7 +220,7 @@ def create_jpg_file(file_name, output_dir):
         if columns * rows < len(files):
             rows += 1
         image = img.imread(files[0])
-        dpi = 600
+        dpi = 300
         width = image.shape[0] * columns / dpi
         height = image.shape[1] * rows / dpi
 
@@ -236,4 +236,4 @@ def create_jpg_file(file_name, output_dir):
         suffix = os.path.basename(folder_name).split('_')[1]
         tu.mkdir_p(os.path.join(output_dir, 'jpg_{0}'.format(png_idx)))
         plt.savefig(os.path.join(output_dir, 'jpg_{0}'.format(png_idx), '{0}_{1}.jpg'.format(file_name, suffix)), dpi=dpi, transparent=True, edgecolor=None) 
-        plt.clf()
+        plt.close('all')

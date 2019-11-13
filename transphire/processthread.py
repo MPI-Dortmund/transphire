@@ -1156,14 +1156,20 @@ class ProcessThread(object):
         Return:
         None
         """
+        if isinstance(root_name, list):
+            root_name_list = root_name
+        else:
+            root_name_list = [root_name]
+
         self.shared_dict['typ'][aim]['queue_lock'].acquire()
         try:
-            self.shared_dict['queue'][aim].put(root_name, block=False)
-            self.add_to_queue_file(
-                root_name=root_name,
-                file_name=self.shared_dict['typ'][aim]['save_file'],
-                allow_dublicate=allow_dublicate,
-                )
+            for entry in root_name_list:
+                self.shared_dict['queue'][aim].put(entry, block=False)
+                self.add_to_queue_file(
+                    root_name=entry,
+                    file_name=self.shared_dict['typ'][aim]['save_file'],
+                    allow_dublicate=allow_dublicate,
+                    )
         finally:
             self.shared_dict['typ'][aim]['queue_lock'].release()
 
@@ -1815,14 +1821,15 @@ class ProcessThread(object):
                         'CTF_frames' in compare:
                     self.add_to_queue(aim=aim_name, root_name=new_stack)
                 else:
-                    for log_file in log_files:
-                        if 'Frames to' in compare[0] and '/Stack/' in log_file:
-                            pass
-                        elif 'Meta to' in compare[0] and '/Meta/' in log_file:
-                            pass
-                        else:
-                            continue
-                        self.add_to_queue(aim=aim_name, root_name=log_file)
+                    self.add_to_queue(
+                        aim=aim_name,
+                        root_name=[
+                            entry
+                            for entry in log_files
+                            if ('Frames to' in compare[0] and '/Stack/' in entry) or
+                                ('Meta to' in compare[0] and '/Meta/' in log_file)
+                            ]
+                        )
             else:
                 pass
 
@@ -2661,14 +2668,7 @@ class ProcessThread(object):
                             else:
                                 pass
                         else:
-                            for file_name in sum_files:
-                                self.add_to_queue(aim=aim_name, root_name=file_name)
-                            for file_name in log_files:
-                                self.add_to_queue(aim=aim_name, root_name=file_name)
-                            for file_name in sum_dw_files:
-                                self.add_to_queue(aim=aim_name, root_name=file_name)
-                            for file_name in sum_dws_files:
-                                self.add_to_queue(aim=aim_name, root_name=file_name)
+                            self.add_to_queue(aim=aim_name, root_name=sum_files+log_files+sum_dw_files+sum_dws_files)
                     else:
                         pass
 
@@ -2912,8 +2912,7 @@ class ProcessThread(object):
                     elif 'Extract' in compare:
                         self.add_to_queue(aim=aim_name, root_name=output_name_partres)
                     else:
-                        for log_file in copied_log_files:
-                            self.add_to_queue(aim=aim_name, root_name=log_file)
+                        self.add_to_queue(aim=aim_name, root_name=copied_log_files)
                 else:
                     pass
         self.queue_com['log'].put(tu.create_log(self.name, 'run_ctf', root_name, 'stop process', time.time() - start_prog))
@@ -2965,7 +2964,6 @@ class ProcessThread(object):
         file_sum = [entry for entry in tmp_matches if '.mrc' in entry][0]
         tmp_matches.remove(file_sum)
         assert not tmp_matches, (tmp_matches, matches_in_queue, file_ctf, file_box, file_sum, output_dir)
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_extract', root_name, 'DEBUG 1', time.time() - start_prog))
 
         command, check_files, block_gpu, gpu_list, shell = tue.get_extract_command(
             file_sum=file_sum,
@@ -2983,7 +2981,6 @@ class ProcessThread(object):
                 file_name
                 )
 
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_extract', root_name, 'DEBUG 2', time.time() - start_prog))
         log_file, err_file = self.run_command(
             command=command,
             log_prefix=log_prefix,
@@ -2991,7 +2988,6 @@ class ProcessThread(object):
             gpu_list=gpu_list,
             shell=shell
             )
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_extract', root_name, 'DEBUG 3', time.time() - start_prog))
 
         zero_list = [err_file]
         non_zero_list = [log_file]
@@ -3003,7 +2999,6 @@ class ProcessThread(object):
             queue_com=self.queue_com,
             name=self.name
             )
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_extract', root_name, 'DEBUG 4', time.time() - start_prog))
 
         tus.check_outputs(
             zero_list=zero_list,
@@ -3012,14 +3007,12 @@ class ProcessThread(object):
             folder=self.settings[folder_name],
             command=command
             )
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_extract', root_name, 'DEBUG 5', time.time() - start_prog))
 
         try:
             log_files.remove(err_file)
             copied_log_files.remove(err_file)
         except ValueError:
             pass
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_extract', root_name, 'DEBUG 6', time.time() - start_prog))
 
         for old_file, new_file in zip(log_files, copied_log_files):
             if os.path.realpath(old_file) != os.path.realpath(new_file):
@@ -3031,9 +3024,7 @@ class ProcessThread(object):
         copied_log_files.extend(zero_list)
         copied_log_files = list(set(copied_log_files))
 
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_extract', root_name, 'DEBUG 7', time.time() - start_prog))
         tue.create_jpg_file(file_name, self.settings[folder_name])
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_extract', root_name, 'DEBUG 8', time.time() - start_prog))
 
         skip_list = False
         if skip_list:
@@ -3059,15 +3050,19 @@ class ProcessThread(object):
                             break
                 if var:
                     if 'Class2d' in compare:
-                        for log_file in copied_log_files:
-                            if '.bdb' in log_file and not log_file.endswith('data.bdb'):
-                                self.add_to_queue(aim=aim_name, root_name='|||'.join([log_file, file_box]))
+                        self.add_to_queue(
+                            aim=aim_name,
+                            root_name=[
+                                '|||'.join([entry, file_box])
+                                for entry in copied_log_files
+                                if '.bdb' in entry and not entry.endswith('data.bdb')
+                                ]
+                            )
+
                     else:
-                        for log_file in copied_log_files:
-                            self.add_to_queue(aim=aim_name, root_name=log_file)
+                        self.add_to_queue(aim=aim_name, root_name=copied_log_files)
                 else:
                     pass
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_extract', root_name, 'DEBUG 9', time.time() - start_prog))
 
         self.remove_from_queue_file(matches_in_queue, self.shared_dict_typ['list_file'])
         self.queue_com['log'].put(tu.create_log(self.name, 'run_extract', root_name, 'stop process', time.time() - start_prog))
@@ -3287,8 +3282,7 @@ class ProcessThread(object):
                             var = False
                             break
                 if var:
-                    for entry in all_logs:
-                        self.add_to_queue(aim=aim_name, root_name=entry)
+                    self.add_to_queue(aim=aim_name, root_name=all_logs)
                 else:
                     pass
 
@@ -3485,8 +3479,7 @@ class ProcessThread(object):
                         if 'Select2d' in compare:
                             self.add_to_queue(aim=aim_name, root_name='|||'.join([log_prefix, new_stack]))
                         else:
-                            for log_file in copied_log_files:
-                                self.add_to_queue(aim=aim_name, root_name=log_file)
+                            self.add_to_queue(aim=aim_name, root_name=copied_log_files)
                     else:
                         pass
 
@@ -3656,8 +3649,7 @@ class ProcessThread(object):
                     elif 'Auto3d' in compare:
                         pass
                     else:
-                        for log_file in copied_log_files:
-                            self.add_to_queue(aim=aim_name, root_name=log_file)
+                        self.add_to_queue(aim=aim_name, root_name=copied_log_files)
                 else:
                     pass
 
@@ -3836,9 +3828,6 @@ class ProcessThread(object):
             export_log_files = []
             for file_use, file_name, file_log in zip(file_use_list, file_name_list, file_logs):
                 import_name = tu.get_name(file_use)
-                print(self.settings['Copy']['Picking'])
-                print(self.settings[entry_name][self.settings['Copy']['Picking']])
-                print(import_name)
                 data, data_orig = tu.get_function_dict()[self.settings['Copy']['Picking']]['plot_data'](
                     self.settings['Copy']['Picking'],
                     self.settings['Copy']['Picking'],
@@ -3887,14 +3876,12 @@ class ProcessThread(object):
                                 break
                     if var:
                         if 'Extract' in compare:
-                            for log_file in export_log_files:
-                                if 'EMAN_START_END' in log_file:
-                                    continue
-                                elif 'EMAN' in log_file:
-                                    self.add_to_queue(aim=aim_name, root_name=log_file)
+                            self.add_to_queue(
+                                aim=aim_name,
+                                root_name=[entry for entry in export_log_files if 'EMAN' in entry and 'EMAN_START_END' not in entry]
+                                )
                         else:
-                            for log_file in export_log_files:
-                                self.add_to_queue(aim=aim_name, root_name=log_file)
+                            self.add_to_queue(aim=aim_name, root_name=export_log_files)
                     else:
                         pass
         except Exception:
@@ -4023,9 +4010,7 @@ class ProcessThread(object):
                         var = False
                         break
             if var:
-                self.add_to_queue(aim=aim_name, root_name=new_name)
-                self.add_to_queue(aim=aim_name, root_name=log_file)
-                self.add_to_queue(aim=aim_name, root_name=err_file)
+                self.add_to_queue(aim=aim_name, root_name=[new_name, log_file, err_file])
             else:
                 pass
         self.queue_com['log'].put(tu.create_log(self.name, 'run_compress', root_name, 'stop process', time.time() - start_prog))

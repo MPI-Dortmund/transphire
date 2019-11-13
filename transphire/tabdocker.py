@@ -50,6 +50,8 @@ class TabDocker(QWidget):
         except KeyError:
             self.name = None
 
+        self.is_visible = False
+
         layout_tmp = QVBoxLayout(self)
         self.parent_widget = QWidget(self)
         layout_tmp.addWidget(self.parent_widget)

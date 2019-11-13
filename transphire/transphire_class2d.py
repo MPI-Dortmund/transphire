@@ -212,7 +212,7 @@ def create_jpg_file(file_name, output_dir):
     rows = int(len(files) / columns + 1)
 
     image = img.imread(files[0])
-    dpi = 600
+    dpi = 300
     width = image.shape[0] * columns / dpi
     height = image.shape[1] * rows / dpi
 
@@ -227,7 +227,7 @@ def create_jpg_file(file_name, output_dir):
     plt.subplots_adjust(wspace=0.05, hspace=0.05/aspect, top=1, bottom=0, left=0, right=1)
     tu.mkdir_p(os.path.join(output_dir, 'jpg'))
     plt.savefig(os.path.join(output_dir, 'jpg', '{0}.jpg'.format(file_name)), dpi=dpi, transparent=True, edgecolor=None) 
-    plt.clf()
+    plt.close('all')
 
 
 def find_logfiles(root_path, settings, queue_com, name):
