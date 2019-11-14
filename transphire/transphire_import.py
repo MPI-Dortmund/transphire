@@ -289,11 +289,14 @@ def get_dtype_import_dict():
     return dtype_import
 
 
-def dummy(name, name_no_feedback, directory_name, import_name=''):
-    return None, None
+def dummy(name, name_no_feedback, directory_name, import_name='', send_data=None):
+    if send_data is None:
+        return None, None
+    else:
+        send_data.send((None, None))
 
 
-def import_isac_v1_2(name, name_no_feedback, directory_name, import_name=''):
+def import_isac_v1_2(name, name_no_feedback, directory_name, import_name='', send_data=None):
     files = [
         entry for entry in glob.glob(
         '{0}/*/ISAC2'.format(directory_name, import_name)
@@ -355,10 +358,13 @@ def import_isac_v1_2(name, name_no_feedback, directory_name, import_name=''):
     data['image'] = jpg_names
 
     data = np.sort(data, order='file_name')
-    return data, data
+    if send_data is None:
+        return data, data
+    else:
+        send_data.send((data, data))
 
 
-def import_cinderella_v0_3_1(name, name_no_feedback, directory_name, import_name=''):
+def import_cinderella_v0_3_1(name, name_no_feedback, directory_name, import_name='', send_data=None):
     files = [
         entry for entry in glob.glob(
         '{0}/{1}*_transphire.log'.format(directory_name, import_name)
@@ -421,10 +427,13 @@ def import_cinderella_v0_3_1(name, name_no_feedback, directory_name, import_name
     data['image'] = jpg_names
 
     data = np.sort(data, order='file_name')
-    return data, data
+    if send_data is None:
+        return data, data
+    else:
+        send_data.send((data, data))
 
 
-def import_window_v1_2(name, name_no_feedback, directory_name, import_name=''):
+def import_window_v1_2(name, name_no_feedback, directory_name, import_name='', send_data=None):
     files = [
         entry for entry in glob.glob(
         '{0}/{1}*_transphire.log'.format(directory_name, import_name)
@@ -482,10 +491,13 @@ def import_window_v1_2(name, name_no_feedback, directory_name, import_name=''):
     data['image'] = jpg_names
 
     data = np.sort(data, order='file_name')
-    return data, data
+    if send_data is None:
+        return data, data
+    else:
+        send_data.send((data, data))
 
 
-def import_ctffind_v4_1_8(name, name_no_feedback, directory_name, import_name=''):
+def import_ctffind_v4_1_8(name, name_no_feedback, directory_name, import_name='', send_data=None):
     """
     Import ctf information for CTFFIND v4.1.8.
     Defocus in angstrom, phase shift in degree.
@@ -579,10 +591,13 @@ def import_ctffind_v4_1_8(name, name_no_feedback, directory_name, import_name=''
 
     data = np.sort(data, order='file_name')
     data_original = np.sort(data_original, order='file_name')
-    return data, data_original
+    if send_data is None:
+        return data, data_original
+    else:
+        send_data.send((data, data_original))
 
 
-def import_gctf_v1_06(name, name_no_feedback, directory_name, import_name=''):
+def import_gctf_v1_06(name, name_no_feedback, directory_name, import_name='', send_data=None):
     """
     Import ctf information for Gctf v1.06.
     Defocus in angstrom, phase shift in degree.
@@ -639,7 +654,10 @@ def import_gctf_v1_06(name, name_no_feedback, directory_name, import_name=''):
     data.fill(0)
     data_original.fill(0)
     if not useable_files:
-        return None, None
+        if send_data is None:
+            return None, None
+        else:
+            send_data.send((None, None))
 
     file_names_jpg = [tu.get_name(tu.get_name(entry[0])) for entry in useable_files]
     jpgs = sorted([os.path.basename(entry) for entry in glob.glob(os.path.join(directory_name, 'jpg*'))])
@@ -667,10 +685,13 @@ def import_gctf_v1_06(name, name_no_feedback, directory_name, import_name=''):
 
     data = np.sort(data, order='file_name')
     data_original = np.sort(data_original, order='file_name')
-    return data, data_original
+    if send_data is None:
+        return data, data_original
+    else:
+        send_data.send((data, data_original))
 
 
-def import_cter_v1_0(name, name_no_feedback, directory_name, import_name=''):
+def import_cter_v1_0(name, name_no_feedback, directory_name, import_name='', send_data=None):
     """
     Import ctf information for CTER v1.0.
     Defocus in angstrom, phase shift in degree.
@@ -751,10 +772,13 @@ def import_cter_v1_0(name, name_no_feedback, directory_name, import_name=''):
 
     data = np.sort(data, order='file_name')
     data_original = np.sort(data_original, order='file_name')
-    return data, data_original
+    if send_data is None:
+        return data, data_original
+    else:
+        send_data.send((data, data_original))
 
 
-def import_motion_cor_2_v1_0_0(name, name_no_feedback, directory_name, import_name=''):
+def import_motion_cor_2_v1_0_0(name, name_no_feedback, directory_name, import_name='', send_data=None):
     """
     Import motion information for MotionCor2 v1.0.0.
 
@@ -856,10 +880,13 @@ def import_motion_cor_2_v1_0_0(name, name_no_feedback, directory_name, import_na
     sort_idx = np.argsort(data, order='file_name')
     data = data[sort_idx]
     data_original = np.array(data_original)[sort_idx]
-    return data, data_original
+    if send_data is None:
+        return data, data_original
+    else:
+        send_data.send((data, data_original))
 
 
-def import_cryolo_v1_2_2(name, name_no_feedback, directory_name, import_name=''):
+def import_cryolo_v1_2_2(name, name_no_feedback, directory_name, import_name='', send_data=None):
     """
     Import picking information for crYOLO v1.2.2.
 
@@ -876,10 +903,11 @@ def import_cryolo_v1_2_2(name, name_no_feedback, directory_name, import_name='')
         directory_name,
         sub_directory=['EMAN', 'EMAN_HELIX_SEGMENTED'],
         import_name=import_name,
+        send_data=send_data
         )
 
 
-def import_cryolo_v1_0_4(name, name_no_feedback, directory_name, sub_directory=None, import_name=''):
+def import_cryolo_v1_0_4(name, name_no_feedback, directory_name, import_name='', send_data=None, sub_directory=None, ):
     """
     Import picking information for crYOLO v1.0.4.
 
@@ -946,4 +974,7 @@ def import_cryolo_v1_0_4(name, name_no_feedback, directory_name, sub_directory=N
     data_original = None
 
     data = np.sort(data, order='file_name')
-    return data, data_original
+    if send_data is None:
+        return data, data_original
+    else:
+        send_data.send((data, data_original))

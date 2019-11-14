@@ -70,7 +70,7 @@ class MainWindow(QMainWindow):
 
     def __init__(
             self, content_raw, content_gui, content_pipeline, settings_folder,
-            mount_directory, template_name, version, parent=None
+            mount_directory, template_name, version, n_feedbacks, parent=None
             ):
         """
         Setup the layout for the widget
@@ -164,12 +164,13 @@ class MainWindow(QMainWindow):
         self.content_raw = content_raw
         self.content_pipeline=content_pipeline
         self.layout = None
+        self.n_feedbacks = n_feedbacks
         function_dict = tu.get_function_dict()
         self.types = ['mount', 'process']
         for value in function_dict.values():
             if value['typ'] is not None and value['typ'] not in self.types:
                 #self.types.append(value['typ'])
-                for index in range(5):
+                for index in range(self.n_feedbacks+1):
                     self.types.append('{0}_feedback_{1}'.format(value['typ'], index))
 
         # Settings folder
@@ -267,7 +268,8 @@ class MainWindow(QMainWindow):
         content_pipeline = self.content_pipeline
         content_gui = tu.get_content_gui(
             content=self.content_raw,
-            template_name=template_name
+            template_name=template_name,
+            n_feedbacks=self.n_feedbacks,
             )
         # Fill MainWindow
         self.set_central_widget()
@@ -956,6 +958,14 @@ class MainWindow(QMainWindow):
             for entry in settings_widget:
                 if key in check_list:
                     for name in entry:
+                        if name == 'Number of feedbacks' and int(entry[name]) > self.n_feedbacks:
+                            error_list.append(
+                                '{0}:{1} is not allowed to be larger than the specified number: {2}!\nCheck the start settings of TranSPHIRE in case you want more feedbacks!'.format(
+                                    key,
+                                    name,
+                                    self.n_feedbacks
+                                    )
+                                )
                         if not entry[name] and name not in skip_name_list:
                             error_list.append(
                                 '{0}:{1} is not allowed to be empty!'.format(

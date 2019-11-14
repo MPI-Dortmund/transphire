@@ -32,7 +32,7 @@ from transphire.mainwindow import MainWindow
 from transphire.loadwindow import DefaultSettings
 
 
-def main(font, root_directory, settings_directory, mount_directory, adjust_width, adjust_height, edit_settings):
+def main(font, root_directory, settings_directory, mount_directory, adjust_width, adjust_height, edit_settings, n_feedbacks):
     """
     Run the GUI.
 
@@ -116,6 +116,7 @@ def main(font, root_directory, settings_directory, mount_directory, adjust_width
     content_gui = tu.get_content_gui(
         content=content,
         template_name='DEFAULT',
+        n_feedbacks=n_feedbacks,
         )
 
     template_name = content['DEFAULT']['Others'][0][0]['Default template'][0]
@@ -132,7 +133,8 @@ def main(font, root_directory, settings_directory, mount_directory, adjust_width
         settings_folder=settings_directory,
         template_name=template_name,
         mount_directory=mount_directory,
-        version=transphire.__version__
+        version=transphire.__version__,
+        n_feedbacks=n_feedbacks,
         )
     gui.show()
 
@@ -199,6 +201,12 @@ def parse_args():
         default=False,
         action='store_const',
         help='Show settings dialog (default False)'
+        )
+    parser.add_argument(
+        '--n_feedbacks',
+        default=5,
+        type=int,
+        help='Maximum number of allowed feedbacks'
         )
 
     return vars(parser.parse_args())

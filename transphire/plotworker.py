@@ -16,6 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
+import multiprocessing as mp
 try:
     from PyQt4.QtCore import pyqtSignal, QObject, pyqtSlot
 except ImportError:
@@ -123,6 +124,14 @@ class PlotWorker(QObject):
 
     def calculate_array_now(self, name, name_no_feedback, directory_name, settings):
         try:
+            #recv_end, send_end = mp.Pipe(False)
+            #proc = mp.Process(
+            #    target=tu.get_function_dict()[name_no_feedback]['plot_data'],
+            #    args=(name, name_no_feedback, directory_name, '', send_end)
+            #    )
+            #proc.start()
+            #data, _ = recv_end.recv()
+            #proc.join()
             data, _ = tu.get_function_dict()[name_no_feedback]['plot_data'](
                 name=name,
                 name_no_feedback=name_no_feedback,

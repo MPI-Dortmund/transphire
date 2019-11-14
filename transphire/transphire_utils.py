@@ -707,7 +707,7 @@ def get_key_names(settings_folder, name):
     return return_dict
 
 
-def get_content_gui(content, template_name):
+def get_content_gui(content, template_name, n_feedbacks):
     """
     Create content lists to load the GUI.
 
@@ -829,7 +829,7 @@ def get_content_gui(content, template_name):
                 })
             if not input_content.startswith('Compress'):
 
-                for index in range(5):
+                for index in range(n_feedbacks+1):
                     if index == 0:
                         feedback_content = input_content
                     else:
