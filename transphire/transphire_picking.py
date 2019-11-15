@@ -260,6 +260,7 @@ def create_cryolo_v1_4_1_command(
     ignore_list.append('Box size')
     ignore_list.append('Split Gpu?')
     ignore_list.append('--gpu')
+    ignore_list.append('--threshold')
 
     command.append('{0}'.format(settings['Path'][picking_name]))
 
@@ -268,6 +269,11 @@ def create_cryolo_v1_4_1_command(
     command.append('-o')
     command.append('{0}'.format(file_output))
     command.append('--write_empty')
+    command.append('--threshold={0}'.format(
+        settings[picking_name]['--threshold']
+        if float(settings[picking_name]['--threshold']) != -1
+        else 0.1
+        ))
 
     if settings[picking_name]['--filament'] == 'True':
         command.append('--filament')

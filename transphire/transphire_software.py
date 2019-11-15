@@ -1215,6 +1215,8 @@ def check_for_outlier(dict_name, data, file_name, settings):
 
     for key in dtype_dict[dict_name]:
         key = key[0]
+        if key == 'confidence' and dict_name == 'Picking':
+            continue
 
         try:
             last_values_median = np.median(data[key][-lower_median:])

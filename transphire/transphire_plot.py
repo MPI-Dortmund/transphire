@@ -174,6 +174,34 @@ def update_cryolo_v1_0_4(data, settings, label):
     Return:
     x values, y values, label, title
     """
+    if label == 'particles':
+        x_values = get_mic_number(data['file_name'], settings)
+        y_values = data[label]
+        title ='Total {0}: {1}'.format(label, np.sum(data[label]))
+        label = 'Nr. of {0}'.format(label)
+    elif label == 'confidence':
+        y_values = np.array([entry for row in data[label] for entry in row])
+        x_values = np.arange(y_values.shape[0])
+        title ='crYOLO confidence'
+        label = 'Confidence'
+    else:
+        print('Plotwidget: Do not know what to do :O', label)
+        raise Exception
+    return x_values, y_values, label, title
+
+
+def update_window_1_3(data, settings, label):
+    """
+    Update the plot for crYOLO v1.0.4.
+
+    Arguments:
+    data - Data to plot
+    settings - User provided settings
+    label - Label of the plot
+
+    Return:
+    x values, y values, label, title
+    """
     x_values = get_mic_number(data['file_name'], settings)
     y_values = data[label]
     title ='Total {0}: {1}'.format(label, np.sum(data[label]))

@@ -400,6 +400,10 @@ class ProcessWorker(QObject):
                         'share_lock': manager.Lock(),
                         'write_lock': manager.Lock(),
                         'spot_dict': manager.dict(self.fill_spot_dict()),
+                        'settings_file': '{0}/updated_settings_{1}.txt'.format(
+                            self.settings['project_folder'],
+                            key
+                            ),
                         'number_file': '{0}/last_filenumber_{1}.txt'.format(
                             self.settings['project_folder'],
                             key

@@ -90,6 +90,7 @@ def get_dtype_dict():
         ]
 
     dtype['Picking'] = [
+        ('confidence', 'O'),
         ('particles', '<i8'),
         ('file_name', '|U1200'),
         ('image', '|U1200'),
@@ -901,7 +902,7 @@ def import_cryolo_v1_2_2(name, name_no_feedback, directory_name, import_name='',
         name,
         name_no_feedback,
         directory_name,
-        sub_directory=['EMAN', 'EMAN_HELIX_SEGMENTED'],
+        sub_directory=['CBOX', 'EMAN', 'EMAN_HELIX_SEGMENTED'],
         import_name=import_name,
         send_data=send_data
         )
@@ -924,7 +925,7 @@ def import_cryolo_v1_0_4(name, name_no_feedback, directory_name, import_name='',
     box_files = []
     for dir_name in sub_directory:
         is_break = False
-        for ext_name in ('box', 'txt'):
+        for ext_name in ('cbox', 'box', 'txt'):
             box_files = glob.glob(os.path.join(
                 directory_name,
                 dir_name,
@@ -942,19 +943,23 @@ def import_cryolo_v1_0_4(name, name_no_feedback, directory_name, import_name='',
         try:
             data_imported = np.genfromtxt(file_name)
         except ValueError:
-            useable_files.append([os.path.splitext(os.path.basename(file_name))[0], 0])
+            useable_files.append([os.path.splitext(os.path.basename(file_name))[0], 0, np.array([0])])
         except IOError:
             continue
         else:
-            useable_files.append([os.path.splitext(os.path.basename(file_name))[0], data_imported.shape[0]])
+            if file_name.endswith('.cbox') and data_imported.size != 0:
+                data_cbox = np.atleast_2d(data_imported)[:, -1]
+            else:
+                data_cbox = np.array([0])
+            useable_files.append([os.path.splitext(os.path.basename(file_name))[0], data_imported.shape[0], data_cbox])
 
     useable_files_jpg = [
         tu.get_name(entry)
         for entry in glob.glob(os.path.join(directory_name, 'jpg*', '*.jpg'))
         ]
     useable_files = [
-        [file_name, size]
-        for file_name, size in sorted(useable_files)
+        [file_name, size, confidence]
+        for file_name, size, confidence in sorted(useable_files)
         if tu.get_name(file_name) in useable_files_jpg
         ]
 
@@ -966,9 +971,9 @@ def import_cryolo_v1_0_4(name, name_no_feedback, directory_name, import_name='',
     file_names = [entry[0] for entry in useable_files]
     jpgs = sorted([os.path.basename(entry) for entry in glob.glob(os.path.join(directory_name, 'jpg*'))])
     jpg_names = [';;;'.join([os.path.join(directory_name, jpg_dir_name, '{0}.jpg'.format(entry)) for jpg_dir_name in jpgs]) for entry in file_names]
-    sizes = [entry[1] for entry in useable_files]
     data['file_name'] = file_names
-    data['particles'] = sizes
+    data['confidence'] = [entry[2] for entry in useable_files]
+    data['particles'] = [entry[1] for entry in useable_files]
     data['image'] = jpg_names
 
     data_original = None

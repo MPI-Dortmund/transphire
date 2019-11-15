@@ -311,7 +311,7 @@ def get_function_dict():
     ### Extract programs
 
     function_dict['WINDOW >=v1.2'] = {
-            'plot': tp.update_cryolo_v1_0_4,
+            'plot': tp.update_window_1_3,
             'plot_data': ti.import_window_v1_2,
             'content': tc.default_window_1_2,
             'executable': True,
@@ -324,7 +324,7 @@ def get_function_dict():
     ### 2D classification programs
 
     function_dict['ISAC2 >=v1.2'] = {
-            'plot': tp.update_cryolo_v1_0_4,
+            'plot': tp.update_window_1_3,
             'plot_data': ti.import_isac_v1_2,
             'content': tc.default_isac2_1_2,
             'executable': True,
@@ -337,7 +337,7 @@ def get_function_dict():
     ### 2D selection programs
 
     function_dict['Cinderella >=v0.3.1'] = {
-            'plot': tp.update_cryolo_v1_0_4,
+            'plot': tp.update_window_1_3,
             'plot_data': ti.import_cinderella_v0_3_1,
             'content': tc.default_cinderella_v0_3_1,
             'executable': True,
