@@ -2186,7 +2186,9 @@ class ProcessThread(object):
             queue_dict[motion_idx] = {'log': [], 'sum': [], 'sum_dw': [], 'sum_dws': []}
 
             # Abort if frames out of range
-            if motion_frames['first'] > \
+            if int(self.settings['General']['Number of frames']) == -1:
+                pass
+            elif motion_frames['first'] > \
                     int(self.settings['General']['Number of frames']) or \
                     motion_frames['last'] > \
                     int(self.settings['General']['Number of frames']):
@@ -2496,9 +2498,9 @@ class ProcessThread(object):
                 pass
 
         try:
-            file_for_jpg = queue_dict[motion_idx]['sum_dw'][0]
+            file_for_jpg = queue_dict[0]['sum_dw'][0]
         except IndexError:
-            file_for_jpg = queue_dict[motion_idx]['sum'][0]
+            file_for_jpg = queue_dict[0]['sum'][0]
 
         tum.create_jpg_file(
             file_for_jpg,

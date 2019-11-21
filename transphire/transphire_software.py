@@ -582,21 +582,24 @@ def check_nr_frames(frames, settings):
     frames - List of found frames
     settings - TranSPHIRE settings
     """
-    command = '{0} {1}'.format(
-        settings['Path']['IMOD header'],
-        frames[0]
-        )
+    if int(settings['General']['Number of frames']) == -1:
+        return True, 0
+    else:
+        command = '{0} {1}'.format(
+            settings['Path']['IMOD header'],
+            frames[0]
+            )
 
-    child = pe.spawnu(command)
-    text = child.read()
-    child.interact()
+        child = pe.spawnu(command)
+        text = child.read()
+        child.interact()
 
-    nr_frames = 0
-    for line in text.split('\n'):
-        if line.startswith(' Number of columns, rows, sections .....'):
-            nr_frames = int(line.split()[-1])
+        nr_frames = 0
+        for line in text.split('\n'):
+            if line.startswith(' Number of columns, rows, sections .....'):
+                nr_frames = int(line.split()[-1])
 
-    return bool(nr_frames == int(settings['General']['Number of frames'])), nr_frames
+        return bool(nr_frames == int(settings['General']['Number of frames'])), nr_frames
 
 
 def find_related_frames_to_jpg(frames_root, root_name, settings, queue_com, name):
@@ -846,7 +849,7 @@ def get_copy_command_for_frames(settings, queue_com, name):
     """
     message = None
     if settings['General']['Software'] == 'Just Stack':
-        return "rsync"
+        return "rsync --copy-links"
     elif settings['General']['Software'] == 'Latitude S':
         if settings['General']['Type'] == 'Frames':
             message = '\n'.join([
@@ -867,7 +870,7 @@ def get_copy_command_for_frames(settings, queue_com, name):
                     ])
 
             elif settings['General']['Camera'] in ('K2', 'K3'):
-                return 'rsync'
+                return 'rsync --copy-links'
 
             else:
                 message = '\n'.join([
@@ -902,7 +905,7 @@ def get_copy_command_for_frames(settings, queue_com, name):
 
             elif settings['General']['Camera'] == 'Falcon2' or \
                     settings['General']['Camera'] == 'Falcon3':
-                return 'rsync'
+                return 'rsync --copy-links'
 
             else:
                 message = '\n'.join([
@@ -959,11 +962,11 @@ def get_copy_command_for_frames(settings, queue_com, name):
         if settings['General']['Type'] == 'Stack':
 
             if settings['General']['Camera'] in ('K2', 'K3'):
-                return 'rsync'
+                return 'rsync --copy-links'
 
             elif settings['General']['Camera'] == 'Falcon2' or \
                     settings['General']['Camera'] == 'Falcon3':
-                return 'rsync'
+                return 'rsync --copy-links'
 
             else:
                 message = '\n'.join([
