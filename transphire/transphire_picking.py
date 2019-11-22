@@ -261,6 +261,10 @@ def create_cryolo_v1_4_1_command(
     ignore_list.append('Split Gpu?')
     ignore_list.append('--gpu')
     ignore_list.append('--threshold')
+    ignore_list.append('Lowest defocus percent')
+    ignore_list.append('Minimum micrographs')
+    ignore_list.append('Minimum particles')
+    ignore_list.append('Mean percent')
 
     command.append('{0}'.format(settings['Path'][picking_name]))
 

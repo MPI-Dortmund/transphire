@@ -16,7 +16,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
-import multiprocessing as mp
 try:
     from PyQt4.QtCore import pyqtSignal, QObject, pyqtSlot
 except ImportError:

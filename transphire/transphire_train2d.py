@@ -100,6 +100,7 @@ def create_train_command(sum_folder, box_folder, output_dir, name, settings):
     ignore_list.append('--gpu')
     ignore_list.append('Box size')
     ignore_list.append('--train_times')
+    ignore_list.append('Maximum micrographs')
 
     if settings[prog_name]['Split Gpu?'] == 'True':
         try:

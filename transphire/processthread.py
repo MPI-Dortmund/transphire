@@ -3168,7 +3168,9 @@ class ProcessThread(object):
             new_box_dir = box_dir.replace('/BOX/original', '/BOX/renamed')
             tu.mkdir_p(new_box_dir)
 
-            for file_name in sorted(np.random.permutation(glob.glob(os.path.join(box_dir, '*')))[:50]):
+            n_max_micrographs = int(self.settings[self.settings['Copy']['Train2d']]['Maximum micrographs'])
+
+            for file_name in sorted(np.random.permutation(glob.glob(os.path.join(box_dir, '*')))[:n_max_micrographs]):
                 self.symlink_rel(
                     file_name,
                     file_name.replace(box_dir, new_box_dir).replace('_original.box', '.box')
@@ -3867,10 +3869,12 @@ class ProcessThread(object):
                     finally:
                         self.shared_dict_typ['queue_list_lock'].release()
 
-                percent = 0.5
-                n_mics_to_check = 50
+                percent = float(self.settings[self.settings['Copy']['Picking']]['Lowest defocus percent'])
+                n_mics_to_check = int(self.settings[self.settings['Copy']['Picking']]['Minimum micrographs'])
+                n_particles_to_check = int(self.settings[self.settings['Copy']['Picking']]['Minimum particles'])
+                threshold_percent = float(self.settings[self.settings['Copy']['Picking']]['Mean percent'])
 
-                if new_nr_of_particles > 20000 and new_nr_of_micrographs > n_mics_to_check / percent:
+                if new_nr_of_particles > n_particles_to_check and new_nr_of_micrographs > n_mics_to_check / percent:
 
                     output_name_partres_combined = os.path.join(
                         self.settings['project_folder'],
@@ -3903,7 +3907,7 @@ class ProcessThread(object):
                         mics += 1
                         if mics > n_mics_to_check:
                             break
-                    new_threshold = 0.75 * np.mean(boxes)
+                    new_threshold = threshold_percent * np.mean(boxes)
 
                     self.shared_dict_typ['queue_list_lock'].acquire()
                     try:
