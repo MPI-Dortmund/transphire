@@ -103,7 +103,7 @@ def create_class2d_command(class2d_name, stack_name, file_name, output_dir, sett
     shell = None
     if 'ISAC2' in class2d_name:
         if tu.is_higher_version(class2d_name, '1.2'):
-            command = create_isac2_1_2_command(
+            command, gpu = create_isac2_1_2_command(
                 class2d_name=class2d_name,
                 stack_name=stack_name,
                 file_name=file_name,
@@ -113,7 +113,7 @@ def create_class2d_command(class2d_name, stack_name, file_name, output_dir, sett
                 )
             check_files = []
             block_gpu = True
-            gpu_list = []
+            gpu_list = gpu.split()
             shell = True
     else:
         message = '\n'.join([
@@ -199,7 +199,7 @@ def create_isac2_1_2_command(class2d_name, stack_name, file_name, output_dir, se
     command.append(os.path.join(isac_output_dir, 'ordered_class_averages.hdf'))
     command.append(os.path.join(output_dir, file_name, 'png', 'ordered_class_averages.png'))
     command.append('--unstack')
-    return ' '.join(command)
+    return ' '.join(command), gpu
 
 
 def create_jpg_file(file_name, output_dir):
