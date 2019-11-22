@@ -3845,11 +3845,15 @@ class ProcessThread(object):
                         try:
                             with open(self.shared_dict_typ['number_file'], 'r') as read:
                                 try:
-                                    old_nr_of_particles = int(read.read().strip())
+                                    old_nr_of_particles, old_nr_of_micrographs = read.read().strip().split('|||')
+                                    old_nr_of_particles = int(old_nr_of_particles)
+                                    old_nr_of_micrographs = int(old_nr_of_micrographs)
                                 except ValueError:
                                     old_nr_of_particles = 0
+                                    old_nr_of_micrographs = 0
                         except FileNotFoundError:
                             old_nr_of_particles = 0
+                            old_nr_of_micrographs = 0
 
                         try:
                             nr_particles = data['particles'][0]
@@ -3857,23 +3861,48 @@ class ProcessThread(object):
                             nr_particles = 0
 
                         new_nr_of_particles = old_nr_of_particles + nr_particles
+                        new_nr_of_micrographs = old_nr_of_micrographs + 1
                         with open(self.shared_dict_typ['number_file'], 'w') as write:
-                            write.write('{0}'.format(new_nr_of_particles))
+                            write.write('{0}|||{1}'.format(new_nr_of_particles, new_nr_of_micrographs))
                     finally:
                         self.shared_dict_typ['queue_list_lock'].release()
 
-                if new_nr_of_particles > 20000:
+                percent = 0.5
+                n_mics_to_check = 50
+
+                if new_nr_of_particles > 20000 and new_nr_of_micrographs > n_mics_to_check / percent:
+
+                    output_name_partres_combined = os.path.join(
+                        self.settings['project_folder'],
+                        '{0}_transphire_ctf_partres.txt'.format(
+                            self.settings['Copy']['CTF'].replace(' ', '_').replace('>=', '')
+                            )
+                        )
+                    data_ctf = np.genfromtxt(output_name_partres_combined, dtype=None)
+                    mic_name = data_ctf['f' + str(len(data_ctf[0])-1)]
+                    defocus = data_ctf['f0']
+                    indices = np.argsort(defocus)
+
+                    mic_name_sorted_subset = mic_name.astype('U')[indices]
+
                     boxes = []
-                    for file_name in glob.glob(os.path.join(
+                    mics = 0
+                    for entry in mic_name_sorted_subset:
+                        file_name = os.path.join(
                             self.settings[entry_name][self.settings['Copy']['Picking']],
                             'CBOX',
-                            '*.cbox'
-                            )):
+                            '{0}.cbox'.format(tu.get_name(entry))
+                            )
                         try:
                             _, _, _, _, data = np.genfromtxt(file_name, unpack=True)
                         except ValueError:
                             continue
+                        except OSError:
+                            continue
                         boxes.extend(np.atleast_1d(data).tolist())
+                        mics += 1
+                        if mics > n_mics_to_check:
+                            break
                     new_threshold = 0.75 * np.mean(boxes)
 
                     self.shared_dict_typ['queue_list_lock'].acquire()
@@ -3885,7 +3914,7 @@ class ProcessThread(object):
                                 str(new_threshold)
                                 ]))
                         with open(self.shared_dict_typ['number_file'], 'w') as write:
-                            write.write('0')
+                            write.write('0|||0')
                     finally:
                         self.shared_dict_typ['queue_list_lock'].release()
                     self.reset_queue(
