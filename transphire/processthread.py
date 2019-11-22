@@ -3168,7 +3168,7 @@ class ProcessThread(object):
             new_box_dir = box_dir.replace('/BOX/original', '/BOX/renamed')
             tu.mkdir_p(new_box_dir)
 
-            for file_name in sorted(glob.glob(os.path.join(box_dir, '*'))):
+            for file_name in sorted(np.random.permutation(glob.glob(os.path.join(box_dir, '*')))[:50]):
                 self.symlink_rel(
                     file_name,
                     file_name.replace(box_dir, new_box_dir).replace('_original.box', '.box')
