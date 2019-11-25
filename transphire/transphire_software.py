@@ -448,7 +448,7 @@ def find_frames(frames_root, compare_name, settings, queue_com, name, write_erro
 
         elif settings['General']['Type'] == 'Stack':
 
-            if settings['General']['Camera'] in ('K2', 'K3'):
+            if settings['General']['Camera'] in ('K2'):
                 raw_frames = glob.glob(
                     '{0}*-*.{1}'.format(
                         compare_name,
@@ -460,6 +460,51 @@ def find_frames(frames_root, compare_name, settings, queue_com, name, write_erro
                         settings['General']['Input extension']
                         ))
                 frames = [frame for frame in raw_frames if frames_re.match(frame) is not None]
+
+                if len(frames) != 1:
+                    message = 'File {0} has {1} movie files instead of 1\n'.format(
+                        frames_root,
+                        len(frames)
+                        )
+                    write_error(
+                        msg=message,
+                        root_name=frames_root
+                        )
+                    return None
+                else:
+                    try:
+                        value, checked_nr_frames = check_nr_frames(
+                            frames=frames,
+                            settings=settings
+                            )
+                    except BlockingIOError:
+                        write_error(
+                            msg=tb.format_exc(),
+                            root_name=frames_root
+                            )
+                        return False
+
+                if not value:
+                    message = 'File {0} has {1} frames instead of {2}\n'.format(
+                        frames[0],
+                        checked_nr_frames,
+                        int(settings['General']['Number of frames'])
+                        )
+                    write_error(
+                        msg=message,
+                        root_name=frames_root
+                        )
+                    return None
+                else:
+                    return True
+
+            elif settings['General']['Camera'] == 'K3':
+                frames = glob.glob(
+                    '{0}*_fractions.{1}'.format(
+                        compare_name,
+                        settings['General']['Input extension']
+                        )
+                    )
 
                 if len(frames) != 1:
                     message = 'File {0} has {1} movie files instead of 1\n'.format(
@@ -751,7 +796,7 @@ def find_related_frames_to_jpg(frames_root, root_name, settings, queue_com, name
 
         if settings['General']['Type'] == 'Stack':
 
-            if settings['General']['Camera'] in ('K2', 'K3'):
+            if settings['General']['Camera'] in ('K2'):
                 compare_name_frames = frames_root[:-len('_19911213_2019')]
                 compare_name_meta = root_name[:-len('_19911213_2019')]
                 raw_frames = glob.glob('{0}*-*.{1}'.format(
@@ -763,6 +808,15 @@ def find_related_frames_to_jpg(frames_root, root_name, settings, queue_com, name
                         settings['General']['Input extension']
                         ))
                 frames = [frame for frame in raw_frames if frames_re.match(frame) is not None]
+                return frames, compare_name_frames, compare_name_meta
+
+            elif settings['General']['Camera'] == 'K3':
+                compare_name_frames = frames_root[:-len('_19911213_2019')]
+                compare_name_meta = root_name[:-len('_19911213_2019')]
+                frames = glob.glob('{0}*_fractions.{1}'.format(
+                    compare_name_frames,
+                    settings['General']['Input extension']
+                    ))
                 return frames, compare_name_frames, compare_name_meta
 
             elif settings['General']['Camera'] == 'Falcon2' or \
@@ -1094,8 +1148,16 @@ def find_all_files(root_name, compare_name_frames, compare_name_meta, settings, 
 
     elif settings['General']['Software'] == 'EPU >=1.9':
 
-        if settings['General']['Camera'] in ('K2', 'K3'):
+        if settings['General']['Camera'] in ('K2'):
             meta_files = glob.glob('{0}*'.format(compare_name_meta))
+            frame_files = glob.glob('{0}*'.format(compare_name_frames))
+            return set(meta_files), set(frame_files)
+
+        elif settings['General']['Camera'] == 'K3':
+            meta_files = [
+                name for name in glob.glob('{0}*'.format(compare_name_meta))
+                if 'fractions' not in name
+                ]
             frame_files = glob.glob('{0}*'.format(compare_name_frames))
             return set(meta_files), set(frame_files)
 
