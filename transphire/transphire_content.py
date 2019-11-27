@@ -49,9 +49,24 @@ def default_auto_sphire_v1_3():
         ['--phase_plate', ['False', 'True'], bool, '', 'COMBO', 'Main', '', 'Input is phase_plate.'],
         ['--memory_per_node', '100', int,  '', 'PLAIN', 'Main', '', 'Available memory per node.'],
 
+        ['--mask_rviper_ndilation', '3', int,  '', 'PLAIN', 'Main', '', 'Available memory per node.'],
+        ['--mask_rviper_soft_edge', '10', str,  '', 'PLAIN', 'Main', '', 'Available memory per node.'],
+        ['--sharpening_meridien_ndilation', '2', int,  '', 'PLAIN', 'Main', '', 'Available memory per node.'],
+        ['--sharpening_meridien_soft_edge', '1', str,  '', 'PLAIN', 'Main', '', 'Available memory per node.'],
+
+        ['--rviper_addition', '', str,  '', 'PLAIN', 'Main', '', 'Available memory per node.'],
+        ['--adjust_rviper_addition', '', str,  '', 'PLAIN', 'Main', '', 'Available memory per node.'],
+        ['--mask_rviper_addition', '', str,  '', 'PLAIN', 'Main', '', 'Available memory per node.'],
+        ['--meridien_addition', '', str,  '', 'PLAIN', 'Main', '', 'Available memory per node.'],
+        ['--sharpening_meridien_addition', '', str,  '', 'PLAIN', 'Main', '', 'Available memory per node.'],
+
+        ['input_volume', '', str,  '', 'FILE', 'Main', '', 'Available memory per node.'],
+
         ['Use SSH', ['True', 'False'], bool,  '', 'COMBO', 'Main', '', 'Use SSH to submit a job.'],
         ['SSH username', '', str,  'Use SSH:True', 'PLAIN', 'Main', '', 'Username on the work directory'],
         ['SSH password', '', str,  'Use SSH:True', 'PASSWORD', 'Main', '', 'Password of the user (Will not be saved anywhere)'],
+        ['Minimum classes', '100', int, '', 'PLAIN', 'Advanced', 'NOT AN AutoSPHIRE OPTION. Minimum number of classes to start AutoSPHIRE (Only used the first time.).'],
+        ['Minimum particles', '40000', int, '', 'PLAIN', 'Advanced', 'NOT AN AutoSPHIRE OPTION. Minimum number of particles to start AutoSPHIRE.'],
         ]
     return items
 

@@ -4145,7 +4145,7 @@ class ProcessThread(object):
         if root_name.endswith('_good.hdf'):
             isac_folder, particle_stack, class_average_file = root_name.split('|||')
             file_name = tu.get_name(isac_folder)
-            log_prefix = os.path.join(self.settings[folder_name], file_name)
+            log_prefix = os.path.join(self.settings[folder_name], 'ISAC_{0}'.format(file_name))
 
             command, check_files, block_gpu, gpu_list, shell, stack_name = ttrain2d.create_substack_command(
                 class_average_name=class_average_file,
@@ -4175,18 +4175,66 @@ class ProcessThread(object):
                 command=command
                 )
 
-            #self.shared_dict_typ['queue_list_lock'].acquire()
-            #try:
-            #    matches_in_queue = []
-            #    for entry in sorted(glob.glob(os.path.join(new_box_dir, '*'))):
-            #        self.add_to_queue_file(
-            #            root_name=entry,
-            #            file_name=self.shared_dict_typ['list_file'],
-            #            )
-            #        file_name = tu.get_name(tu.get_name(tu.get_name(entry)))[:-len('_original')]
-            #        matches_in_queue.extend(self.all_in_queue_file(self.typ, file_name, lock=False))
-            #finally:
-            #    self.shared_dict_typ['queue_list_lock'].release()
+            with open(log_file, 'r') as read:
+                content = read.read()
+            shrink_ratio = re.search('ISAC shrink ratio\s*:\s*(0\.\d+)', content, re.MULTILINE).groups()
+            n_particles = int(re.search('Accounted particles\s*:\s*(\d+)', content, re.MULTILINE).groups())
+            n_classes = int(re.search('Provided class averages\s*:\s*(\d+)', content, re.MULTILINE).groups())
+
+            self.shared_dict_typ['queue_list_lock'].acquire()
+            try:
+                self.add_to_queue_file(
+                    root_name='|||'.join([root_name, stack_name]),
+                    file_name=self.shared_dict_typ['list_file'],
+                    )
+
+                try:
+                    with open(self.shared_dict_typ['number_file'], 'r') as read:
+                        try:
+                            old_n_particles, old_n_classes, old_shrink_ratio, old_index, volume = read.read().strip().split('|||')
+                            old_n_particles = int(old_n_particles)
+                            old_n_classes = int(old_n_classes)
+                            old_index = int(old_index)
+                            assert old_shrink_ratio == shrink_ratio, 'Shrink ratios shouls be identical and cannot change within one dataset!!! Got: {0}  Expected: {1}'.format(
+                                old_shrink_ratio,
+                                shrink_ratio
+                                )
+                        except ValueError:
+                            old_n_particles = 0
+                            old_n_classes = 0
+                            old_index = -1
+                            volume = 'None'
+                except FileNotFoundError:
+                    old_n_particles = 0
+                    old_n_classes = 0
+                    old_index = -1
+                    volume = 'None'
+
+                new_n_particles = old_n_particles + n_particles
+                new_n_classes = old_n_classes + n_classes
+
+                n_particles_to_check = int(self.settings[self.settings['Copy']['Auto3d']]['Minimum particles'])
+                n_classes_to_check = int(self.settings[self.settings['Copy']['Auto3d']]['Minimum classes'])
+
+                if new_n_particles > n_particles_to_check and new_n_classes > n_classes_to_check:
+                    current_index = old_index + 1
+                    with open(self.shared_dict_typ['number_file'], 'w') as write:
+                        write.write('|||'.join(['0', '0', shrink_ratio, str(current_index), volume]))
+
+                    with open(self.shared_dict_typ['list_file'], 'r') as read:
+                        list_content = read.read().splitlines()
+                    with open(self.shared_dict_typ['list_file'], 'w') as read:
+                        pass
+
+                else:
+                    with open(self.shared_dict_typ['number_file'], 'w') as write:
+                        write.write('|||'.join([str(new_n_particles), str(new_n_classes), shrink_ratio, str(old_index), volume]))
+
+                    self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name, 'stop early 1'))
+                    return None
+
+            finally:
+                self.shared_dict_typ['queue_list_lock'].release()
 
         else:
             self.shared_dict_typ['queue_list_lock'].acquire()
@@ -4199,32 +4247,166 @@ class ProcessThread(object):
                 self.shared_dict_typ['queue_list_lock'].release()
             return None
 
-        skip_list = False
-        if skip_list:
-            pass
-        else:
-            # Add to queue
-            for aim in self.content_settings['aim']:
-                *compare, aim_name = aim.split(':')
-                var = True
-                for typ in compare:
-                    name = typ.split('!')[-1]
-                    if typ.startswith('!'):
-                        if self.settings['Copy'][name] == 'False':
-                            continue
-                        else:
-                            var = False
-                            break
-                    else:
-                        if not self.settings['Copy'][name] == 'False':
-                            continue
-                        else:
-                            var = False
-                            break
-                if var:
-                    pass
+        try:
+
+            log_prefix = os.path.join(self.settings[folder_name], '{0:03d}'.format(current_index))
+            output_stack = 'bdb:{0}/STACK/stack'.format(log_prefix)
+            output_classes = '{0}/CLASSES/best_classes.hdf'.format(log_prefix)
+            output_template = '{0}/submission_template.sh'.format(log_prefix)
+
+            index_particle_stack = 3
+            cmd = [self.settings['Path']['e2bdb.py']]
+            cmd.extend([entry.split('|||')[index_particle_stack] for entry in list_content])
+            cmd.append('--makevstack={0}'.format(output_stack))
+
+            log_file, err_file = self.run_command(
+                command=cmd,
+                log_prefix='{0}_combine_stack'.format(log_prefix),
+                block_gpu=False,
+                gpu_list=[],
+                shell=False
+                )
+
+            zero_list = [err_file]
+            non_zero_list = [log_file]
+
+            tus.check_outputs(
+                zero_list=zero_list,
+                non_zero_list=non_zero_list,
+                exists_list=[],
+                folder=self.settings[folder_name],
+                command=command
+                )
+
+            index_class_averages = 2
+            cmd = [self.settings['Path']['e2proc2d.py']]
+            cmd.extend([entry.split('|||')[index_class_averages] for entry in list_content])
+            cmd.append(output_classes)
+
+            log_file, err_file = self.run_command(
+                command=cmd,
+                log_prefix='{0}_combine_classes'.format(log_prefix),
+                block_gpu=False,
+                gpu_list=[],
+                shell=False
+                )
+
+            zero_list = [err_file]
+            non_zero_list = [log_file]
+
+            tus.check_outputs(
+                zero_list=zero_list,
+                non_zero_list=non_zero_list,
+                exists_list=[],
+                folder=self.settings[folder_name],
+                command=command
+                )
+
+            cmd = []
+            cmd.append(self.settings['Path']['sp_auto'])
+            cmd.append('{0}/AUTOSPHIRE'.format(log_prefix))
+            cmd.append('--dry_run')
+            cmd.append('--skip_unblur')
+            cmd.append('--skip_cter')
+            cmd.append('--skip_cryolo')
+            cmd.append('--skip_window')
+            cmd.append('--skip_isac2')
+            cmd.append('--skip_cinderella')
+            if self.settings['input_volume']:
+                volume = self.settings['input_volume']
+
+            if volume == 'None':
+                cmd.append('--rviper_input_stack={0}'.format(output_classes))
+                cmd.append('--adjust_rviper_resample={0}'.format(1/float(shrink_ratio)))
+            else:
+                cmd.append('--skip_rviper')
+                cmd.append('--meridien_input_volume={0}'.format(volume))
+            cmd.append('--skip_restack')
+            cmd.append('--skip_ctf_refine')
+            cmd.append('--meridien_input_stack={0}'.format(output_stack))
+
+            ignore_list = []
+            ignore_list.append('Use SSH')
+            ignore_list.append('Use SSH username')
+            ignore_list.append('Use SSH password')
+            ignore_list.append('Minimum classes')
+            ignore_list.append('Minimum particles')
+
+            prog_name = self.settings['Copy']['Auto3d']
+            for key in self.settings[prog_name]:
+                if key in ignore_list:
+                    continue
                 else:
-                    pass
+                    cmd.append(key)
+                    cmd.append(
+                        '{0}'.format(self.settings[prog_name][key])
+                        )
+
+            log_file, err_file = self.run_command(
+                command=cmd,
+                log_prefix='{0}_create_template'.format(log_prefix),
+                block_gpu=False,
+                gpu_list=[],
+                shell=False
+                )
+
+            zero_list = [err_file]
+            non_zero_list = [log_file]
+
+            tus.check_outputs(
+                zero_list=zero_list,
+                non_zero_list=non_zero_list,
+                exists_list=[],
+                folder=self.settings[folder_name],
+                command=command
+                )
+
+            skip_list = False
+            if skip_list:
+                pass
+            else:
+                # Add to queue
+                for aim in self.content_settings['aim']:
+                    *compare, aim_name = aim.split(':')
+                    var = True
+                    for typ in compare:
+                        name = typ.split('!')[-1]
+                        if typ.startswith('!'):
+                            if self.settings['Copy'][name] == 'False':
+                                continue
+                            else:
+                                var = False
+                                break
+                        else:
+                            if not self.settings['Copy'][name] == 'False':
+                                continue
+                            else:
+                                var = False
+                                break
+                    if var:
+                        pass
+                    else:
+                        pass
+
+        except Exception:
+            self.shared_dict_typ['queue_list_lock'].acquire()
+            try:
+                with open(self.shared_dict_typ['number_file'], 'r') as read:
+                    old_n_particles, old_n_classes, old_shrink_ratio, old_index, volume = read.read().strip().split('|||')
+
+                n_particles = old_n_particles + new_n_particles
+                n_classes = old_n_classes + new_n_classes
+
+                with open(self.shared_dict_typ['number_file'], 'w') as write:
+                    write.write('|||'.join([str(n_particles), str(n_classes), shrink_ratio, old_index, volume]))
+
+                for entry in list_content:
+                    self.add_to_queue_file(
+                        root_name=entry,
+                        file_name=self.shared_dict_typ['list_file'],
+                        )
+            finally:
+                self.shared_dict_typ['queue_list_lock'].release()
 
         self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name, 'stop process', time.time() - start_prog))
 
