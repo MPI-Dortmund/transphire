@@ -366,7 +366,7 @@ def get_function_dict():
             'plot_data': ti.dummy,
             'content': tc.default_auto_sphire_v1_3,
             'executable': True,
-            'has_path': 'sp_auto',
+            'has_path': 'sp_auto.py',
             'typ': 'Auto3d',
             'allow_empty': [
                 'SSH username',

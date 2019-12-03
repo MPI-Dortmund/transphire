@@ -4177,9 +4177,9 @@ class ProcessThread(object):
 
             with open(log_file, 'r') as read:
                 content = read.read()
-            shrink_ratio = re.search('ISAC shrink ratio\s*:\s*(0\.\d+)', content, re.MULTILINE).groups()
-            n_particles = int(re.search('Accounted particles\s*:\s*(\d+)', content, re.MULTILINE).groups())
-            n_classes = int(re.search('Provided class averages\s*:\s*(\d+)', content, re.MULTILINE).groups())
+            shrink_ratio = re.search('ISAC shrink ratio\s*:\s*(0\.\d+)', content, re.MULTILINE).group(1)
+            n_particles = int(re.search('Accounted particles\s*:\s*(\d+)', content, re.MULTILINE).group(1))
+            n_classes = int(re.search('Provided class averages\s*:\s*(\d+)', content, re.MULTILINE).group(1))
 
             self.shared_dict_typ['queue_list_lock'].acquire()
             try:
@@ -4258,6 +4258,7 @@ class ProcessThread(object):
             cmd = [self.settings['Path']['e2bdb.py']]
             cmd.extend([entry.split('|||')[index_particle_stack] for entry in list_content])
             cmd.append('--makevstack={0}'.format(output_stack))
+            cmd = ' '.join(cmd)
 
             log_file, err_file = self.run_command(
                 command=cmd,
@@ -4282,6 +4283,9 @@ class ProcessThread(object):
             cmd = [self.settings['Path']['e2proc2d.py']]
             cmd.extend([entry.split('|||')[index_class_averages] for entry in list_content])
             cmd.append(output_classes)
+            cmd = ' '.join(cmd)
+
+            tu.mkdir_p(os.path.dirname(output_classes))
 
             log_file, err_file = self.run_command(
                 command=cmd,
@@ -4303,7 +4307,7 @@ class ProcessThread(object):
                 )
 
             cmd = []
-            cmd.append(self.settings['Path']['sp_auto'])
+            cmd.append(self.settings['Path'][self.settings['Copy']['Auto3d']])
             cmd.append('{0}/AUTOSPHIRE'.format(log_prefix))
             cmd.append('--dry_run')
             cmd.append('--skip_unblur')
@@ -4342,6 +4346,7 @@ class ProcessThread(object):
                         '{0}'.format(self.settings[prog_name][key])
                         )
 
+            cmd = ' '.join(cmd)
             log_file, err_file = self.run_command(
                 command=cmd,
                 log_prefix='{0}_create_template'.format(log_prefix),
@@ -4394,8 +4399,8 @@ class ProcessThread(object):
                 with open(self.shared_dict_typ['number_file'], 'r') as read:
                     old_n_particles, old_n_classes, old_shrink_ratio, old_index, volume = read.read().strip().split('|||')
 
-                n_particles = old_n_particles + new_n_particles
-                n_classes = old_n_classes + new_n_classes
+                n_particles = int(old_n_particles) + new_n_particles
+                n_classes = int(old_n_classes) + new_n_classes
 
                 with open(self.shared_dict_typ['number_file'], 'w') as write:
                     write.write('|||'.join([str(n_particles), str(n_classes), shrink_ratio, old_index, volume]))
@@ -4407,6 +4412,7 @@ class ProcessThread(object):
                         )
             finally:
                 self.shared_dict_typ['queue_list_lock'].release()
+            raise
 
         self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name, 'stop process', time.time() - start_prog))
 
