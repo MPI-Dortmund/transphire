@@ -373,6 +373,7 @@ def get_function_dict():
                 'SSH password',
                 '--mtf',
                 'input_volume',
+                'input_mask',
                 '--rviper_addition',
                 '--adjust_rviper_addition',
                 '--mask_rviper_addition',

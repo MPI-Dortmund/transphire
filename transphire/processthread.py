@@ -4191,7 +4191,7 @@ class ProcessThread(object):
                 try:
                     with open(self.shared_dict_typ['number_file'], 'r') as read:
                         try:
-                            old_n_particles, old_n_classes, old_shrink_ratio, old_index, volume = read.read().strip().split('|||')
+                            old_n_particles, old_n_classes, old_shrink_ratio, old_index, volume, mask = read.read().strip().split('|||')
                             old_n_particles = int(old_n_particles)
                             old_n_classes = int(old_n_classes)
                             old_index = int(old_index)
@@ -4204,11 +4204,13 @@ class ProcessThread(object):
                             old_n_classes = 0
                             old_index = -1
                             volume = 'None'
+                            mask = 'None'
                 except FileNotFoundError:
                     old_n_particles = 0
                     old_n_classes = 0
                     old_index = -1
                     volume = 'None'
+                    mask = 'None'
 
                 new_n_particles = old_n_particles + n_particles
                 new_n_classes = old_n_classes + n_classes
@@ -4219,7 +4221,7 @@ class ProcessThread(object):
                 if new_n_particles > n_particles_to_check and new_n_classes > n_classes_to_check:
                     current_index = old_index + 1
                     with open(self.shared_dict_typ['number_file'], 'w') as write:
-                        write.write('|||'.join(['0', '0', shrink_ratio, str(current_index), volume]))
+                        write.write('|||'.join(['0', '0', shrink_ratio, str(current_index), volume, mask]))
 
                     with open(self.shared_dict_typ['list_file'], 'r') as read:
                         list_content = read.read().splitlines()
@@ -4228,7 +4230,7 @@ class ProcessThread(object):
 
                 else:
                     with open(self.shared_dict_typ['number_file'], 'w') as write:
-                        write.write('|||'.join([str(new_n_particles), str(new_n_classes), shrink_ratio, str(old_index), volume]))
+                        write.write('|||'.join([str(new_n_particles), str(new_n_classes), shrink_ratio, str(old_index), volume, mask]))
 
                     self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name, 'stop early 1'))
                     return None
@@ -4245,6 +4247,7 @@ class ProcessThread(object):
                     )
             finally:
                 self.shared_dict_typ['queue_list_lock'].release()
+            self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name, 'stop early 2'))
             return None
 
         try:
@@ -4253,6 +4256,7 @@ class ProcessThread(object):
             output_stack = 'bdb:{0}/STACK/stack'.format(log_prefix)
             output_classes = '{0}/CLASSES/best_classes.hdf'.format(log_prefix)
             output_template = '{0}/submission_template.sh'.format(log_prefix)
+            prog_name = self.settings['Copy']['Auto3d']
 
             index_particle_stack = 3
             cmd = [self.settings['Path']['e2bdb.py']]
@@ -4316,30 +4320,61 @@ class ProcessThread(object):
             cmd.append('--skip_window')
             cmd.append('--skip_isac2')
             cmd.append('--skip_cinderella')
-            if self.settings['input_volume']:
-                volume = self.settings['input_volume']
+
+            if self.settings[prog_name]['input_volume'] and volume == 'None':
+                volume = self.settings[prog_name]['input_volume']
+            if self.settings[prog_name]['input_mask'] and mask == 'None':
+                mask = self.settings[prog_name]['input_mask']
 
             if volume == 'None':
                 cmd.append('--rviper_input_stack={0}'.format(output_classes))
                 cmd.append('--adjust_rviper_resample={0}'.format(1/float(shrink_ratio)))
             else:
                 cmd.append('--skip_rviper')
+                cmd.append('--skip_adjust_rviper')
+                cmd.append('--skip_mask_rviper')
                 cmd.append('--meridien_input_volume={0}'.format(volume))
+
+            if mask != 'None':
+                cmd.append('--skip_mask_rviper')
+                cmd.append('--meridien_input_mask={0}'.format(mask))
+
             cmd.append('--skip_restack')
             cmd.append('--skip_ctf_refine')
             cmd.append('--meridien_input_stack={0}'.format(output_stack))
 
+            if self.settings[prog_name]['--mtf'].strip():
+                cmd.append('--mtf={0}'.format(self.settings[prog_name]['--mtf']))
+
+            if self.settings[prog_name]['--phase_plate'] == 'True':
+                cmd.append('--phase_plate')
+
             ignore_list = []
+
+            ignore_list.append('--phase_plate')
             ignore_list.append('Use SSH')
-            ignore_list.append('Use SSH username')
-            ignore_list.append('Use SSH password')
+            ignore_list.append('--mtf')
+            ignore_list.append('input_volume')
+            ignore_list.append('input_mask')
+            ignore_list.append('SSH username')
+            ignore_list.append('SSH password')
             ignore_list.append('Minimum classes')
             ignore_list.append('Minimum particles')
 
-            prog_name = self.settings['Copy']['Auto3d']
+            ignore_key_list = []
+            ignore_key_list.append('--rviper_addition')
+            ignore_key_list.append('--adjust_rviper_addition')
+            ignore_key_list.append('--mask_rviper_addition')
+            ignore_key_list.append('--meridien_addition')
+            ignore_key_list.append('--sharpening_meridien_addition')
+
             for key in self.settings[prog_name]:
                 if key in ignore_list:
                     continue
+                elif key in ignore_key_list:
+                    cmd.append(
+                        '{0}'.format(self.settings[prog_name][key])
+                        )
                 else:
                     cmd.append(key)
                     cmd.append(
@@ -4365,6 +4400,14 @@ class ProcessThread(object):
                 folder=self.settings[folder_name],
                 command=command
                 )
+
+            print('keys:', self.settings.keys(), self.settings['Mount'].keys())
+            if self.settings[prog_name]['Use SSH'] == 'True':
+                cmd = ['ssh']
+                cmd.append('{0}@{1}'.format(
+                    self.settings[prog_name]['Use SSH username'],
+                    self.settings['Mount']['Use SSH username']
+                    ))
 
             skip_list = False
             if skip_list:
@@ -4397,13 +4440,13 @@ class ProcessThread(object):
             self.shared_dict_typ['queue_list_lock'].acquire()
             try:
                 with open(self.shared_dict_typ['number_file'], 'r') as read:
-                    old_n_particles, old_n_classes, old_shrink_ratio, old_index, volume = read.read().strip().split('|||')
+                    old_n_particles, old_n_classes, old_shrink_ratio, old_index, volume, mask = read.read().strip().split('|||')
 
                 n_particles = int(old_n_particles) + new_n_particles
                 n_classes = int(old_n_classes) + new_n_classes
 
                 with open(self.shared_dict_typ['number_file'], 'w') as write:
-                    write.write('|||'.join([str(n_particles), str(n_classes), shrink_ratio, old_index, volume]))
+                    write.write('|||'.join([str(n_particles), str(n_classes), shrink_ratio, old_index, volume, mask]))
 
                 for entry in list_content:
                     self.add_to_queue_file(
@@ -4415,6 +4458,59 @@ class ProcessThread(object):
             raise
 
         self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name, 'stop process', time.time() - start_prog))
+
+    def copy_extern(self, my_typ, copy_file):
+        new_names = []
+        for copy_file_name in copy_file:
+            mount_folder_name = '{0}_folder_feedback_0'.format(my_typ.lower())
+            mount_name = self.settings['Copy'][my_typ]
+            sudo = self.settings['Mount'][mount_name]['Need sudo for copy?']
+            protocol = self.settings['Mount'][mount_name]['Protocol']
+            if self.settings['General']['Project directory'] != '.':
+                new_suffix = os.path.join(
+                    os.path.dirname(copy_file_name).replace(
+                        self.settings['General']['Project directory'],
+                        ''
+                        ),
+                    os.path.basename(copy_file_name),
+                    )
+            else:
+                new_suffix = copy_file_name
+            new_suffix = new_suffix.split('/')
+            new_prefix = os.path.relpath(self.settings[mount_folder_name]).split('/')
+
+            if sudo == 'True':
+                copy_method = self.copy_as_another_user
+            else:
+                copy_method = self.copy_as_user
+
+            if protocol == 'hdd':
+                new_name = None
+                for hdd_folder in glob.glob(
+                        '{0}/*'.format(
+                            self.settings[mount_folder_name]
+                            )
+                        ):
+                    if os.path.getsize(copy_file_name) > \
+                            sh.disk_usage(hdd_folder).free:
+                        new_name = None
+                        continue
+                    else:
+                        new_name = os.path.join(
+                            *new_prefix,
+                            os.path.basename(hdd_folder),
+                            *new_suffix
+                            )
+                        break
+                if new_name is None:
+                    raise IOError('No space on HDD left!')
+            else:
+                new_name = os.path.join(*new_prefix, *new_suffix)
+
+            new_names.append(new_name)
+            copy_method(copy_file_name, new_name)
+
+        return new_names
 
 
     def run_copy_extern(self, root_name):
@@ -4561,53 +4657,7 @@ class ProcessThread(object):
         if not isinstance(copy_file, list):
             copy_file = [copy_file]
 
-        for copy_file_name in copy_file:
-            mount_folder_name = '{0}_folder_feedback_0'.format(self.typ.lower())
-            mount_name = self.settings['Copy'][self.typ]
-            sudo = self.settings['Mount'][mount_name]['Need sudo for copy?']
-            protocol = self.settings['Mount'][mount_name]['Protocol']
-            if self.settings['General']['Project directory'] != '.':
-                new_suffix = os.path.join(
-                    os.path.dirname(copy_file_name).replace(
-                        self.settings['General']['Project directory'],
-                        ''
-                        ),
-                    os.path.basename(copy_file_name),
-                    )
-            else:
-                new_suffix = copy_file_name
-            new_suffix = new_suffix.split('/')
-            new_prefix = os.path.relpath(self.settings[mount_folder_name]).split('/')
-
-            if sudo == 'True':
-                copy_method = self.copy_as_another_user
-            else:
-                copy_method = self.copy_as_user
-
-            if protocol == 'hdd':
-                new_name = None
-                for hdd_folder in glob.glob(
-                        '{0}/*'.format(
-                            self.settings[mount_folder_name]
-                            )
-                        ):
-                    if os.path.getsize(copy_file_name) > \
-                            sh.disk_usage(hdd_folder).free:
-                        new_name = None
-                        continue
-                    else:
-                        new_name = os.path.join(
-                            *new_prefix,
-                            os.path.basename(hdd_folder),
-                            *new_suffix
-                            )
-                        break
-                if new_name is None:
-                    raise IOError('No space on HDD left!')
-            else:
-                new_name = os.path.join(*new_prefix, *new_suffix)
-
-            copy_method(copy_file_name, new_name)
+        self.copy_extern(self.typ, copy_file)
 
         self.shared_dict_typ['queue_list_time'] = time.time()
         self.queue_com['log'].put(tu.create_log(self.name, 'run_copy_extern', root_name, 'stop process', time.time() - start_prog))

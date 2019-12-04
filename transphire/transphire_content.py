@@ -61,6 +61,7 @@ def default_auto_sphire_v1_3():
         ['--sharpening_meridien_addition', '', str,  '', 'PLAIN', 'Main', '', 'Available memory per node.'],
 
         ['input_volume', '', str,  '', 'FILE', 'Main', '', 'Available memory per node.'],
+        ['input_mask', '', str,  '', 'FILE', 'Main', '', 'Available memory per node.'],
 
         ['Use SSH', ['True', 'False'], bool,  '', 'COMBO', 'Main', '', 'Use SSH to submit a job.'],
         ['SSH username', '', str,  'Use SSH:True', 'PLAIN', 'Main', '', 'Username on the work directory'],

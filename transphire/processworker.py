@@ -319,15 +319,15 @@ class ProcessWorker(QObject):
                     self.settings[new_name][entry] = folder_path
                     folder_list.append(folder_path)
 
-                    try:
-                        self.signals['{0}_feedback_{1}'.format(name, feedback_number)].emit(
-                            '{0} feedback {1}'.format(entry, feedback_number),
-                            signal_folder,
-                            self.settings,
-                            self.settings['Copy'][name],
-                            )
-                    except KeyError:
-                        pass
+                    #try:
+                    #    self.signals['{0}_feedback_{1}'.format(name, feedback_number)].emit(
+                    #        '{0} feedback {1}'.format(entry, feedback_number),
+                    #        signal_folder,
+                    #        self.settings,
+                    #        self.settings['Copy'][name],
+                    #        )
+                    #except KeyError:
+                    #    pass
 
     @pyqtSlot(object)
     def run(self, settings):
@@ -680,21 +680,6 @@ class ProcessWorker(QObject):
                 else:
                     pass
 
-        self.emit_plot_signals(folder_list=folder_list)
-
-        # Create output directories
-        #for entry in folder_list:
-        #    try:
-        #        tu.mkdir_p(self.settings[entry])
-        #    except PermissionError:
-        #        continue
-        #    except KeyError:
-        #        continue
-        #    except OSError as err:
-        #        print(str(err))
-        #        self.sig_error.emit(str(err))
-        #        return None
-
         # Fill different dictionarys with process information
         gpu_mutex_dict = dict([
             ('{0}_{1}'.format(idx, idx_2), [manager.RLock(), mp.Value('i', 0)])
@@ -742,6 +727,8 @@ class ProcessWorker(QObject):
                         shared_dict=shared_dict,
                         entry=process[key][1]
                         )
+
+        self.emit_plot_signals(folder_list=folder_list)
 
         # Define file number and check if file already exists
         shared_dict['typ']['Find']['file_number'] = int(self.settings['General']['Start number']) - 1
