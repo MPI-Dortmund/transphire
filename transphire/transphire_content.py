@@ -51,6 +51,7 @@ def default_auto_sphire_v1_3():
 
         ['--mask_rviper_ndilation', '3', int,  '', 'PLAIN', 'Main', '', 'Available memory per node.'],
         ['--mask_rviper_soft_edge', '10', str,  '', 'PLAIN', 'Main', '', 'Available memory per node.'],
+        ['--rviper_use_final', ['True', 'False'], bool,  '', 'COMBO', 'Main', '', 'Available memory per node.'],
         ['--sharpening_meridien_ndilation', '2', int,  '', 'PLAIN', 'Main', '', 'Available memory per node.'],
         ['--sharpening_meridien_soft_edge', '1', str,  '', 'PLAIN', 'Main', '', 'Available memory per node.'],
 

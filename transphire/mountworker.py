@@ -75,6 +75,8 @@ class MountWorker(QObject):
     sig_calculate_df_quota = pyqtSignal(str, str)
     sig_calculate_get_quota = pyqtSignal(str, str, str)
 
+    sig_set_folder = pyqtSignal(str)
+
     def __init__(self, password, settings_folder, mount_directory, parent=None):
         """
         Initialize object variables.
@@ -260,6 +262,7 @@ class MountWorker(QObject):
                     self.refresh_count[key] = 0
                 else:
                     self.refresh_count[key] += 1
+                self.sig_set_folder.emit(folder)
 
         if self.scratch_directory is not None:
             self.scratch_quota_warning = self.fill_quota_project_and_scratch(

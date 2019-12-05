@@ -78,6 +78,9 @@ class MountWidget(QWidget):
         self.mount_folder = self.name.replace(' ', '_')
         self.mount_worker = mount_worker
         self.thread_object = None
+        self.current_folder = None
+
+        self.mount_worker.sig_set_folder.connect(self.set_current_folder)
 
         # Content
         self.mount_button = QPushButton('Mount {0}'.format(self.name), self)
@@ -102,6 +105,10 @@ class MountWidget(QWidget):
         self.mount_button.clicked.connect(self.mount)
         self.umount_button.clicked.connect(self.umount)
 
+    @pyqtSlot(str)
+    def set_current_folder(self, folder):
+        self.current_folder = folder
+
     def set_thread_object(self, thread_object):
         """
         Set the thread object.
@@ -124,6 +131,7 @@ class MountWidget(QWidget):
         Settings as dictionary
         """
         settings = {}
+        settings['current_folder'] = self.current_folder
         for key in self.content:
             settings[key] = self.content[key][0]
         return settings

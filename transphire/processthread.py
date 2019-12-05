@@ -4137,10 +4137,18 @@ class ProcessThread(object):
             return None
 
         folder_name = 'auto3d_folder_feedback_{0}'.format(self.settings['do_feedback_loop'].value)
-
+        prog_name = self.settings['Copy']['Auto3d']
+        mount_name = self.settings['Copy']['Copy to work']
 
         start_prog = time.time()
         self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name, 'start process'))
+
+        def recursive_file_search(folder_name, copy_files):
+            for name in glob.iglob('{0}/*'.format(folder_name)):
+                if os.path.isdir(name):
+                    recursive_file_search('{0}'.format(name), copy_files)
+                else:
+                    copy_files.append(name)
 
         if root_name.endswith('_good.hdf'):
             isac_folder, particle_stack, class_average_file = root_name.split('|||')
@@ -4174,6 +4182,10 @@ class ProcessThread(object):
                 folder=self.settings[folder_name],
                 command=command
                 )
+
+            copy_files = []
+            recursive_file_search(log_prefix, copy_files)
+            self.copy_extern('Copy_to_work', copy_files)
 
             with open(log_file, 'r') as read:
                 content = read.read()
@@ -4256,7 +4268,6 @@ class ProcessThread(object):
             output_stack = 'bdb:{0}/STACK/stack'.format(log_prefix)
             output_classes = '{0}/CLASSES/best_classes.hdf'.format(log_prefix)
             output_template = '{0}/submission_template.sh'.format(log_prefix)
-            prog_name = self.settings['Copy']['Auto3d']
 
             index_particle_stack = 3
             cmd = [self.settings['Path']['e2bdb.py']]
@@ -4311,7 +4322,7 @@ class ProcessThread(object):
                 )
 
             cmd = []
-            cmd.append(self.settings['Path'][self.settings['Copy']['Auto3d']])
+            cmd.append(self.settings['Path'][prog_name])
             cmd.append('{0}/AUTOSPHIRE'.format(log_prefix))
             cmd.append('--dry_run')
             cmd.append('--skip_unblur')
@@ -4349,9 +4360,13 @@ class ProcessThread(object):
             if self.settings[prog_name]['--phase_plate'] == 'True':
                 cmd.append('--phase_plate')
 
+            if self.settings[prog_name]['--rviper_use_final'] == 'True':
+                cmd.append('--rviper_use_final')
+
             ignore_list = []
 
             ignore_list.append('--phase_plate')
+            ignore_list.append('--rviper_use_final')
             ignore_list.append('Use SSH')
             ignore_list.append('--mtf')
             ignore_list.append('input_volume')
@@ -4401,13 +4416,108 @@ class ProcessThread(object):
                 command=command
                 )
 
-            print('keys:', self.settings.keys(), self.settings['Mount'].keys())
+            print(self.settings['Mount'][mount_name])
+            execute_command = []
+            cmd = []
+            submission_on_work = '{0}/AUTOSPHIRE/submission_script.sh'.format(log_prefix)
             if self.settings[prog_name]['Use SSH'] == 'True':
-                cmd = ['ssh']
+
+                device = os.path.dirname(self.settings['Mount'][mount_name]['IP'].lstrip('/'))
+                cmd.append('ssh')
+                cmd.append('-o')
+                cmd.append('StrictHostKeyChecking=no')
                 cmd.append('{0}@{1}'.format(
-                    self.settings[prog_name]['Use SSH username'],
-                    self.settings['Mount']['Use SSH username']
+                    self.settings[prog_name]['SSH username'],
+                    device,
                     ))
+
+                execute_command.append('cd')
+                execute_command.append('/{0}'.format(self.settings['Mount'][mount_name]['current_folder']))
+                execute_command.append(';')
+                execute_command.append(self.settings[prog_name]['--mpi_submission_command'])
+                if self.settings['General']['Project directory'] != '.':
+                    with open(submission_on_work, 'r') as read:
+                        content = read.read()
+                    submission_on_work = '{0}/AUTOSPHIRE/submission_script_work.sh'.format(log_prefix)
+                    with open(submission_on_work, 'w') as write:
+                        write.write(content.replace(
+                            '{0}/'.format(self.settings['General']['Project directory']),
+                            ''
+                            ))
+
+                    new_file = os.path.join(
+                        os.path.dirname(submission_on_work).replace(
+                            '{0}/'.format(self.settings['General']['Project directory']),
+                            ''
+                            ),
+                        os.path.basename(submission_on_work),
+                        )
+                else:
+                    new_file = submission_on_work
+            else:
+                cmd.append(self.settings[prog_name]['--mpi_submission_command'])
+                new_file = submission_on_work
+
+            execute_command.append('/'.join([entry for entry in new_file.split('/') if entry]))
+
+            cmd.append("'{0}'".format(' '.join(execute_command)))
+            cmd = ' '.join(cmd)
+
+            copy_files = []
+            recursive_file_search(log_prefix, copy_files)
+            self.copy_extern('Copy_to_work', copy_files)
+
+            if self.settings[prog_name]['Use SSH'] == 'True':
+                log_file, err_file = tus.get_logfiles('{0}_run_autosphire'.format(log_prefix))
+                with open(err_file, 'w') as write:
+                    pass
+                start_time = time.time()
+                log = []
+                child = pe.spawnu(cmd)
+                try:
+                    idx = child.expect(
+                        "{0}@{1}'s password:".format(
+                            self.settings[prog_name]['SSH username'],
+                            device
+                            ),
+                        )
+                except pe.exceptions.EOF as e:
+                    print('SSH autoSPHIRE command failed!')
+                    with open(err_file, 'w') as write:
+                        write.write(str(e))
+                    raise
+                log.append(child.before)
+                log.append(child.after)
+
+                child.sendline(self.settings[prog_name]['SSH password'])
+                log.append(child.before)
+                log.append(child.after)
+                log.append(cmd)
+                child.expect(pe.EOF)
+
+                stop_time = time.time()
+                with open(log_file, 'w') as write:
+                    write.write('\n'.join(log))
+                    write.write('\nTime: {0} sec'.format(stop_time - start_time)) 
+            else:
+                log_file, err_file = self.run_command(
+                    command=cmd,
+                    log_prefix='{0}_run_autosphire'.format(log_prefix),
+                    block_gpu=False,
+                    gpu_list=[],
+                    shell=False
+                    )
+
+                zero_list = [err_file]
+                non_zero_list = [log_file]
+
+                tus.check_outputs(
+                    zero_list=zero_list,
+                    non_zero_list=non_zero_list,
+                    exists_list=[],
+                    folder=self.settings[folder_name],
+                    command=command
+                    )
 
             skip_list = False
             if skip_list:
