@@ -4416,7 +4416,6 @@ class ProcessThread(object):
                 command=command
                 )
 
-            print(self.settings['Mount'][mount_name])
             execute_command = []
             cmd = []
             submission_on_work = '{0}/AUTOSPHIRE/submission_script.sh'.format(log_prefix)
