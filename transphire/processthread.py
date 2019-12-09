@@ -4269,7 +4269,7 @@ class ProcessThread(object):
             log_prefix = os.path.join(self.settings[folder_name], '{0:03d}'.format(current_index))
             output_stack = '{0}/STACK/stack.hdf'.format(log_prefix)
             output_classes = '{0}/CLASSES/best_classes.hdf'.format(log_prefix)
-            output_template = '{0}/submission_template.sh'.format(log_prefix)
+            submission_on_work = '{0}/AUTOSPHIRE/submission_script.sh'.format(log_prefix)
 
             index_particle_stack = 3
             cmd = [self.settings['Path']['e2proc2d.py']]
@@ -4333,8 +4333,8 @@ class ProcessThread(object):
             cmd.append('--skip_window')
             cmd.append('--skip_isac2')
             cmd.append('--skip_cinderella')
-            cmd.append('--box_size={0}'.format(self.settings[prog_name_window]['--box_size'])
-            cmd.append('--radius={0}'.format(self.settings[prog_name_isac]['--radius'])
+            cmd.append('--box_size={0}'.format(self.settings[prog_name_window]['--box_size']))
+            cmd.append('--radius={0}'.format(self.settings[prog_name_isac]['--radius']))
 
             if self.settings[prog_name]['input_volume'] and volume == 'None':
                 volume = self.settings[prog_name]['input_volume']
@@ -4423,7 +4423,6 @@ class ProcessThread(object):
 
             execute_command = []
             cmd = []
-            submission_on_work = '{0}/AUTOSPHIRE/submission_script.sh'.format(log_prefix)
             if self.settings[prog_name]['Use SSH'] == 'True':
 
                 device = os.path.dirname(self.settings['Mount'][mount_name]['IP'].lstrip('/'))
@@ -4479,7 +4478,7 @@ class ProcessThread(object):
                 log = []
                 child = pe.spawnu(cmd)
                 try:
-                    idx = child.expect(
+                    child.expect(
                         "{0}@{1}'s password:".format(
                             self.settings[prog_name]['SSH username'],
                             device
