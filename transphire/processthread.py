@@ -4138,6 +4138,8 @@ class ProcessThread(object):
 
         folder_name = 'auto3d_folder_feedback_{0}'.format(self.settings['do_feedback_loop'].value)
         prog_name = self.settings['Copy']['Auto3d']
+        prog_name_window = self.settings['Copy']['Extract']
+        prog_name_isac = self.settings['Copy']['Class2d']
         mount_name = self.settings['Copy']['Copy to work']
 
         start_prog = time.time()
@@ -4331,9 +4333,12 @@ class ProcessThread(object):
             cmd.append('--skip_window')
             cmd.append('--skip_isac2')
             cmd.append('--skip_cinderella')
+            cmd.append('--box_size={0}'.format(self.settings[prog_name_window]['--box_size'])
+            cmd.append('--radius={0}'.format(self.settings[prog_name_isac]['--radius'])
 
             if self.settings[prog_name]['input_volume'] and volume == 'None':
                 volume = self.settings[prog_name]['input_volume']
+
             if self.settings[prog_name]['input_mask'] and mask == 'None':
                 mask = self.settings[prog_name]['input_mask']
 
@@ -4647,6 +4652,8 @@ class ProcessThread(object):
         elif self.settings['tar_folder'] in root_name:
             dont_tar = True
         elif root_name.startswith('bdb:') or root_name.endswith('.bdb'):
+            dont_tar = True
+        elif root_name.endswith('mrcs'):
             dont_tar = True
         elif os.path.getsize(root_name) > 40 * 1024**2:
             dont_tar = True
