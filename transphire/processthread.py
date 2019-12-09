@@ -4267,14 +4267,14 @@ class ProcessThread(object):
         try:
 
             log_prefix = os.path.join(self.settings[folder_name], '{0:03d}'.format(current_index))
-            output_stack = 'bdb:{0}/STACK/stack'.format(log_prefix)
+            output_stack = '{0}/STACK/stack.hdf'.format(log_prefix)
             output_classes = '{0}/CLASSES/best_classes.hdf'.format(log_prefix)
             output_template = '{0}/submission_template.sh'.format(log_prefix)
 
             index_particle_stack = 3
-            cmd = [self.settings['Path']['e2bdb.py']]
+            cmd = [self.settings['Path']['e2proc2d.py']]
             cmd.extend([entry.split('|||')[index_particle_stack] for entry in list_content])
-            cmd.append('--makevstack={0}'.format(output_stack))
+            cmd.append('{0}'.format(output_stack))
             cmd = ' '.join(cmd)
 
             log_file, err_file = self.run_command(
