@@ -974,7 +974,11 @@ class ProcessWorker(QObject):
                         error = True
                     else:
                         child.sendline(self.settings[auto3d_name]['SSH password'])
+                    try:
                         child.expect(pe.EOF)
+                    except pe.exceptions.TIMEOUT:
+                        self.sig_error.emit('SSH ls command failed! Username or Password in Auto3d might be wrong or Copy to work is not consistent!!')
+                        error = True
                 else:
                     self.sig_error.emit('"Copy to work" not specified for Auto3d ssh command.')
                     error = True

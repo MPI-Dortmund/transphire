@@ -4277,6 +4277,7 @@ class ProcessThread(object):
             cmd.append('{0}'.format(output_stack))
             cmd = ' '.join(cmd)
 
+            tu.mkdir_p(os.path.dirname(output_stack))
             log_file, err_file = self.run_command(
                 command=cmd,
                 log_prefix='{0}_combine_stack'.format(log_prefix),
