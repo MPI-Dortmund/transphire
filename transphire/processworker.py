@@ -715,7 +715,6 @@ class ProcessWorker(QObject):
         except FileNotFoundError:
             pass
 
-        self.stop = True
         self.settings['do_feedback_loop'] = mp.Value('i', self.settings['do_feedback_loop'])
         if self.settings['do_feedback_loop'].value == 0:
             queue_com['status'].put([
