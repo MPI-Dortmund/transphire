@@ -4127,6 +4127,13 @@ class ProcessThread(object):
         Returns:
         None
         """
+        def recursive_file_search(folder_name, copy_files):
+            for name in glob.iglob('{0}/*'.format(folder_name)):
+                if os.path.isdir(name):
+                    recursive_file_search('{0}'.format(name), copy_files)
+                else:
+                    copy_files.append(name)
+
         if root_name == 'None':
             self.shared_dict_typ['queue_list_lock'].acquire()
             try:
@@ -4144,13 +4151,6 @@ class ProcessThread(object):
 
         start_prog = time.time()
         self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name, 'start process'))
-
-        def recursive_file_search(folder_name, copy_files):
-            for name in glob.iglob('{0}/*'.format(folder_name)):
-                if os.path.isdir(name):
-                    recursive_file_search('{0}'.format(name), copy_files)
-                else:
-                    copy_files.append(name)
 
         if root_name.endswith('_good.hdf'):
             isac_folder, particle_stack, class_average_file = root_name.split('|||')
@@ -4191,9 +4191,21 @@ class ProcessThread(object):
 
             with open(log_file, 'r') as read:
                 content = read.read()
-            shrink_ratio = re.search('ISAC shrink ratio\s*:\s*(0\.\d+)', content, re.MULTILINE).group(1)
-            n_particles = int(re.search('Accounted particles\s*:\s*(\d+)', content, re.MULTILINE).group(1))
-            n_classes = int(re.search('Provided class averages\s*:\s*(\d+)', content, re.MULTILINE).group(1))
+            shrink_ratio = re.search(
+                'ISAC shrink ratio\s*:\s*(0\.\d+)',
+                content,
+                re.MULTILINE
+                ).group(1)
+            n_particles = int(re.search(
+                'Accounted particles\s*:\s*(\d+)',
+                content,
+                re.MULTILINE
+                ).group(1))
+            n_classes = int(re.search(
+                'Provided class averages\s*:\s*(\d+)',
+                content,
+                re.MULTILINE
+                ).group(1))
 
             self.shared_dict_typ['queue_list_lock'].acquire()
             try:
@@ -4343,17 +4355,16 @@ class ProcessThread(object):
             if self.settings[prog_name]['input_mask'] and mask == 'None':
                 mask = self.settings[prog_name]['input_mask']
 
+            cmd.append('--skip_mask_rviper')
             if volume == 'None':
                 cmd.append('--rviper_input_stack={0}'.format(output_classes))
                 cmd.append('--adjust_rviper_resample={0}'.format(1/float(shrink_ratio)))
             else:
                 cmd.append('--skip_rviper')
                 cmd.append('--skip_adjust_rviper')
-                cmd.append('--skip_mask_rviper')
                 cmd.append('--meridien_input_volume={0}'.format(volume))
 
             if mask != 'None':
-                cmd.append('--skip_mask_rviper')
                 cmd.append('--meridien_input_mask={0}'.format(mask))
 
             cmd.append('--skip_restack')
@@ -4393,9 +4404,9 @@ class ProcessThread(object):
                 if key in ignore_list:
                     continue
                 elif key in ignore_key_list:
-                    cmd.append(
-                        '{0}'.format(self.settings[prog_name][key])
-                        )
+                    if self.settings[prog_name][key].strip():
+                        cmd.append(key)
+                        cmd.append("'{0}'".format(self.settings[prog_name][key].strip()))
                 else:
                     cmd.append(key)
                     cmd.append(
@@ -4408,7 +4419,7 @@ class ProcessThread(object):
                 log_prefix='{0}_create_template'.format(log_prefix),
                 block_gpu=False,
                 gpu_list=[],
-                shell=False
+                shell=True
                 )
 
             zero_list = [err_file]
@@ -4522,6 +4533,41 @@ class ProcessThread(object):
                     folder=self.settings[folder_name],
                     command=command
                     )
+
+            meridien_dir = '{0}/AUTOSPHIRE/0002_MERIDIEN'.format(log_prefix)
+            meridien_dir = meridien_dir.replace(
+                    self.settings['General']['Project directory'],
+                    os.path.relpath(self.settings['copy_to_work_folder_feedback_0'])
+                    )
+
+            if volume == 'None':
+                while True:
+                    if self.stop.value:
+                        break
+                    if os.path.isdir(meridien_dir):
+                        if self.settings[prog_name]['--rviper_use_final']:
+                            viper_model = sorted(glob.glob(
+                                '{0}/AUTOSPHIRE/0000_RVIPER/main*/run*/volf.hdf'.format(log_prefix)
+                                ))[-1]
+                        else:
+                            viper_model = sorted(glob.glob(
+                                '{0}/AUTOSPHIRE/0000_RVIPER/main001/run000/refvol2.hdf'.format(log_prefix)
+                                ))[-1]
+                        viper_model = viper_model.replace(
+                                '{0}/'format(self.settings['General']['Project directory']),
+                                ''
+                                )
+                        self.shared_dict_typ['queue_list_lock'].acquire()
+                        try:
+                            with open(self.shared_dict_typ['number_file'], 'r') as read:
+                                old_n_particles, old_n_classes, old_shrink_ratio, old_index, volume, mask = read.read().strip().split('|||')
+                            with open(self.shared_dict_typ['number_file'], 'w') as write:
+                                write.write('|||'.join([old_n_particles, old_n_classes, shrink_ratio, old_index, viper_model, mask]))
+                        finally:
+                            self.shared_dict_typ['queue_list_lock'].release()
+                        break
+                    else:
+                        time.sleep(10)
 
             skip_list = False
             if skip_list:
