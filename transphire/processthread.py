@@ -4377,7 +4377,11 @@ class ProcessThread(object):
                 mask = self.settings[prog_name]['input_mask']
 
             cmd.append('--skip_mask_rviper')
-            if volume == 'None':
+            if self.settings[prog_name]['--skip_meridien'] == 'True':
+                cmd.append('--skip_meridien')
+                volume = 'SKIP_MERIDIEN'
+
+            elif volume == 'None':
                 cmd.append('--rviper_input_stack={0}'.format(output_classes))
                 cmd.append('--adjust_rviper_resample={0}'.format(1/float(shrink_ratio)))
             else:
@@ -4413,6 +4417,7 @@ class ProcessThread(object):
             ignore_list.append('SSH password')
             ignore_list.append('Minimum classes')
             ignore_list.append('Minimum particles')
+            ignore_list.append('--skip_meridien')
 
             ignore_key_list = []
             ignore_key_list.append('--rviper_addition')

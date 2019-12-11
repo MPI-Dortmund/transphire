@@ -48,15 +48,13 @@ def default_auto_sphire_v1_3():
         ['--phase_plate', ['False', 'True'], bool, '', 'COMBO', 'Main', '', 'Input is phase_plate.'],
         ['--memory_per_node', '100', int,  '', 'PLAIN', 'Main', '', 'Available memory per node.'],
 
-        ['--mask_rviper_ndilation', '3', int,  '', 'PLAIN', 'Main', '', 'Available memory per node.'],
-        ['--mask_rviper_soft_edge', '10', str,  '', 'PLAIN', 'Main', '', 'Available memory per node.'],
+        ['--skip_meridien', ['False', 'True'], bool,  '', 'COMBO', 'Main', '', 'Skip meridien and just do initial model estimation.'],
         ['--rviper_use_final', ['True', 'False'], bool,  '', 'COMBO', 'Main', '', 'Available memory per node.'],
         ['--sharpening_meridien_ndilation', '2', int,  '', 'PLAIN', 'Main', '', 'Available memory per node.'],
         ['--sharpening_meridien_soft_edge', '1', str,  '', 'PLAIN', 'Main', '', 'Available memory per node.'],
 
         ['--rviper_addition', '', str,  '', 'PLAIN', 'Main', '', 'Available memory per node.'],
         ['--adjust_rviper_addition', '', str,  '', 'PLAIN', 'Main', '', 'Available memory per node.'],
-        ['--mask_rviper_addition', '', str,  '', 'PLAIN', 'Main', '', 'Available memory per node.'],
         ['--meridien_addition', '', str,  '', 'PLAIN', 'Main', '', 'Available memory per node.'],
         ['--sharpening_meridien_addition', '', str,  '', 'PLAIN', 'Main', '', 'Available memory per node.'],
 
