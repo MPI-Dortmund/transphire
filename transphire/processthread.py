@@ -4405,8 +4405,7 @@ class ProcessThread(object):
                     continue
                 elif key in ignore_key_list:
                     if self.settings[prog_name][key].strip():
-                        cmd.append(key)
-                        cmd.append("'{0}'".format(self.settings[prog_name][key].strip()))
+                        cmd.append("{0}='{1}'".format(key, self.settings[prog_name][key].strip()))
                 else:
                     cmd.append(key)
                     cmd.append(
@@ -4545,16 +4544,9 @@ class ProcessThread(object):
                     if self.stop.value:
                         break
                     if os.path.isdir(meridien_dir):
-                        if self.settings[prog_name]['--rviper_use_final']:
-                            viper_model = sorted(glob.glob(
-                                '{0}/AUTOSPHIRE/0000_RVIPER/main*/run*/volf.hdf'.format(log_prefix)
-                                ))[-1]
-                        else:
-                            viper_model = sorted(glob.glob(
-                                '{0}/AUTOSPHIRE/0000_RVIPER/main001/run000/refvol2.hdf'.format(log_prefix)
-                                ))[-1]
+                        viper_model = '{0}/AUTOSPHIRE/0001_RVIPER_ADJUSTMENT/vol3d_ref_moon_eliminated.hdf'.format(log_prefix)
                         viper_model = viper_model.replace(
-                                '{0}/'format(self.settings['General']['Project directory']),
+                                '{0}/'.format(self.settings['General']['Project directory']),
                                 ''
                                 )
                         self.shared_dict_typ['queue_list_lock'].acquire()
