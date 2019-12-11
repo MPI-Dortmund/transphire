@@ -124,6 +124,8 @@ class StatusContainer(QWidget):
         # Add a visual separator
         layout_v1.addWidget(Separator(typ='horizontal', color='grey', parent=self))
 
+        self.content['Feedbacks'] = StatusWidget(name='Feedbacks', default_name='00|00', default_quota='Not running')
+        layout_v1.addWidget(self.content['Feedbacks'])
         # Add process status widgets
         for entry in content_pipeline[0]:
             for key in entry:
@@ -131,7 +133,7 @@ class StatusContainer(QWidget):
                     continue
                 basename = key
                 name = basename
-                self.content[name] = StatusWidget(name=name, default_name='00|00', default_quota='Not runnning')
+                self.content[name] = StatusWidget(name=name, default_name='00|00', default_quota='Not running')
                 layout_v1.addWidget(self.content[name])
 
         # Add picture

@@ -310,10 +310,12 @@ class ProcessWorker(QObject):
                     else:
                         folder_path = os.path.join(
                             self.settings['project_folder'],
+                            'Feedback_results',
                             '{0}_feedback_{1}'.format(program_name, int(self.settings['General']['Number of feedbacks']) - feedback_number + 1 )
                             )
                         signal_folder = os.path.join(
                             self.settings['project_folder'],
+                            'Feedback_results',
                             '{0}_feedback_{1}'.format(program_name, feedback_number)
                             )
                     self.settings[new_name][entry] = folder_path
@@ -713,7 +715,28 @@ class ProcessWorker(QObject):
         except FileNotFoundError:
             pass
 
+        self.stop = True
         self.settings['do_feedback_loop'] = mp.Value('i', self.settings['do_feedback_loop'])
+        if self.settings['do_feedback_loop'].value == 0:
+            queue_com['status'].put([
+                '{0:02d}|{1:02d}'.format(
+                    int(self.settings['General']['Number of feedbacks']) - self.settings['do_feedback_loop'].value,
+                    int(self.settings['General']['Number of feedbacks'])
+                    ),
+                ['Done'],
+                'Feedbacks',
+                '#d9d9d9'
+                ])
+        else:
+            queue_com['status'].put([
+                '{0:02d}|{1:02d}'.format(
+                    int(self.settings['General']['Number of feedbacks']) - self.settings['do_feedback_loop'].value,
+                    int(self.settings['General']['Number of feedbacks'])
+                    ),
+                ['Running'],
+                'Feedbacks',
+                'lightgreen'
+                ])
         with open(self.settings['feedback_file'], 'w') as write:
             write.write(str(self.settings['do_feedback_loop'].value))
 
@@ -828,6 +851,27 @@ class ProcessWorker(QObject):
                 time.sleep(3)
         else:
             self.check_queue(queue_com=queue_com)
+
+        if self.settings['do_feedback_loop'].value == 0:
+            queue_com['status'].put([
+                '{0:02d}|{1:02d}'.format(
+                    int(self.settings['General']['Number of feedbacks']) - self.settings['do_feedback_loop'].value,
+                    int(self.settings['General']['Number of feedbacks'])
+                    ),
+                ['Not running'],
+                'Feedbacks',
+                'white'
+                ])
+        else:
+            queue_com['status'].put([
+                '{0:02d}|{1:02d}'.format(
+                    int(self.settings['General']['Number of feedbacks']) - self.settings['do_feedback_loop'].value,
+                    int(self.settings['General']['Number of feedbacks'])
+                    ),
+                ['Not running'],
+                'Feedbacks',
+                'white'
+                ])
 
         # Indicate to stop all processes
         for key, settings_content in full_content:

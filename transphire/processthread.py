@@ -3303,6 +3303,27 @@ class ProcessThread(object):
         with open(self.settings['feedback_file'], 'w') as write:
             write.write(str(self.settings['do_feedback_loop'].value))
 
+        if self.settings['do_feedback_loop'].value == 0:
+            queue_com['status'].put([
+                '{0:02d}|{0:02d}'.format(
+                    int(self.settings['General']['Number of feedbacks']) - self.settings['do_feedback_loop'].value,
+                    int(self.settings['General']['Number of feedbacks'])
+                    ),
+                ['Done'],
+                'Feedbacks',
+                '#d9d9d9'
+                ])
+        else:
+            queue_com['status'].put([
+                '{0:02d}|{0:02d}'.format(
+                    int(self.settings['General']['Number of feedbacks']) - self.settings['do_feedback_loop'].value,
+                    int(self.settings['General']['Number of feedbacks'])
+                    ),
+                ['Running'],
+                'Feedbacks',
+                'lightgreen'
+                ])
+
         self.queue_com['log'].put(tu.create_log(self.name, 'run_train2d', root_name, 'stop process', time.time() - start_prog))
 
     def run_class2d(self, root_name):
