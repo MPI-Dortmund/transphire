@@ -4313,7 +4313,7 @@ class ProcessThread(object):
             output_classes = '{0}_FILES/CLASSES/best_classes.hdf'.format(log_prefix)
             submission_on_work = '{0}/submission_script.sh'.format(log_prefix)
 
-            index_particle_stack = 3
+            index_particle_stack = 4
             cmd = [self.settings['Path']['e2proc2d.py']]
             cmd.extend([entry.split('|||')[index_particle_stack] for entry in list_content])
             cmd.append('{0}'.format(output_stack))
@@ -4339,7 +4339,7 @@ class ProcessThread(object):
                 command=command
                 )
 
-            index_class_averages = 2
+            index_class_averages = 3
             cmd = [self.settings['Path']['e2proc2d.py']]
             cmd.extend([entry.split('|||')[index_class_averages] for entry in list_content])
             cmd.append(output_classes)
@@ -4514,6 +4514,7 @@ class ProcessThread(object):
 
             copy_files = []
             recursive_file_search(log_prefix, copy_files)
+            recursive_file_search('{0}_FILES'.format(log_prefix), copy_files)
             self.copy_extern('Copy_to_work', copy_files)
 
             if self.settings[prog_name]['Use SSH'] == 'True':

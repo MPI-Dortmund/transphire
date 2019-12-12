@@ -851,27 +851,6 @@ class ProcessWorker(QObject):
         else:
             self.check_queue(queue_com=queue_com)
 
-        if self.settings['do_feedback_loop'].value == 0:
-            queue_com['status'].put([
-                '{0:02d}|{1:02d}'.format(
-                    int(self.settings['General']['Number of feedbacks']) - self.settings['do_feedback_loop'].value,
-                    int(self.settings['General']['Number of feedbacks'])
-                    ),
-                ['Not running'],
-                'Feedbacks',
-                'white'
-                ])
-        else:
-            queue_com['status'].put([
-                '{0:02d}|{1:02d}'.format(
-                    int(self.settings['General']['Number of feedbacks']) - self.settings['do_feedback_loop'].value,
-                    int(self.settings['General']['Number of feedbacks'])
-                    ),
-                ['Not running'],
-                'Feedbacks',
-                'white'
-                ])
-
         # Indicate to stop all processes
         for key, settings_content in full_content:
             typ = settings_content[self.idx_values]['name']
@@ -893,6 +872,27 @@ class ProcessWorker(QObject):
             while not thread_obj.has_finished.value:
                 time.sleep(1)
                 self.check_queue(queue_com=queue_com)
+
+        if self.settings['do_feedback_loop'].value == 0:
+            queue_com['status'].put([
+                '{0:02d}|{1:02d}'.format(
+                    int(self.settings['General']['Number of feedbacks']) - self.settings['do_feedback_loop'].value,
+                    int(self.settings['General']['Number of feedbacks'])
+                    ),
+                ['Not running'],
+                'Feedbacks',
+                'white'
+                ])
+        else:
+            queue_com['status'].put([
+                '{0:02d}|{1:02d}'.format(
+                    int(self.settings['General']['Number of feedbacks']) - self.settings['do_feedback_loop'].value,
+                    int(self.settings['General']['Number of feedbacks'])
+                    ),
+                ['Not running'],
+                'Feedbacks',
+                'white'
+                ])
         self.check_queue(queue_com=queue_com)
         print('All done!')
 
