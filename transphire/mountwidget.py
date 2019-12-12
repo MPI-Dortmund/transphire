@@ -76,6 +76,7 @@ class MountWidget(QWidget):
         self.quota = content['Quota / TB'][0]
         self.login = content['Target UID exists here and on target?'][0]
         self.mount_folder = self.name.replace(' ', '_')
+        self.folder_from_root = content['Folder from root'][0]
         self.mount_worker = mount_worker
         self.thread_object = None
         self.current_folder = None
@@ -105,9 +106,10 @@ class MountWidget(QWidget):
         self.mount_button.clicked.connect(self.mount)
         self.umount_button.clicked.connect(self.umount)
 
-    @pyqtSlot(str)
-    def set_current_folder(self, folder):
-        self.current_folder = folder
+    @pyqtSlot(str, str)
+    def set_current_folder(self, device, folder):
+        if device == self.name:
+            self.current_folder = folder
 
     def set_thread_object(self, thread_object):
         """
@@ -166,6 +168,7 @@ class MountWidget(QWidget):
                     self.version,
                     self.sec,
                     self.gid,
+                    self.folder_from_root,
                     )
             else:
                 print('Wrong identity')

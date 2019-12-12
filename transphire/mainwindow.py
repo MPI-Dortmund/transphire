@@ -1091,7 +1091,7 @@ class MainWindow(QMainWindow):
                 elif no_feedback:
                     continue
                 else:
-                    folder_name_tmp = '{0}_feedback_{1}'.format(folder_name, int(settings['General']['Number of feedbacks']) - index + 1)
+                    folder_name_tmp = os.path.join('Feedback_results', '{0}_feedback_{1}'.format(folder_name, int(settings['General']['Number of feedbacks']) - index + 1))
                 settings['{0}_folder_feedback_{1}'.format(entry.lower(), index)] = os.path.join(
                     base_dir,
                     folder_name_tmp

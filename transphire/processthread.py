@@ -3304,8 +3304,8 @@ class ProcessThread(object):
             write.write(str(self.settings['do_feedback_loop'].value))
 
         if self.settings['do_feedback_loop'].value == 0:
-            queue_com['status'].put([
-                '{0:02d}|{0:02d}'.format(
+            self.queue_com['status'].put([
+                '{0:02d}|{1:02d}'.format(
                     int(self.settings['General']['Number of feedbacks']) - self.settings['do_feedback_loop'].value,
                     int(self.settings['General']['Number of feedbacks'])
                     ),
@@ -3314,8 +3314,8 @@ class ProcessThread(object):
                 '#d9d9d9'
                 ])
         else:
-            queue_com['status'].put([
-                '{0:02d}|{0:02d}'.format(
+            self.queue_com['status'].put([
+                '{0:02d}|{1:02d}'.format(
                     int(self.settings['General']['Number of feedbacks']) - self.settings['do_feedback_loop'].value,
                     int(self.settings['General']['Number of feedbacks'])
                     ),
@@ -3662,6 +3662,7 @@ class ProcessThread(object):
                         self.add_to_queue(
                             aim=aim_name,
                             root_name='|||'.join([
+                                str(self.settings['do_feedback_loop'].value),
                                 root_name_raw,
                                 os.path.join(
                                     self.settings[folder_name],
@@ -3671,7 +3672,18 @@ class ProcessThread(object):
                                 ])
                             )
                     elif 'Auto3d' in compare:
-                        pass
+                        self.add_to_queue(
+                            aim=aim_name,
+                            root_name='|||'.join([
+                                str(self.settings['do_feedback_loop'].value),
+                                root_name_raw,
+                                os.path.join(
+                                    self.settings[folder_name],
+                                    file_name,
+                                    'ordered_class_averages_good.hdf'
+                                    )
+                                ])
+                            )
                     else:
                         self.add_to_queue(aim=aim_name, root_name=copied_log_files)
                 else:
@@ -4163,8 +4175,10 @@ class ProcessThread(object):
             finally:
                 self.shared_dict_typ['queue_list_lock'].release()
             return None
+        else:
+            feedback_loop, isac_folder, particle_stack, class_average_file = root_name.split('|||')
 
-        folder_name = 'auto3d_folder_feedback_{0}'.format(self.settings['do_feedback_loop'].value)
+        folder_name = 'auto3d_folder_feedback_{0}'.format(feedback_loop)
         prog_name = self.settings['Copy']['Auto3d']
         prog_name_window = self.settings['Copy']['Extract']
         prog_name_isac = self.settings['Copy']['Class2d']
@@ -4174,67 +4188,8 @@ class ProcessThread(object):
         self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name, 'start process'))
 
         if root_name.endswith('_good.hdf'):
-            isac_folder, particle_stack, class_average_file = root_name.split('|||')
-            file_name = tu.get_name(isac_folder)
-            log_prefix = os.path.join(self.settings[folder_name], 'ISAC_{0}'.format(file_name))
-
-            command, check_files, block_gpu, gpu_list, shell, stack_name = ttrain2d.create_substack_command(
-                class_average_name=class_average_file,
-                input_stack=particle_stack,
-                isac_dir=isac_folder,
-                output_dir=log_prefix,
-                settings=self.settings,
-                )
-
-            log_file, err_file = self.run_command(
-                command=command,
-                log_prefix='{0}_substack'.format(log_prefix),
-                block_gpu=block_gpu,
-                gpu_list=gpu_list,
-                shell=shell
-                )
-
-            zero_list = [err_file]
-            non_zero_list = [log_file]
-            non_zero_list.extend(check_files)
-
-            tus.check_outputs(
-                zero_list=zero_list,
-                non_zero_list=non_zero_list,
-                exists_list=[],
-                folder=self.settings[folder_name],
-                command=command
-                )
-
-            copy_files = []
-            recursive_file_search(log_prefix, copy_files)
-            self.copy_extern('Copy_to_work', copy_files)
-
-            with open(log_file, 'r') as read:
-                content = read.read()
-            shrink_ratio = re.search(
-                'ISAC shrink ratio\s*:\s*(0\.\d+)',
-                content,
-                re.MULTILINE
-                ).group(1)
-            n_particles = int(re.search(
-                'Accounted particles\s*:\s*(\d+)',
-                content,
-                re.MULTILINE
-                ).group(1))
-            n_classes = int(re.search(
-                'Provided class averages\s*:\s*(\d+)',
-                content,
-                re.MULTILINE
-                ).group(1))
-
             self.shared_dict_typ['queue_list_lock'].acquire()
             try:
-                self.add_to_queue_file(
-                    root_name='|||'.join([root_name, stack_name]),
-                    file_name=self.shared_dict_typ['list_file'],
-                    )
-
                 try:
                     with open(self.shared_dict_typ['number_file'], 'r') as read:
                         try:
@@ -4242,10 +4197,6 @@ class ProcessThread(object):
                             old_n_particles = int(old_n_particles)
                             old_n_classes = int(old_n_classes)
                             old_index = int(old_index)
-                            assert old_shrink_ratio == shrink_ratio, 'Shrink ratios shouls be identical and cannot change within one dataset!!! Got: {0}  Expected: {1}'.format(
-                                old_shrink_ratio,
-                                shrink_ratio
-                                )
                         except ValueError:
                             old_n_particles = 0
                             old_n_classes = 0
@@ -4258,6 +4209,64 @@ class ProcessThread(object):
                     old_index = -1
                     volume = 'None'
                     mask = 'None'
+
+                file_name = tu.get_name(isac_folder)
+                log_prefix = os.path.join(self.settings[folder_name], 'AUTOSPHIRE_{0:03d}_FILES'.format(old_index+1), 'ISAC_{0}'.format(file_name))
+
+                command, check_files, block_gpu, gpu_list, shell, stack_name = ttrain2d.create_substack_command(
+                    class_average_name=class_average_file,
+                    input_stack=particle_stack,
+                    isac_dir=isac_folder,
+                    output_dir=log_prefix,
+                    settings=self.settings,
+                    )
+
+                log_file, err_file = self.run_command(
+                    command=command,
+                    log_prefix='{0}_substack'.format(log_prefix),
+                    block_gpu=block_gpu,
+                    gpu_list=gpu_list,
+                    shell=shell
+                    )
+
+                zero_list = [err_file]
+                non_zero_list = [log_file]
+                non_zero_list.extend(check_files)
+
+                tus.check_outputs(
+                    zero_list=zero_list,
+                    non_zero_list=non_zero_list,
+                    exists_list=[],
+                    folder=self.settings[folder_name],
+                    command=command
+                    )
+
+                copy_files = []
+                recursive_file_search(log_prefix, copy_files)
+                self.copy_extern('Copy_to_work', copy_files)
+
+                with open(log_file, 'r') as read:
+                    content = read.read()
+                shrink_ratio = re.search(
+                    'ISAC shrink ratio\s*:\s*(0\.\d+)',
+                    content,
+                    re.MULTILINE
+                    ).group(1)
+                n_particles = int(re.search(
+                    'Accounted particles\s*:\s*(\d+)',
+                    content,
+                    re.MULTILINE
+                    ).group(1))
+                n_classes = int(re.search(
+                    'Provided class averages\s*:\s*(\d+)',
+                    content,
+                    re.MULTILINE
+                    ).group(1))
+
+                self.add_to_queue_file(
+                    root_name='|||'.join([root_name, stack_name]),
+                    file_name=self.shared_dict_typ['list_file'],
+                    )
 
                 new_n_particles = old_n_particles + n_particles
                 new_n_classes = old_n_classes + n_classes
@@ -4299,10 +4308,10 @@ class ProcessThread(object):
 
         try:
 
-            log_prefix = os.path.join(self.settings[folder_name], '{0:03d}'.format(current_index))
-            output_stack = '{0}/STACK/stack.hdf'.format(log_prefix)
-            output_classes = '{0}/CLASSES/best_classes.hdf'.format(log_prefix)
-            submission_on_work = '{0}/AUTOSPHIRE/submission_script.sh'.format(log_prefix)
+            log_prefix = os.path.join(self.settings[folder_name], 'AUTOSPHIRE_{0:03d}'.format(current_index))
+            output_stack = '{0}_FILES/STACK/stack.hdf'.format(log_prefix)
+            output_classes = '{0}_FILES/CLASSES/best_classes.hdf'.format(log_prefix)
+            submission_on_work = '{0}/submission_script.sh'.format(log_prefix)
 
             index_particle_stack = 3
             cmd = [self.settings['Path']['e2proc2d.py']]
@@ -4359,7 +4368,7 @@ class ProcessThread(object):
 
             cmd = []
             cmd.append(self.settings['Path'][prog_name])
-            cmd.append('{0}/AUTOSPHIRE'.format(log_prefix))
+            cmd.append(log_prefix)
             cmd.append('--dry_run')
             cmd.append('--skip_unblur')
             cmd.append('--skip_cter')
@@ -4478,7 +4487,7 @@ class ProcessThread(object):
                 if self.settings['General']['Project directory'] != '.':
                     with open(submission_on_work, 'r') as read:
                         content = read.read()
-                    submission_on_work = '{0}/AUTOSPHIRE/submission_script_work.sh'.format(log_prefix)
+                    submission_on_work = '{0}/submission_script_work.sh'.format(log_prefix)
                     with open(submission_on_work, 'w') as write:
                         write.write(content.replace(
                             '{0}/'.format(self.settings['General']['Project directory']),
@@ -4559,18 +4568,18 @@ class ProcessThread(object):
                     command=command
                     )
 
-            meridien_dir = '{0}/AUTOSPHIRE/0002_MERIDIEN'.format(log_prefix)
+            meridien_dir = '{0}/0002_MERIDIEN'.format(log_prefix)
             meridien_dir = meridien_dir.replace(
                     self.settings['General']['Project directory'],
                     os.path.relpath(self.settings['copy_to_work_folder_feedback_0'])
                     )
 
-            if volume == 'None':
+            if volume == 'None' and int(feedback_loop) == 0:
                 while True:
                     if self.stop.value:
                         break
                     if os.path.isdir(meridien_dir):
-                        viper_model = '{0}/AUTOSPHIRE/0001_RVIPER_ADJUSTMENT/vol3d_ref_moon_eliminated.hdf'.format(log_prefix)
+                        viper_model = '{0}/0001_RVIPER_ADJUSTMENT/vol3d_ref_moon_eliminated.hdf'.format(log_prefix)
                         viper_model = viper_model.replace(
                                 '{0}/'.format(self.settings['General']['Project directory']),
                                 ''

@@ -56,7 +56,7 @@ class MountWorker(QObject):
     sig_calculate_get_quota - Signal emitted to calculate the quota brute force (device|str, total_quota|str, mount_folder|str)
     """
     sig_mount_hdd = pyqtSignal(str)
-    sig_mount = pyqtSignal(str, str, str, str, str, str, str, str, str, str)
+    sig_mount = pyqtSignal(str, str, str, str, str, str, str, str, str, str, str)
 
     sig_umount = pyqtSignal(str, str, object)
 
@@ -75,7 +75,7 @@ class MountWorker(QObject):
     sig_calculate_df_quota = pyqtSignal(str, str)
     sig_calculate_get_quota = pyqtSignal(str, str, str)
 
-    sig_set_folder = pyqtSignal(str)
+    sig_set_folder = pyqtSignal(str, str)
 
     def __init__(self, password, settings_folder, mount_directory, parent=None):
         """
@@ -231,7 +231,7 @@ class MountWorker(QObject):
                 pass
 
             for line in lines:
-                user, folder, mount_folder, device, ssh_address, right_quota, quota = line.split('\t')
+                user, folder, mount_folder, device, ssh_address, right_quota, quota, folder_from_root = line.split('\t')
                 assert key == device
 
                 # Only refresh quota after some time
@@ -262,7 +262,7 @@ class MountWorker(QObject):
                     self.refresh_count[key] = 0
                 else:
                     self.refresh_count[key] += 1
-                self.sig_set_folder.emit(folder)
+                self.sig_set_folder.emit(device, os.path.join(folder_from_root, folder))
 
         if self.scratch_directory is not None:
             self.scratch_quota_warning = self.fill_quota_project_and_scratch(
@@ -513,7 +513,8 @@ class MountWorker(QObject):
                         folder='',
                         mount_folder=folder_name,
                         device=device_name,
-                        text='Connected'
+                        text='Connected',
+                        folder_from_root='',
                         )
                 else:
                     self.sig_error.emit('Mount error {0}: {1}'.format(
@@ -525,8 +526,8 @@ class MountWorker(QObject):
 
         self.refresh_quota()
 
-    @pyqtSlot(str, str, str, str, str, str, str, str, str, str)
-    def mount(self, device, user, password, folder, server, typ, domain, version, sec, gid):
+    @pyqtSlot(str, str, str, str, str, str, str, str, str, str, str)
+    def mount(self, device, user, password, folder, server, typ, domain, version, sec, gid, folder_from_root):
         """
         Mount device except HDD
 
@@ -541,6 +542,7 @@ class MountWorker(QObject):
         version - Mount type version
         sec - security protocol
         gid - groupid to mount
+        folder_from_root - Absolute path pointing towards the mount point
 
         Return:
         None
@@ -617,7 +619,8 @@ class MountWorker(QObject):
                 folder=folder,
                 mount_folder=mount_folder,
                 device=device,
-                text=user
+                text=user,
+                folder_from_root=folder_from_root,
                 )
         else:
             print(cmd, ' - Failed:', value)
@@ -626,7 +629,7 @@ class MountWorker(QObject):
 
         self.refresh_quota()
 
-    def _write_save_file(self, user, folder, mount_folder, device, text):
+    def _write_save_file(self, user, folder, mount_folder, device, text, folder_from_root):
         """
         Write a save file
 
@@ -642,14 +645,15 @@ class MountWorker(QObject):
         """
         self.sig_success.emit(text, device, 'lightgreen')
         with open(self.save_files[device], 'w') as write:
-            write.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}'.format(
+            write.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}'.format(
                 user,
                 folder,
                 mount_folder,
                 device,
                 self.ssh_dict[device],
                 self.is_right_quota_dict[device],
-                self.quota_dict[device]
+                self.quota_dict[device],
+                folder_from_root,
                 ))
 
     @pyqtSlot(str, str, object)

@@ -932,6 +932,7 @@ def default_mount(hdd=None):
         ['Domain', '', str, '', 'PLAIN', '', ''],
         ['IP', '', str, '', 'PLAIN', '', ''],
         ['Folder', '', str, '', 'PLAIN', '', ''],
+        ['Folder from root', '', str, '', 'PLAIN', '', ''],
         ['Need folder extension?', ['False', 'True'], bool, '', 'COMBO', '', ''],
         ['Default user', '', str, '', 'PLAIN', '', ''],
         ['Is df giving the right quota?', ['True', 'False'], bool, '', 'COMBO', '', ''],
