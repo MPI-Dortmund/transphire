@@ -285,7 +285,7 @@ class ProcessWorker(QObject):
         # Events
         self.sig_start.connect(self.run)
 
-    def emit_plot_signals(self, folder_list):
+    def emit_plot_signals(self, folder_list, monitor):
         # Set CTF settings
         names = [
             entry.replace('_entries', '')
@@ -321,15 +321,16 @@ class ProcessWorker(QObject):
                     self.settings[new_name][entry] = folder_path
                     folder_list.append(folder_path)
 
-                    try:
-                        self.signals['{0}_feedback_{1}'.format(name, feedback_number)].emit(
-                            '{0} feedback {1}'.format(entry, feedback_number),
-                            signal_folder,
-                            self.settings,
-                            self.settings['Copy'][name],
-                            )
-                    except KeyError:
-                        pass
+                    if monitor:
+                        try:
+                            self.signals['{0}_feedback_{1}'.format(name, feedback_number)].emit(
+                                '{0} feedback {1}'.format(entry, feedback_number),
+                                signal_folder,
+                                self.settings,
+                                self.settings['Copy'][name],
+                                )
+                        except KeyError:
+                            pass
 
     @pyqtSlot(object)
     def run(self, settings):
@@ -440,7 +441,7 @@ class ProcessWorker(QObject):
         # Set stop variable to the return value of the pre_check
         if settings['Monitor']:
             self.stop = False
-            self.emit_plot_signals([])
+            self.emit_plot_signals([], monitor=True)
             self.run_monitor(
                 typ_dict=typ_dict,
                 queue_com=queue_com,
@@ -750,7 +751,7 @@ class ProcessWorker(QObject):
                         entry=process[key][1]
                         )
 
-        self.emit_plot_signals(folder_list=folder_list)
+        self.emit_plot_signals(folder_list=folder_list, monitor=False)
 
         # Define file number and check if file already exists
         shared_dict['typ']['Find']['file_number'] = int(self.settings['General']['Start number']) - 1

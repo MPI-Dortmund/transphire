@@ -1127,6 +1127,7 @@ class ProcessThread(object):
         None
         """
         self.shared_dict['typ'][aim]['queue_lock'].acquire()
+        self.shared_dict['typ'][aim]['queue_list_lock'].acquire()
         is_present = False
         try:
             files = (
@@ -1143,6 +1144,7 @@ class ProcessThread(object):
                     pass
         finally:
             self.shared_dict['typ'][aim]['queue_lock'].release()
+            self.shared_dict['typ'][aim]['queue_list_lock'].release()
         return is_present
 
     def add_to_queue(self, aim, root_name, allow_dublicate=False):
@@ -1419,7 +1421,12 @@ class ProcessThread(object):
                             )
                     else:
                         pass
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_find stop', time.time() - start_prog))
+        last_idx = 0
+        while os.path.exists('file_list_{0:05d}'.format(last_idx)):
+            last_idx += 1
+        with open('file_list_{0:05d}'.format(last_idx), 'w') as w:
+            w.write('\n'.join([str(entry) for entry in file_list]))
+        self.queue_com['log'].put(tu.create_log(self.name, '{0} {1} run_find stop'.format(len(file_list), last_idx), time.time() - start_prog))
 
     def recursive_search(self, directory, file_list, find_meta):
         """
@@ -1760,6 +1767,8 @@ class ProcessThread(object):
             is_xml = False
             if file_entry in frames:
                 continue
+            elif extension == 'mrc' and 'gain' in file_entry:
+                name = '{0}_gain'.format(new_name_meta)
             elif extension == 'mrc':
                 name = '{0}_krios_sum'.format(new_name_meta)
             elif extension == 'dm4' and 'gain' in file_entry:
@@ -1779,8 +1788,10 @@ class ProcessThread(object):
             else:
                 pass
 
-            tu.copy('{0}'.format(file_entry), new_file)
+            tu.copy(file_entry, new_file)
             log_files.append(new_file)
+            with open(log_file, 'a') as append_file:
+                append_file.write('\ncp {0} {1}\n'.format(file_entry, new_file))
 
         tus.check_outputs(
             zero_list=[],

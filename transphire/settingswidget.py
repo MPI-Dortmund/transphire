@@ -171,8 +171,9 @@ class SettingsWidget(QWidget):
 
     def change_tooltip(self, text):
         edit = self.sender()
-        tooltip = '{0}\n\nCurrent Text:\n\n{1}'.format(self.tooltip, text)
-        edit.setToolTip(tooltip)
+        if self.typ != 'PASSWORD':
+            tooltip = '{0}\n\nCurrent Text:\n\n{1}'.format(self.tooltip, text)
+            edit.setToolTip(tooltip)
 
     def change_color_if_true(self):
         """
