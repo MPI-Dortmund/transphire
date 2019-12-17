@@ -4285,10 +4285,7 @@ class ProcessThread(object):
                 n_particles_to_check = int(self.settings[self.settings['Copy']['Auto3d']]['Minimum particles'])
                 n_classes_to_check = int(self.settings[self.settings['Copy']['Auto3d']]['Minimum classes'])
 
-                if feedback_loop != '0':
-                    pass
-
-                elif new_n_particles > n_particles_to_check and new_n_classes > n_classes_to_check:
+                if (new_n_particles > n_particles_to_check and new_n_classes > n_classes_to_check) or feedback_loop != '0':
                     current_index = old_index + 1
                     with open(self.shared_dict_typ['number_file'], 'w') as write:
                         write.write('|||'.join(['0', '0', shrink_ratio, str(current_index), volume, mask]))
