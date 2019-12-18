@@ -4086,6 +4086,7 @@ class ProcessThread(object):
             compress_settings = self.settings[compress_name]
             # Create the command
             if compress_name == 'Compress cmd':
+                # Compress command
                 new_name = os.path.join(
                     self.settings['compress_folder_feedback_0'],
                     '{0}.{1}'.format(
@@ -4107,6 +4108,29 @@ class ProcessThread(object):
                     self.settings[compress_name]['--command_compress_path'], 
                     compress_options,
                     )
+
+                # Uncompress command
+                uncompress_new_name = os.path.join(
+                    self.settings['compress_folder_feedback_0'],
+                    '{0}_tmp.{1}'.format(
+                        new_root_name,
+                        compress_settings['--command_uncompress_extension']
+                        )
+                    )
+
+                compress_options = self.settings[compress_name]['--command_uncompress_option']
+                compress_options = compress_options.replace(
+                    '##INPUT##',
+                    new_name,
+                    ).replace(
+                        '##OUTPUT##',
+                        uncompress_new_name,
+                        )
+
+                command_uncompress = '{0} {1}'.format(
+                    self.settings[compress_name]['--command_uncompress_path'], 
+                    compress_options,
+                    )
             else:
                 message = 'Unknown compress name: {0}!'.format(compress_name)
                 self.queue_com['error'].put(message)
@@ -4118,6 +4142,9 @@ class ProcessThread(object):
                 print('Compress - Skip file!')
                 self.queue_com['log'].put(tu.create_log(self.name, 'run_compress', root_name, 'stop early 1'))
                 return None
+
+            if os.path.exists(new_name):
+                os.remove(new_name)
 
             # Log files
             log_file, err_file = self.run_command(
@@ -4136,6 +4163,24 @@ class ProcessThread(object):
                 command=command
                 )
 
+            # Log files
+            log_file_uncompress, err_file_uncompress = self.run_command(
+                command=command_uncompress,
+                log_prefix='{0}_uncompress'.format(log_prefix),
+                block_gpu=False,
+                gpu_list=[],
+                shell=True
+                )
+
+            tus.check_outputs(
+                zero_list=[err_file_uncompress],
+                non_zero_list=[log_file_uncompress, uncompress_new_name],
+                exists_list=[],
+                folder=self.settings['compress_folder_feedback_0'],
+                command=command
+                )
+
+            #os.remove(uncompress_new_name)
 
         # Add to queue
         for aim in self.content_settings['aim']:

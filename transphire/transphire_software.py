@@ -1327,4 +1327,15 @@ def get_logfiles(log_prefix):
     """
     tu.mkdir_p(os.path.dirname(log_prefix))
     template = '{0}_transphire.{{0}}'.format(log_prefix)
+
+    if os.path.exists(template.format('log')):
+        log_prefix_faulty = os.path.join(os.path.dirname(log_prefix), 'FAULTY', os.path.basename(log_prefix))
+        tu.mkdir_p(os.path.dirname(log_prefix_faulty))
+        template_faulty = '{0}_transphire_{{1}}.{{0}}'.format(log_prefix_faulty)
+        idx = 0
+        while os.path.exists(template_faulty.format('log', idx)):
+            idx += 1
+        tu.copy(template.format('log'), template_faulty.format('log', idx))
+        tu.copy(template.format('err'), template_faulty.format('err', idx))
+
     return template.format('log'), template.format('err')
