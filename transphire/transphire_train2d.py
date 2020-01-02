@@ -66,6 +66,7 @@ def create_restack_command(stack_name, output_dir, settings):
 
 def create_train_command(sum_folder, box_folder, output_dir, name, settings):
     prog_name = settings['Copy']['Train2d']
+    picking_name = settings['Copy']['Picking']
     command = []
     block_gpu = False
     shell = True
@@ -82,6 +83,7 @@ def create_train_command(sum_folder, box_folder, output_dir, name, settings):
     command.append('--train_image_folder={0}'.format(sum_folder))
     command.append('--train_annot_folder={0}'.format(box_folder))
     command.append('--saved_weights_name={0}'.format(weight_file))
+    command.append('--pretrained_weights={0}'.format(settings[picking_name]['--weights']))
     command.append('--filtered_output={0}'.format('projects/tmp_filtered_ff'))
     command.append('--train_times={0}'.format(settings[prog_name]['--train_times']))
 
