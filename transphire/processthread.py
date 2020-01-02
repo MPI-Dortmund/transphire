@@ -1838,7 +1838,7 @@ class ProcessThread(object):
                             entry
                             for entry in log_files
                             if ('Frames to' in compare[0] and '/Stack/' in entry) or
-                                ('Meta to' in compare[0] and '/Meta/' in log_file)
+                                ('Meta to' in compare[0] and '/Meta/' in entry)
                             ]
                         )
             else:
