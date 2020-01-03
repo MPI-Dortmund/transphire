@@ -122,11 +122,14 @@ def get_dtype_dict():
         ]
 
     dtype['Select2d'] = [
-        ('classes', '<i8'),
         ('accepted', '<i8'),
+        ('accepted_percent', '<i8'),
         ('particles_accepted', '<i8'),
+        ('particles_accepted_percent', '<i8'),
         ('rejected', '<i8'),
+        ('rejected_percent', '<i8'),
         ('particles_rejected', '<i8'),
+        ('particles_rejected_percent', '<i8'),
         ('file_name', '|U1200'),
         ('image', '|U1200'),
         ]
@@ -366,35 +369,41 @@ def import_isac_v1_2(name, name_no_feedback, directory_name, import_name='', sen
 
 
 def import_cinderella_v0_3_1(name, name_no_feedback, directory_name, import_name='', send_data=None):
+    print(name, name_no_feedback, directory_name, import_name, send_data)
     files = [
         entry for entry in glob.glob(
         '{0}/{1}*_transphire.log'.format(directory_name, import_name)
         )
         ]
     useable_files = []
+    print(files)
     for file_name in files:
         try:
             with open(file_name, 'r') as read:
                 match = re.search(
-                    '^\s*Good classes:\s*(\d+) .*$(?:\n|\r\n)(?:\n|\r\n)(?:\n|\r\n)^\s*Bad classes:\s*(\d+) .*$(?:\n|\r\n)(?:\n|\r\n)^Bad Particles(?:\n|\r\n)(\d+)(?:\n|\r\n)Good Particles(?:\n|\r\n)(\d+)$',
+                    '^\s*Good(?: classes|):\s*(\d+) .*$(?:\n|\r\n)(?:\n|\r\n)(?:\n|\r\n)^\s*Bad(?: classes|):\s*(\d+) .*$(?:\n|\r\n)(?:\n|\r\n)^Bad Particles(?:\n|\r\n)(\d+)(?:\n|\r\n)Good Particles(?:\n|\r\n)(\d+)$',
                     read.read(),
                     re.MULTILINE
                     )
         except FileNotFoundError:
             continue
         if match is not None:
-            useable_files.append([file_name, match.group(1), match.group(2), match.group(3), match.group(4)])
+            useable_files.append([file_name, int(match.group(1)), int(match.group(2)), int(match.group(3)), int(match.group(4))])
+
+    print(useable_files)
 
     useable_files_jpg = [
         tu.get_name(entry).replace('_good', '').replace('_bad', '')
         for entry in glob.glob(os.path.join(directory_name, 'jpg*', '*.jpg'))
         ]
 
+    print(useable_files_jpg)
     useable_files = [
         [entry[0].replace('_transphire', ''), entry[1], entry[2], entry[3], entry[4]]
         for entry in sorted(useable_files)
         if tu.get_name(entry[0]).replace('_transphire', '') in useable_files_jpg
         ]
+    print(useable_files)
 
     data = np.zeros(
         len(useable_files),
@@ -423,8 +432,12 @@ def import_cinderella_v0_3_1(name, name_no_feedback, directory_name, import_name
         data['file_name'][idx] = entry[0]
         data['accepted'][idx] = entry[1]
         data['rejected'][idx] = entry[2]
+        data['accepted_percent'][idx] = 100 * entry[1] / (entry[1] + entry[2])
+        data['rejected_percent'][idx] = 100 * entry[2] / (entry[1] + entry[2])
         data['particles_rejected'][idx] = entry[3]
         data['particles_accepted'][idx] = entry[4]
+        data['particles_rejected_percent'][idx] = 100 * entry[3] / (entry[3] + entry[4])
+        data['particles_accepted_percent'][idx] = 100 * entry[4] / (entry[3] + entry[4])
     data['image'] = jpg_names
 
     data = np.sort(data, order='file_name')
