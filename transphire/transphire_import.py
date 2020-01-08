@@ -369,14 +369,12 @@ def import_isac_v1_2(name, name_no_feedback, directory_name, import_name='', sen
 
 
 def import_cinderella_v0_3_1(name, name_no_feedback, directory_name, import_name='', send_data=None):
-    print(name, name_no_feedback, directory_name, import_name, send_data)
     files = [
         entry for entry in glob.glob(
         '{0}/{1}*_transphire.log'.format(directory_name, import_name)
         )
         ]
     useable_files = []
-    print(files)
     for file_name in files:
         try:
             with open(file_name, 'r') as read:
@@ -390,20 +388,16 @@ def import_cinderella_v0_3_1(name, name_no_feedback, directory_name, import_name
         if match is not None:
             useable_files.append([file_name, int(match.group(1)), int(match.group(2)), int(match.group(3)), int(match.group(4))])
 
-    print(useable_files)
-
     useable_files_jpg = [
         tu.get_name(entry).replace('_good', '').replace('_bad', '')
         for entry in glob.glob(os.path.join(directory_name, 'jpg*', '*.jpg'))
         ]
 
-    print(useable_files_jpg)
     useable_files = [
         [entry[0].replace('_transphire', ''), entry[1], entry[2], entry[3], entry[4]]
         for entry in sorted(useable_files)
         if tu.get_name(entry[0]).replace('_transphire', '') in useable_files_jpg
         ]
-    print(useable_files)
 
     data = np.zeros(
         len(useable_files),

@@ -1421,12 +1421,7 @@ class ProcessThread(object):
                             )
                     else:
                         pass
-        last_idx = 0
-        while os.path.exists('file_list_{0:05d}'.format(last_idx)):
-            last_idx += 1
-        with open('file_list_{0:05d}'.format(last_idx), 'w') as w:
-            w.write('\n'.join([str(entry) for entry in file_list]))
-        self.queue_com['log'].put(tu.create_log(self.name, '{0} {1} run_find stop'.format(len(file_list), last_idx), time.time() - start_prog))
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_find stop', time.time() - start_prog))
 
     def recursive_search(self, directory, file_list, find_meta):
         """
