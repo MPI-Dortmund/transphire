@@ -2593,6 +2593,7 @@ class ProcessThread(object):
             output_name_star_relion3_comb = output_combine[2]
             new_gain = output_combine[3]
             new_defect = output_combine[4]
+            new_dark = output_combine[9]
 
             combine_list = [
                 [self.shared_dict['motion_txt_lock'], output_name_mic, output_name_mic_comb],
@@ -2605,6 +2606,10 @@ class ProcessThread(object):
             self.file_to_distribute(file_name=star_files_relion3_meta)
             if new_gain:
                 self.file_to_distribute(file_name=new_gain)
+            else:
+                pass
+            if new_dark:
+                self.file_to_distribute(file_name=new_dark)
             else:
                 pass
             if new_defect:

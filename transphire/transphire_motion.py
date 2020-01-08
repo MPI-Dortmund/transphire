@@ -637,7 +637,16 @@ def combine_motion_outputs(
     with open(output_name_star_relion3, 'w') as write:
         write.write('\n'.join(export_lines_star_relion3))
 
-    return output_name_mic_combined, output_name_star_combined, output_name_star_relion3_combined, new_gain, new_defect, output_name_mic, output_name_star, output_name_star_relion3, relion3_meta
+    if motion_settings['-Dark']:
+        new_dark = os.path.join(
+            project_folder,
+            '{0}_dark.mrc'.format(os.path.basename(motion_settings['-Dark']))
+            )
+        tu.copy(motion_settings['-Dark'], new_dark)
+    else:
+        new_dark = None
+
+    return output_name_mic_combined, output_name_star_combined, output_name_star_relion3_combined, new_gain, new_defect, output_name_mic, output_name_star, output_name_star_relion3, relion3_meta, new_dark
 
 
 def get_relion_header(names):
