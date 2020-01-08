@@ -3235,7 +3235,7 @@ class ProcessThread(object):
         all_logs.append(err_file)
 
         zero_list = []
-        non_zero_list = [err_file, log_file]
+        non_zero_list = [err_file, log_file, new_model, new_config]
         non_zero_list.extend(check_files)
 
         tus.check_outputs(
