@@ -66,6 +66,7 @@ class ProcessThread(object):
             use_threads_set,
             stop,
             has_finished,
+            data_frame,
             parent=None
             ):
         """
@@ -106,6 +107,7 @@ class ProcessThread(object):
         self.notification_send = None
         self.notification_time = float(self.settings['Notification']['Time until notification'])
         self.is_running = False
+        self.data_frame = data_frame
 
         self.queue = shared_dict['queue'][self.content_settings['name']]
         self.shared_dict_typ = shared_dict['typ'][self.content_settings['name']]
@@ -1337,7 +1339,7 @@ class ProcessThread(object):
         if not self.stop.value:
             data = np.empty(
                 len(file_list),
-                dtype=[('root', '|U1200'), ('date', '<i8'), ('time', '<i8')]
+                dtype=[('root', '|U1200'), ('date', '<i8'), ('time', '<i8'), ('spot', '<i8'), ('gridsquare', '<i8'), ('hole', '<i8')]
                 )
 
             for idx, root_name in enumerate(file_list):
@@ -1350,13 +1352,15 @@ class ProcessThread(object):
                         queue_com=self.queue_com,
                         name=self.name
                         )
-                del spot1, spot2, hole, grid_number
                 data[idx]['root'] = root_name
                 data[idx]['date'] = int(date)
                 data[idx]['time'] = int(collect_time)
+                data[idx]['spot'] = '{0}{1}'.format(spot1, spot2)
+                data[idx]['gridsquare'] = grid_number
+                data[idx]['hole'] = hole
 
             data = np.sort(data, order=['date', 'time'])
-            for root_name in data['root']:
+            for index, row in enumerate(data):
 
                 self.shared_dict_typ['count_lock'].acquire()
                 try:
@@ -1373,7 +1377,7 @@ class ProcessThread(object):
                     else:
                         new_name_meta = os.path.join(
                             self.settings['meta_folder'],
-                            root_name.split('/')[-1]
+                            row['root'].split('/')[-1]
                             )
 
                     if os.path.exists('{0}_krios_sum.mrc'.format(new_name_meta)):
@@ -1417,7 +1421,7 @@ class ProcessThread(object):
                     elif var:
                         self.add_to_queue(
                             aim=aim_name,
-                            root_name='{0}|||{1}'.format(self.shared_dict_typ['file_number'], root_name)
+                            root_name='{0}|||{1}'.format(self.shared_dict_typ['file_number'], row['root'])
                             )
                     else:
                         pass

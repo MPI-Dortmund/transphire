@@ -25,6 +25,7 @@ import sys
 import shutil
 
 import numpy as np
+import pandas as pd
 
 try:
     QT_VERSION = 4
@@ -47,6 +48,102 @@ from transphire import transphire_plot as tp
 from transphire import transphire_import as ti
 
 VERSION_RE = re.compile('(.*) >=v([\d.]+)')
+
+
+def thread_safe(func):
+    def wrapper(self, *args, do_lock=True, **kwargs):
+        if do_lock:
+            self.get_df()
+        return_value = func(self, *args, **kwargs)
+        if do_lock:
+            self.set_df(self._data_frame)
+        return return_value
+    return wrapper
+
+
+class DataFrame(object):
+
+    def __init__(self, manager, file_path):
+        super(DataFrame, self).__init__()
+        self._lock = manager.RLock()
+        self._namespace = manager.Namespace()
+        self._file_path = file_path
+        self._data_frame = None
+        self._namespace.df = None
+        self._increment = 500
+
+        self.load_df()
+
+    def get_df(self):
+        self._lock.acquire()
+        self._data_frame = self._namespace.df
+        return self._data_frame
+
+    def set_df(self, data_frame):
+        self._namespace.df = data_frame
+        self._lock.release()
+
+    @thread_safe
+    def __add_df_column(self, name):
+        self._data_frame[name] = [np.nan] * self._data_frame.shape[0]
+
+    @thread_safe
+    def __add_df_rows(self, length):
+        columns = self._data_frame.columns
+        new_data_frame = pd.DataFrame(index=range(length), columns=columns)
+        self._data_frame = self._data_frame.append(new_data_frame, ignore_index=True)
+
+    @thread_safe
+    def load_df(self):
+        if os.path.exists(self._file_path):
+            df = pd.read_csv(self._file_path, index_col=0)
+        else:
+            df = pd.DataFrame()
+        self._data_frame = df
+
+    @thread_safe
+    def save_df(self):
+        self._data_frame.to_csv(self._file_path)
+
+    @thread_safe
+    def get_values(self, index, columns):
+        if not isinstance(columns, list):
+            columns = [columns]
+
+        if index not in self._data_frame.index:
+            rows_to_add = self._increment * (index // self._increment + 1) - self._data_frame.shape[0]
+            self.__add_df_rows(rows_to_add, do_lock=False) # do_lock for the decorator wrapper function, avoids locking overhead
+
+        return_list = []
+        for column in columns:
+            try:
+                self._data_frame[column]
+            except KeyError:
+                self.__add_df_column(column, do_lock=False) # do_lock for the decorator wrapper function, avoids locking overhead
+
+            return_list.append(self._data_frame[column].loc[index])
+
+        return return_list
+
+    @thread_safe
+    def set_values(self, values, index, columns):
+        if not isinstance(columns, list):
+            columns = [columns]
+        if not isinstance(values, list):
+            values = [values]
+
+        if index not in self._data_frame.index:
+            rows_to_add = self._increment * (index // self._increment + 1) - self._data_frame.shape[0]
+            self.__add_df_rows(rows_to_add, do_lock=False)
+
+        for value, column in zip(values, columns):
+            try:
+                self._data_frame[column]
+            except KeyError:
+                self.__add_df_column(column, do_lock=False)
+
+            self._data_frame.loc[index, column] = value
+        self.save_df(do_lock=False)
 
 
 def get_unique_types():

@@ -1061,6 +1061,7 @@ class MainWindow(QMainWindow):
 
         settings['do_feedback_loop'] = int(settings['General']['Number of feedbacks'])
         settings['feedback_file'] = os.path.join(settings['project_folder'], 'do_feedback')
+        settings['data_frame'] = os.path.join(settings['project_folder'], 'data_frame.csv')
 
         names = [
             entry.replace('_entries', '')

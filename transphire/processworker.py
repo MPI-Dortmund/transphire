@@ -549,6 +549,8 @@ class ProcessWorker(QObject):
         folder_list = ['stack_folder', 'meta_folder']
         use_threads_list = ['Meta', 'Find', 'Import']
 
+        data_frame = tu.DataFrame(manager, settings['data_frame'])
+
         # Decide if one will use copy to HDD
         self.settings['Copy']['Copy_to_hdd'] = self.settings['Copy']['Copy to HDD']
         if self.settings['Copy']['Copy to HDD'] != 'False':
@@ -706,6 +708,7 @@ class ProcessWorker(QObject):
             'motion_txt_lock': manager.Lock(),
             'gpu_lock': gpu_mutex_dict,
             'gpu_lock_lock': manager.Lock(),
+            'data_frame_lock': manager.Lock(),
             'typ': typ_dict,
             }
 
@@ -829,7 +832,8 @@ class ProcessWorker(QObject):
                     use_threads_set=use_threads_set,
                     stop=mp.Value('i', self.stop),
                     has_finished=mp.Value('i', 0),
-                    parent=self
+                    data_frame=data_frame,
+                    parent=self,
                     )
                 thread = mp.Process(target=self.run_in_parallel, args=(thread_obj,))
                 thread.start()
