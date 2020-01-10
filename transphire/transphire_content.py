@@ -115,6 +115,8 @@ def default_isac2_1_2():
         ['--target_nx', '76', int, '', 'PLAIN', 'Advanced', 'target particle image size: actual image size on which isac will process data. Images will be shrinked/enlarged according to target particle radius and then cut/padded to achieve target_nx size. When xr > 0, the final image size for isac processing is target_nx + xr - 1  (default 76)'],
         ['--img_per_grp', '200', int, '', 'PLAIN', 'Advanced', 'number of images per class (maximum group size, also defines number of classes K=(total number of images)/img_per_grp (default 200)'],
         ['--minimum_grp_size', '60', float, '', 'PLAIN', 'Advanced', 'minimum size of class (default 60)'],
+        ['--thld_err', '0.7', float, '', 'PLAIN', 'Advanced', 'threshold of pixel error when checking stability: equals root mean square of distances between corresponding pixels from set of found transformations and theirs average transformation, depends linearly on square of radius (parameter target_radius). units - pixels. (default 0.7)'],
+        ['--center_method', '-1', int, '', 'PLAIN', 'Advanced', ' method for centering: of global 2D average during initial prealignment of data (0 : no centering; -1 : average shift method; please see center_2D in utilities.py for methods 1-7) (default -1)'],
 
         ['--CTF', ['False', 'True'], bool, '', 'COMBO', 'Main', 'apply phase-flip for CTF correction: if set the data will be phase-flipped using CTF information included in image headers (default False)'],
         ['--VPP', ['False', 'True'], bool, '--CTF:False', 'COMBO', 'Main', 'Phase Plate data (default False)'],
