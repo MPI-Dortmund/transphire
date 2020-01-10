@@ -1358,6 +1358,7 @@ class ProcessThread(object):
                 data[idx]['spot'] = '{0}{1}'.format(spot1, spot2)
                 data[idx]['gridsquare'] = grid_number
                 data[idx]['hole'] = hole
+                data[idx]['update_time_{0}'.format(self.typ)] = time.time()
 
             data = np.sort(data, order=['date', 'time'])
             for index, row in enumerate(data):
@@ -1392,8 +1393,18 @@ class ProcessThread(object):
                     else:
                         with open(self.shared_dict_typ['number_file'], 'w') as write:
                             write.write(str(self.shared_dict_typ['file_number']))
+                    current_file_number = self.shared_dict_typ['file_number']
                 finally:
                     self.shared_dict_typ['count_lock'].release()
+
+                self.data_frame.set_values(
+                    index,
+                    dict(
+                        [(name, row[name]) for name in row.dtype.names] +
+                        [('file_number', current_file_number)] + 
+                        [('new_name', os.path.basename(new_name_meta))]
+                        )
+                    )
 
                 if self.stop.value:
                     break
@@ -1421,7 +1432,7 @@ class ProcessThread(object):
                     elif var:
                         self.add_to_queue(
                             aim=aim_name,
-                            root_name='{0}|||{1}'.format(self.shared_dict_typ['file_number'], row['root'])
+                            root_name='{0}|||{1}'.format(current_file_number, row['root'])
                             )
                     else:
                         pass

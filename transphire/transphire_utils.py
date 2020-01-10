@@ -50,13 +50,26 @@ from transphire import transphire_import as ti
 VERSION_RE = re.compile('(.*) >=v([\d.]+)')
 
 
+import os
+import pandas as pd
+import numpy as np
+
+
+import os
+import pandas as pd
+import numpy as np
+
+
 def thread_safe(func):
-    def wrapper(self, *args, do_lock=True, **kwargs):
-        if do_lock:
-            self.get_df()
-        return_value = func(self, *args, **kwargs)
-        if do_lock:
-            self.set_df(self._data_frame)
+    def wrapper(self, *args, **kwargs):
+        self._DataFrame__get_df()
+        try:
+            return_value = func(self, *args, **kwargs)
+        except:
+            self._lock.release()
+            raise
+        else:
+            self._DataFrame__set_df()
         return return_value
     return wrapper
 
@@ -70,28 +83,48 @@ class DataFrame(object):
         self._file_path = file_path
         self._data_frame = None
         self._namespace.df = None
-        self._increment = 500
+        self._increment = 5
 
         self.load_df()
 
-    def get_df(self):
+    def __get_df(self):
         self._lock.acquire()
         self._data_frame = self._namespace.df
-        return self._data_frame
 
-    def set_df(self, data_frame):
-        self._namespace.df = data_frame
+    def __set_df(self):
+        self._namespace.df = self._data_frame
         self._lock.release()
 
-    @thread_safe
     def __add_df_column(self, name):
         self._data_frame[name] = [np.nan] * self._data_frame.shape[0]
 
-    @thread_safe
     def __add_df_rows(self, length):
         columns = self._data_frame.columns
         new_data_frame = pd.DataFrame(index=range(length), columns=columns)
         self._data_frame = self._data_frame.append(new_data_frame, ignore_index=True)
+
+    def __save_df(self):
+        self._data_frame.to_csv(self._file_path)
+
+    def __check_df(self, index, columns):
+        if index not in self._data_frame.index:
+            rows_to_add = self._increment * (index // self._increment + 1) - self._data_frame.shape[0]
+            self.__add_df_rows(rows_to_add)
+
+        for column in columns:
+            try:
+                self._data_frame[column]
+            except KeyError:
+                self.__add_df_column(column)
+
+    @thread_safe
+    def get_df(self):
+        return self._data_frame
+
+    @thread_safe
+    def set_df(self, data_frame):
+        self._data_frame = data_frame
+        self.__save_df()
 
     @thread_safe
     def load_df(self):
@@ -102,48 +135,20 @@ class DataFrame(object):
         self._data_frame = df
 
     @thread_safe
-    def save_df(self):
-        self._data_frame.to_csv(self._file_path)
-
-    @thread_safe
     def get_values(self, index, columns):
-        if not isinstance(columns, list):
+        if isinstance(columns, str):
             columns = [columns]
+        self.__check_df(index, columns)
 
-        if index not in self._data_frame.index:
-            rows_to_add = self._increment * (index // self._increment + 1) - self._data_frame.shape[0]
-            self.__add_df_rows(rows_to_add, do_lock=False) # do_lock for the decorator wrapper function, avoids locking overhead
-
-        return_list = []
-        for column in columns:
-            try:
-                self._data_frame[column]
-            except KeyError:
-                self.__add_df_column(column, do_lock=False) # do_lock for the decorator wrapper function, avoids locking overhead
-
-            return_list.append(self._data_frame[column].loc[index])
-
-        return return_list
+        return self._data_frame.loc[index, list(columns)]
 
     @thread_safe
-    def set_values(self, values, index, columns):
-        if not isinstance(columns, list):
-            columns = [columns]
-        if not isinstance(values, list):
-            values = [values]
+    def set_values(self, index, value_dict):
+        self.__check_df(index, value_dict.keys())
 
-        if index not in self._data_frame.index:
-            rows_to_add = self._increment * (index // self._increment + 1) - self._data_frame.shape[0]
-            self.__add_df_rows(rows_to_add, do_lock=False)
-
-        for value, column in zip(values, columns):
-            try:
-                self._data_frame[column]
-            except KeyError:
-                self.__add_df_column(column, do_lock=False)
-
+        for column, value in value_dict.items():
             self._data_frame.loc[index, column] = value
-        self.save_df(do_lock=False)
+        self.__save_df()
 
 
 def get_unique_types():
