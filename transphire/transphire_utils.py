@@ -50,16 +50,6 @@ from transphire import transphire_import as ti
 VERSION_RE = re.compile('(.*) >=v([\d.]+)')
 
 
-import os
-import pandas as pd
-import numpy as np
-
-
-import os
-import pandas as pd
-import numpy as np
-
-
 def thread_safe(func):
     def wrapper(self, *args, **kwargs):
         self._DataFrame__get_df()
@@ -93,6 +83,7 @@ class DataFrame(object):
 
     def __set_df(self):
         self._namespace.df = self._data_frame
+        self._data_frame = None
         self._lock.release()
 
     def __add_df_column(self, name):
@@ -127,6 +118,10 @@ class DataFrame(object):
         self.__save_df()
 
     @thread_safe
+    def save_df(self):
+        self._data_frame.to_csv(self._file_path)
+
+    @thread_safe
     def load_df(self):
         if os.path.exists(self._file_path):
             df = pd.read_csv(self._file_path, index_col=0)
@@ -143,12 +138,17 @@ class DataFrame(object):
         return self._data_frame.loc[index, list(columns)]
 
     @thread_safe
-    def set_values(self, index, value_dict):
+    def set_values(self, index, value_dict, do_save=True):
         self.__check_df(index, value_dict.keys())
 
         for column, value in value_dict.items():
             self._data_frame.loc[index, column] = value
-        self.__save_df()
+        if do_save:
+            self.__save_df()
+
+    @thread_safe
+    def get_index_where(self, column, value):
+        return self._data_frame.index[self._data_frame[column] == value]
 
 
 def get_unique_types():

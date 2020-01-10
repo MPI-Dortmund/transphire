@@ -966,7 +966,7 @@ class ProcessThread(object):
             self.queue_lock.release()
 
     def check_queue_files(self, root_name):
-        if self.settings['Copy']['Compress'] == 'False':
+        if self.settings['Copy']['Compress'] in ('False', 'Later'):
             return
 
         basename = os.path.basename(os.path.splitext(root_name)[0])
@@ -1358,7 +1358,6 @@ class ProcessThread(object):
                 data[idx]['spot'] = '{0}{1}'.format(spot1, spot2)
                 data[idx]['gridsquare'] = grid_number
                 data[idx]['hole'] = hole
-                data[idx]['update_time_{0}'.format(self.typ)] = time.time()
 
             data = np.sort(data, order=['date', 'time'])
             for index, row in enumerate(data):
@@ -1368,7 +1367,7 @@ class ProcessThread(object):
                     self.shared_dict_typ['file_number'] += 1
 
                     if self.settings['General']['Rename micrographs'] == 'True':
-                        new_name_meta = '{0}/{1}{2:0{3}d}{4}'.format(
+                        new_name_meta = '{0}/{1}{2:0{3}.0f}{4}'.format(
                             self.settings['meta_folder'],
                             self.settings['General']['Rename prefix'],
                             self.shared_dict_typ['file_number'],
@@ -1402,8 +1401,10 @@ class ProcessThread(object):
                     dict(
                         [(name, row[name]) for name in row.dtype.names] +
                         [('file_number', current_file_number)] + 
-                        [('new_name', os.path.basename(new_name_meta))]
-                        )
+                        [('new_name', os.path.basename(new_name_meta))] +
+                        [('update_time_{0}'.format(self.typ), time.time())]
+                        ),
+                    do_save=False,
                     )
 
                 if self.stop.value:
@@ -1436,6 +1437,7 @@ class ProcessThread(object):
                             )
                     else:
                         pass
+            self.data_frame.save_df()
         self.queue_com['log'].put(tu.create_log(self.name, 'run_find stop', time.time() - start_prog))
 
     def recursive_search(self, directory, file_list, find_meta):
@@ -1477,6 +1479,7 @@ class ProcessThread(object):
                     name=self.name,
                     write_error=self.write_error
                     )
+                print('root_name', root_name, 'frames', frames)
                 if frames is None:
                     self.shared_dict_typ['bad_lock'].acquire()
                     try:
@@ -1677,14 +1680,14 @@ class ProcessThread(object):
         self.shared_dict_typ['count_lock'].acquire()
         try:
             if self.settings['General']['Rename micrographs'] == 'True':
-                new_name_stack = '{0}/{1}{2:0{3}d}{4}'.format(
+                new_name_stack = '{0}/{1}{2:0{3}.0f}{4}'.format(
                     self.settings['stack_folder'],
                     self.settings['General']['Rename prefix'],
                     number,
                     len(self.settings['General']['Estimated mic number']),
                     self.settings['General']['Rename suffix']
                     )
-                new_name_meta = '{0}/{1}{2:0{3}d}{4}'.format(
+                new_name_meta = '{0}/{1}{2:0{3}.0f}{4}'.format(
                     self.settings['meta_folder'],
                     self.settings['General']['Rename prefix'],
                     number,
@@ -1952,8 +1955,7 @@ class ProcessThread(object):
             else:
                 pass
 
-    @staticmethod
-    def get_gtg_info(xml_file, entries, first_entry):
+    def get_gtg_info(self, xml_file, entries, first_entry):
         try:
             with open(xml_file, "rb") as read: 
                 reader = hidm.DigitalMicrographReader(read) 
@@ -1961,6 +1963,7 @@ class ProcessThread(object):
         except IOError as e:
             print(e)
         else:
+            current_df_index = self.data_frame.get_index_where('new_name', tu.get_name(xml_file))
             gtg_values = {
                 '_pipeAlpha': ['Microscope Info', 'Stage Position', 'Stage Alpha'],
                 '_pipeCoordX': ['Microscope Info', 'Stage Position', 'Stage X'],
@@ -1978,6 +1981,7 @@ class ProcessThread(object):
                 '_pipeHeight': ['Latitude', 'Image Size Y'],
                 '_pipeWidth': ['Latitude', 'Image Size X'],
                 }
+            data_dict = {}
             for key, value in gtg_values.items():
                 temp = reader.tags_dict
                 for idx, entry in enumerate(value):
@@ -1991,17 +1995,22 @@ class ProcessThread(object):
                             first_key = key
                             val = temp[entry]
                         entries.append(val)
+                        data_dict[key] = val
                         if first_entry:
                             first_entry.append('{0} #{1}'.format(first_key, idx+8))
+            self.data_frame.set_values(
+                current_df_index,
+                data_dict
+                )
 
-    @staticmethod
-    def get_xml_info(xml_file, entries, first_entry):
+    def get_xml_info(self, xml_file, entries, first_entry):
         try:
             with open(xml_file, 'r') as read:
                 lines = read.read()
         except IOError:
             pass
         else:
+            current_df_index = self.data_frame.get_index_where('new_name', tu.get_name(xml_file))
             xml_values = {
                 '_pipeCoordX': [r'.*<X>(.*?)</X>.*'],
                 '_pipeCoordY': [r'.*<Y>(.*?)</Y>.*'],
@@ -2016,6 +2025,7 @@ class ProcessThread(object):
                 '_pipeWidth': [r'.*<ReadoutArea.*?<a:width>(.*?)</a:width>.*'],
                 }
             idx = 0
+            data_dict = {}
             for xml_key, values in xml_values.items():
                 for xml_value in values:
                     error = False
@@ -2046,7 +2056,11 @@ class ProcessThread(object):
                 if error:
                     print('Attribute {0} not present in the XML file, please contact the TranSPHIRE authors'.format(xml_key))
                 else:
-                    pass
+                    data_dict[xml_key] = extracted_value
+            self.data_frame.set_values(
+                current_df_index,
+                data_dict
+                )
 
     def append_to_translate(self, root_name, new_name, xml_file):
         """

@@ -174,6 +174,7 @@ def find_frames(frames_root, compare_name, settings, queue_com, name, write_erro
                 settings['General']['Input extension']
                 )
             )
+        print(settings['General']['Input extension'], frames)
         try:
             value, checked_nr_frames = check_nr_frames(
                 frames=frames,
@@ -627,7 +628,10 @@ def check_nr_frames(frames, settings):
     frames - List of found frames
     settings - TranSPHIRE settings
     """
-    if int(settings['General']['Number of frames']) == -1:
+    if not frames:
+        frames.append(None)
+        return False, 0
+    elif int(settings['General']['Number of frames']) == -1:
         return True, 0
     else:
         command = '{0} {1}'.format(

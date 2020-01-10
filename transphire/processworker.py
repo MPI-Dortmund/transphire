@@ -549,7 +549,7 @@ class ProcessWorker(QObject):
         folder_list = ['stack_folder', 'meta_folder']
         use_threads_list = ['Meta', 'Find', 'Import']
 
-        data_frame = tu.DataFrame(manager, settings['data_frame'])
+        data_frame = tu.DataFrame(manager, self.settings['data_frame'])
 
         # Decide if one will use copy to HDD
         self.settings['Copy']['Copy_to_hdd'] = self.settings['Copy']['Copy to HDD']
