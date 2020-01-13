@@ -120,6 +120,9 @@ def default_isac2_1_2():
 
         ['--CTF', ['False', 'True'], bool, '', 'COMBO', 'Main', 'apply phase-flip for CTF correction: if set the data will be phase-flipped using CTF information included in image headers (default False)'],
         ['--VPP', ['False', 'True'], bool, '--CTF:False', 'COMBO', 'Main', 'Phase Plate data (default False)'],
+        ['--gpu_devices', '0', str, '', 'PLAIN', 'Advanced', 'Print detailed information about the selected GPUs, including the class limit which is relevant when using the --gpu_class_limit parameter. Use --gpu_devices to specify what GPUs you want to know about. NOTE: ISAC will stop after printing this information, so don\'t use this parameter if you intend to actually process any data. [Default: False]'],
+        ['--gpu_class_limit', '-1', int, '', 'PLAIN', 'Advanced', 'By default ISAC will check how much data can fit on the available GPUs. This can take more than a minute, which is annoying for testing. To skip this check, use --gpu_info to get a class limit value to use for this parameter. [Default: -1]'],
+        ['--gpu_memory_use', '-1', float, '', 'PLAIN', 'Advanced', 'Specify how much memory on the chosen GPUs ISAC is allowed to use. A value of 0.9 means 90% of the available memory (this is the default; higher percentages should be used with caution). [Default: -1.0]'],
         ['GPU', '0', [int]*99, '', 'PLAIN', 'Advanced', 'NOT AN ISAC2 OPTION. Specifiy which gpu\'s should be used.'],
         ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT AN ISAC2 OPTION. Split the gpu values specified in --gpu to be able to run mutliple crYOLO jobs in parallel.'],
         ]
