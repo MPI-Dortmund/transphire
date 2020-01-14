@@ -4024,6 +4024,14 @@ class ProcessThread(object):
                         self.settings[entry_name][self.settings['Copy']['Picking']],
                         import_name
                         )
+                    current_df_index = self.data_frame.get_index_where('new_name', tu.get_name(file_use))
+                    self.data_frame.set_values(
+                        current_df_index,
+                        dict(
+                            [(name, data[name]) for name in data.dtype.names if name not in ('file_name', 'image', 'mic_number', 'object')] +
+                            ),
+                        do_save=False,
+                        )
 
                     warnings, skip_list = tus.check_for_outlier(
                         dict_name='Picking',
@@ -4036,6 +4044,7 @@ class ProcessThread(object):
                         self.remove_from_translate(os.path.basename(file_use))
                     else:
                         export_log_files.extend(file_log)
+                self.data_frame.save_df()
 
                 for warning in skip_list:
                     self.send_out_of_range_error(warning, root_name, 'skip')
