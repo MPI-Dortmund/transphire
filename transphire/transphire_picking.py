@@ -279,18 +279,19 @@ def create_cryolo_v1_4_1_command(
         else 0.1
         ))
 
+    ignore_list.append('--nomerging')
+    ignore_list.append('--nosplit')
+
     if settings[picking_name]['--filament'] == 'True':
         command.append('--filament')
+        if settings[picking_name]['--nomerging'] == 'True':
+            command.append('--nomerging')
+        if settings[picking_name]['--nosplit'] == 'True':
+            command.append('--nosplit')
     else:
         ignore_list.append('--filament_width')
         ignore_list.append('--box_distance')
         ignore_list.append('--minimum_number_boxes')
-        ignore_list.append('--nomerging')
-        if settings[picking_name]['--nomerging'] == 'True':
-            command.append('--nomerging')
-        ignore_list.append('--nosplit')
-        if settings[picking_name]['--nosplit'] == 'True':
-            command.append('--nosplit')
         ignore_list.append('--mask_width')
         ignore_list.append('--search_range_factor')
 
