@@ -87,7 +87,8 @@ class DataFrame(object):
         self._lock.release()
 
     def __add_df_column(self, name):
-        self._data_frame[name] = [np.nan] * self._data_frame.shape[0]
+        self._data_frame[name] = np.nan
+        self._data_frame[name] = self._data_frame[name].astype(object)
 
     def __add_df_rows(self, length):
         columns = self._data_frame.columns
@@ -124,9 +125,9 @@ class DataFrame(object):
     @thread_safe
     def load_df(self):
         if os.path.exists(self._file_path):
-            df = pd.read_csv(self._file_path, index_col=0)
+            df = pd.read_csv(self._file_path, index_col=0, dtype=object)
         else:
-            df = pd.DataFrame()
+            df = pd.DataFrame(dtype=object)
         self._data_frame = df
 
     @thread_safe

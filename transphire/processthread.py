@@ -1963,7 +1963,6 @@ class ProcessThread(object):
         except IOError as e:
             print(e)
         else:
-            current_df_index = self.data_frame.get_index_where('new_name', tu.get_name(xml_file))
             gtg_values = {
                 '_pipeAlpha': ['Microscope Info', 'Stage Position', 'Stage Alpha'],
                 '_pipeCoordX': ['Microscope Info', 'Stage Position', 'Stage X'],
@@ -1998,6 +1997,7 @@ class ProcessThread(object):
                         data_dict[key] = val
                         if first_entry:
                             first_entry.append('{0} #{1}'.format(first_key, idx+8))
+            current_df_index = self.data_frame.get_index_where('new_name', tu.get_name(xml_file))
             self.data_frame.set_values(
                 current_df_index,
                 data_dict
@@ -2010,7 +2010,6 @@ class ProcessThread(object):
         except IOError:
             pass
         else:
-            current_df_index = self.data_frame.get_index_where('new_name', tu.get_name(xml_file))
             xml_values = {
                 '_pipeCoordX': [r'.*<X>(.*?)</X>.*'],
                 '_pipeCoordY': [r'.*<Y>(.*?)</Y>.*'],
@@ -2057,6 +2056,7 @@ class ProcessThread(object):
                     print('Attribute {0} not present in the XML file, please contact the TranSPHIRE authors'.format(xml_key))
                 else:
                     data_dict[xml_key] = extracted_value
+            current_df_index = self.data_frame.get_index_where('new_name', tu.get_name(xml_file))
             self.data_frame.set_values(
                 current_df_index,
                 data_dict
@@ -2599,6 +2599,13 @@ class ProcessThread(object):
 
         if data.shape[0] != 0:
             sum_file = queue_dict[0]['sum'][0]
+            current_df_index = self.data_frame.get_index_where('new_name', tu.get_name(sum_file))
+            self.data_frame.set_values(
+                current_df_index,
+                dict(
+                    [(name, data[name]) for name in data.dtype.names if name not in ('file_name', 'image', 'mic_number', 'object')] +
+                    ),
+                )
             try:
                 dw_file = queue_dict[0]['sum_dw'][0]
             except IndexError:
@@ -2904,6 +2911,14 @@ class ProcessThread(object):
             )
         data = data[mask]
         data_orig = data_orig[mask]
+
+        current_df_index = self.data_frame.get_index_where('new_name', tu.get_name(sum_file))
+        self.data_frame.set_values(
+            current_df_index,
+            dict(
+                [(name, data[name]) for name in data.dtype.names if name not in ('file_name', 'image', 'mic_number', 'object')] +
+                ),
+            )
 
         # Combine output files
         output_name_partres_comb, output_name_star_comb, output_name_partres, output_name_star = tuc.combine_ctf_outputs(
