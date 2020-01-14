@@ -634,7 +634,7 @@ def check_nr_frames(frames, settings):
     elif int(settings['General']['Number of frames']) == -1:
         return True, 0
     else:
-        command = '{0} {1}'.format(
+        command = "{0} '{1}'".format(
             settings['Path']['IMOD header'],
             frames[0]
             )
