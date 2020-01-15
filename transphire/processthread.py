@@ -1468,6 +1468,8 @@ class ProcessThread(object):
                     find_meta=find_meta
                     )
             elif self.settings["General"]["Software"] == "Just Stack":
+                if not entry_dir.endswith(self.settings['General']['Input extension']):
+                    continue
                 root_name = os.path.splitext(entry_dir)[0]
                 frames_root = root_name
                 compare_name = frames_root
