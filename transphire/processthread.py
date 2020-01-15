@@ -3569,7 +3569,13 @@ class ProcessThread(object):
                     finally:
                         self.shared_dict['typ'][type_name]['queue_lock'].release()
 
-            self.shared_dict_typ['queue_list'].extend(file_queue_list)
+            self.shared_dict_typ['queue_list_lock'].acquire()
+            try:
+                self.shared_dict_typ['queue_list'].extend(file_queue_list)
+                self.shared_dict_typ['queue_list'][:] = np.unique(self.shared_dict_typ['queue_list']).tolist()
+            finally:
+                self.shared_dict_typ['queue_list_lock'].release()
+
             raise
 
         else:
@@ -3771,6 +3777,7 @@ class ProcessThread(object):
         finally:
             self.shared_dict['typ']['Picking']['queue_list_lock'].release()
 
+        print('threshold', self.settings[self.settings['Copy']['Picking']]['--threshold'])
         threshold_old = self.settings[self.settings['Copy']['Picking']]['--threshold']
 
         folder_name = 'picking_folder_feedback_{0}'.format(self.settings['do_feedback_loop'].value)
@@ -4000,7 +4007,7 @@ class ProcessThread(object):
                             write.write('|||'.join([
                                 self.settings[self.settings['Copy']['Picking']]['--weights'],
                                 self.settings[self.settings['Copy']['Picking']]['--conf'],
-                                str(new_threshold)
+                                str(new_threshold) if not np.isnan(new_threshold) else str(self.settings[self.settings['Copy']['Picking']]['--threshold'])
                                 ]))
                         with open(self.shared_dict_typ['number_file'], 'w') as write:
                             write.write('0|||0')
