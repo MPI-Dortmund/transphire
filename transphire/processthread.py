@@ -1809,8 +1809,8 @@ class ProcessThread(object):
 
         tus.check_outputs(
             zero_list=[],
-            non_zero_list=log_files,
-            exists_list=[],
+            non_zero_list=[],
+            exists_list=log_files,
             folder=self.settings['meta_folder'],
             command='copy'
             )
