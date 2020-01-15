@@ -1479,7 +1479,6 @@ class ProcessThread(object):
                     name=self.name,
                     write_error=self.write_error
                     )
-                print('root_name', root_name, 'frames', frames)
                 if frames is None:
                     self.shared_dict_typ['bad_lock'].acquire()
                     try:
@@ -1997,9 +1996,9 @@ class ProcessThread(object):
                         data_dict[key] = val
                         if first_entry:
                             first_entry.append('{0} #{1}'.format(first_key, idx+8))
-            current_df_index = self.data_frame.get_index_where('new_name', tu.get_name(xml_file))
+            current_df_index = self.data_frame.get_index_where('new_name', tu.get_name(xml_file), func_type='eq')
             self.data_frame.set_values(
-                current_df_index,
+                current_df_index[0],
                 data_dict
                 )
 
@@ -2056,9 +2055,9 @@ class ProcessThread(object):
                     print('Attribute {0} not present in the XML file, please contact the TranSPHIRE authors'.format(xml_key))
                 else:
                     data_dict[xml_key] = extracted_value
-            current_df_index = self.data_frame.get_index_where('new_name', tu.get_name(xml_file))
+            current_df_index = self.data_frame.get_index_where('new_name', tu.get_name(xml_file), func_type='eq')
             self.data_frame.set_values(
-                current_df_index,
+                current_df_index[0],
                 data_dict
                 )
 
@@ -2599,13 +2598,6 @@ class ProcessThread(object):
 
         if data.shape[0] != 0:
             sum_file = queue_dict[0]['sum'][0]
-            current_df_index = self.data_frame.get_index_where('new_name', tu.get_name(sum_file))
-            self.data_frame.set_values(
-                current_df_index,
-                dict(
-                    [(name, data[name]) for name in data.dtype.names if name not in ('file_name', 'image', 'mic_number', 'object')] +
-                    ),
-                )
             try:
                 dw_file = queue_dict[0]['sum_dw'][0]
             except IndexError:
@@ -2620,6 +2612,11 @@ class ProcessThread(object):
                 log_file=file_stdout_combine,
                 sum_file=sum_file,
                 dw_file=dw_file,
+                )
+            current_df_index = self.data_frame.get_index_where('new_name', tu.get_name(sum_file), func_type='eq')
+            self.data_frame.set_values(
+                current_df_index[0],
+                dict([(name, data[name][0]) for name in data.dtype.names if name not in ('file_name', 'image', 'mic_number', 'object')]),
                 )
             output_name_mic = output_combine[5]
             output_name_star = output_combine[6]
@@ -2912,12 +2909,10 @@ class ProcessThread(object):
         data = data[mask]
         data_orig = data_orig[mask]
 
-        current_df_index = self.data_frame.get_index_where('new_name', tu.get_name(sum_file))
+        current_df_index = self.data_frame.get_index_where('new_name', tu.get_name(file_sum), func_type='eq')
         self.data_frame.set_values(
-            current_df_index,
-            dict(
-                [(name, data[name]) for name in data.dtype.names if name not in ('file_name', 'image', 'mic_number', 'object')] +
-                ),
+            current_df_index[0],
+            dict([(name, data[name][0]) for name in data.dtype.names if name not in ('file_name', 'image', 'mic_number', 'object')]),
             )
 
         # Combine output files
@@ -4024,12 +4019,10 @@ class ProcessThread(object):
                         self.settings[entry_name][self.settings['Copy']['Picking']],
                         import_name
                         )
-                    current_df_index = self.data_frame.get_index_where('new_name', tu.get_name(file_use))
+                    current_df_index = self.data_frame.get_index_where('new_name', tu.get_name(file_use), func_type='eq')
                     self.data_frame.set_values(
-                        current_df_index,
-                        dict(
-                            [(name, data[name]) for name in data.dtype.names if name not in ('file_name', 'image', 'mic_number', 'object')] +
-                            ),
+                        current_df_index[0],
+                        dict([(name, data[name][0]) for name in data.dtype.names if name not in ('file_name', 'image', 'mic_number', 'object')]),
                         do_save=False,
                         )
 
@@ -4225,13 +4218,18 @@ class ProcessThread(object):
                 shell=True
                 )
 
-            tus.check_outputs(
-                zero_list=[err_file_uncompress],
-                non_zero_list=[log_file_uncompress, uncompress_new_name],
-                exists_list=[],
-                folder=self.settings['compress_folder_feedback_0'],
-                command=command
-                )
+            try:
+                tus.check_outputs(
+                    zero_list=[err_file_uncompress],
+                    non_zero_list=[log_file_uncompress, uncompress_new_name],
+                    exists_list=[],
+                    folder=self.settings['compress_folder_feedback_0'],
+                    command=command
+                    )
+            finally:
+
+                if os.path.exists(uncompress_new_name):
+                    os.remove(uncompress_new_name)
 
             #os.remove(uncompress_new_name)
 

@@ -174,7 +174,6 @@ def find_frames(frames_root, compare_name, settings, queue_com, name, write_erro
                 settings['General']['Input extension']
                 )
             )
-        print(settings['General']['Input extension'], frames)
         try:
             value, checked_nr_frames = check_nr_frames(
                 frames=frames,
@@ -671,6 +670,7 @@ def find_related_frames_to_jpg(frames_root, root_name, settings, queue_com, name
             settings['General']['Input extension']
             ))
         return frames, compare_name_frames, compare_name_meta
+
     elif settings['General']['Software'] == 'Latitude S':
         if settings['General']['Type'] == 'Frames':
             message = '\n'.join([

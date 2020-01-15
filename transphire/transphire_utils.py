@@ -148,8 +148,25 @@ class DataFrame(object):
             self.__save_df()
 
     @thread_safe
-    def get_index_where(self, column, value):
-        return self._data_frame.index[self._data_frame[column] == value]
+    def get_index_where(self, column, value, func_type):
+        try:
+            col = self._data_frame[column].astype(float)
+        except:
+            col = self._data_frame[column]
+
+        if func_type == 'eq':
+            return_value = self._data_frame.index[col == value]
+        elif func_type == 'gg':
+            return_value = self._data_frame.index[col > value]
+        elif func_type == 'll':
+            return_value = self._data_frame.index[col < value]
+        elif func_type == 'ge':
+            return_value = self._data_frame.index[col >= value]
+        elif func_type == 'le':
+            return_value = self._data_frame.index[col <= value]
+        else:
+            raise NameError
+        return return_value
 
 
 def get_unique_types():
