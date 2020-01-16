@@ -998,11 +998,11 @@ class ProcessWorker(QObject):
         auto3d_name = self.settings['Copy']['Auto3d']
         if auto3d_name != 'False' and auto3d_name != 'Later':
             if self.settings[auto3d_name]['Use SSH'] == 'True':
-                device_name = [
-                    entry
-                    for entry in self.settings['Mount'][self.settings['Copy']['Copy to work']]['IP'].split('/') if entry.strip()
-                    ][0]
                 if self.settings['Copy']['Copy to work'] != 'False' and self.settings['Copy']['Copy to work'] != 'Later':
+                    device_name = [
+                        entry
+                        for entry in self.settings['Mount'][self.settings['Copy']['Copy to work']]['IP'].split('/') if entry.strip()
+                        ][0]
                     ssh_command = 'ssh -o "StrictHostKeyChecking no" {0}@{1} ls'.format(
                         self.settings[auto3d_name]['SSH username'],
                         device_name
