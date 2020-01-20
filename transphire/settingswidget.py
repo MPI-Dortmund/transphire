@@ -19,11 +19,11 @@ import os
 import sys
 try:
     QT_VERSION = 4
-    from PyQt4.QtGui import QWidget, QLabel, QFileDialog, QVBoxLayout, QComboBox, QLineEdit
+    from PyQt4.QtGui import QWidget, QLabel, QFileDialog, QVBoxLayout, QComboBox, QLineEdit, QHBoxLayout, QPushButton
     from PyQt4.QtCore import pyqtSlot, pyqtSignal
 except ImportError:
     QT_VERSION = 5
-    from PyQt5.QtWidgets import QWidget, QLabel, QFileDialog, QVBoxLayout, QComboBox, QLineEdit
+    from PyQt5.QtWidgets import QWidget, QLabel, QFileDialog, QVBoxLayout, QComboBox, QLineEdit, QHBoxLayout, QPushButton
     from PyQt5.QtCore import pyqtSlot, pyqtSignal
 from transphire import transphire_utils as tu
 
@@ -167,7 +167,25 @@ class SettingsWidget(QWidget):
         except AttributeError:
             pass
         layout.addWidget(self.label)
-        layout.addWidget(self.edit)
+
+        layout_h = QHBoxLayout()
+        layout_h.setContentsMargins(0, 0, 0, 0)
+        layout_h.addWidget(self.edit, stretch=1)
+        if content[1]['name_global'] is not None:
+            widget_auto = QPushButton(self)
+            widget_auto.setCheckable(True)
+            widget_auto.setText('GLOBAL')
+            widget_auto.toggled.connect(self._toggle_change)
+            widget_auto.setObjectName('setting')
+            layout_h.addWidget(widget_auto)
+        layout_h.addStretch(1)
+
+        layout.addLayout(layout_h)
+
+    @pyqtSlot(bool)
+    def _toggle_change(self, state):
+        self.edit.setEnabled(not state)
+
 
     def change_tooltip(self, text):
         edit = self.sender()

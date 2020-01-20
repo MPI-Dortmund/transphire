@@ -46,6 +46,7 @@ except ImportError:
     from PyQt5.QtCore import pyqtSignal, pyqtSlot
 from transphire.separator import Separator
 from transphire import transphire_utils as tu
+from transphire import transphire_content as tc
 
 
 class LoadContent(QWidget):
@@ -89,6 +90,13 @@ class LoadContent(QWidget):
         self.idx_type = 4
         self.idx_priority = 5
         self.idx_tooltip = 6
+        self.idx_toggle = 7
+
+        self.idx_name_name = 0
+        self.idx_name_global = 1
+
+        self.idx_type_type = 0
+        self.idx_type_toggle = 1
 
         # Fill content based on typ
         content_function = tu.get_function_dict()[typ]['content']
@@ -120,6 +128,7 @@ class LoadContent(QWidget):
         None
         """
         # Layout
+        global_items = set([entry[0] for entry in tc.default_global()])
         layout_h = QHBoxLayout()
         self.layout.addLayout(layout_h)
         layout_v = None
@@ -133,9 +142,10 @@ class LoadContent(QWidget):
                     layout_h.addWidget(Separator(typ='vertical', color='white'))
                 layout_v = QVBoxLayout()
                 layout_h.addLayout(layout_v)
-            layout_v.addWidget(QLabel(entry[self.idx_name], self))
+            layout_v.addWidget(QLabel(entry[self.idx_name].split(':')[self.idx_name_name], self))
 
             # Behaviour based on typ
+
             if entry[self.idx_type] == 'COMBO':
                 widget = QComboBox(self)
                 widget.addItems(entry[self.idx_values])
@@ -178,10 +188,24 @@ class LoadContent(QWidget):
             else:
                 widget_2 = None
 
+            try:
+                global_name = entry[self.idx_name].split(':')[self.idx_name_global]
+            except IndexError:
+                global_name = None
+                widget_3 = None
+            else:
+                if global_name not in global_items:
+                    assert False, (global_name, 'not in ', global_items)
+                widget_3 = QPushButton(self)
+                widget_3.setCheckable(True)
+                widget_3.setText('GLOBAL')
+                widget_3.toggled.connect(self._toggle_change)
+
             widget.setObjectName('default_settings')
             layout_h_2 = QHBoxLayout()
+            layout_h_2.setContentsMargins(0, 0, 0, 0)
             layout_h_2.addWidget(widget, stretch=1)
-            for test_widget in [widget_2]:
+            for test_widget in [widget_2, widget_3]:
                 if test_widget is None:
                     continue
                 else:
@@ -192,16 +216,36 @@ class LoadContent(QWidget):
             self.content.append({
                 'widget': widget,
                 'widget_2': widget_2,
+                'widget_3': widget_3,
                 'settings': {
                     'typ': entry[self.idx_type],
-                    'name': entry[self.idx_name],
+                    'name': entry[self.idx_name].split(':')[self.idx_name_name],
+                    'name_global': global_name,
                     'values': entry[self.idx_values],
                     'dtype': entry[self.idx_dtype],
                     'group': entry[self.idx_group],
                     'tooltip': entry[self.idx_tooltip],
                     }
                 })
+
+            if widget_3 is not None:
+                widget_3.setChecked(True)
         layout_v.addStretch(1)
+
+    @pyqtSlot(bool)
+    def _toggle_change(self, state):
+        """
+        Change the color of the entry to color changed.
+
+        Arguments:
+        None
+
+        Return:
+        None
+        """
+        for entry in self.content:
+            if entry['widget_3'] == self.sender():
+                entry['widget'].setEnabled(not state)
 
     @pyqtSlot()
     def _change_color_to_changed(self):
@@ -258,10 +302,12 @@ class LoadContent(QWidget):
                 tu.message(message)
                 sys.exit()
 
-            for number in ['2']:
+            for number in ['2', '3']:
                 temp_widget = entry['widget_{0}'.format(number)]
                 if isinstance(temp_widget, QComboBox):
                     settings['widget_{0}'.format(number)] = temp_widget.currentText()
+                elif isinstance(temp_widget, QPushButton):
+                    settings['widget_{0}'.format(number)] = temp_widget.isChecked()
                 else:
                     assert temp_widget is None
                     settings['widget_{0}'.format(number)] = temp_widget
@@ -400,6 +446,25 @@ class LoadContent(QWidget):
                         widget_2.setCurrentIndex(widget_2_idx)
                         widget_2.setStyleSheet(tu.get_style(typ='unchanged'))
                 elif widget_2 is None:
+                    pass
+                else:
+                    pass
+
+                try:
+                    widget_3 = self.content[idx]['widget_3']
+                except KeyError:
+                    continue
+                else:
+                    pass
+
+                if isinstance(widget_3, QPushButton):
+                    try:
+                        widget_3.setChecked(entry[key][1]['widget_3'])
+                    except KeyError:
+                        widget_3.setChecked(True)
+                    except TypeError:
+                        widget_3.setChecked(True)
+                elif widget_3 is None:
                     pass
                 else:
                     pass

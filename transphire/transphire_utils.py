@@ -532,6 +532,15 @@ def get_function_dict():
             'typ': None,
             'allow_empty': [],
             }
+    function_dict['Global'] = {
+            'plot': None,
+            'plot_data': None,
+            'content': tc.default_global,
+            'executable': False,
+            'has_path': False,
+            'typ': None,
+            'allow_empty': ['-Gain'],
+            }
     function_dict['General'] = {
             'plot': None,
             'plot_data': None,
@@ -886,6 +895,12 @@ def get_content_gui(content, template_name, n_feedbacks):
             'layout': 'TAB1',
             },
         {
+            'name': 'Global',
+            'widget': SettingsContainer,
+            'content': content[template_name]['Global'],
+            'layout': 'Settings',
+            },
+        {
             'name': 'General',
             'widget': SettingsContainer,
             'content': content[template_name]['General'],
@@ -1052,11 +1067,20 @@ def look_and_feel_small(app, font=None):
         }}
 
     QLineEdit {{ background-color: white }}
+    QLineEdit:disabled {{ background-color: rgba(125, 125, 125) }}
     QComboBox {{ background-color: white }}
+    QComboBox:disabled {{ background-color: rgba(125, 125, 125) }}
     QPushButton {{
         background-color: qradialgradient(cx:0.5, cy:0.5, fx:0.5, fy:0.5, radius:1, stop:0 white, stop:1 #f9eeb4);
         border-width: 1px;
         border-style:inset;
+        padding: 1px;
+        border-radius: 5px
+        }}
+    QPushButton:checked {{
+        background-color: qradialgradient(cx:0.5, cy:0.5, fx:0.5, fy:0.5, radius:1, stop:0 white, stop:1 green);
+        border-width: 1px;
+        border-style:outset;
         padding: 1px;
         border-radius: 5px
         }}
@@ -1234,6 +1258,21 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
             );
         border-width: 1px;
         border-style: inset;
+        padding: 1px;
+        border-radius: 5px
+        }}
+    QPushButton:checked {{
+        background-color: qradialgradient(
+            cx:0.5,
+            cy:0.5,
+            fx:0.5,
+            fy:0.5,
+            radius:1,
+            stop:0 white,
+            stop:1 green
+            );
+        border-width: 1px;
+        border-style: outset;
         padding: 1px;
         border-radius: 5px
         }}

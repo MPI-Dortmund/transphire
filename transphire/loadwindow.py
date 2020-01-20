@@ -182,6 +182,7 @@ class DefaultSettings(QDialog):
             'Internal settings': {
                 'sub_content': {},
                 'content': [
+                    'Global',
                     'General',
                     'Copy',
                     'Pipeline',
