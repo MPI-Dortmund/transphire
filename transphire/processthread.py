@@ -879,11 +879,12 @@ class ProcessThread(object):
             if not dummy:
                 self.add_to_queue(aim=self.typ, root_name=root_name)
             self.write_error(msg=tb.format_exc(), root_name=root_name)
-            self.lost_connection(
-                typ=method_dict[self.typ]['lost_connect']
-                )
-            self.shared_dict_typ['delay_error'] = True
-            self.shared_dict_typ['is_error'] = True
+            if self.typ != 'Import':
+                self.lost_connection(
+                    typ=method_dict[self.typ]['lost_connect']
+                    )
+                self.shared_dict_typ['delay_error'] = True
+                self.shared_dict_typ['is_error'] = True
         except UserWarning:
             if not dummy:
                 self.add_to_queue(aim=self.typ, root_name=root_name)
