@@ -269,6 +269,8 @@ class SettingsContainer(QWidget):
         None
         """
         for key in settings:
+            if key.endswith('_global'):
+                continue
             try:
                 content = self.content[key]
             except KeyError:
@@ -282,7 +284,7 @@ class SettingsContainer(QWidget):
                         continue
 
             try:
-                content.set_settings(settings[key])
+                content.set_settings(settings[key], settings['{0}_global'.format(key)])
             except KeyError:
                 if self.name == 'Copy' and key.endswith('_entries'):
                     continue

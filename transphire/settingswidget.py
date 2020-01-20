@@ -64,6 +64,7 @@ class SettingsWidget(QWidget):
         self.name = content[1]['name']
         self.tooltip = content[1]['tooltip']
         self.dtype = content[1]['dtype']
+        self.name_global = content[1]['name_global']
 
         if self.name == 'Project name':
             pattern = None
@@ -172,12 +173,14 @@ class SettingsWidget(QWidget):
         layout_h.setContentsMargins(0, 0, 0, 0)
         layout_h.addWidget(self.edit, stretch=1)
         if content[1]['name_global'] is not None:
-            widget_auto = QPushButton(self)
-            widget_auto.setCheckable(True)
-            widget_auto.setText('GLOBAL')
-            widget_auto.toggled.connect(self._toggle_change)
-            widget_auto.setObjectName('setting')
-            layout_h.addWidget(widget_auto)
+            self.widget_auto = QPushButton(self)
+            self.widget_auto.setCheckable(True)
+            self.widget_auto.setText('GLOBAL')
+            self.widget_auto.toggled.connect(self._toggle_change)
+            self.widget_auto.setObjectName('setting')
+            layout_h.addWidget(self.widget_auto)
+        else:
+            self.widget_auto = None
         layout_h.addStretch(1)
 
         layout.addLayout(layout_h)
@@ -304,6 +307,11 @@ class SettingsWidget(QWidget):
             pass
 
         settings[self.name] = value
+        if self.widget_auto is not None:
+            is_auto = self.widget_auto.isChecked()
+        else:
+            is_auto = None
+        settings['{0}_global'.format(self.name)] = [self.name_global, is_auto]
 
         return settings
 
@@ -322,7 +330,7 @@ class SettingsWidget(QWidget):
             entries_list.append(self.edit.itemText(idx))
         return entries_list
 
-    def set_settings(self, text):
+    def set_settings(self, text, is_checked):
         """
         Set settings
 
@@ -341,3 +349,16 @@ class SettingsWidget(QWidget):
             self.edit.setCurrentIndex(index)
         else:
             self.edit.setText(text)
+
+        is_checked_type = is_checked.split(', ')[1][:-1]
+        if is_checked_type == 'None':
+            is_checked = None
+        elif is_checked_type == 'True':
+            is_checked = True
+        elif is_checked_type == 'False':
+            is_checked = False
+        else:
+            assert False, is_checked_type
+
+        if is_checked is not None:
+            self.widget_auto.setChecked(is_checked)

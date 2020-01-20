@@ -956,8 +956,12 @@ class MainWindow(QMainWindow):
                 skip_name_list = tu.get_function_dict()[key]['allow_empty']
 
             for entry in settings_widget:
-                if key in check_list:
-                    for name in entry:
+                for name in list(entry.keys()):
+                    if name.endswith('_global') or name == 'GPU SPLIT':
+                        del entry[name]
+                        continue
+
+                    if key in check_list:
                         if name == 'Number of feedbacks' and int(entry[name]) > self.n_feedbacks:
                             error_list.append(
                                 '{0}:{1} is not allowed to be larger than the specified number: {2}!\nCheck the start settings of TranSPHIRE in case you want more feedbacks!'.format(
