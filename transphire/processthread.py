@@ -3311,7 +3311,7 @@ class ProcessThread(object):
         self.shared_dict['typ']['Picking']['queue_list_lock'].acquire()
         try:
             with open(self.shared_dict['typ']['Picking']['settings_file'], 'w') as write:
-                write.write('|||'.join([new_model, new_config, str(self.settings[self.settings['Copy']['Picking']]['--threshold_old']), str(self.settings[self.settings['Copy']['Picking']]['--threshold_old'])]))
+                write.write('|||'.join([new_model, new_config, str(self.settings[self.settings['Copy']['Picking']]['--threshold_old'])]))
         finally:
             self.shared_dict['typ']['Picking']['queue_list_lock'].release()
 
@@ -3766,14 +3766,13 @@ class ProcessThread(object):
         try:
             try:
                 with open(self.shared_dict_typ['settings_file'], 'r') as read:
-                    new_model, new_config, new_threshold, threshold_old = read.readline().strip().split('|||')
+                    new_model, new_config, new_threshold = read.readline().strip().split('|||')
             except FileNotFoundError:
-                self.settings[self.settings['Copy']['Picking']]['--threshold_old'] = self.settings[self.settings['Copy']['Picking']]['--threshold']
+                pass
             else:
                 self.settings[self.settings['Copy']['Picking']]['--weights'] = new_model
                 self.settings[self.settings['Copy']['Picking']]['--conf'] = new_config
                 self.settings[self.settings['Copy']['Picking']]['--threshold'] = new_threshold
-                self.settings[self.settings['Copy']['Picking']]['--threshold_old'] = threshold_old
         finally:
             self.shared_dict['typ']['Picking']['queue_list_lock'].release()
 
@@ -3923,7 +3922,7 @@ class ProcessThread(object):
                     )
                 file_logs.append(log_files)
 
-            if float(self.settings[self.settings['Copy']['Picking']]['--threshold_old']) == -1.0:
+            if float(self.settings[self.settings['Copy']['Picking']]['--threshold']) == -1:
                 for file_use, file_name in zip(file_use_list, file_name_list):
                     import_name = tu.get_name(file_use)
                     data, data_orig = tu.get_function_dict()[self.settings['Copy']['Picking']]['plot_data'](
@@ -4006,7 +4005,6 @@ class ProcessThread(object):
                                 self.settings[self.settings['Copy']['Picking']]['--weights'],
                                 self.settings[self.settings['Copy']['Picking']]['--conf'],
                                 str(new_threshold),
-                                self.settings[self.settings['Copy']['Picking']]['--threshold_old'],
                                 ]))
                         with open(self.shared_dict_typ['number_file'], 'w') as write:
                             write.write('0|||0')
