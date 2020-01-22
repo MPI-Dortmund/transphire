@@ -1214,12 +1214,12 @@ def default_global():
         ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
         ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
         ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
-        ['Pixel size', '1.0', float, '', 'PLAIN', 'Main', '', 'Pixel size in A/pixel.'],
-        ['Phase Plate', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Use phase plate options'],
-        ['Gain', '', str, '', 'FILE', 'Main', '', 'MRC file that stores the gain reference. If not specified, MRC extended header will be visited to look for gain reference.'],
-        ['voltage', '300.0', float, '', 'PLAIN', 'Main', 'High tension in kV needed for dose weighting.  Default is 300.'],
         ['Bin superres', ['True', 'False'], bool, '', 'COMBO', 'Main', 'Bin superresolution datasets by a factor of 2 automatically.'],
-        ['GPU', '0', [int]*99, '', 'PLAIN', 'Main', 'Specifiy which gpu\'s should be used.'],
-        ['GPU SPLIT', '0', int, '', 'PLAIN', 'Main', 'Define the number of GPU splits.'],
+        ['Pixel size:Pixel size', '1.0', float, '', 'PLAIN', 'Main', '', 'Pixel size in A/pixel.'],
+        ['Phase Plate:Phase Plate', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Use phase plate options'],
+        ['Gain:Gain', '', str, '', 'FILE', 'Main', '', 'MRC file that stores the gain reference. If not specified, MRC extended header will be visited to look for gain reference.'],
+        ['voltage:voltage', '300.0', float, '', 'PLAIN', 'Main', 'High tension in kV needed for dose weighting.  Default is 300.'],
+        ['GPU:GPU', '0', [int]*99, '', 'PLAIN', 'Main', 'Specifiy which gpu\'s should be used.'],
+        ['GPU SPLIT:GPU SPLIT', '0', int, '', 'PLAIN', 'Main', 'Define the number of GPU splits.'],
         ]
     return items

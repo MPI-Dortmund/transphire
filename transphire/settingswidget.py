@@ -171,13 +171,16 @@ class SettingsWidget(QWidget):
 
         layout_h = QHBoxLayout()
         layout_h.setContentsMargins(0, 0, 0, 0)
+        layout_h.setSpacing(0)
         layout_h.addWidget(self.edit, stretch=1)
         if content[1]['name_global'] is not None:
-            self.widget_auto = QPushButton(self)
+            self.edit.setObjectName('settinger')
+            self.widget_auto = QPushButton('G', self)
+            self.widget_auto.setObjectName('global')
+            self.widget_auto.setToolTip('Use the global value specified in the "Global" settings tab')
             self.widget_auto.setCheckable(True)
-            self.widget_auto.setText('GLOBAL')
             self.widget_auto.toggled.connect(self._toggle_change)
-            self.widget_auto.setObjectName('setting')
+            self.widget_auto.setChecked(True)
             layout_h.addWidget(self.widget_auto)
         else:
             self.widget_auto = None

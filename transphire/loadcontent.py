@@ -128,7 +128,7 @@ class LoadContent(QWidget):
         None
         """
         # Layout
-        global_items = set([entry[0] for entry in tc.default_global()])
+        global_items = set([entry[0].split(':')[0] for entry in tc.default_global()])
         layout_h = QHBoxLayout()
         self.layout.addLayout(layout_h)
         layout_v = None

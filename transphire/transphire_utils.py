@@ -1148,6 +1148,8 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
     frame_label_width = float(default[0][idx]['Frame label'][0])
     idx += 1
     setting_widget_width = float(default[0][idx]['Setting widget'][0])
+    settinger_widget_width = float(default[0][idx]['Setting widget'][0])
+    settinger2_widget_width = float(default[0][idx]['Setting widget'][0])
     idx += 1
     setting_widget_width_large = float(default[0][idx]['Setting widget large'][0])
     idx += 1
@@ -1176,6 +1178,8 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
     frame_label_width = '{0}px'.format(font * frame_label_width * adjust_width)
     setting_widget_width_large = '{0}px'.format(font * setting_widget_width_large * adjust_width)
     setting_widget_width = '{0}px'.format(font * setting_widget_width * adjust_width)
+    settinger_widget_width = '{0}px'.format(font * settinger_widget_width * adjust_width * 0.9)
+    settinger2_widget_width = '{0}px'.format(font * settinger2_widget_width * adjust_width * 0.1)
     status_name_width = '{0}px'.format(font * status_name_width * adjust_width)
     status_info_width = '{0}px'.format(font * status_info_width * adjust_width)
     status_quota_width = '{0}px'.format(font * status_quota_width * adjust_width)
@@ -1204,6 +1208,7 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
         background-color: {3};
         border-radius: 15px
         }}
+
     QTabWidget::tab-bar {{
         alignment: center;
         }}
@@ -1213,17 +1218,35 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
     QTabWidget::tab {{
         min-width: 120px;
         }}
+
+    QTabWidget#vertical::tab-bar {{
+        alignment: left;
+        }}
+    QTabWidget#vertical::pane {{
+        border-top: 0px solid #C2C7CB;
+        border-left: 2px solid #C2C7CB;
+        }}
+    QTabWidget#vertical::tab {{
+        min-width: 120px;
+        }}
+
     QTabBar {{
         alignment: center;
         background-color: #C2C7CB
         }}
     QTabBar::pane {{
-        border-top: 2px solid #C2C7CB;
+        border-right: 2px solid #C2C7CB;
         }}
     QTabBar::tab {{
         max-width: {5};
         max-height: {6};
         }}
+
+    QTabBar#vertical::tab {{
+        max-width: {6};
+        max-height: {5};
+        }}
+
     QMessageBox {{
         background-image: url("{1}");
         color: white;
@@ -1261,7 +1284,7 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
         padding: 1px;
         border-radius: 5px
         }}
-    QPushButton:checked {{
+    QPushButton#global:checked {{
         background-color: qradialgradient(
             cx:0.5,
             cy:0.5,
@@ -1290,6 +1313,11 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
         border-style: outset;
         padding: 1px;
         border-radius: 5px
+        }}
+    QPushButton#global {{
+        min-width: {6};
+        max-width: {6};
+        max-height: {5}
         }}
     QPushButton#start {{
         background-color: qradialgradient(
@@ -1385,6 +1413,7 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
         mount_button_width,
         notification_button_width,
         widget_height,
+        settinger2_widget_width,
         )
 
     label_style = """
@@ -1408,6 +1437,9 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
     QLineEdit {{ max-height: {7}; min-height: {7}; background-color: white }}
     QLineEdit#default_settings {{ min-width: {1}; max-width: 9999; background-color: white }}
     QLineEdit:disabled {{ background-color: {6} }}
+    QLineEdit#settinger:enabled {{
+        max-width: {9}; min-width: {9}; background-color: {0}; min-height: {7}; max-height: {7}
+        }}
     QLineEdit#setting:enabled {{
         max-width: {1}; min-width: {1}; background-color: {0}; min-height: {7}; max-height: {7}
         }}
@@ -1433,6 +1465,7 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
         'rgba(150,150,150)',
         widget_height,
         setting_widget_width_large,
+        settinger_widget_width,
         )
 
     check_style = """
@@ -1442,6 +1475,7 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
 
     combo_style = """
     QComboBox {{ min-width: {4}; max-width: {4}; min-height: {3}; max-height: {3}; background-color: white }}
+    QComboBox#settinger {{ min-width: {5}; max-width: {5}; min-height: {3}; max-height: {3}; background-color: white }}
     QComboBox QAbstractItemView {{
         background-color: white; selection-color: black; selection-background-color: lightgray
         }}
@@ -1453,7 +1487,8 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
         notification_edit_width,
         'rgba(150,150,150,200)',
         widget_height,
-        setting_widget_width
+        setting_widget_width,
+        settinger_widget_width,
         )
 
     style = '\n'.join([style_widgets, button_style, label_style, edit_style, check_style, combo_style])

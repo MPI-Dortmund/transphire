@@ -19,6 +19,7 @@ import sys
 import os
 import re
 import pexpect as pe
+import subprocess
 try:
     QT_VERSION = 4
     from PyQt4.QtGui import (
@@ -910,6 +911,92 @@ class MainWindow(QMainWindow):
         else:
             pass
 
+    def _extract_settings(self, key, settings, error_list, check_list):
+        try:
+            settings_widget = self.content[key].get_settings()
+        except AttributeError:
+            return
+        else:
+            settings[key] = {}
+
+        if settings_widget is None:
+            self.enable(True)
+            return None
+        elif key == 'Frames':
+            settings_motion = {}
+        else:
+            pass
+
+        if key == 'Frames':
+            skip_name_list = []
+        else:
+            skip_name_list = tu.get_function_dict()[key]['allow_empty']
+
+        for entry in settings_widget:
+            for name in sorted(list(entry.keys())):
+                if 'GPU SPLIT' in name:
+                    del entry[name]
+                    continue
+                elif key == 'Global' and name == 'Bin superres':
+                    if entry[name] == 'True':
+                        entry[name] = 'XXXGLOBALXXX'
+                    else:
+                        entry[name] = 1
+                elif name.endswith('_global'):
+                    if entry[name][0] is not None and entry[name][1]:
+                        if key != 'Global':
+                            entry[name.split('_global')[0]] = 'XXXGLOBALXXX_{0}'.format(entry[name][0])
+                        elif key == 'Global':
+                            if entry[name][0] == 'GPU':
+                                nvidia_output = subprocess.check_output(['nvidia-smi', '-L'])
+                                gpu_devices = re.findall(
+                                    '^GPU \d+: ([\w\d ]+) \(UUID: GPU-.*\)$',
+                                    nvidia_output.decode('utf-8'),
+                                    re.MULTILINE
+                                    )
+                                if len(set(gpu_devices)) != 1:
+                                    error_list.append('{0}:{1} does have different types of GPUs available! In order to not make any mistakes, please specify the GPU IDs manually')
+                                entry[name.split('_global')[0]] = ' '.join([str(entry) for entry in range(len(gpu_devices))])
+                            else:
+                                entry[name.split('_global')[0]] = 'XXXPANDASXXX_{0}'.format(entry[name][0])
+                        else:
+                            assert False, key
+
+                    del entry[name]
+                    continue
+
+                if key in check_list:
+                    if name == 'Number of feedbacks' and int(entry[name]) > self.n_feedbacks:
+                        error_list.append(
+                            '{0}:{1} is not allowed to be larger than the specified number: {2}!\nCheck the start settings of TranSPHIRE in case you want more feedbacks!'.format(
+                                key,
+                                name,
+                                self.n_feedbacks
+                                )
+                            )
+                    if not entry[name] and name not in skip_name_list:
+                        error_list.append(
+                            '{0}:{1} is not allowed to be empty!'.format(
+                                key,
+                                name
+                                )
+                            )
+                    else:
+                        pass
+            else:
+                pass
+
+        for idx, entry in enumerate(settings_widget):
+            if key == 'Frames':
+                settings_motion[idx] = entry
+            else:
+                settings[key].update(entry)
+
+        if key == 'Frames':
+            settings['motion_frames'] = settings_motion
+        else:
+            pass
+
     @pyqtSlot()
     def get_start_settings(self, monitor=False):
         """
@@ -930,68 +1017,18 @@ class MainWindow(QMainWindow):
             'General',
             'Notification'
             ]
+        first_round = ['Global']
         for setting in self.content['Copy'].get_settings():
             for value in setting.values():
                 if isinstance(value, str) and value not in ('False', 'Later', 'True'):
                     check_list.append(value)
+
+        for key in first_round:
+            self._extract_settings('Global', settings, error_list, check_list)
         for key in self.content:
-            try:
-                settings_widget = self.content[key].get_settings()
-            except AttributeError:
+            if key in first_round:
                 continue
-            else:
-                settings[key] = {}
-
-            if settings_widget is None:
-                self.enable(True)
-                return None
-            elif key == 'Frames':
-                settings_motion = {}
-            else:
-                pass
-
-            if key == 'Frames':
-                skip_name_list = []
-            else:
-                skip_name_list = tu.get_function_dict()[key]['allow_empty']
-
-            for entry in settings_widget:
-                for name in list(entry.keys()):
-                    if name.endswith('_global') or name == 'GPU SPLIT':
-                        del entry[name]
-                        continue
-
-                    if key in check_list:
-                        if name == 'Number of feedbacks' and int(entry[name]) > self.n_feedbacks:
-                            error_list.append(
-                                '{0}:{1} is not allowed to be larger than the specified number: {2}!\nCheck the start settings of TranSPHIRE in case you want more feedbacks!'.format(
-                                    key,
-                                    name,
-                                    self.n_feedbacks
-                                    )
-                                )
-                        if not entry[name] and name not in skip_name_list:
-                            error_list.append(
-                                '{0}:{1} is not allowed to be empty!'.format(
-                                    key,
-                                    name
-                                    )
-                                )
-                        else:
-                            pass
-                else:
-                    pass
-
-            for idx, entry in enumerate(settings_widget):
-                if key == 'Frames':
-                    settings_motion[idx] = entry
-                else:
-                    settings[key].update(entry)
-
-            if key == 'Frames':
-                settings['motion_frames'] = settings_motion
-            else:
-                pass
+            self._extract_settings(key, settings, error_list, check_list)
 
         if error_list:
             tu.message('\n'.join(error_list))
