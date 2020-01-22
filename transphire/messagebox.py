@@ -99,3 +99,6 @@ class MessageBox(QDialog):
         if heading is not None:
             self.setWindowTitle(heading)
         self.label.setText(text)
+
+    def setDefault(self, text):
+        pass

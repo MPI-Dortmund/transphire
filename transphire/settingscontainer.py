@@ -56,7 +56,9 @@ class SettingsContainer(QWidget):
 
         # TabDocker widget for Main and Advanced
         my_tab_docker = TabDocker(self)
-        my_tab_docker.setTabPosition('South')
+        my_tab_docker.setTabPosition('West')
+        my_tab_docker.tab_widget.setObjectName('vertical')
+        my_tab_docker.tab_widget.tabBar().setObjectName('vertical')
         layout_main = QVBoxLayout(self)
         layout_main.setContentsMargins(0, 0, 0, 0)
         layout_main.addWidget(my_tab_docker)

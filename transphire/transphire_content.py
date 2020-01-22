@@ -33,9 +33,9 @@ def default_auto_sphire_v1_3():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
 
         ['--mpi_procs', '24', int, '', 'PLAIN', 'Main', '', 'Number of processors to use.'],
         ['--mpi_submission_command', 'sbatch', str, '', 'PLAIN', 'Main', '', 'Submission command, e.g. sbatch, qsub, ...'],
@@ -81,9 +81,9 @@ def default_compress_command_line():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['--command_compress_path', 'mrc2tif', str, '', 'FILE', 'Main', '', 'Program used to execute compression.'],
         ['--command_compress_option', '-s -c lzw ##INPUT## ##OUTPUT##', str, '', 'PLAIN', 'Main', '', 'Command options used to compress the data. Use ##INPUT## and ##OUTPUT## as variables for the respective files.'],
         ['--command_compress_extension', 'tiff', str, '', 'PLAIN', 'Main', '', 'Output extension for the compressed files.'],
@@ -105,9 +105,9 @@ def default_isac2_1_2():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['Nr. Particles', '10000', int, '', 'PLAIN', 'Main', 'NOT AN ISAC OPTION: Wait to accumulate this number of particles to process.'],
         ['MPI processes', '6', int, '', 'PLAIN', 'Main', 'NOT AN ISAC OPTION: Number of MPI processes to use with ISAC.'],
         ['--radius', '-1', int, '', 'PLAIN', 'Main', 'particle radius: there is no default, a sensible number has to be provided, units - pixels (default required int)'],
@@ -140,9 +140,9 @@ def default_window_1_2():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['--box_size', '256', int, '', 'PLAIN', 'Main', 'Particle box size [Pixels]: The x and y dimensions of square area to be windowed. The box size after resampling is assumed when resample_ratio < 1.0. (default 256)'],
         ['--skip_invert', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Skip invert image contrast: Use this option for negative staining data. By default, the image contrast is inverted for cryo data. (default False)'],
         ['--limit_ctf', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Use CTF limit filter: Frequencies where CTF oscillations can not be properly modeled with the resampled pixel size will be discarded in the images with the appropriate low-pass filter. This has no effects when the CTER partres file is not specified by the CTF paramters source argument. (default False)'],
@@ -165,9 +165,9 @@ def default_cinderella_v0_3_1():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['--weights', '', str, '', 'FILE', 'Main', 'Path network weights.'],
         ['--confidence_threshold', '0.5', float, '', 'PLAIN', 'Main', 'Classes with a confidence higher as that threshold are classified as good.'],
         ['--batch_size', '32', int, '', 'PLAIN', 'Main', 'Classes with a confidence higher as that threshold are classified as good.'],
@@ -189,9 +189,9 @@ def default_cryolo_train_v1_5_4():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['Box size', '205', int, '', 'PLAIN', 'Main', 'Box size used for retraining. Should be quite narrow.'],
         ['--warmup', '5', int, '', 'PLAIN', 'Main', 'Number of warmup epochs. Set it to zero if you fine tune a model.'],
         ['--num_cpu', '-1', int, '', 'PLAIN', 'Main', 'Number of CPUs used during training. By default it will use half of the available CPUs.'],
@@ -219,9 +219,9 @@ def default_cryolo_v1_4_1():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['--conf', '', str, '', 'FILE', 'Main', '', 'Path to configuration file.'],
         ['--weights', '', str, '', 'FILE', 'Main', 'Path to pretrained weights.'],
         ['--threshold', '0.3', float, '', 'PLAIN', 'Main', 'Confidence threshold. Have to be between 0 and 1. The higher, the more conservative.'],
@@ -267,9 +267,9 @@ def default_cryolo_v1_2_1():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['--conf', '', str, '', 'FILE', 'Main', '', 'Path to configuration file.'],
         ['--weights', '', str, '', 'FILE', 'Main', 'Path to pretrained weights.'],
         ['--threshold', '0.3', float, '', 'PLAIN', 'Main', 'Confidence threshold. Have to be between 0 and 1. As higher, as more conservative.'],
@@ -301,9 +301,9 @@ def default_cryolo_v1_1_0():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['--conf', '', str, '', 'FILE', 'Main', '', 'Path to configuration file.'],
         ['--weights', '', str, '', 'FILE', 'Main', 'Path to pretrained weights.'],
         ['--threshold', '0.3', float, '', 'PLAIN', 'Main', 'Confidence threshold. Have to be between 0 and 1. As higher, as more conservative.'],
@@ -335,9 +335,9 @@ def default_cryolo_v1_0_4():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['--conf', '', str, '', 'FILE', 'Main', '', 'Path to configuration file.'],
         ['--weights', '', str, '', 'FILE', 'Main', 'Path to pretrained weights.'],
         ['--threshold', '0.3', float, '', 'PLAIN', 'Main', 'Confidence threshold. Have to be between 0 and 1. As higher, as more conservative.'],
@@ -365,9 +365,9 @@ def default_cter_v1_0():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '7', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '7', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '7', int, '', 'PLAIN', '', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['--apix:Pixel size', '1.0', float, '', 'PLAIN', 'Main', 'Pixel size [A/Pixels]: The pixel size of input micrograph(s) or images in input particle stack.'],
         ['--Cs', '2.0', float, '', 'PLAIN', 'Main', 'Microscope spherical aberration (Cs) [mm]: The spherical aberration (Cs) of microscope used for imaging.'],
         ['--voltage:voltage', '300', float, '', 'PLAIN', 'Main', 'Microscope voltage [kV]: The acceleration voltage of microscope used for imaging.'],
@@ -403,9 +403,9 @@ def default_gctf_v1_06():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '7', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '7', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '7', int, '', 'PLAIN', '', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['--apix:Pixel size', '1.34', float, '', 'PLAIN', 'Main', 'Pixel size'],
         ['--dstep', '14.0', float, '', 'PLAIN', 'Main', 'Detector size in micrometer; don\'t worry if unknown; just use default.'],
         ['--kV:voltage', '300', float, '', 'PLAIN', 'Main', 'High tension in Kilovolt, typically 300, 200 or 120'],
@@ -468,9 +468,9 @@ def default_gctf_v1_18():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '7', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '7', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '7', int, '', 'PLAIN', '', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['--apix:Pixel size', '1.34', float, '', 'PLAIN', 'Main', 'Pixel size'],
         ['--dstep', '14.0', float, '', 'PLAIN', 'Main', 'Detector size in micrometer; don\'t worry if unknown; just use default.'],
         ['--kV:voltage', '300', float, '', 'PLAIN', 'Main', 'High tension in Kilovolt, typically 300, 200 or 120'],
@@ -540,9 +540,9 @@ def default_path():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '8', int, '', 'PLAIN', 'Main', ''],
-        ['WIDGETS ADVANCED', '8', int, '', 'PLAIN', 'Main', ''],
-        ['WIDGETS RARE', '8', int, '', 'PLAIN', 'Main', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', 'Main', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', 'Main', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', 'Main', ''],
         ['IMOD header', 'header', str, '', 'FILE', 'Main', ''],
         ['IMOD newstack', 'newstack', str, '', 'FILE', 'Main', ''],
         ['IMOD dm2mrc', 'dm2mrc', str, '', 'FILE', 'Main', ''],
@@ -587,8 +587,9 @@ def default_font():
         ['Frame entry', '5', float, '', 'PLAIN', '', ''],
         ['Frame button', '8', float, '', 'PLAIN', '', ''],
         ['Frame label', '8', float, '', 'PLAIN', '', ''],
-        ['Setting widget', '50', float, '', 'PLAIN', '', ''],
-        ['Setting widget large', '50', float, '', 'PLAIN', '', ''],
+        ['Setting widget', '15', float, '', 'PLAIN', '', ''],
+        ['Setting widget large', '25', float, '', 'PLAIN', '', ''],
+        ['Setting widget xlarge', '100', float, '', 'PLAIN', '', ''],
         ['Status name', '12', float, '', 'PLAIN', '', ''],
         ['Status info', '12', float, '', 'PLAIN', '', ''],
         ['Status quota', '12', float, '', 'PLAIN', '', ''],
@@ -885,9 +886,9 @@ def default_ctffind_4_v4_1_8():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '7', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '7', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '7', int, '', 'PLAIN', '', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['Pixel size:Pixel size', '1.0', float, '', 'PLAIN', 'Main', ''],
         ['Acceleration voltage', '300.0', float, '', 'PLAIN', 'Main', ''],
         ['Spherical aberration', '2.7', float, '', 'PLAIN', 'Main', ''],
@@ -970,9 +971,9 @@ def default_motion_cor_2_v1_0_0():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['-FmDose', '0', float, '', 'PLAIN', 'Main', 'Frame dose in e/A^2. If not specified, dose weighting will be skipped.'],
         ['-PixSize:Pixel size', '0', float, '', 'PLAIN', 'Main', 'Pixel size in A of input stack in angstrom. If not specified, dose weighting will be skipped.'],
         ['-kV:voltage', '300', float, '', 'PLAIN', 'Main', 'High tension in kV needed for dose weighting.  Default is 300.'],
@@ -1016,9 +1017,9 @@ def default_motion_cor_2_v1_0_5():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['-FmDose', '0', float, '', 'PLAIN', 'Main', 'Frame dose in e/A^2. If not specified, dose weighting will be skipped.'],
         ['-PixSize:Pixel size', '0', float, '', 'PLAIN', 'Main', 'Pixel size in A of input stack in angstrom. If not specified, dose weighting will be skipped.'],
         ['-kV:voltage', '300', float, '', 'PLAIN', 'Main', 'High tension in kV needed for dose weighting.  Default is 300.'],
@@ -1064,9 +1065,9 @@ def default_motion_cor_2_v1_1_0():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['-FmDose', '0', float, '', 'PLAIN', 'Main', 'Frame dose in e/A^2. If not specified, dose weighting will be skipped.'],
         ['-PixSize:Pixel size', '0', float, '', 'PLAIN', 'Main', 'Pixel size in A of input stack in angstrom. If not specified, dose weighting will be skipped.'],
         ['-kV:voltage', '300', float, '', 'PLAIN', 'Main', 'High tension in kV needed for dose weighting.  Default is 300.'],
@@ -1113,9 +1114,9 @@ def default_general():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '7', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '7', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '7', int, '', 'PLAIN', '', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['Software', ['EPU >=1.9', 'EPU >=1.8', 'Latitude S', 'Just Stack'], str, '', 'COMBO', 'Main', 'Software used for data collection.'],
         ['Type', ['Stack', 'Frames'], str, '', 'COMBO', 'Main', 'Stack type used for data collection.'],
         ['Camera', ['K2', 'K3', 'Falcon3', 'Falcon2'], str, '', 'COMBO', 'Main', 'Camera used for data collection.'],
@@ -1169,9 +1170,9 @@ def default_copy(settings_folder):
     valid_sub_items = tu.get_unique_types()
 
     items = [
-        ['WIDGETS MAIN', '8', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '8', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '8', int, '', 'PLAIN', '', '', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', '', ''],
         ['Copy to work', copy_to_work, bool, '', 'COMBO', 'Main', 'Copy data to the work drive.'],
         ['Copy to backup', copy_to_backup, bool, '', 'COMBO', 'Main', 'Copy data to the backup drive.'],
         ['Copy to HDD', copy_to_hdd, bool, '', 'COMBO', 'Main', 'Copy data to an external hard disc.'],
@@ -1211,9 +1212,9 @@ def default_copy(settings_folder):
 
 def default_global():
     items = [
-        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['Bin superres', ['True', 'False'], bool, '', 'COMBO', 'Main', 'Bin superresolution datasets by a factor of 2 automatically.'],
         ['Pixel size:Pixel size', '1.0', float, '', 'PLAIN', 'Main', '', 'Pixel size in A/pixel.'],
         ['Phase Plate:Phase Plate', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Use phase plate options'],

@@ -1153,6 +1153,8 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
     idx += 1
     setting_widget_width_large = float(default[0][idx]['Setting widget large'][0])
     idx += 1
+    setting_widget_width_xlarge = float(default[0][idx]['Setting widget xlarge'][0])
+    idx += 1
     status_name_width = float(default[0][idx]['Status name'][0])
     idx += 1
     status_info_width = float(default[0][idx]['Status info'][0])
@@ -1176,10 +1178,11 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
     frame_entry_width = '{0}px'.format(font * frame_entry_width * adjust_width)
     frame_button_width = '{0}px'.format(font * frame_button_width * adjust_width)
     frame_label_width = '{0}px'.format(font * frame_label_width * adjust_width)
-    setting_widget_width_large = '{0}px'.format(font * setting_widget_width_large * adjust_width)
     setting_widget_width = '{0}px'.format(font * setting_widget_width * adjust_width)
     settinger_widget_width = '{0}px'.format(font * settinger_widget_width * adjust_width * 0.9)
     settinger2_widget_width = '{0}px'.format(font * settinger2_widget_width * adjust_width * 0.1)
+    setting_widget_width_large = '{0}px'.format(font * setting_widget_width_large * adjust_width)
+    setting_widget_width_xlarge = '{0}px'.format(font * setting_widget_width_xlarge * adjust_width)
     status_name_width = '{0}px'.format(font * status_name_width * adjust_width)
     status_info_width = '{0}px'.format(font * status_info_width * adjust_width)
     status_quota_width = '{0}px'.format(font * status_quota_width * adjust_width)
@@ -1423,6 +1426,7 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
     QLabel#status_quota {{ max-width: {3}; min-width: {3}; background-color: {0}; min-height: {5}; max-height: {5} }}
     QLabel#setting {{ max-width: {4}; min-width: {4}; background-color: {0}; min-height: {5}; max-height: {5} }}
     QLabel#setting_large {{ max-width: {6}; min-width: {6}; background-color: {0}; min-height: {5}; max-height: {5} }}
+    QLabel#setting_xlarge {{ max-width: {7}; min-width: {7}; background-color: {0}; min-height: {5}; max-height: {5} }}
     """.format(
         'transparent',
         status_name_width,
@@ -1431,6 +1435,7 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
         setting_widget_width,
         widget_height,
         setting_widget_width_large,
+        setting_widget_width_xlarge,
         )
 
     edit_style = """
@@ -1443,8 +1448,17 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
     QLineEdit#setting:enabled {{
         max-width: {1}; min-width: {1}; background-color: {0}; min-height: {7}; max-height: {7}
         }}
+    QLineEdit#setting_large {{
+        max-width: {8}; min-width: {8}
+        }}
+    QLineEdit#setting_xlarge {{
+        max-width: {10}; min-width: {10}
+        }}
     QLineEdit#setting_large:enabled {{
         max-width: {8}; min-width: {8}; background-color: {0}; min-height: {7}; max-height: {7}
+        }}
+    QLineEdit#setting_xlarge:enabled {{
+        max-width: {10}; min-width: {10}; background-color: {0}; min-height: {7}; max-height: {7}
         }}
     QLineEdit#noti_edit:enabled {{
         max-width: {2}; min-width: {2}; background-color: {5}; min-height: {7}; max-height: {7}
@@ -1466,6 +1480,7 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
         widget_height,
         setting_widget_width_large,
         settinger_widget_width,
+        setting_widget_width_xlarge,
         )
 
     check_style = """
@@ -1536,7 +1551,7 @@ def get_style(typ):
     Color string
     """
     if typ == 'error':
-        color = 'red'
+        color = '#e34234'
     elif typ == 'unchanged':
         color = 'black'
     elif typ == 'changed':

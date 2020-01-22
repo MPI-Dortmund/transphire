@@ -92,7 +92,7 @@ class TabDocker(QWidget):
 
         layout = QVBoxLayout(self.parent_widget)
         self.tab_widget = QTabWidget(self)
-        if self.layout == 'TAB1':
+        if self.layout in ('TAB1', 'Settings'):
             tab_bar = MyTabBar(self.tab_widget)
             tab_bar.setObjectName('vertical')
             self.tab_widget.setObjectName('vertical')

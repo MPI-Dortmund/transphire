@@ -197,7 +197,7 @@ class ProcessThread(object):
                     'Quota Error',
                     [self.queue.qsize()],
                     self.typ,
-                    '#ff5c33'
+                    '#e34234'
                     ])
                 time.sleep(10)
                 continue
@@ -209,7 +209,7 @@ class ProcessThread(object):
                     'Connection Error',
                     [self.queue.qsize()],
                     self.typ,
-                    '#ff5c33'
+                    '#e34234'
                     ])
                 time.sleep(10)
                 continue
@@ -221,7 +221,7 @@ class ProcessThread(object):
                     'No space Error',
                     [self.queue.qsize()],
                     self.typ,
-                    '#ff5c33'
+                    '#e34234'
                     ])
                 time.sleep(10)
                 continue
@@ -238,7 +238,7 @@ class ProcessThread(object):
                         'Unknown Error',
                         ['{0:.1f} min'.format(time_diff / 60)],
                         self.typ,
-                        '#ff5c33'
+                        '#e34234'
                         ])
                 else:
                     self.queue_com['status'].put([
@@ -249,7 +249,7 @@ class ProcessThread(object):
                             '{0:.1f} min'.format(time_diff / 60)
                             ],
                         self.typ,
-                        '#ff5c33'
+                        '#e34234'
                         ])
                 i = 0
                 while i < 6:
@@ -293,7 +293,7 @@ class ProcessThread(object):
                 ),
             [],
             self.typ,
-            '#ff5c33'
+            '#e34234'
             ])
         self.queue_com['log'].put(tu.create_log('Stopped', self.name))
         print(self.name, ': Stopped')
@@ -416,7 +416,7 @@ class ProcessThread(object):
                     'Lost connection',
                     ['{0:.1f} min'.format(time_diff / 60)],
                     self.typ,
-                    '#ff5c33'
+                    '#e34234'
                     ])
                 if self.typ == 'Motion' or \
                         self.typ == 'CTF' or \

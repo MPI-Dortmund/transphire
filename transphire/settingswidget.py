@@ -23,9 +23,11 @@ try:
     from PyQt4.QtCore import pyqtSlot, pyqtSignal
 except ImportError:
     QT_VERSION = 5
-    from PyQt5.QtWidgets import QWidget, QLabel, QFileDialog, QVBoxLayout, QComboBox, QLineEdit, QHBoxLayout, QPushButton
-    from PyQt5.QtCore import pyqtSlot, pyqtSignal
+    from PyQt5.QtWidgets import QWidget, QLabel, QFileDialog, QVBoxLayout, QComboBox, QLineEdit, QHBoxLayout, QPushButton, QShortcut, QAction
+    from PyQt5.QtCore import pyqtSlot, pyqtSignal, Qt
+    from PyQt5.QtGui import QKeySequence
 from transphire import transphire_utils as tu
+from transphire import inputbox
 
 
 class SettingsWidget(QWidget):
@@ -53,6 +55,13 @@ class SettingsWidget(QWidget):
         """
         super(SettingsWidget, self).__init__(parent)
 
+        action = QAction(self)
+        action.setShortcut(QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_Return))
+        action.setShortcutContext(Qt.WidgetWithChildrenShortcut)
+        action.triggered.connect(self.enlarge)
+        self.addAction(action)
+        #shortcut = QShortcut(, self)
+        #shortcut.activatedAmbiguously.connect(self.enlarge)
         # Layout
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -108,33 +117,34 @@ class SettingsWidget(QWidget):
             if self.typ == 'PASSWORD':
                 self.edit.setEchoMode(self.edit.Password)
 
+            self.tooltip = '{0}\n\nShortcuts:\nCtrl + Shift + Return -> Open enlarged view'.format(self.tooltip)
+
         elif self.typ == 'FILE':
             self.edit = QLineEdit(self.name, self)
-            self.edit.setToolTip(self.tooltip)
             self.edit.textChanged.connect(self.change_tooltip)
             self.edit.setText(self.default)
             self.edit.setPlaceholderText('Press shift+return')
             self.edit.returnPressed.connect(self._find_file)
+            self.tooltip = '{0}\n\nShortcuts:\Ctrl + Shift + Return -> Open file dialog\nCtrl + Return -> Open enlarged view'.format(self.tooltip)
 
         elif self.typ == 'FILE/CHOICE':
             self.edit = QLineEdit(self.name, self)
-            self.edit.setToolTip(self.tooltip)
             self.edit.textChanged.connect(self.change_tooltip)
             self.edit.setText(self.default)
             self.edit.setPlaceholderText('Press shift+return')
             self.edit.returnPressed.connect(self._find_file)
+            self.tooltip = '{0}\n\nShortcuts:\Ctrl + Shift + Return -> Open file dialog\nCtrl + Return -> Open enlarged view'.format(self.tooltip)
 
         elif self.typ == 'DIR':
             self.edit = QLineEdit(self.name, self)
-            self.edit.setToolTip(self.tooltip)
             self.edit.textChanged.connect(self.change_tooltip)
             self.edit.setText(self.default)
             self.edit.setPlaceholderText('Press shift+return')
             self.edit.returnPressed.connect(self._find_dir)
+            self.tooltip = '{0}\n\nShortcuts:\Ctrl + Shift + Return -> Open directory dialog\nCtrl + Return -> Open enlarged view'.format(self.tooltip)
 
         elif self.typ == 'COMBO':
             self.edit = QComboBox(self)
-            self.edit.setToolTip(self.tooltip)
             self.edit.currentTextChanged.connect(self.change_tooltip)
             self.edit.currentIndexChanged.connect(lambda: self.sig_index_changed.emit(self.name))
             self.edit.addItems(self.values)
@@ -145,6 +155,7 @@ class SettingsWidget(QWidget):
             print('SettingsWidget:', self.typ, 'Not known! Stopping here!')
             sys.exit()
 
+        self.edit.setToolTip(self.tooltip)
         self.label = QLabel(self.name, self)
         large_list = ['Path']
         if name in large_list:
@@ -192,12 +203,25 @@ class SettingsWidget(QWidget):
     def _toggle_change(self, state):
         self.edit.setEnabled(not state)
 
-
     def change_tooltip(self, text):
         edit = self.sender()
         if self.typ != 'PASSWORD':
             tooltip = '{0}\n\nCurrent Text:\n\n{1}'.format(self.tooltip, text)
             edit.setToolTip(tooltip)
+
+    @pyqtSlot()
+    def enlarge(self):
+        if self.typ == 'COMBO':
+            return
+        else:
+            input_box = inputbox.InputBox(is_password=False, parent=self)
+            input_box.setText('Enlarged view', self.name)
+            input_box.setDefault(self.edit.text())
+            input_box.set_type(self.typ)
+            result = input_box.exec_()
+
+            if result:
+                self.edit.setText(input_box.getText())
 
     def change_color_if_true(self):
         """
