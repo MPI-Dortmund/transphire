@@ -91,6 +91,7 @@ class TabDocker(QWidget):
         layout_tmp.setContentsMargins(0, 0, 0, 0)
 
         layout = QVBoxLayout(self.parent_widget)
+        layout.setContentsMargins(0, 0, 0, 0)
         self.tab_widget = QTabWidget(self)
         if self.layout in ('TAB1', 'Settings'):
             tab_bar = MyTabBar(self.tab_widget)

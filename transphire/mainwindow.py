@@ -505,7 +505,7 @@ class MainWindow(QMainWindow):
         List of errors that occured.
         """
         self.content = {}
-        exclude_set = tu.get_exclude_set(content=content_gui)
+        exclude_set = tu.get_exclude_set(content=content_gui, n_feedbacks=self.n_feedbacks)
         error_list = []
         tab_list = []
         for entry in content_gui:

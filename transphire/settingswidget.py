@@ -55,13 +55,12 @@ class SettingsWidget(QWidget):
         """
         super(SettingsWidget, self).__init__(parent)
 
-        action = QAction(self)
-        action.setShortcut(QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_Return))
-        action.setShortcutContext(Qt.WidgetWithChildrenShortcut)
-        action.triggered.connect(self.enlarge)
-        self.addAction(action)
-        #shortcut = QShortcut(, self)
-        #shortcut.activatedAmbiguously.connect(self.enlarge)
+        self.action = QAction(self)
+        self.action.setShortcut(QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_Return))
+        self.action.setShortcutContext(Qt.WidgetWithChildrenShortcut)
+        self.action.triggered.connect(self.enlarge)
+        self.addAction(self.action)
+
         # Layout
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -202,6 +201,7 @@ class SettingsWidget(QWidget):
     @pyqtSlot(bool)
     def _toggle_change(self, state):
         self.edit.setEnabled(not state)
+        self.action.setEnabled(not state)
 
     def change_tooltip(self, text):
         edit = self.sender()

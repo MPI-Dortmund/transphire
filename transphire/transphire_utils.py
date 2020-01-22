@@ -669,7 +669,7 @@ def question(head, text, parent):
     return result
 
 
-def get_exclude_set(content):
+def get_exclude_set(content, n_feedbacks):
     """
     Check the widget_2 variable, if the program should be loaded or not.
 
@@ -703,7 +703,9 @@ def get_exclude_set(content):
                     elif widget_2 == 'Advanced' or widget_2 == 'Rare':
                         exclude_list.append(key)
                         exclude_list.append('Plot {0}'.format(key))
-                        exclude_list.append('Plot {0}'.format('{0} feedback'.format(key)))
+
+                        for index in range(1, n_feedbacks+1):
+                            exclude_list.append('Plot {0}'.format('{0} feedback {1}'.format(key, index)))
                     else:
                         print(
                             'TransphireUtils: widget_2 content unknown! Exit here!',
