@@ -1222,6 +1222,11 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
         min-width: 120px;
         }}
 
+    QTabWidget#bot::pane {{
+        border-top: 0px solid #C2C7CB;
+        border-bottom: 2px solid #C2C7CB;
+        }}
+
     QTabWidget#vertical::tab-bar {{
         alignment: left;
         }}
@@ -1344,7 +1349,7 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
             fy:0.5,
             radius:1,
             stop:0 white,
-            stop:1 red
+            stop:1 #e34234
             );
         min-width: {0};
         max-width: {0};
@@ -1403,7 +1408,7 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
     QPushButton#sep:checked {{
         color: white;
         background-color: black;
-        border-color: red;
+        border-color: #e34234;
         border-width: 1px;
         border-style: outset;
         padding: 0px;
