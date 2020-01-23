@@ -270,7 +270,6 @@ class DefaultSettings(QDialog):
             result = tu.question(
                 head='Unsaved changes',
                 text='You do have unsaved changes!\nDo you really want to continue?.\nThose changes will not be saved or applied.',
-                parent=self
                 )
         else:
             result = True

@@ -302,7 +302,6 @@ class MainWindow(QMainWindow):
             result = tu.question(
                 head='Restore default values.',
                 text='Restore default values?',
-                parent=self
                 )
             if not result:
                 self.load(file_name=self.temp_save)

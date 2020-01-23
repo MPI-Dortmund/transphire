@@ -645,7 +645,7 @@ def message(text):
     dialog.exec_()
 
 
-def question(head, text, parent):
+def question(head, text):
     """
     Show a questions message box dialog.
 
