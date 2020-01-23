@@ -1498,11 +1498,15 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
     combo_style = """
     QComboBox {{ min-width: {4}; max-width: {4}; min-height: {3}; max-height: {3}; background-color: white }}
     QComboBox#settinger {{ min-width: {5}; max-width: {5}; min-height: {3}; max-height: {3}; background-color: white }}
+    QComboBox#default_settings {{ min-width: {1}; max-width: 9999; background-color: white }}
+
+    QComboBox:disabled {{ background-color: {2} }}
+    QComboBox#settinger:disabled {{ background-color: {2} }}
+    QComboBox#default_settings:disabled {{ background-color: {2} }}
+
     QComboBox QAbstractItemView {{
         background-color: white; selection-color: black; selection-background-color: lightgray
         }}
-    QComboBox#default_settings {{ min-width: {1}; max-width: 9999; background-color: white }}
-    QComboBox:disabled {{ background-color: {2} }}
     QComboBox#noti_edit:enabled {{ max-width: {1}; min-width: {1}; background-color: {0} }}
     """.format(
         '#5d995d',
@@ -1513,8 +1517,16 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
         settinger_widget_width,
         )
 
-    style = '\n'.join([style_widgets, button_style, label_style, edit_style, check_style, combo_style])
+    tool_style = """
+    QToolTip {0}
+    """.format(tooltip_style())
+
+
+    style = '\n'.join([style_widgets, button_style, label_style, edit_style, check_style, combo_style, tool_style])
     return style
+
+def tooltip_style():
+    return '{ color: black; background-color: white }'
 
 
 def check_instance(value, typ):
@@ -1559,6 +1571,8 @@ def get_style(typ):
     """
     if typ == 'error':
         color = '#e34234'
+    elif typ == 'global':
+        color = 'yellow'
     elif typ == 'unchanged':
         color = 'black'
     elif typ == 'changed':
@@ -1573,7 +1587,7 @@ def get_style(typ):
         message(msg)
         color = 'black'
 
-    return 'color: {0}'.format(color)
+    return 'QLineEdit {{color: {0}}} QComboBox {{color: {0}}}'.format(color)
 
 
 def rebin(arr, new_shape):

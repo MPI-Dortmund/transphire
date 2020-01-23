@@ -34,7 +34,7 @@ class SettingsContainer(QWidget):
     QWidget
     """
 
-    def __init__(self, content, name, parent=None, **kwargs):
+    def __init__(self, content, name, global_dict, parent=None, **kwargs):
         """
         Initialise layout of the widget.
 
@@ -49,6 +49,7 @@ class SettingsContainer(QWidget):
         super(SettingsContainer, self).__init__(parent)
 
         self.name = name
+        self.global_dict = None
         try:
             content_others = kwargs['content_others']
         except KeyError:
@@ -115,7 +116,7 @@ class SettingsContainer(QWidget):
                         self.layout_dict['{0}_v'.format(layout_name)].setContentsMargins(0, 0, 0, 0)
                         self.layout_dict[layout_name].addLayout(self.layout_dict['{0}_v'.format(layout_name)])
 
-                    widget = SettingsWidget(content=widget[key], name=name, content_others=content_others, parent=self)
+                    widget = SettingsWidget(content=widget[key], name=name, content_others=content_others, global_dict=global_dict, parent=self)
                     if group and name not in ('Pipeline'):
                         group, state = group.split(':')
                         self.group.setdefault(group, [])
@@ -319,3 +320,25 @@ class SettingsContainer(QWidget):
                 pass
         else:
             pass
+
+    def set_global(self, global_dict):
+        self.global_dict = global_dict
+        for key in self.content:
+            try:
+                self.content[key].edit.textChanged.connect(self.update_global)
+                self.content[key].edit.textChanged.emit(self.content[key].edit.text())
+            except AttributeError:
+                self.content[key].edit.currentTextChanged.connect(self.update_global)
+                self.content[key].edit.currentTextChanged.emit(self.content[key].edit.currentText())
+
+    @pyqtSlot(str)
+    def update_global(self, text):
+        for entry in self.global_dict[self.sender().parent().name]:
+
+            entry.global_value = text
+            if not entry.edit.isEnabled():
+                try:
+                    entry.edit.setText(text)
+                except AttributeError:
+                    entry.edit.setCurrentText(text)
+

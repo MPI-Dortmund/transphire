@@ -508,6 +508,7 @@ class MainWindow(QMainWindow):
         exclude_set = tu.get_exclude_set(content=content_gui, n_feedbacks=self.n_feedbacks)
         error_list = []
         tab_list = []
+        global_dict = {}
         for entry in content_gui:
             key = entry['name']
 
@@ -556,6 +557,7 @@ class MainWindow(QMainWindow):
                 plot_labels=plot_labels,
                 plot_name=plot_name,
                 parent=self,
+                global_dict=global_dict,
                 **entry
                 )
 
@@ -609,6 +611,8 @@ class MainWindow(QMainWindow):
                     )
             else:
                 pass
+
+        self.content['Global'].set_global(global_dict)
 
         return error_list
 

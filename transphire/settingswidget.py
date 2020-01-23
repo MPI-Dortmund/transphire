@@ -23,8 +23,8 @@ try:
     from PyQt4.QtCore import pyqtSlot, pyqtSignal
 except ImportError:
     QT_VERSION = 5
-    from PyQt5.QtWidgets import QWidget, QLabel, QFileDialog, QVBoxLayout, QComboBox, QLineEdit, QHBoxLayout, QPushButton, QShortcut, QAction
-    from PyQt5.QtCore import pyqtSlot, pyqtSignal, Qt
+    from PyQt5.QtWidgets import QWidget, QLabel, QFileDialog, QVBoxLayout, QComboBox, QLineEdit, QHBoxLayout, QPushButton, QShortcut, QAction, QToolTip
+    from PyQt5.QtCore import pyqtSlot, pyqtSignal, Qt, QEvent
     from PyQt5.QtGui import QKeySequence
 from transphire import transphire_utils as tu
 from transphire import inputbox
@@ -42,7 +42,7 @@ class SettingsWidget(QWidget):
     """
     sig_index_changed = pyqtSignal(str)
 
-    def __init__(self, name, content, content_others, parent=None):
+    def __init__(self, name, content, content_others, global_dict=None, parent=None):
         """
         Initialise the layout.
 
@@ -67,12 +67,14 @@ class SettingsWidget(QWidget):
 
         # Global content
         self.default = content[0]
+        self.key_name = name
         self.typ = content[1]['typ']
         self.values = content[1]['values']
         self.name = content[1]['name']
         self.tooltip = content[1]['tooltip']
         self.dtype = content[1]['dtype']
         self.name_global = content[1]['name_global']
+        self.global_value = self.default
 
         if self.name == 'Project name':
             pattern = None
@@ -154,7 +156,6 @@ class SettingsWidget(QWidget):
             print('SettingsWidget:', self.typ, 'Not known! Stopping here!')
             sys.exit()
 
-        self.edit.setToolTip(self.tooltip)
         self.label = QLabel(self.name, self)
         large_list = ['Path']
         if name in large_list:
@@ -183,8 +184,15 @@ class SettingsWidget(QWidget):
         layout_h.setContentsMargins(0, 0, 0, 0)
         layout_h.setSpacing(0)
         layout_h.addWidget(self.edit, stretch=1)
+
+        try:
+            self.pre_global = self.edit.text()
+        except AttributeError:
+            self.pre_global = self.edit.currentText()
         if content[1]['name_global'] is not None:
             self.edit.setObjectName('settinger')
+            self.tooltip = '{0}\n\nGlobal value: {{global_value}}'.format(self.tooltip)
+
             self.widget_auto = QPushButton('G', self)
             self.widget_auto.setObjectName('global')
             self.widget_auto.setToolTip('Use the global value specified in the "Global" settings tab')
@@ -192,21 +200,50 @@ class SettingsWidget(QWidget):
             self.widget_auto.toggled.connect(self._toggle_change)
             self.widget_auto.setChecked(True)
             layout_h.addWidget(self.widget_auto)
+
+            if global_dict is not None and self.key_name != 'Global':
+                global_dict.setdefault(self.name_global, []).append(self)
+
         else:
             self.widget_auto = None
-        layout_h.addStretch(1)
 
+        layout_h.addStretch(1)
         layout.addLayout(layout_h)
+
+        self.tooltip = '{0}\n\nCurrent Text: \'{{current_text}}\''.format(self.tooltip)
+        try:
+            self.edit.textChanged.emit(self.edit.text())
+        except AttributeError:
+            self.edit.currentTextChanged.emit(self.edit.currentText())
+
 
     @pyqtSlot(bool)
     def _toggle_change(self, state):
         self.edit.setEnabled(not state)
         self.action.setEnabled(not state)
+        if not state:
+            try:
+                self.edit.setText(self.pre_global)
+                self.edit.setStyleSheet(tu.get_style('unchanged'))
+            except AttributeError:
+                self.edit.setCurrentText(self.pre_global)
+                self.edit.blockSignals(False)
+                self.change_color_if_true()
+        else:
+            try:
+                self.pre_global = self.edit.text()
+                self.edit.setText(self.global_value)
+                self.edit.setStyleSheet(tu.get_style('global'))
+            except AttributeError:
+                self.pre_global = self.edit.currentText()
+                self.edit.blockSignals(True)
+                self.edit.setStyleSheet(tu.get_style('global'))
+                self.edit.setCurrentText(self.global_value)
 
     def change_tooltip(self, text):
         edit = self.sender()
         if self.typ != 'PASSWORD':
-            tooltip = '{0}\n\nCurrent Text:\n\n{1}'.format(self.tooltip, text)
+            tooltip = self.tooltip.format(current_text=text, global_value=self.global_value)
             edit.setToolTip(tooltip)
 
     @pyqtSlot()
