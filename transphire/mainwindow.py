@@ -941,16 +941,9 @@ class MainWindow(QMainWindow):
                 if 'GPU SPLIT' in name:
                     del entry[name]
                     continue
-                elif key == 'Global' and name == 'Bin superres':
-                    if entry[name] == 'True':
-                        entry[name] = 'XXXGLOBALXXX'
-                    else:
-                        entry[name] = 1
                 elif name.endswith('_global'):
                     if entry[name][0] is not None and entry[name][1]:
-                        if key != 'Global':
-                            entry[name.split('_global')[0]] = 'XXXGLOBALXXX_{0}'.format(entry[name][0])
-                        elif key == 'Global':
+                        if key == 'Global':
                             if entry[name][0] == 'GPU':
                                 nvidia_output = subprocess.check_output(['nvidia-smi', '-L'])
                                 gpu_devices = re.findall(
@@ -962,7 +955,7 @@ class MainWindow(QMainWindow):
                                     error_list.append('{0}:{1} does have different types of GPUs available! In order to not make any mistakes, please specify the GPU IDs manually')
                                 entry[name.split('_global')[0]] = ' '.join([str(entry) for entry in range(len(gpu_devices))])
                             else:
-                                entry[name.split('_global')[0]] = 'XXXPANDASXXX_{0}'.format(entry[name][0])
+                                entry[name.split('_global')[0]] = entry[name][0]
                         else:
                             assert False, key
 

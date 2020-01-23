@@ -335,6 +335,9 @@ class SettingsContainer(QWidget):
     def update_global(self, text):
         for entry in self.global_dict[self.sender().parent().name]:
 
+            if self.sender().parent().name == 'Bin superres' and text == 'False':
+                text = '1'
+
             entry.global_value = text
             if not entry.edit.isEnabled():
                 try:
