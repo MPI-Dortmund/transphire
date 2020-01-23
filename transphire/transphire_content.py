@@ -1215,7 +1215,7 @@ def default_global():
         ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
         ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
         ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
-        ['Bin superres', ['True', 'False'], bool, '', 'COMBO', 'Main', 'Bin superresolution datasets by a factor of 2 automatically.'],
+        ['Bin superres', ['ON-THE-FLY', 'False'], bool, '', 'COMBO', 'Main', 'Bin superresolution datasets by a factor of 2 automatically.'],
         ['Pixel size:Pixel size', '1.0', float, '', 'PLAIN', 'Main', '', 'Pixel size in A/pixel.'],
         ['Phase Plate:Phase Plate', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Use phase plate options'],
         ['Gain:Gain', '', str, '', 'FILE', 'Main', '', 'MRC file that stores the gain reference. If not specified, MRC extended header will be visited to look for gain reference.'],

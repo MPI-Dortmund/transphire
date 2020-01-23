@@ -74,7 +74,7 @@ class SettingsWidget(QWidget):
         self.tooltip = content[1]['tooltip']
         self.dtype = content[1]['dtype']
         self.name_global = content[1]['name_global']
-        self.global_value = self.default
+        self.global_value = 'ON-THE-FLY'
 
         if self.name == 'Project name':
             pattern = None
@@ -228,6 +228,7 @@ class SettingsWidget(QWidget):
             except AttributeError:
                 self.edit.setCurrentText(self.pre_global)
                 self.edit.blockSignals(False)
+                self.edit.removeItem(0)
                 self.change_color_if_true()
         else:
             try:
@@ -238,6 +239,7 @@ class SettingsWidget(QWidget):
                 self.pre_global = self.edit.currentText()
                 self.edit.blockSignals(True)
                 self.edit.setStyleSheet(tu.get_style('global'))
+                self.edit.insertItem(0, self.global_value)
                 self.edit.setCurrentText(self.global_value)
 
     def change_tooltip(self, text):
@@ -349,6 +351,9 @@ class SettingsWidget(QWidget):
         if value:
 
             if tu.check_instance(value=value, typ=self.dtype):
+                pass
+
+            elif value == 'ON-THE-FLY' and self.widget_auto is not None:
                 pass
 
             else:
