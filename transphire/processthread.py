@@ -1330,6 +1330,7 @@ class ProcessThread(object):
         self.queue_lock.acquire()
         file_list = []
         gain_files = []
+        print('FIND', self.settings['is_superres'].value)
         try:
             file_list = self.recursive_search(
                 directory=self.settings['General']['Search path meta'],
@@ -1340,8 +1341,7 @@ class ProcessThread(object):
         finally:
             self.queue_lock.release()
 
-        print(gain_files)
-
+        print('FIND', self.settings['is_superres'].value)
         if not self.stop.value:
             data = np.empty(
                 len(file_list),
@@ -1488,6 +1488,7 @@ class ProcessThread(object):
                     name=self.name,
                     write_error=self.write_error
                     )
+
                 if frames is None:
                     self.shared_dict_typ['bad_lock'].acquire()
                     try:

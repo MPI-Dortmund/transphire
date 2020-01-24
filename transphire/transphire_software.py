@@ -619,6 +619,24 @@ def find_frames(frames_root, compare_name, settings, queue_com, name, write_erro
     raise IOError(message)
 
 
+def get_x_dim(frames, settings):
+    command = "{0} '{1}'".format(
+        settings['Path']['IMOD header'],
+        frames[0]
+        )
+
+    child = pe.spawnu(command)
+    text = child.read()
+    child.interact()
+
+    x_dim = 0
+    for line in text.split('\n'):
+        if line.startswith(' Number of columns, rows, sections .....'):
+            x_dim = int(line.split()[-3])
+
+    return int(x_dim)
+
+
 def check_nr_frames(frames, settings):
     """
     Check if the nr of frames of the stack match the given nr of frames
@@ -627,6 +645,9 @@ def check_nr_frames(frames, settings):
     frames - List of found frames
     settings - TranSPHIRE settings
     """
+    if settings['is_superres'].value == 2:
+        settings['is_superres'].value = bool(get_x_dim(frames, settings) > 7000)
+
     if not frames:
         frames.append(None)
         return False, 0
