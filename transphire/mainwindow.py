@@ -937,12 +937,11 @@ class MainWindow(QMainWindow):
 
         for entry in settings_widget:
             for name in sorted(list(entry.keys())):
-                if 'GPU SPLIT' in name:
-                    del entry[name]
-                    continue
-                elif name.endswith('_global'):
+                if name.endswith('_global'):
                     if entry[name][0] is not None and entry[name][1]:
-                        if key == 'Global':
+                        if key != 'Global':
+                            entry[name.split('_global')[0]] = settings['Global'][entry[name][0]]
+                        elif key == 'Global':
                             if entry[name][0] == 'GPU':
                                 nvidia_output = subprocess.check_output(['nvidia-smi', '-L'])
                                 gpu_devices = re.findall(
@@ -953,8 +952,11 @@ class MainWindow(QMainWindow):
                                 if len(set(gpu_devices)) != 1:
                                     error_list.append('{0}:{1} does have different types of GPUs available! In order to not make any mistakes, please specify the GPU IDs manually')
                                 entry[name.split('_global')[0]] = ' '.join([str(entry) for entry in range(len(gpu_devices))])
-                            else:
-                                entry[name.split('_global')[0]] = entry[name][0]
+                            elif entry[name][0] == 'GPU SPLIT':
+                                entry[name.split('_global')[0]] = '1'
+                            elif entry[name][0] == 'Memory usage':
+                                entry[name.split('_global')[0]] = 0.9 / int(entry['GPU SPLIT'])
+
                         else:
                             assert False, key
 

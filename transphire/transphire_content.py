@@ -1221,7 +1221,7 @@ def default_global():
         ['Gain:Gain', '', str, '', 'FILE', 'Main', '', 'MRC file that stores the gain reference. If not specified, MRC extended header will be visited to look for gain reference.'],
         ['voltage:voltage', '300.0', float, '', 'PLAIN', 'Main', 'High tension in kV needed for dose weighting.  Default is 300.'],
         ['GPU:GPU', '0', [int]*99, '', 'PLAIN', 'Main', 'Specifiy which gpu\'s should be used.'],
-        ['Memory usage:Memory usage', '0.9', float, '', 'PLAIN', 'Main', 'Specifiy how much GPU memory should be used.'],
         ['GPU SPLIT:GPU SPLIT', '0', int, '', 'PLAIN', 'Main', 'Define the number of GPU splits.'],
+        ['Memory usage:Memory usage', '0.9', float, '', 'PLAIN', 'Main', 'Specifiy how much GPU memory should be used.'],
         ]
     return items

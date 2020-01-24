@@ -1272,7 +1272,8 @@ class ProcessThread(object):
         file_list = self.recursive_search(
             directory=directory,
             file_list=file_list,
-            find_meta=True
+            find_meta=True,
+            gain_files=[]
             )
 
         if not file_list:
@@ -1328,14 +1329,18 @@ class ProcessThread(object):
         self.queue_com['log'].put(tu.create_log(self.name, 'run_find start'))
         self.queue_lock.acquire()
         file_list = []
+        gain_files = []
         try:
             file_list = self.recursive_search(
                 directory=self.settings['General']['Search path meta'],
                 file_list=file_list,
-                find_meta=False
+                find_meta=False,
+                gain_files=gain_files,
                 )
         finally:
             self.queue_lock.release()
+
+        print(gain_files)
 
         if not self.stop.value:
             data = np.empty(
@@ -1441,7 +1446,7 @@ class ProcessThread(object):
             self.data_frame.save_df()
         self.queue_com['log'].put(tu.create_log(self.name, 'run_find stop', time.time() - start_prog))
 
-    def recursive_search(self, directory, file_list, find_meta):
+    def recursive_search(self, directory, file_list, find_meta, gain_files):
         """
         Find files in a recursive search.
 
@@ -1466,7 +1471,8 @@ class ProcessThread(object):
                 file_list = self.recursive_search(
                     directory=entry_dir,
                     file_list=file_list,
-                    find_meta=find_meta
+                    find_meta=find_meta,
+                    gain_files=gain_files,
                     )
             elif self.settings["General"]["Software"] == "Just Stack":
                 if not entry_dir.endswith(self.settings['General']['Input extension']):
@@ -1535,6 +1541,8 @@ class ProcessThread(object):
                     file_list.append(entry_dir)
                 else:
                     continue
+            elif '_gain' in entry_dir and 'Data' in entry_dir:
+                gain_files.append(entry_dir)
             elif os.path.isfile(entry_dir) and \
                     'Data' in entry_dir and \
                     (entry_dir.endswith('.jpg') or entry_dir.endswith('.gtg')):

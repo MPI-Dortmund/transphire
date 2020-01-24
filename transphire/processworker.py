@@ -806,6 +806,7 @@ class ProcessWorker(QObject):
         # Start threads
         thread_list = []
         use_threads_set = set(use_threads_list)
+        managed_settings = manager.dict(self.settings)
         for key, settings_content in full_content:
             
             content_settings = settings_content[self.idx_values]
@@ -829,7 +830,7 @@ class ProcessWorker(QObject):
                     name=name,
                     content_settings=content_settings,
                     queue_com=queue_com,
-                    settings=self.settings,
+                    settings=managed_settings,
                     mount_directory=self.mount_directory,
                     password=self.password,
                     use_threads_set=use_threads_set,
