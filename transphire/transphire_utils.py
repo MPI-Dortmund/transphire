@@ -548,7 +548,7 @@ def get_function_dict():
             'executable': False,
             'has_path': False,
             'typ': None,
-            'allow_empty': ['Rename suffix'],
+            'allow_empty': ['Rename prefix', 'Rename suffix'],
             }
     function_dict['Notification'] = {
             'plot': None,

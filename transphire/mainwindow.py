@@ -1197,6 +1197,7 @@ class MainWindow(QMainWindow):
                 if entry in ('mount', 'process'):
                     continue
                 self.workers[entry].reset_list()
+            self.save_temp_settings()
             self.workers['process'].sig_start.emit(settings)
             self.workers['mount'].set_settings(settings=settings)
             self.save(
@@ -1205,7 +1206,6 @@ class MainWindow(QMainWindow):
                     settings['General']['Project name']
                     )
                 )
-            self.save_temp_settings()
         else:
             tu.message('Input needs to be "YES!" to work')
             self.enable(True)
