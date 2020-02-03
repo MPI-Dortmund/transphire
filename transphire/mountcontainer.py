@@ -18,7 +18,7 @@
 try:
     from PyQt4.QtGui import QWidget, QVBoxLayout
 except ImportError:
-    from PyQt5.QtWidgets import QWidget, QVBoxLayout
+    from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QHBoxLayout
 from transphire.mountwidget import MountWidget
 
 
@@ -65,24 +65,43 @@ class MountContainer(QWidget):
         layout = QVBoxLayout(central_widget)
 
         # Temp content
-        self.content_temp = []
+        content_temp = {}
         for entry in content_mount:
             content = {}
             for widget in entry:
                 for key in widget:
                     content[key] = widget[key]
-            self.content_temp.append(content)
+            content_temp.setdefault(
+                content['Typ'][0].split('_')[-1].capitalize(),
+                []
+                ).append(content)
 
         # Content
-        for entry in self.content_temp:
-            key_name = entry['Mount name'][0]
-            if key_name:
-                self.content[key_name] = MountWidget(
-                    content=entry,
-                    mount_worker=mount_worker,
-                    parent=self
-                    )
-                layout.addWidget(self.content[key_name])
+        for key in sorted(content_temp.keys()):
+            layout_h = QHBoxLayout()
+            layout_h.addStretch(1)
+            layout_h.addWidget(QLabel(key, self))
+            layout_h.addStretch(1)
+            layout.addLayout(layout_h)
+
+            key_names = []
+            for entry in content_temp[key]:
+                key_names.append((entry['Mount name'][0], entry))
+
+            for key_name, entry in sorted(key_names):
+                if key_name:
+                    self.content[key_name] = MountWidget(
+                        content=entry,
+                        mount_worker=mount_worker,
+                        parent=self
+                        )
+                    layout.addWidget(self.content[key_name])
+
+            layout_h = QHBoxLayout()
+            layout_h.addStretch(1)
+            layout_h.addWidget(QLabel('', self))
+            layout_h.addStretch(1)
+            layout.addLayout(layout_h)
 
         layout.addStretch(1)
 

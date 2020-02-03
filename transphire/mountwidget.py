@@ -22,6 +22,8 @@ try:
 except ImportError:
     from PyQt5.QtWidgets import QWidget, QHBoxLayout, QPushButton, QLabel
     from PyQt5.QtCore import pyqtSlot
+
+from transphire import mountworker
 from transphire.inputbox import InputBox
 from transphire.passworddialog import PasswordDialog
 from transphire import transphire_utils as tu
@@ -150,6 +152,18 @@ class MountWidget(QWidget):
         None
         """
         # Mount external hdd
+        if mountworker.check_existence(
+            self.mount_worker.mount_directory,
+            os.path.join(
+                self.mount_worker.mount_directory,
+                self.mount_folder
+                )
+            ):
+            self.mount_worker.sig_info.emit(
+                'First unmount {0}'.format(self.mount_folder)
+                )
+            return None
+
         if self.typ == 'Copy_to_hdd':
             self.mount_worker.sig_mount_hdd.emit(self.mount_folder)
         else:

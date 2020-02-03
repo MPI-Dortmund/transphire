@@ -119,6 +119,7 @@ class StatusContainer(QWidget):
                 self.content[key_device] = StatusWidget(
                     name=key_name, default_name='Not connected', default_quota='-- / --'
                     )
+                self.content[key_device].setVisible(False)
                 layout_v1.addWidget(self.content[key_device])
 
         # Add a visual separator
@@ -193,6 +194,10 @@ class StatusContainer(QWidget):
         None
         """
         self.content[device].sig_change_info_name.emit(text, color)
+        if color == 'white':
+            self.content[device].setVisible(False)
+        else:
+            self.content[device].setVisible(True)
         if device != 'scratch' and device != 'project':
             tu.message('{0} Mount/Unmount successfull!'.format(device))
         else:

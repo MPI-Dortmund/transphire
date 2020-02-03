@@ -395,7 +395,7 @@ class MountWorker(QObject):
         """
         mount_folder = os.path.join(self.mount_directory, device)
 
-        self._check_existence(mount_folder)
+        check_existence(self.mount_directory, mount_folder)
         if os.listdir(mount_folder):
             self.sig_info.emit('First unmount {0}'.format(device))
             return None
@@ -554,12 +554,6 @@ class MountWorker(QObject):
         mount_folder = os.path.join(self.mount_directory, device)
         self.password_dict[device] = password
 
-        if self._check_existence(mount_folder):
-            self.sig_info.emit('First unmount {0}'.format(device))
-            return None
-        else:
-            pass
-
         options = ['-o nolock']
         if typ == 'cifs' or typ == 'smbfs':
             options.append("username={0},password='{1}',uid={2},vers={3},domain={4},gid={5},sec={6}".format(
@@ -643,7 +637,6 @@ class MountWorker(QObject):
         Return:
         None
         """
-        self.sig_success.emit(text, device, 'lightgreen')
         with open(self.save_files[device], 'w') as write:
             write.write('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}'.format(
                 user,
@@ -655,6 +648,7 @@ class MountWorker(QObject):
                 self.quota_dict[device],
                 folder_from_root,
                 ))
+        self.sig_success.emit(text, device, 'lightgreen')
 
     @pyqtSlot(str, str, object)
     def umount(self, device_folder, device, thread_object):
@@ -675,7 +669,7 @@ class MountWorker(QObject):
         else:
             mount_folder = '{0}/{1}'.format(self.mount_directory, device_folder)
 
-        if not self._check_existence(mount_folder):
+        if not check_existence(self.mount_directory, mount_folder):
             try:
                 os.rmdir(mount_folder)
             except OSError:
@@ -764,39 +758,39 @@ class MountWorker(QObject):
             child.interact()
         return idx, value
 
-    def _check_existence(self, mount_folder):
-        """
-        Check existence of the mount folder and create it if it does not
+def check_existence(mount_directory, mount_folder):
+    """
+    Check existence of the mount folder and create it if it does not
 
-        Arguments:
-        mount_folder - Folder to check
+    Arguments:
+    mount_folder - Folder to check
 
-        Return:
-        True, if the mount folder exists
-        """
+    Return:
+    True, if the mount folder exists
+    """
 
-        if not os.path.exists(self.mount_directory):
+    if not os.path.exists(mount_directory):
+        try:
+            os.mkdir(mount_directory)
+        except OSError:
+            return False
+    else:
+        pass
+
+    if not os.path.exists(mount_folder):
+        try:
+            os.mkdir(mount_folder)
+        except OSError:
             try:
-                os.mkdir(self.mount_directory)
-            except OSError:
-                return False
-        else:
-            pass
-
-        if not os.path.exists(mount_folder):
-            try:
-                os.mkdir(mount_folder)
-            except OSError:
-                try:
-                    os.listdir(mount_folder)
-                except OSError as err:
-                    if 'Required key not available:' in str(err):
-                        return True
-                    else:
-                        return False
+                os.listdir(mount_folder)
+            except OSError as err:
+                if 'Required key not available:' in str(err):
+                    return True
                 else:
                     return False
             else:
                 return False
         else:
-            return True
+            return False
+    else:
+        return True
