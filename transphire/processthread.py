@@ -1328,6 +1328,13 @@ class ProcessThread(object):
         start_prog = time.time()
         self.queue_com['log'].put(tu.create_log(self.name, 'run_find start'))
         self.queue_lock.acquire()
+
+        try:
+            with open(os.path.join(self.settings['gain_folder'], 'translate_gain.csv'), 'r') as gain_translate_file:
+                current_gain = gain_translate_file.read()
+        except OSError:
+            current_gain = ''
+
         file_list = []
         gain_files = []
         try:
@@ -1336,9 +1343,11 @@ class ProcessThread(object):
                 file_list=file_list,
                 find_meta=False,
                 gain_files=gain_files,
+                current_gain=current_gain,
                 )
         finally:
             self.queue_lock.release()
+        print(gain_files)
 
         if not self.stop.value:
             dtype_gain = [('root', '|U1200'), ('date', '<i8'), ('time', '<i8'), ('spot', '<i8'), ('gridsquare', '<i8'), ('hole', '<i8')]
@@ -1368,9 +1377,11 @@ class ProcessThread(object):
             with open(os.path.join(self.settings['gain_folder'], 'translate_gain.csv'), 'a') as gain_translate_file:
                 np.savetxt(gain_translate_file, data_gain, fmt=','.join(['%s']*data_gain.shape[0]))
 
-            with open(os.path.join(self.settings['gain_folder'], 'translate_gain.csv'), 'r') as gain_translate_file:
-
-                gain_data = np.genfromtxt(gain_translate_file, dtype=dtype_gain, delimiter=',')
+            try:
+                with open(os.path.join(self.settings['gain_folder'], 'translate_gain.csv'), 'r') as gain_translate_file:
+                    gain_data = np.genfromtxt(gain_translate_file, dtype=dtype_gain, delimiter=',')
+            except ValueError:
+                gain_data = np.array([], dtype=dtype_gain)
 
             data = np.empty(
                 len(file_list),
@@ -1475,7 +1486,7 @@ class ProcessThread(object):
             self.data_frame.save_df()
         self.queue_com['log'].put(tu.create_log(self.name, 'run_find stop', time.time() - start_prog))
 
-    def recursive_search(self, directory, file_list, find_meta, gain_files):
+    def recursive_search(self, directory, file_list, find_meta, gain_files, current_gain=''):
         """
         Find files in a recursive search.
 
@@ -1572,7 +1583,8 @@ class ProcessThread(object):
                 else:
                     continue
             elif '_gain' in entry_dir and 'Data' in entry_dir:
-                gain_files.append(entry_dir)
+                if entry_dir not in current_gain:
+                    gain_files.append(entry_dir)
             elif os.path.isfile(entry_dir) and \
                     'Data' in entry_dir and \
                     (entry_dir.endswith('.jpg') or entry_dir.endswith('.gtg')):
