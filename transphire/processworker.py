@@ -22,10 +22,7 @@ import shutil
 import re
 import glob
 import copy as cp
-try:
-    from PyQt4.QtCore import QObject, pyqtSignal, pyqtSlot
-except ImportError:
-    from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 from transphire.processthread import ProcessThread
 from transphire import transphire_utils as tu
 import multiprocessing as mp

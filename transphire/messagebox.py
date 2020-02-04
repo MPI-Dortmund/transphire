@@ -15,10 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-try:
-    from PyQt4.QtGui import QDialog, QVBoxLayout, QLabel, QPushButton, QDialogButtonBox, QWidget
-except ImportError:
-    from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QDialogButtonBox, QWidget
+from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QDialogButtonBox, QWidget
 
 
 class MessageBox(QDialog):

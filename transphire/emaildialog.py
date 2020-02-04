@@ -15,26 +15,15 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-try:
-    from PyQt4.QtGui import (
-        QDialog,
-        QHBoxLayout,
-        QVBoxLayout,
-        QLabel,
-        QPushButton,
-        QLineEdit,
-        QWidget
-        )
-except ImportError:
-    from PyQt5.QtWidgets import (
-        QDialog,
-        QHBoxLayout,
-        QVBoxLayout,
-        QLabel,
-        QPushButton,
-        QLineEdit,
-        QWidget
-        )
+from PyQt5.QtWidgets import (
+    QDialog,
+    QHBoxLayout,
+    QVBoxLayout,
+    QLabel,
+    QPushButton,
+    QLineEdit,
+    QWidget
+    )
 
 
 class EmailDialog(QDialog):

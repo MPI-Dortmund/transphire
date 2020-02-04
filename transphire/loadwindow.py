@@ -19,12 +19,8 @@ import os
 import glob
 import json
 import copy
-try:
-    from PyQt4.QtGui import QDialog, QVBoxLayout, QPushButton, QWidget, QComboBox, QLineEdit, QLabel, QHBoxLayout
-    from PyQt4.QtCore import pyqtSlot
-except ImportError:
-    from PyQt5.QtWidgets import QDialog, QVBoxLayout, QPushButton, QWidget, QComboBox, QLineEdit, QLabel, QHBoxLayout
-    from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtWidgets import QDialog, QVBoxLayout, QPushButton, QWidget, QComboBox, QLineEdit, QLabel, QHBoxLayout
+from PyQt5.QtCore import pyqtSlot
 
 from transphire.loadcontentcontainer import LoadContentContainer
 from transphire.separator import Separator

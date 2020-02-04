@@ -27,12 +27,8 @@ import shutil
 import numpy as np
 import pandas as pd
 
-try:
-    QT_VERSION = 4
-    from PyQt4.QtGui import QFont
-except ImportError:
-    QT_VERSION = 5
-    from PyQt5.QtGui import QFont
+QT_VERSION = 5
+from PyQt5.QtGui import QFont
 
 from transphire.messagebox import MessageBox
 from transphire.mountcontainer import MountContainer

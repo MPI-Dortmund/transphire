@@ -16,10 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
-try:
-    from PyQt4.QtCore import pyqtSignal, QObject, pyqtSlot
-except ImportError:
-    from PyQt5.QtCore import pyqtSignal, QObject, pyqtSlot
+from PyQt5.QtCore import pyqtSignal, QObject, pyqtSlot
 from transphire import transphire_utils as tu
 
 

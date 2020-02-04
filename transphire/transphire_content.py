@@ -559,9 +559,9 @@ def default_path():
     function_dict = tu.get_function_dict()
     for key in sorted(function_dict.keys()):
         if function_dict[key]['executable']:
-            if function_dict[key]['has_path'] and function_dict[key]['old']:
-                items.append([key, function_dict[key]['has_path'], str, '', 'FILE', 'Advanced', ''])
-            elif function_dict[key]['has_path'] and not function_dict[key]['old']:
+            if function_dict[key]['has_path'] and not function_dict[key]['old']:
+                items.append([key, function_dict[key]['has_path'], str, '', 'FILE', 'Main', ''])
+            elif function_dict[key]['has_path'] and function_dict[key]['old']:
                 items_old.append([key, function_dict[key]['has_path'], str, '', 'FILE', 'Advanced', ''])
         else:
             pass
@@ -1137,7 +1137,7 @@ def default_general():
         ['Estimated mic number', '10000', int, 'Rename micrographs:True', 'PLAIN', 'Main', 'Estimated number of micrographs. This is used for the leading number of zeros in the renamed start number.'],
         ['Project directory', '', str, '', 'DIR', 'Advanced', 'TranSPHIRE project directory used to store all the project folders.'],
         ['Scratch directory', '', str, '', 'DIR', 'Advanced', 'TranSPHIRE scratch directory used for faster IO during the TranSPHIRE run.'],
-        ['Number of feedbacks', '1', int, '', 'PLAIN', 'Advanced', 'Number of iterations to re-train crYOLO in an ISAC feedback loop. The feedback loop will use the ISAC output and do a crYOLO retrain with sparse picking.'],
+        ['Number of feedbacks', '0', int, '', 'PLAIN', 'Main', 'Number of iterations to re-train crYOLO in an ISAC feedback loop. The feedback loop will use the ISAC output and do a crYOLO retrain with sparse picking. A value of 0 means no feedback.'],
         ]
     return items
 

@@ -15,12 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-try:
-    from PyQt4.QtCore import pyqtSlot, Qt, QEvent, pyqtSignal
-    from PyQt4.QtGui import QMainWindow, QDockWidget, QTabWidget
-except ImportError:
-    from PyQt5.QtCore import pyqtSlot, Qt, QEvent, pyqtSignal
-    from PyQt5.QtWidgets import QMainWindow, QDockWidget, QTabWidget
+from PyQt5.QtCore import pyqtSlot, Qt, QEvent, pyqtSignal
+from PyQt5.QtWidgets import QMainWindow, QDockWidget, QTabWidget
 from transphire.plotwidget import PlotWidget
 
 

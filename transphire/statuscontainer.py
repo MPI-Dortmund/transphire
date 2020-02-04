@@ -16,13 +16,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
-try:
-    from PyQt4.QtGui import QHBoxLayout, QVBoxLayout, QWidget, QLabel, QImage
-    from PyQt4.QtCore import pyqtSlot, pyqtSignal
-except ImportError:
-    from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QWidget, QLabel
-    from PyQt5.QtGui import QImage
-    from PyQt5.QtCore import pyqtSlot, pyqtSignal
+from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QWidget, QLabel
+from PyQt5.QtGui import QImage
+from PyQt5.QtCore import pyqtSlot, pyqtSignal
 from transphire.statuswidget import StatusWidget
 from transphire.separator import Separator
 from transphire import transphire_utils as tu

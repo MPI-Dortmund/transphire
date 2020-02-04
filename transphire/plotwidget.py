@@ -22,20 +22,12 @@ import numpy as np
 import matplotlib
 matplotlib.use('QT5Agg')
 import matplotlib.pyplot as plt
-try:
-    from PyQt4.QtGui import QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QPushButton, QLineEdit, QLabel
-    from PyQt4.QtCore import pyqtSlot
-    from matplotlib.backends.backend_qt4agg import (
-        FigureCanvasQTAgg as FigureCanvas,
-        NavigationToolbar2QT as NavigationToolbar
-        )
-except ImportError:
-    from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QPushButton, QLineEdit, QLabel
-    from PyQt5.QtCore import pyqtSlot
-    from matplotlib.backends.backend_qt5agg import (
-        FigureCanvasQTAgg as FigureCanvas,
-        NavigationToolbar2QT as NavigationToolbar
-        )
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QPushButton, QLineEdit, QLabel
+from PyQt5.QtCore import pyqtSlot
+from matplotlib.backends.backend_qt5agg import (
+    FigureCanvasQTAgg as FigureCanvas,
+    NavigationToolbar2QT as NavigationToolbar
+    )
 from transphire import transphire_utils as tu
 warnings.filterwarnings('ignore')
 

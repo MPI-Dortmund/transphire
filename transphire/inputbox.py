@@ -16,11 +16,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
-try:
-    from PyQt4.QtGui import QDialog, QVBoxLayout, QLabel, QPushButton, QDialogButtonBox, QWidget, QLineEdit, QFileDialog
-except ImportError:
-    from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QDialogButtonBox, QWidget, QLineEdit, QFileDialog
-    from PyQt5.QtCore import pyqtSlot, pyqtSignal
+from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QDialogButtonBox, QWidget, QLineEdit, QFileDialog
+from PyQt5.QtCore import pyqtSlot
 
 
 class InputBox(QDialog):

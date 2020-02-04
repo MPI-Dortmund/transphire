@@ -17,15 +17,10 @@
 """
 import os
 import sys
-try:
-    QT_VERSION = 4
-    from PyQt4.QtGui import QWidget, QLabel, QFileDialog, QVBoxLayout, QComboBox, QLineEdit, QHBoxLayout, QPushButton
-    from PyQt4.QtCore import pyqtSlot, pyqtSignal
-except ImportError:
-    QT_VERSION = 5
-    from PyQt5.QtWidgets import QWidget, QLabel, QFileDialog, QVBoxLayout, QComboBox, QLineEdit, QHBoxLayout, QPushButton, QShortcut, QAction, QToolTip
-    from PyQt5.QtCore import pyqtSlot, pyqtSignal, Qt, QEvent
-    from PyQt5.QtGui import QKeySequence
+QT_VERSION = 5
+from PyQt5.QtWidgets import QWidget, QLabel, QFileDialog, QVBoxLayout, QComboBox, QLineEdit, QHBoxLayout, QPushButton, QAction
+from PyQt5.QtCore import pyqtSlot, pyqtSignal, Qt
+from PyQt5.QtGui import QKeySequence
 from transphire import transphire_utils as tu
 from transphire import inputbox
 

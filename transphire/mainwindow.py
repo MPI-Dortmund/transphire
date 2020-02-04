@@ -20,26 +20,15 @@ import os
 import re
 import pexpect as pe
 import subprocess
-try:
-    QT_VERSION = 4
-    from PyQt4.QtGui import (
-        QMainWindow,
-        QHBoxLayout,
-        QVBoxLayout,
-        QWidget,
-        QFileDialog,
-        )
-    from PyQt4.QtCore import QThread, pyqtSlot, QCoreApplication, QTimer, pyqtSignal
-except ImportError:
-    QT_VERSION = 5
-    from PyQt5.QtWidgets import (
-        QMainWindow,
-        QHBoxLayout,
-        QVBoxLayout,
-        QWidget,
-        QFileDialog,
-        )
-    from PyQt5.QtCore import QThread, pyqtSlot, QCoreApplication, QTimer, pyqtSignal
+QT_VERSION = 5
+from PyQt5.QtWidgets import (
+    QMainWindow,
+    QHBoxLayout,
+    QVBoxLayout,
+    QWidget,
+    QFileDialog,
+    )
+from PyQt5.QtCore import QThread, pyqtSlot, QCoreApplication, QTimer, pyqtSignal
 
 # Objects
 from transphire.mountworker import MountWorker

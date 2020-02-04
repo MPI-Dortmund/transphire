@@ -17,12 +17,8 @@
 """
 import os
 import pexpect as pe
-try:
-    from PyQt4.QtGui import QDialog, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QLineEdit, QWidget
-    from PyQt4.QtCore import pyqtSlot
-except ImportError:
-    from PyQt5.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QLineEdit, QWidget
-    from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QLineEdit, QWidget
+from PyQt5.QtCore import pyqtSlot
 from transphire import transphire_utils as tu
 
 

@@ -15,12 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-try:
-    from PyQt4.QtGui import QWidget, QLabel, QHBoxLayout
-    from PyQt4.QtCore import pyqtSignal, pyqtSlot
-except ImportError:
-    from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout
-    from PyQt5.QtCore import pyqtSignal, pyqtSlot
+from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout
+from PyQt5.QtCore import pyqtSignal, pyqtSlot
 
 
 class StatusWidget(QWidget):

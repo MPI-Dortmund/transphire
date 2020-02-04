@@ -15,12 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-try:
-    from PyQt4.QtGui import QWidget, QCheckBox, QHBoxLayout, QComboBox, QLineEdit
-    from PyQt4.QtCore import pyqtSlot
-except ImportError:
-    from PyQt5.QtWidgets import QWidget, QCheckBox, QHBoxLayout, QComboBox, QLineEdit
-    from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtWidgets import QWidget, QCheckBox, QHBoxLayout, QComboBox, QLineEdit
+from PyQt5.QtCore import pyqtSlot
 
 
 class NotificationWidget(QWidget):

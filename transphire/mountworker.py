@@ -19,10 +19,7 @@ import shutil
 import sys
 import os
 import pexpect as pe
-try:
-    from PyQt4.QtCore import pyqtSignal, QObject, pyqtSlot, QThread
-except ImportError:
-    from PyQt5.QtCore import pyqtSignal, QObject, pyqtSlot, QThread
+from PyQt5.QtCore import pyqtSignal, QObject, pyqtSlot, QThread
 
 
 class MountWorker(QObject):

@@ -16,12 +16,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
-try:
-    from PyQt4.QtGui import QWidget, QHBoxLayout, QPushButton, QLabel
-    from PyQt4.QtCore import pyqtSlot
-except ImportError:
-    from PyQt5.QtWidgets import QWidget, QHBoxLayout, QPushButton, QLabel
-    from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QPushButton, QLabel
+from PyQt5.QtCore import pyqtSlot
 
 from transphire import mountworker
 from transphire.inputbox import InputBox

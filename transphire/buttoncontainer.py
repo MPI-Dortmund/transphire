@@ -17,12 +17,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import glob
 import os
-try:
-    from PyQt4.QtGui import QHBoxLayout, QWidget, QPushButton, QApplication, QVBoxLayout, QLabel, QComboBox
-    from PyQt4.QtCore import pyqtSlot, pyqtSignal
-except ImportError:
-    from PyQt5.QtWidgets import QHBoxLayout, QWidget, QPushButton, QApplication, QVBoxLayout, QLabel, QComboBox
-    from PyQt5.QtCore import pyqtSlot, pyqtSignal
+from PyQt5.QtWidgets import QHBoxLayout, QWidget, QPushButton, QApplication, QVBoxLayout, QLabel, QComboBox
+from PyQt5.QtCore import pyqtSlot, pyqtSignal
 from transphire.loadwindow import DefaultSettings
 from transphire import transphire_utils as tu
 

@@ -21,12 +21,8 @@ import socket
 import smtplib
 from email.mime.text import MIMEText
 import telepot
-try:
-    from PyQt4.QtGui import QWidget, QVBoxLayout, QPushButton, QHBoxLayout
-    from PyQt4.QtCore import pyqtSlot, pyqtSignal
-except ImportError:
-    from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QHBoxLayout
-    from PyQt5.QtCore import pyqtSlot, pyqtSignal
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QHBoxLayout
+from PyQt5.QtCore import pyqtSlot, pyqtSignal
 from transphire.notificationwidget import NotificationWidget
 from transphire.emaildialog import EmailDialog
 from transphire import transphire_utils as tu

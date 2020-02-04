@@ -18,10 +18,7 @@
 import shutil
 import os
 import pexpect as pe
-try:
-    from PyQt4.QtCore import QObject, pyqtSlot, pyqtSignal
-except ImportError:
-    from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal
+from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal
 
 
 class MountCalculator(QObject):

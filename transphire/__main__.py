@@ -21,10 +21,7 @@ import os
 import json
 import argparse
 import urllib
-try:
-    from PyQt4.QtGui import QApplication
-except ImportError:
-    from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication
 
 import transphire
 from transphire import transphire_utils as tu
@@ -176,10 +173,10 @@ def parse_args():
         )
     parser.add_argument(
         '--font',
-        default=None,
+        default=5,
         type=float,
         nargs='?',
-        help='Font size in px (default 20)'
+        help='Font size in px (default 5)'
         )
     parser.add_argument(
         '--adjust_width',
@@ -206,7 +203,7 @@ def parse_args():
         '--n_feedbacks',
         default=5,
         type=int,
-        help='Maximum number of allowed feedbacks'
+        help='Maximum number of allowed feedbacks, do not change unless you want to do more feedbacks which is not recommended at this point. (default 5)'
         )
 
     return vars(parser.parse_args())

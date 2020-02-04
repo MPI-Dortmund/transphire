@@ -15,11 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-try:
-    from PyQt4.QtGui import QWidget, QVBoxLayout, QTabWidget, QTabBar, QStylePainter, QStyleOptionTab, QStyle
-except ImportError:
-    from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QTabBar, QStylePainter, QStyleOptionTab, QStyle
-    from PyQt5.QtCore import QPoint, QRect, QSize
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QTabBar, QStylePainter, QStyleOptionTab, QStyle
+from PyQt5.QtCore import QPoint, QRect
 
 
 class MyTabBar(QTabBar):
