@@ -221,7 +221,6 @@ class SettingsWidget(QWidget):
                 self.edit.setStyleSheet(tu.get_style('unchanged'))
             except AttributeError:
                 self.edit.setCurrentText(self.pre_global)
-                self.edit.blockSignals(False)
                 self.edit.removeItem(0)
                 self.change_color_if_true()
         else:
@@ -231,11 +230,11 @@ class SettingsWidget(QWidget):
                 self.edit.setStyleSheet(tu.get_style('global'))
             except AttributeError:
                 self.pre_global = self.edit.currentText()
-                self.edit.blockSignals(True)
-                self.edit.setStyleSheet(tu.get_style('global'))
                 self.edit.insertItem(0, self.global_value)
                 self.edit.setCurrentText(self.global_value)
+                self.edit.setStyleSheet(tu.get_style('global'))
 
+    @pyqtSlot(str)
     def change_tooltip(self, text):
         edit = self.sender()
         if self.typ != 'PASSWORD':
@@ -256,6 +255,7 @@ class SettingsWidget(QWidget):
             if result:
                 self.edit.setText(input_box.getText())
 
+    @pyqtSlot()
     def change_color_if_true(self):
         """
         Change the color, if the types are all true.
