@@ -17,7 +17,6 @@
 """
 import os
 import sys
-QT_VERSION = 5
 from PyQt5.QtWidgets import QWidget, QLabel, QFileDialog, QVBoxLayout, QComboBox, QLineEdit, QHBoxLayout, QPushButton, QAction
 from PyQt5.QtCore import pyqtSlot, pyqtSignal, Qt
 from PyQt5.QtGui import QKeySequence
@@ -289,12 +288,7 @@ class SettingsWidget(QWidget):
             options=QFileDialog.DontUseNativeDialog
             )
 
-        if QT_VERSION == 4:
-            in_file = in_file
-        elif QT_VERSION == 5:
-            in_file = in_file[0]
-        else:
-            raise ImportError('QT version unknown! Please contact the transphire authors!')
+        in_file = in_file[0]
 
         if in_file != '':
             self.sender().setText(in_file)

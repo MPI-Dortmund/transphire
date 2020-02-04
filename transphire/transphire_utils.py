@@ -27,7 +27,6 @@ import shutil
 import numpy as np
 import pandas as pd
 
-QT_VERSION = 5
 from PyQt5.QtGui import QFont
 
 from transphire.messagebox import MessageBox
@@ -671,16 +670,9 @@ def question(head, text):
     Return:
     True if No, False if Yes
     """
-    if QT_VERSION == 4:
-        message_box = MessageBox(is_question=True)
-        message_box.setText(head, text)
-        result = message_box.exec_()
-    elif QT_VERSION == 5:
-        message_box = MessageBox(is_question=True)
-        message_box.setText(head, text)
-        result = message_box.exec_()
-    else:
-        raise ImportError('QT version unknown! Please contact the transphire authors!')
+    message_box = MessageBox(is_question=True)
+    message_box.setText(head, text)
+    result = message_box.exec_()
     return result
 
 

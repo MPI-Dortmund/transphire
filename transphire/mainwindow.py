@@ -20,7 +20,6 @@ import os
 import re
 import pexpect as pe
 import subprocess
-QT_VERSION = 5
 from PyQt5.QtWidgets import (
     QMainWindow,
     QHBoxLayout,
@@ -639,12 +638,7 @@ class MainWindow(QMainWindow):
                 options=QFileDialog.DontUseNativeDialog
                 )
 
-            if QT_VERSION == 4:
-                file_name = file_name
-            elif QT_VERSION == 5:
-                file_name = file_name[0]
-            else:
-                raise ImportError('QT version unknown! Please contact the transphire authors!')
+            file_name = file_name[0]
 
             if not file_name:
                 return
@@ -784,12 +778,7 @@ class MainWindow(QMainWindow):
                 filter="Text files (*.txt)"
                 )
 
-            if QT_VERSION == 4:
-                file_name = file_name
-            elif QT_VERSION == 5:
-                file_name = file_name[0]
-            else:
-                raise ImportError('QT version unknown! Please contact the transphire authors!')
+            file_name = file_name[0]
 
             if not file_name:
                 return None
