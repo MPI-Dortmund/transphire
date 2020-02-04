@@ -333,6 +333,9 @@ class SettingsContainer(QWidget):
 
     @pyqtSlot(str)
     def update_global(self, text):
+        if self.sender().parent().name not in self.global_dict:
+            return
+
         for entry in self.global_dict[self.sender().parent().name]:
 
             if self.sender().parent().name == 'Bin superres' and text == 'False':

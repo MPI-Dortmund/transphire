@@ -47,6 +47,7 @@ except ImportError:
 from transphire.separator import Separator
 from transphire import transphire_utils as tu
 from transphire import transphire_content as tc
+from transphire import tabdocker
 
 
 class LoadContent(QWidget):
@@ -111,6 +112,12 @@ class LoadContent(QWidget):
                 self.setEnabled(False)
         elif typ in ('Copy', 'Others'):
             items = content_function(settings_folder=settings_folder)
+        elif typ in ('Path'):
+            items, items_old = content_function()
+            tab_widget = tabdocker.TabDocker(self)
+            self.layout.addWidget(tab_widget)
+            tab_widget.add_tab('New')
+            tab_widget.add_tab('Old')
         else:
             items = content_function()
 

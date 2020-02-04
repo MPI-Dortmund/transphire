@@ -554,15 +554,19 @@ def default_path():
         ['SumMovie v1.0.2', 'summovie', str, '', 'FILE', 'Main', ''],
         ['cryolo_gui.py', 'cryolo_gui.py', str, '', 'FILE', 'Main', ''],
         ]
+    items_old = []
+
     function_dict = tu.get_function_dict()
     for key in sorted(function_dict.keys()):
         if function_dict[key]['executable']:
-            if function_dict[key]['has_path']:
+            if function_dict[key]['has_path'] and function_dict[key]['old']:
                 items.append([key, function_dict[key]['has_path'], str, '', 'FILE', 'Advanced', ''])
+            elif function_dict[key]['has_path'] and not function_dict[key]['old']:
+                items_old.append([key, function_dict[key]['has_path'], str, '', 'FILE', 'Advanced', ''])
         else:
             pass
 
-    return items
+    return items, items_old
 
 
 def default_font():

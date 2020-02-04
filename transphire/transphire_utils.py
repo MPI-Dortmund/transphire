@@ -347,6 +347,7 @@ def get_function_dict():
             'has_path': 'MotionCor2',
             'typ': 'Motion',
             'allow_empty': ['-DefectFile', '-Gain', '-Dark'],
+            'old': True,
             }
     function_dict['MotionCor2 >=v1.0.5'] = copy_mod.deepcopy(function_dict['MotionCor2 >=v1.0.0'])
     function_dict['MotionCor2 >=v1.0.5']['content'] = tc.default_motion_cor_2_v1_0_5
@@ -355,6 +356,7 @@ def get_function_dict():
     function_dict['MotionCor2 >=v1.1.0']['content'] = tc.default_motion_cor_2_v1_1_0
 
     function_dict['MotionCor2 >=v1.2.6'] = copy_mod.deepcopy(function_dict['MotionCor2 >=v1.1.0'])
+    function_dict['MotionCor2 >=v1.2.6']['old'] = False
 
     ### CTF Programs
 
@@ -366,9 +368,13 @@ def get_function_dict():
             'has_path': 'ctffind',
             'typ': 'CTF',
             'allow_empty': ['Gain file'],
+            'old': True,
             }
+
     function_dict['CTFFIND4 >=v4.1.10'] = function_dict['CTFFIND4 >=v4.1.8']
-    function_dict['CTFFIND4 >=v4.1.13'] = function_dict['CTFFIND4 >=v4.1.8']
+
+    function_dict['CTFFIND4 >=v4.1.13'] = copy_mod.deepcopy(function_dict['CTFFIND4 >=v4.1.8'])
+    function_dict['CTFFIND4 >=v4.1.13']['old'] = False
 
     function_dict['Gctf >=v1.06'] = {
             'plot': tp.update_ctffind_4_v4_1_8,
@@ -378,16 +384,9 @@ def get_function_dict():
             'has_path': 'Gctf',
             'typ': 'CTF',
             'allow_empty': [],
+            'old': False,
             }
-    function_dict['Gctf >=v1.18'] = {
-            'plot': tp.update_ctffind_4_v4_1_8,
-            'plot_data': ti.import_gctf_v1_06,
-            'content': tc.default_gctf_v1_18,
-            'executable': True,
-            'has_path': 'Gctf_v1.18',
-            'typ': 'CTF',
-            'allow_empty': [],
-            }
+
     function_dict['Gctf >=v1.18'] = copy_mod.deepcopy(function_dict['Gctf >=v1.06'])
     function_dict['Gctf >=v1.18']['content'] = tc.default_gctf_v1_18
 
@@ -399,8 +398,10 @@ def get_function_dict():
             'has_path': 'sp_cter.py',
             'typ': 'CTF',
             'allow_empty': [],
+            'old': True,
             }
-    function_dict['CTER >=v1.3'] = function_dict['CTER >=v1.0']
+    function_dict['CTER >=v1.3'] = copy_mod.deepcopy(function_dict['CTER >=v1.0'])
+    function_dict['CTER >=v1.3']['old'] = False
 
     ### Picking programs
 
@@ -412,6 +413,7 @@ def get_function_dict():
             'has_path': 'cryolo_predict.py',
             'typ': 'Picking',
             'allow_empty': [],
+            'old': True,
             }
     function_dict['crYOLO >=v1.0.5'] = copy_mod.deepcopy(function_dict['crYOLO >=v1.0.4'])
 
@@ -426,6 +428,7 @@ def get_function_dict():
 
     function_dict['crYOLO >=v1.4.1'] = copy_mod.deepcopy(function_dict['crYOLO >=v1.2.2'])
     function_dict['crYOLO >=v1.4.1']['content'] = tc.default_cryolo_v1_4_1
+    function_dict['crYOLO >=v1.4.1']['old'] = False
 
 
     ### Extract programs
@@ -438,6 +441,7 @@ def get_function_dict():
             'has_path': 'sp_window.py',
             'typ': 'Extract',
             'allow_empty': [''],
+            'old': False,
             }
 
 
@@ -451,6 +455,7 @@ def get_function_dict():
             'has_path': 'sp_isac2_gpu.py',
             'typ': 'Class2d',
             'allow_empty': [''],
+            'old': False,
             }
 
 
@@ -464,6 +469,7 @@ def get_function_dict():
             'has_path': 'sp_cinderella_predict.py',
             'typ': 'Select2d',
             'allow_empty': [],
+            'old': False,
             }
 
     ### 2D train programs
@@ -476,6 +482,7 @@ def get_function_dict():
             'has_path': 'cryolo_train.py',
             'typ': 'Train2d',
             'allow_empty': [],
+            'old': False,
             }
 
 
@@ -500,6 +507,7 @@ def get_function_dict():
                 '--meridien_addition',
                 '--sharpening_meridien_addition',
                 ],
+            'old': False,
             }
 
     ### Compression programs
@@ -510,6 +518,7 @@ def get_function_dict():
             'has_path': False,
             'typ': 'Compress',
             'allow_empty': ['--command_uncompress'],
+            'old': False,
             }
 
     ### Other no executable stuff
@@ -522,6 +531,7 @@ def get_function_dict():
             'has_path': False,
             'typ': None,
             'allow_empty': [],
+            'old': False,
             }
     function_dict['Pipeline'] = {
             'plot': None,
@@ -531,6 +541,7 @@ def get_function_dict():
             'has_path': False,
             'typ': None,
             'allow_empty': [],
+            'old': False,
             }
     function_dict['Global'] = {
             'plot': None,
@@ -540,6 +551,7 @@ def get_function_dict():
             'has_path': False,
             'typ': None,
             'allow_empty': ['-Gain'],
+            'old': False,
             }
     function_dict['General'] = {
             'plot': None,
@@ -549,6 +561,7 @@ def get_function_dict():
             'has_path': False,
             'typ': None,
             'allow_empty': ['Rename prefix', 'Rename suffix'],
+            'old': False,
             }
     function_dict['Notification'] = {
             'plot': None,
@@ -558,6 +571,7 @@ def get_function_dict():
             'has_path': False,
             'typ': None,
             'allow_empty': [],
+            'old': False,
             }
     function_dict['Notification_widget'] = {
             'plot': None,
@@ -567,6 +581,7 @@ def get_function_dict():
             'has_path': False,
             'typ': None,
             'allow_empty': [],
+            'old': False,
             }
     function_dict['Others'] = {
             'plot': None,
@@ -576,6 +591,7 @@ def get_function_dict():
             'has_path': False,
             'typ': None,
             'allow_empty': [],
+            'old': False,
             }
     function_dict['Font'] = {
             'plot': None,
@@ -585,6 +601,7 @@ def get_function_dict():
             'has_path': False,
             'typ': None,
             'allow_empty': [],
+            'old': False,
             }
     function_dict['Copy'] = {
             'plot': None,
@@ -594,6 +611,7 @@ def get_function_dict():
             'has_path': False,
             'typ': None,
             'allow_empty': [],
+            'old': False,
             }
     function_dict['Path'] = {
             'plot': None,
@@ -603,6 +621,7 @@ def get_function_dict():
             'has_path': False,
             'typ': None,
             'allow_empty': [],
+            'old': False,
             }
     return function_dict
 
