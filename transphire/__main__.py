@@ -61,16 +61,12 @@ def main(font, root_directory, settings_directory, mount_directory, adjust_width
         try:
             with open('{0}/content_Font.txt'.format(settings_shared), 'r') as file_r:
                 settings = json.load(file_r)
-            app.setStyleSheet(
-                tu.look_and_feel_small(
-                    app=app,
-                    font=settings[0][0]['Font'][0]
-                    )
-                )
         except FileNotFoundError:
-            pass
-    else:
-        app.setStyleSheet(tu.look_and_feel_small(app=app, font=font))
+            font = 5
+        else:
+            font = settings[0][0]['Font'][0]
+
+    app.setStyleSheet(tu.look_and_feel_small(app=app, font=font))
 
     try:
         with open('{0}/content_Others.txt'.format(settings_shared), 'r') as file_r:
@@ -173,7 +169,7 @@ def parse_args():
         )
     parser.add_argument(
         '--font',
-        default=5,
+        default=None,
         type=float,
         nargs='?',
         help='Font size in px (default 5)'
