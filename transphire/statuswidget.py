@@ -39,20 +39,23 @@ class StatusWidget(QWidget):
         # Global content
         self.info_name = QLabel(default_name, self)
         self.info_name.setObjectName('status_info')
-        self.info_name.setStyleSheet('color: white')
+        self.info_name.setStyleSheet('QLabel {color: white}')
+        self.info_name.setToolTip(default_name)
 
         self.info_quota = QLabel(default_quota, self)
         self.info_quota.setObjectName('status_quota')
-        self.info_quota.setStyleSheet('color: white')
+        self.info_quota.setStyleSheet('QLabel {color: white}')
+        self.info_quota.setToolTip(default_quota)
 
         # Content
-        name = QLabel('{0}: '.format(name), self)
-        name.setObjectName('status_name')
-        name.setStyleSheet('color: #68a3c3')
+        name_obj = QLabel('{0}: '.format(name), self)
+        name_obj.setObjectName('status_name')
+        name_obj.setStyleSheet('QLabel {color: #68a3c3}')
+        name_obj.setToolTip(name)
 
         # Layout
         layout = QHBoxLayout(self)
-        layout.addWidget(name)
+        layout.addWidget(name_obj)
         layout.addWidget(self.info_name)
         layout.addWidget(self.info_quota, stretch=1)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -74,7 +77,8 @@ class StatusWidget(QWidget):
         None
         """
         self.info_name.setText(text)
-        self.info_name.setStyleSheet('color: {0}'.format(color))
+        self.info_name.setStyleSheet('QLabel {{color: {0}}}'.format(color))
+        self.info_name.setToolTip(text)
 
     @pyqtSlot(str, str)
     def change_info_quota(self, text, color):
@@ -89,4 +93,5 @@ class StatusWidget(QWidget):
         None
         """
         self.info_quota.setText(text)
-        self.info_quota.setStyleSheet('color: {0}'.format(color))
+        self.info_quota.setStyleSheet('QLabel {{color: {0}}}'.format(color))
+        self.info_quota.setToolTip(text)

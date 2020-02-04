@@ -83,12 +83,17 @@ class ButtonContainer(QWidget):
             ])
         layout_v = QVBoxLayout()
         layout_v.setContentsMargins(0, 0, 0, 0)
-        layout_v.addWidget(QLabel('Chosen template:'))
+        label = QLabel('Chosen template:')
+        label.setToolTip('Chosen template')
+        layout_v.addWidget(label)
+
         self.template_box = QComboBox(parent=self)
         self.template_box.clear()
+        self.template_box.currentTextChanged.connect(self.change_tooltip)
         self.template_box.addItems([entry for entry in templates if entry != 'SHARED'])
         self.template_box.setCurrentText(self.template_name)
         self.template_box.currentTextChanged.connect(self.select_template)
+
         layout.addWidget(self.template_box)
         layout_v.addWidget(self.template_box)
         layout.addLayout(layout_v)
@@ -97,12 +102,14 @@ class ButtonContainer(QWidget):
         layout_v.setContentsMargins(0, 0, 0, 0)
         # About button
         self.show_about = QPushButton('About', self)
+        self.show_about.setToolTip('About')
         self.show_about.clicked.connect(self._show_about)
         self.show_about.setObjectName('button')
         layout_v.addWidget(self.show_about)
 
         # Default settings button
         self.default_settings = QPushButton('Default settings', self)
+        self.default_settings.setToolTip('Default settings')
         self.default_settings.clicked.connect(self._modify_settings)
         self.default_settings.setObjectName('button')
         layout_v.addWidget(self.default_settings)
@@ -112,12 +119,14 @@ class ButtonContainer(QWidget):
         layout_v.setContentsMargins(0, 0, 0, 0)
         # Load button
         self.load_button = QPushButton('Load', self)
+        self.load_button.setToolTip('Load')
         self.load_button.clicked.connect(self.sig_load.emit)
         self.load_button.setObjectName('button')
         layout_v.addWidget(self.load_button)
 
         # Save button
         self.save_button = QPushButton('Save', self)
+        self.save_button.setToolTip('Save')
         self.save_button.clicked.connect(self.sig_save.emit)
         self.save_button.setObjectName('button')
         layout_v.addWidget(self.save_button)
@@ -129,6 +138,7 @@ class ButtonContainer(QWidget):
         layout_v = QVBoxLayout()
         layout_v.setContentsMargins(0, 0, 0, 0)
         self.check_quota = QPushButton('Check quota', self)
+        self.check_quota.setToolTip('Check quota')
         self.check_quota.clicked.connect(self.sig_check_quota.emit)
         self.check_quota.setObjectName('button')
         layout_v.addWidget(self.check_quota)
@@ -140,6 +150,7 @@ class ButtonContainer(QWidget):
         layout_v.setContentsMargins(0, 0, 0, 0)
         # Start/Stop monitor button
         self.start_monitor_button = QPushButton('Monitor', self)
+        self.start_monitor_button.setToolTip('Monitor')
         self.start_monitor_button.clicked.connect(self._start_stop)
         self.start_monitor_button.setObjectName('start')
         self.start_monitor_button.setVisible(True)
@@ -147,6 +158,7 @@ class ButtonContainer(QWidget):
         layout_v.addWidget(self.start_monitor_button)
 
         self.stop_monitor_button = QPushButton('Monitor', self)
+        self.stop_monitor_button.setToolTip('Monitor')
         self.stop_monitor_button.clicked.connect(self._start_stop)
         self.stop_monitor_button.setObjectName('stop')
         self.stop_monitor_button.setVisible(False)
@@ -155,6 +167,7 @@ class ButtonContainer(QWidget):
 
         # Start/Stop button
         self.start_button = QPushButton('Start', self)
+        self.start_button.setToolTip('Start')
         self.start_button.clicked.connect(self._start_stop)
         self.start_button.setObjectName('start')
         self.start_button.setVisible(True)
@@ -162,6 +175,7 @@ class ButtonContainer(QWidget):
         layout_v.addWidget(self.start_button)
 
         self.stop_button = QPushButton('Stop', self)
+        self.stop_button.setToolTip('Stop')
         self.stop_button.clicked.connect(self._start_stop)
         self.stop_button.setObjectName('stop')
         self.stop_button.setVisible(False)
@@ -170,6 +184,10 @@ class ButtonContainer(QWidget):
         layout.addLayout(layout_v)
 
         # Final stretch
+
+    @pyqtSlot(str)
+    def change_tooltip(self, text):
+        self.sender().setToolTip(text)
 
     @pyqtSlot(str)
     def select_template(self, text):

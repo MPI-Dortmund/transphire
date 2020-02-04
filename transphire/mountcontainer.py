@@ -77,7 +77,9 @@ class MountContainer(QWidget):
         for key in sorted(content_temp.keys()):
             layout_h = QHBoxLayout()
             layout_h.addStretch(1)
-            layout_h.addWidget(QLabel(key, self))
+            label = QLabel(key, self)
+            label.setToolTip(key)
+            layout_h.addWidget(label)
             layout_h.addStretch(1)
             layout.addLayout(layout_h)
 
