@@ -1330,7 +1330,6 @@ class ProcessThread(object):
         self.queue_lock.acquire()
         file_list = []
         gain_files = []
-        print('FIND', self.settings['is_superres'].value)
         try:
             file_list = self.recursive_search(
                 directory=self.settings['General']['Search path meta'],
@@ -1341,8 +1340,38 @@ class ProcessThread(object):
         finally:
             self.queue_lock.release()
 
-        print('FIND', self.settings['is_superres'].value)
         if not self.stop.value:
+            dtype_gain = [('root', '|U1200'), ('date', '<i8'), ('time', '<i8'), ('spot', '<i8'), ('gridsquare', '<i8'), ('hole', '<i8')]
+            data_gain = np.empty(
+                len(gain_files),
+                dtype=dtype_gain,
+                )
+
+            for idx, gain_name in enumerate(gain_files):
+                if self.stop.value:
+                    break
+                hole, grid_number, spot1, spot2, date, collect_time = \
+                    tus.extract_time_and_grid_information(
+                        root_name=gain_name.replace('_gain.mrc', ''),
+                        settings=self.settings,
+                        queue_com=self.queue_com,
+                        name=self.name
+                        )
+                data_gain[idx]['root'] = gain_name
+                data_gain[idx]['date'] = int(date)
+                data_gain[idx]['time'] = int(collect_time)
+                data_gain[idx]['spot'] = '{0}{1}'.format(spot1, spot2)
+                data_gain[idx]['gridsquare'] = grid_number
+                data_gain[idx]['hole'] = hole
+
+            tu.mkdir_p(self.settings['gain_folder'])
+            with open(os.path.join(self.settings['gain_folder'], 'translate_gain.csv'), 'a') as gain_translate_file:
+                np.savetxt(gain_translate_file, data_gain, fmt=','.join(['%s']*data_gain.shape[0]))
+
+            with open(os.path.join(self.settings['gain_folder'], 'translate_gain.csv'), 'r') as gain_translate_file:
+
+                gain_data = np.genfromtxt(gain_translate_file, dtype=dtype_gain, delimiter=',')
+
             data = np.empty(
                 len(file_list),
                 dtype=[('root', '|U1200'), ('date', '<i8'), ('time', '<i8'), ('spot', '<i8'), ('gridsquare', '<i8'), ('hole', '<i8')]
@@ -1751,9 +1780,9 @@ class ProcessThread(object):
             name=self.name
             )
 
-        command = '{0} {1} {2}'.format(
+        command = "{0} '{1}' {2}".format(
             command_raw,
-            ' '.join(frames),
+            "' '".join(frames),
             new_stack
             )
 
@@ -1762,7 +1791,7 @@ class ProcessThread(object):
             log_prefix=new_name_stack,
             block_gpu=False,
             gpu_list=[],
-            shell=False
+            shell=True
             )
 
         tus.check_outputs(
@@ -2025,9 +2054,12 @@ class ProcessThread(object):
                 '_pipeCoordX': [r'.*<X>(.*?)</X>.*'],
                 '_pipeCoordY': [r'.*<Y>(.*?)</Y>.*'],
                 '_pipeCoordZ': [r'.*<Z>(.*?)</Z>.*'],
+                '_pipeVoltage': [r'.*<AccelerationVoltage>(.*?)</AccelerationVoltage>.*'],
                 '_pipeDefocusMicroscope': [r'.*<Defocus>(.*?)</Defocus>.*'],
                 '_pipeAppliedDefocusMicroscope': [r'.*<a:Key>AppliedDefocus</a:Key><a:Value .*?>(.*?)</a:Value>.*'],
                 '_pipeDose': [r'.*<a:Key>Dose</a:Key><a:Value .*?>(.*?)</a:Value>.*'],
+                '_pipePhasePlate': [r'.*<a:Key>PhasePlateUsed</a:Key><a:Value .*?>(.*?)</a:Value>.*'],
+                '_pipeSuperResolutionFactor': [r'.*<a:Key>SuperResolutionFactor</a:Key><a:Value .*?>(.*?)</a:Value>.*'],
                 '_pipePixelSize': [r'.*<pixelSize><x><numericValue>(.*?)</numericValue>.*'],
                 '_pipeNrFractions': [r'.*<b:NumberOffractions>(.*?)</b:NumberOffractions>.*', r'<b:StartFrameNumber>'],
                 '_pipeExposureTime': [r'.*<camera>.*?<ExposureTime>(.*?)</ExposureTime>.*'],

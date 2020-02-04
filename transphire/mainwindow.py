@@ -902,6 +902,7 @@ class MainWindow(QMainWindow):
 
         if settings_widget is None:
             self.enable(True)
+            error_list.append('{0} needs to have problems fixed!'.format(key))
             return None
         elif key == 'Frames':
             settings_motion = {}
@@ -1072,6 +1073,9 @@ class MainWindow(QMainWindow):
         settings['meta_folder'] = os.path.join(
             settings['project_folder'], 'Meta'
             )
+        settings['gain_folder'] = os.path.join(
+            settings['project_folder'], 'Gain_files'
+            )
         settings['software_meta_folder'] = os.path.join(
             settings['project_folder'], 'Software_meta'
             )
@@ -1128,8 +1132,7 @@ class MainWindow(QMainWindow):
 
         # Check for continue mode
         if settings is None:
-            tu.message('Please fill non emtpy entries.')
-            result = False
+            return None
         elif os.path.exists(settings['project_folder']):
             result = self.continue_dialog(
                 text1='Output project folder already exists!',

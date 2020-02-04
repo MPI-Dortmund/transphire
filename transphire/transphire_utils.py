@@ -650,6 +650,7 @@ def message(text):
     Return:
     None
     """
+    print(text)
     final_text = []
     for line in text.splitlines():
         final_text.append('\n'.join([line[i:i+80] for i in range(0, len(line), 80)]))

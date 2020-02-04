@@ -49,6 +49,7 @@ def extract_time_and_grid_information(root_name, settings, queue_com, name):
         spot2 = 0
         date = 0
         time = 0
+
     elif settings['General']['Software'] == 'Latitude S':
         if settings['General']['Camera'] in ('Falcon2', 'Falcon3'):
             message = '\n'.join([

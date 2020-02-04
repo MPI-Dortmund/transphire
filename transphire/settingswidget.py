@@ -220,19 +220,20 @@ class SettingsWidget(QWidget):
                 self.edit.setText(self.pre_global)
                 self.edit.setStyleSheet(tu.get_style('unchanged'))
             except AttributeError:
-                self.edit.setCurrentText(self.pre_global)
                 self.edit.removeItem(0)
+                self.edit.setCurrentText(self.pre_global)
                 self.change_color_if_true()
+            self.edit.blockSignals(False)
         else:
+            self.edit.blockSignals(True)
             try:
                 self.pre_global = self.edit.text()
                 self.edit.setText(self.global_value)
-                self.edit.setStyleSheet(tu.get_style('global'))
             except AttributeError:
                 self.pre_global = self.edit.currentText()
                 self.edit.insertItem(0, self.global_value)
                 self.edit.setCurrentText(self.global_value)
-                self.edit.setStyleSheet(tu.get_style('global'))
+            self.edit.setStyleSheet(tu.get_style('global'))
 
     @pyqtSlot(str)
     def change_tooltip(self, text):
@@ -333,11 +334,23 @@ class SettingsWidget(QWidget):
 
         else:
             message = 'Unreachable code! Please contact the TranSPHIRE authors!'
-            print(message)
             tu.message(message)
             return None
 
-        if value:
+        if ' ' in value and (self.typ in ('FILE', 'DIR', 'FILE/CHOICE') or self.name in ('Rename prefix', 'Rename suffix', 'Project name')):
+            self.edit.setStyleSheet(tu.get_style(typ='error'))
+            message = '{0}: {1} needs to be {2}. To avoid problems later, file paths are not allowed to contain whitespaces. If this is the case, please rename the respective folders and files'.format(
+                self.label.text(),
+                value,
+                self.dtype
+                )
+
+            if not quiet:
+                tu.message(message)
+
+            return None
+
+        elif value:
 
             if tu.check_instance(value=value, typ=self.dtype):
                 pass
@@ -347,18 +360,15 @@ class SettingsWidget(QWidget):
 
             else:
                 self.edit.setStyleSheet(tu.get_style(typ='error'))
-                message = '{0}: {1} needs to be {2}'.format(
+                message = '{0}: {1} needs to be {2}.'.format(
                     self.label.text(),
                     value,
                     self.dtype
                     )
 
                 if not quiet:
-                    print(message)
                     tu.message(message)
 
-                else:
-                    pass
                 return None
 
         else:
