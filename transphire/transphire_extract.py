@@ -114,6 +114,11 @@ def create_window_1_2_command(extract_name, file_sum, file_box, file_ctf, output
         else:
             continue
 
+    if settings[settings['Copy']['Picking']]['--filament'] == 'True':
+        command.append('--coordinates_format=cryolo_helical_segmented')
+    else:
+        command.append('--coordinates_format=cryolo')
+
     command.append(';')
     command.append('mkdir -p {0}'.format(os.path.join(output_dir, 'png')))
     command.append(';')
