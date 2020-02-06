@@ -47,6 +47,9 @@ def default_auto_sphire_v1_3():
         ['--mtf', '', str, '', 'FILE', 'Main', '', 'MTF file for the sharpening step'],
         ['--phase_plate', ['False', 'True'], bool, '', 'COMBO', 'Main', '', 'Input is phase_plate.'],
         ['--memory_per_node', '100', int,  '', 'PLAIN', 'Main', '', 'Available memory per node.'],
+        ['--filament_mode', ['False', 'True'], bool,  '', 'COMBO', 'Main', '', 'Filament mode'],
+        ['--filament_width', '100', int,  '--filament_mode:True', 'PLAIN', 'Main', '', 'Filament width in pixel.'],
+        ['--helical_rise', '27.5', float,  '--filament_mode:True', 'PLAIN', 'Main', '', 'Helical rise in Angstrom.'],
 
         ['--skip_meridien', ['False', 'True'], bool,  '', 'COMBO', 'Main', '', 'Skip meridien and just do initial model estimation.'],
         ['--rviper_use_final', ['True', 'False'], bool,  '', 'COMBO', 'Main', '', 'Available memory per node.'],

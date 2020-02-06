@@ -4483,6 +4483,10 @@ class ProcessThread(object):
             ignore_list.append('Minimum classes')
             ignore_list.append('Minimum particles')
             ignore_list.append('--skip_meridien')
+            ignore_list.append('--filament_mode')
+            if self.settings[prog_name]['--filament_mode'] == 'False':
+                ignore_list.append('--filament_width')
+                ignore_list.append('--helical_rise')
 
             ignore_key_list = []
             ignore_key_list.append('--rviper_addition')
