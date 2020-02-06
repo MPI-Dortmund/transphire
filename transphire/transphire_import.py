@@ -688,7 +688,14 @@ def import_gctf_v1_06(name, name_no_feedback, directory_name, import_name='', se
         elif transphire_name == 'defocus_2':
             data['defocus_diff'] = [entry[1]['_rlnDefocusV']-entry[1]['_rlnDefocusU'] for entry in useable_files]
         else:
-            data[transphire_name] = np.nan_to_num([entry[1][dtype_name] for entry in useable_files])
+            data[transphire_name] = [entry[1][dtype_name] for entry in useable_files]
+            try:
+                data[transphire_name][np.isinf(data[transphire_name])] = 0 # Set infinity to 0 to avoid histogram problems
+            except TypeError:
+                pass
+            data[transphire_name] = np.nan_to_num(data[transphire_name], copy=False)
+
+
     data['image'] = jpg_names
 
     data = np.sort(data, order='file_name')

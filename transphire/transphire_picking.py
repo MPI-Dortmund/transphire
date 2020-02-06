@@ -281,7 +281,6 @@ def create_cryolo_v1_4_1_command(
 
     ignore_list.append('--nomerging')
     ignore_list.append('--nosplit')
-
     if settings[picking_name]['--filament'] == 'True':
         command.append('--filament')
         if settings[picking_name]['--nomerging'] == 'True':
