@@ -344,18 +344,23 @@ class ProcessWorker(QObject):
         None
         """
         # Set settings
-        self.settings = settings
         content_process = cp.deepcopy(self.content_process)
-        self.settings['copy_software_meta'] = True
-        if self.settings['General']['Input extension'] in ('dm4'):
-            self.settings['Output extension'] = 'mrc'
+        settings['copy_software_meta'] = True
+        if settings['General']['Input extension'] in ('dm4'):
+            settings['Output extension'] = 'mrc'
         else:
-            self.settings['Output extension'] = self.settings['General']['Input extension']
+            settings['Output extension'] = settings['General']['Input extension']
 
         # Set paths
-        self.settings['software_meta_tar'] = os.path.join(
-            self.settings['tar_folder'], 'Software_meta.tar'
+        settings['software_meta_tar'] = os.path.join(
+            settings['tar_folder'], 'Software_meta.tar'
             )
+
+        if settings['Copy']['Picking'] not in ('False', 'Later'):
+            settings[settings['Copy']['Picking']]['--threshold_old'] = settings[settings['Copy']['Picking']]['--threshold']
+            settings[settings['Copy']['Picking']]['--weights_old'] = settings[settings['Copy']['Picking']]['--weights']
+
+        self.settings = settings
 
         manager = mp.Manager()
         typ_dict = {}
