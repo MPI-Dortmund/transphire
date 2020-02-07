@@ -355,6 +355,7 @@ class ProcessWorker(QObject):
 
         if settings['Copy']['Picking'] not in ('False', 'Later'):
             settings[settings['Copy']['Picking']]['--threshold_old'] = settings[settings['Copy']['Picking']]['--threshold']
+            settings[settings['Copy']['Picking']]['--weights_old'] = settings[settings['Copy']['Picking']]['--weights']
 
         self.settings = settings
 

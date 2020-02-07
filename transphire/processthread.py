@@ -3829,7 +3829,6 @@ class ProcessThread(object):
         finally:
             self.shared_dict['typ']['Picking']['queue_list_lock'].release()
 
-
         folder_name = 'picking_folder_feedback_{0}'.format(self.settings['do_feedback_loop'].value)
         entry_name = 'Picking_folder_feedback_{0}'.format(self.settings['do_feedback_loop'].value)
 
@@ -3975,7 +3974,7 @@ class ProcessThread(object):
                     )
                 file_logs.append(log_files)
 
-            if float(self.settings[self.settings['Copy']['Picking']]['--threshold']) == -1:
+            if float(self.settings[self.settings['Copy']['Picking']]['--threshold']) == -1.0:
                 for file_use, file_name in zip(file_use_list, file_name_list):
                     import_name = tu.get_name(file_use)
                     data, data_orig = tu.get_function_dict()[self.settings['Copy']['Picking']]['plot_data'](
