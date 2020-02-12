@@ -1128,7 +1128,7 @@ class ProcessWorker(QObject):
 
         if os.path.exists(save_file):
             with open(save_file, 'r') as read:
-                lines = [line.rstrip() for line in read.readlines() if line.strip()]
+                lines = [line.strip() for line in read.readlines() if line.strip()]
 
             for line in lines:
                 if self.settings['software_meta_tar'] in line:
@@ -1143,7 +1143,7 @@ class ProcessWorker(QObject):
 
         if os.path.exists(done_file):
             with open(done_file, 'r') as read:
-                lines = [line.rstrip() for line in read.readlines() if line.strip()]
+                lines = [line.strip() for line in read.readlines() if line.strip()]
                 shared_dict_typ['file_number'] = len(lines)
             for line in lines:
                 if self.settings['software_meta_tar'] in line:
@@ -1156,7 +1156,7 @@ class ProcessWorker(QObject):
 
         if os.path.exists(list_file):
             with open(list_file, 'r') as read:
-                lines = [line.rstrip() for line in read.readlines() if line.strip()]
+                lines = [line.strip() for line in read.readlines() if line.strip()]
             for line in lines:
                 if line:
                     queue_list.append(line)
