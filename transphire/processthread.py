@@ -4207,6 +4207,149 @@ class ProcessThread(object):
 
     def run_auto3d(self, root_name):
         """
+        Run AutoSPHIRE.
+        In case of Feedback rounds, just work with what is available.
+        Otherwise, first wait until the required minimum number of classes is reached.
+        Once this condition is met, create the combined classes file and provide it to the first AutoSPHIRE run.
+        Afterwards, when the root_name is None start AutoSPHIRE when the minimum number of particles is met.
+
+        root_name - name of the file to process.
+
+        Returns:
+        None
+        """
+        start_prog = time.time()
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name, 'start process'))
+        def recursive_file_search(folder_name, copy_files):
+            """
+            Helper function to perform a recursion and find files to copy
+
+            folder_name - Name of the current folder to check.
+            copy_files - Output list containing all the found files
+
+            Returns:
+            None - Output saved in copy_files
+            """
+            for name in glob.iglob('{0}/*'.format(folder_name)):
+                if os.path.isdir(name):
+                    recursive_file_search('{0}'.format(name), copy_files)
+                else:
+                    copy_files.append(name)
+
+        self.shared_dict_typ['queue_list_lock'].acquire()
+        try:
+            try:
+                with open(self.shared_dict_typ['number_file'], 'r') as read:
+                    try:
+                        old_n_classes, old_shrink_ratio, old_index, volume = read.read().strip().split('|||')
+                        old_n_classes = int(old_n_classes)
+                        old_index = int(old_index)
+                        old_shrink_ratio = float(old_shrink_ratio)
+                    except ValueError:
+                        old_n_classes = 0
+                        old_index = -1
+                        old_shrink_ratio = -1
+                        volume = 'None'
+            except FileNotFoundError:
+                old_n_classes = 0
+                old_index = -1
+                old_shrink_ratio = -1
+                volume = 'None'
+        finally:
+            self.shared_dict_typ['queue_list_lock'].release()
+
+        # New stack creation, populating the list file, create classes.
+        prog_name = self.settings['Copy']['Auto3d']
+        if root_name != 'None':
+            # Split root_name to get the needed information for this run.
+            feedback_loop, isac_folder, particle_stack, class_average_file = root_name.split('|||')
+            folder_name = 'auto3d_folder_feedback_{0}'.format(feedback_loop)
+
+            # Extract a substack from the good class averages.
+            file_name = tu.get_name(isac_folder)
+            log_prefix = os.path.join(self.settings[folder_name], 'FILES', 'ISAC_{0}'.format(file_name))
+
+            command, check_files, block_gpu, gpu_list, shell, stack_name = ttrain2d.create_substack_command(
+                class_average_name=class_average_file,
+                input_stack=particle_stack,
+                isac_dir=isac_folder,
+                output_dir=log_prefix,
+                settings=self.settings,
+                )
+
+            log_file, err_file = self.run_command(
+                command=command,
+                log_prefix='{0}_substack'.format(log_prefix),
+                block_gpu=block_gpu,
+                gpu_list=gpu_list,
+                shell=shell
+                )
+
+            zero_list = [err_file]
+            non_zero_list = [log_file]
+            non_zero_list.extend(check_files)
+
+            tus.check_outputs(
+                zero_list=zero_list,
+                non_zero_list=non_zero_list,
+                exists_list=[],
+                folder=self.settings[folder_name],
+                command=command
+                )
+
+            copy_files = []
+            recursive_file_search(log_prefix, copy_files)
+            self.copy_extern('Copy_to_work', copy_files)
+
+            with open(log_file, 'r') as read:
+                content = read.read()
+            shrink_ratio = re.search(
+                'ISAC shrink ratio\s*:\s*(0\.\d+)',
+                content,
+                re.MULTILINE
+                ).group(1)
+            n_particles = int(re.search(
+                'Accounted particles\s*:\s*(\d+)',
+                content,
+                re.MULTILINE
+                ).group(1))
+            n_classes = int(re.search(
+                'Provided class averages\s*:\s*(\d+)',
+                content,
+                re.MULTILINE
+                ).group(1))
+
+            # save the current feedback loop, the stack_name, the classes name, and the n_particles to the list file.
+            # the class average file is only used inside of Feedback loops.
+            self.add_to_queue_file(
+                root_name='|||'.join([str(entry) for entry in [feedback_loop, stack_name, n_particles]])
+                )
+
+            output_classes = os.path.join(self.settings[folder_name], 'FILES', 'best_classes.hdf')
+            # In case of feedback, just copy the class average file.
+            if feedback_loop != 0:
+                tu.copy(class_average_file, output_classes)
+
+            # Otherwise if the output classes do not exist, yet. Check if they can be created.
+            elif not os.path.exists(output_classes):
+                new_n_classes = old_n_classes + n_classes
+                n_classes_to_check = int(self.settings[prog_name]['Minimum classes'])
+
+                if new_n_classes >= n_classes_to_check:
+
+
+                with open(self.shared_dict_typ['number_file'], 'w') as write:
+                    write.write('|||'.join([str(new_n_classes), shrink_ratio, str(current_index), volume]))
+
+
+
+        else:
+            prog_name_window = self.settings['Copy']['Extract']
+            prog_name_isac = self.settings['Copy']['Class2d']
+            mount_name = self.settings['Copy']['Copy to work']
+
+    def run_auto3d(self, root_name):
+        """
         Run Particle extraction.
 
         root_name - name of the file to process.
