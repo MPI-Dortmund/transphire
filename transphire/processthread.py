@@ -4220,6 +4220,7 @@ class ProcessThread(object):
         """
         start_prog = time.time()
         self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name, 'start process'))
+
         def recursive_file_search(folder_name, copy_files):
             """
             Helper function to perform a recursion and find files to copy
@@ -4319,34 +4320,68 @@ class ProcessThread(object):
                 re.MULTILINE
                 ).group(1))
 
-            # save the current feedback loop, the stack_name, the classes name, and the n_particles to the list file.
-            # the class average file is only used inside of Feedback loops.
-            self.add_to_queue_file(
-                root_name='|||'.join([str(entry) for entry in [feedback_loop, stack_name, n_particles]])
-                )
-
-            output_classes = os.path.join(self.settings[folder_name], 'FILES', 'best_classes.hdf')
-            # In case of feedback, just copy the class average file.
-            if feedback_loop != 0:
-                tu.copy(class_average_file, output_classes)
-
-            # Otherwise if the output classes do not exist, yet. Check if they can be created.
-            elif not os.path.exists(output_classes):
-                new_n_classes = old_n_classes + n_classes
-                n_classes_to_check = int(self.settings[prog_name]['Minimum classes'])
-
-                if new_n_classes >= n_classes_to_check:
-
-
+            self.shared_dict_typ['queue_list_lock'].acquire()
+            try:
+                if old_shrink_ratio != -1:
+                    assert old_shrink_ratio == float(shrink_ratio), 'Shrink ratios changed! Something is wrong here'
                 with open(self.shared_dict_typ['number_file'], 'w') as write:
-                    write.write('|||'.join([str(new_n_classes), shrink_ratio, str(current_index), volume]))
+                    write.write('|||'.join([str(entry) for entry in [old_n_classes, shrink_ratio, old_index, volume]]))
+                self.add_to_queue_file(
+                    root_name='|||'.join([str(entry) for entry in [feedback_loop, stack_name, n_particles, class_average_file, n_classes]]),
+                    file_name=self.shared_dict_typ['list_file'],
+                    )
+            finally:
+                self.shared_dict_typ['queue_list_lock'].release()
+            return None ### Early exit for the preparation here.
+
+
+        prog_name_window = self.settings['Copy']['Extract']
+        prog_name_isac = self.settings['Copy']['Class2d']
+        mount_name = self.settings['Copy']['Copy to work']
+
+        self.shared_dict_typ['queue_list_lock'].acquire()
+        try:
+            with open(self.shared_dict_typ['list_file'], 'r') as read:
+                lines = [
+                    entry.strip()
+                    for entry in read.readlines()
+                    if entry.strip()
+                    and entry.strip() not in self.shared_dict['bad'][self.typ]
+                    ]
+            lines_to_use = []
+            total_n = 0
+            n_particles_to_check = int(self.settings[prog_name]['Minimum particles'])
+            n_classes_to_check = int(self.settings[prog_name]['Minimum classes'])
+            for line in lines:
+                feedback_loop, stack_name, n_particles, class_average_file, n_classes = line.split('|||')
+                folder_name = 'auto3d_folder_feedback_{0}'.format(feedback_loop)
+                lines_to_use.append(line)
+                if feedback_loop != '0':
+                    break
+
+                elif old_n_classes == 0:
+                    to_check = n_classes_to_check
+                    current_number = int(n_classes)
+
+                else:
+                    to_check = n_particles_to_check
+                    current_number = int(n_particles)
+
+                total_n += current_number
+                if total_n >= to_check:
+                    break
+
+            if not lines_to_use:
+                return None
+
+            output_classes = '{0}/FILES/CLASSES/best_classes.hdf'.format(self.settings[folder_name])
+            if feedback_loop != '0':
 
 
 
-        else:
-            prog_name_window = self.settings['Copy']['Extract']
-            prog_name_isac = self.settings['Copy']['Class2d']
-            mount_name = self.settings['Copy']['Copy to work']
+            self.shared_dict_typ['queue_list_time'] = time.time()
+        finally:
+            self.shared_dict_typ['queue_list_lock'].release()
 
     def run_auto3d(self, root_name):
         """
