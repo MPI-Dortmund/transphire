@@ -4207,6 +4207,184 @@ class ProcessThread(object):
 
     def run_auto3d(self, root_name):
         """
+        Run AutoSPHIRE.
+        In case of Feedback rounds, just work with what is available.
+        Otherwise, first wait until the required minimum number of classes is reached.
+        Once this condition is met, create the combined classes file and provide it to the first AutoSPHIRE run.
+        Afterwards, when the root_name is None start AutoSPHIRE when the minimum number of particles is met.
+
+        root_name - name of the file to process.
+
+        Returns:
+        None
+        """
+        start_prog = time.time()
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name, 'start process'))
+
+        def recursive_file_search(folder_name, copy_files):
+            """
+            Helper function to perform a recursion and find files to copy
+
+            folder_name - Name of the current folder to check.
+            copy_files - Output list containing all the found files
+
+            Returns:
+            None - Output saved in copy_files
+            """
+            for name in glob.iglob('{0}/*'.format(folder_name)):
+                if os.path.isdir(name):
+                    recursive_file_search('{0}'.format(name), copy_files)
+                else:
+                    copy_files.append(name)
+
+        self.shared_dict_typ['queue_list_lock'].acquire()
+        try:
+            try:
+                with open(self.shared_dict_typ['number_file'], 'r') as read:
+                    try:
+                        old_n_classes, old_shrink_ratio, old_index, volume = read.read().strip().split('|||')
+                        old_n_classes = int(old_n_classes)
+                        old_index = int(old_index)
+                        old_shrink_ratio = float(old_shrink_ratio)
+                    except ValueError:
+                        old_n_classes = 0
+                        old_index = -1
+                        old_shrink_ratio = -1
+                        volume = 'None'
+            except FileNotFoundError:
+                old_n_classes = 0
+                old_index = -1
+                old_shrink_ratio = -1
+                volume = 'None'
+        finally:
+            self.shared_dict_typ['queue_list_lock'].release()
+
+        # New stack creation, populating the list file, create classes.
+        prog_name = self.settings['Copy']['Auto3d']
+        if root_name != 'None':
+            # Split root_name to get the needed information for this run.
+            feedback_loop, isac_folder, particle_stack, class_average_file = root_name.split('|||')
+            folder_name = 'auto3d_folder_feedback_{0}'.format(feedback_loop)
+
+            # Extract a substack from the good class averages.
+            file_name = tu.get_name(isac_folder)
+            log_prefix = os.path.join(self.settings[folder_name], 'FILES', 'ISAC_{0}'.format(file_name))
+
+            command, check_files, block_gpu, gpu_list, shell, stack_name = ttrain2d.create_substack_command(
+                class_average_name=class_average_file,
+                input_stack=particle_stack,
+                isac_dir=isac_folder,
+                output_dir=log_prefix,
+                settings=self.settings,
+                )
+
+            log_file, err_file = self.run_command(
+                command=command,
+                log_prefix='{0}_substack'.format(log_prefix),
+                block_gpu=block_gpu,
+                gpu_list=gpu_list,
+                shell=shell
+                )
+
+            zero_list = [err_file]
+            non_zero_list = [log_file]
+            non_zero_list.extend(check_files)
+
+            tus.check_outputs(
+                zero_list=zero_list,
+                non_zero_list=non_zero_list,
+                exists_list=[],
+                folder=self.settings[folder_name],
+                command=command
+                )
+
+            copy_files = []
+            recursive_file_search(log_prefix, copy_files)
+            self.copy_extern('Copy_to_work', copy_files)
+
+            with open(log_file, 'r') as read:
+                content = read.read()
+            shrink_ratio = re.search(
+                'ISAC shrink ratio\s*:\s*(0\.\d+)',
+                content,
+                re.MULTILINE
+                ).group(1)
+            n_particles = int(re.search(
+                'Accounted particles\s*:\s*(\d+)',
+                content,
+                re.MULTILINE
+                ).group(1))
+            n_classes = int(re.search(
+                'Provided class averages\s*:\s*(\d+)',
+                content,
+                re.MULTILINE
+                ).group(1))
+
+            self.shared_dict_typ['queue_list_lock'].acquire()
+            try:
+                if old_shrink_ratio != -1:
+                    assert old_shrink_ratio == float(shrink_ratio), 'Shrink ratios changed! Something is wrong here'
+                with open(self.shared_dict_typ['number_file'], 'w') as write:
+                    write.write('|||'.join([str(entry) for entry in [old_n_classes, shrink_ratio, old_index, volume]]))
+                self.add_to_queue_file(
+                    root_name='|||'.join([str(entry) for entry in [feedback_loop, stack_name, n_particles, class_average_file, n_classes]]),
+                    file_name=self.shared_dict_typ['list_file'],
+                    )
+            finally:
+                self.shared_dict_typ['queue_list_lock'].release()
+            return None ### Early exit for the preparation here.
+
+
+        prog_name_window = self.settings['Copy']['Extract']
+        prog_name_isac = self.settings['Copy']['Class2d']
+        mount_name = self.settings['Copy']['Copy to work']
+
+        self.shared_dict_typ['queue_list_lock'].acquire()
+        try:
+            with open(self.shared_dict_typ['list_file'], 'r') as read:
+                lines = [
+                    entry.strip()
+                    for entry in read.readlines()
+                    if entry.strip()
+                    and entry.strip() not in self.shared_dict['bad'][self.typ]
+                    ]
+            lines_to_use = []
+            total_n = 0
+            n_particles_to_check = int(self.settings[prog_name]['Minimum particles'])
+            n_classes_to_check = int(self.settings[prog_name]['Minimum classes'])
+            for line in lines:
+                feedback_loop, stack_name, n_particles, class_average_file, n_classes = line.split('|||')
+                folder_name = 'auto3d_folder_feedback_{0}'.format(feedback_loop)
+                lines_to_use.append(line)
+                if feedback_loop != '0':
+                    break
+
+                elif old_n_classes == 0:
+                    to_check = n_classes_to_check
+                    current_number = int(n_classes)
+
+                else:
+                    to_check = n_particles_to_check
+                    current_number = int(n_particles)
+
+                total_n += current_number
+                if total_n >= to_check:
+                    break
+
+            if not lines_to_use:
+                return None
+
+            output_classes = '{0}/FILES/CLASSES/best_classes.hdf'.format(self.settings[folder_name])
+            if feedback_loop != '0':
+
+
+
+            self.shared_dict_typ['queue_list_time'] = time.time()
+        finally:
+            self.shared_dict_typ['queue_list_lock'].release()
+
+    def run_auto3d(self, root_name):
+        """
         Run Particle extraction.
 
         root_name - name of the file to process.
