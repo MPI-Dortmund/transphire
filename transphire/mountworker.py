@@ -56,9 +56,9 @@ class MountWorker(QObject):
     sig_calculate_get_quota - Signal emitted to calculate the quota brute force (device|str, total_quota|str, mount_folder|str)
     """
     sig_mount_hdd = pyqtSignal(str)
-    sig_mount = pyqtSignal(str, str, str, str, str, str, str, str, str, str, str)
+    sig_mount = pyqtSignal(str, str, str, str, str, str, str, str, str, str, str, str)
 
-    sig_umount = pyqtSignal(str, str, object)
+    sig_umount = pyqtSignal(str, str, str, object)
 
     sig_success = pyqtSignal(str, str, str)
     sig_error = pyqtSignal(str, str)
@@ -526,8 +526,8 @@ class MountWorker(QObject):
 
         self.refresh_quota()
 
-    @pyqtSlot(str, str, str, str, str, str, str, str, str, str, str)
-    def mount(self, device, user, password, folder, server, typ, domain, version, sec, gid, folder_from_root):
+    @pyqtSlot(str, str, str, str, str, str, str, str, str, str, str, str)
+    def mount(self, device, user, password, folder, server, typ, domain, version, sec, gid, folder_from_root, fixed_folder):
         """
         Mount device except HDD
 
@@ -551,68 +551,8 @@ class MountWorker(QObject):
         self.refresh_clr = 0
         self.refresh_billy = 0
 
-        mount_folder = os.path.join(self.mount_directory, device)
-        self.password_dict[device] = password
-
-        if self._check_existence(mount_folder):
-            self.sig_info.emit('First unmount {0}'.format(device))
-            return None
-        else:
-            pass
-
-        options = ['-o nolock']
-        if typ == 'cifs' or typ == 'smbfs':
-            options.append("username={0},password='{1}',uid={2},vers={3},domain={4},gid={5},sec={6}".format(
-                user,
-                password,
-                os.environ['USER'],
-                version,
-                domain,
-                gid,
-                sec
-                ))
-            if sec == 'krb5' or sec == 'krb5i':
-                options.append("cruid={0}".format(user))
-        elif typ == 'nfs':
-            pass
-        else:
-            print('Mountworker:', typ, ' not known! Exiting here!')
-            sys.exit(1)
-
-        cmd = "sudo -S -k mount.{0} {1} {2}/{3}/ {4}".format(
-            typ,
-            ','.join(options),
-            server,
-            folder,
-            mount_folder
-            )
-
-        idx, value = self._start_process(cmd)
-        if value == 'ERROR: Do you have sudo rights for mounting?':
-            cmd = "sudo -S -k mount {0} {1}/{2}/ {3}".format(
-                ','.join(options),
-                server,
-                folder,
-                mount_folder
-                )
-            idx, value = self._start_process(cmd)
-        else:
-            pass
-        cmd = cmd.replace(password, 'PASSWORD')
-
-        if 'mount error' in value or 'bad UNC' in value:
-            print(cmd, ' - Failed:', value)
-            try:
-                os.rmdir(mount_folder)
-            except OSError:
-                self.sig_info.emit(
-                    'Could not mount {0}: {1}'.format(mount_folder, value)
-                    )
-            self.sig_info.emit(
-                'Could not mount {0}: {1}'.format(mount_folder, value)
-                )
-        elif idx == 0:
-            print(cmd, ' - Worked:', value)
+        if fixed_folder:
+            mount_folder = fixed_folder
             self.refresh_count[device] = 0
             self._write_save_file(
                 user=user,
@@ -623,9 +563,81 @@ class MountWorker(QObject):
                 folder_from_root=folder_from_root,
                 )
         else:
-            print(cmd, ' - Failed:', value)
-            os.rmdir(mount_folder)
-            self.sig_error.emit('Mount failed', device)
+            mount_folder = os.path.join(self.mount_directory, device)
+            self.password_dict[device] = password
+
+            if self._check_existence(mount_folder):
+                self.sig_info.emit('First unmount {0}'.format(device))
+                return None
+            else:
+                pass
+
+            options = ['-o nolock']
+            if typ == 'cifs' or typ == 'smbfs':
+                options.append("username={0},password='{1}',uid={2},vers={3},domain={4},gid={5},sec={6}".format(
+                    user,
+                    password,
+                    os.environ['USER'],
+                    version,
+                    domain,
+                    gid,
+                    sec
+                    ))
+                if sec == 'krb5' or sec == 'krb5i':
+                    options.append("cruid={0}".format(user))
+            elif typ == 'nfs':
+                pass
+            else:
+                print('Mountworker:', typ, ' not known! Exiting here!')
+                sys.exit(1)
+
+            cmd = "sudo -S -k mount.{0} {1} {2}/{3}/ {4}".format(
+                typ,
+                ','.join(options),
+                server,
+                folder,
+                mount_folder
+                )
+
+            idx, value = self._start_process(cmd)
+            if value == 'ERROR: Do you have sudo rights for mounting?':
+                cmd = "sudo -S -k mount {0} {1}/{2}/ {3}".format(
+                    ','.join(options),
+                    server,
+                    folder,
+                    mount_folder
+                    )
+                idx, value = self._start_process(cmd)
+            else:
+                pass
+            cmd = cmd.replace(password, 'PASSWORD')
+
+            if 'mount error' in value or 'bad UNC' in value:
+                print(cmd, ' - Failed:', value)
+                try:
+                    os.rmdir(mount_folder)
+                except OSError:
+                    self.sig_info.emit(
+                        'Could not mount {0}: {1}'.format(mount_folder, value)
+                        )
+                self.sig_info.emit(
+                    'Could not mount {0}: {1}'.format(mount_folder, value)
+                    )
+            elif idx == 0:
+                print(cmd, ' - Worked:', value)
+                self.refresh_count[device] = 0
+                self._write_save_file(
+                    user=user,
+                    folder=folder,
+                    mount_folder=mount_folder,
+                    device=device,
+                    text=user,
+                    folder_from_root=folder_from_root,
+                    )
+            else:
+                print(cmd, ' - Failed:', value)
+                os.rmdir(mount_folder)
+                self.sig_error.emit('Mount failed', device)
 
         self.refresh_quota()
 
@@ -656,8 +668,8 @@ class MountWorker(QObject):
                 folder_from_root,
                 ))
 
-    @pyqtSlot(str, str, object)
-    def umount(self, device_folder, device, thread_object):
+    @pyqtSlot(str, str, str, object)
+    def umount(self, device_folder, device, fixed_folder, thread_object):
         """
         Unmount device
 
@@ -669,6 +681,10 @@ class MountWorker(QObject):
         Return:
         None
         """
+
+        if fixed_folder:
+            self.sig_success.emit('Not connected', device, 'white')
+            return None
 
         if 'hdd' in device_folder and 'HDD' in device_folder:
             mount_folder = '{0}/{1}/{2}'.format(self.mount_directory, device_folder, device)

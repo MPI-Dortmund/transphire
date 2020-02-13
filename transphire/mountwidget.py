@@ -79,20 +79,7 @@ class MountWidget(QWidget):
         self.folder_from_root = content['Folder from root'][0]
         self.mount_worker = mount_worker
         self.thread_object = None
-        if content['Fixed folder']:
-            print(self.name)
-            self.current_folder = content['Fixed folder']
-            self.setVisible(False)
-            #self.mount_worker._write_save_file(
-            #    user='FIXED',
-            #    folder=self.mount_folder,
-            #    mount_folder=mount_folder,
-            #    device=self.mount_folder,
-            #    text='FIXED',
-            #    folder_from_root=,
-            #    )
-        else:
-            self.current_folder = None
+        self.fixed_folder = content['Fixed folder'][0]
 
         self.mount_worker.sig_set_folder.connect(self.set_current_folder)
 
@@ -182,6 +169,7 @@ class MountWidget(QWidget):
                     self.sec,
                     self.gid,
                     self.folder_from_root,
+                    self.fixed_folder,
                     )
             else:
                 print('Wrong identity')
@@ -242,7 +230,8 @@ class MountWidget(QWidget):
             self.mount_worker.sig_umount.emit(
                 self.mount_folder,
                 self.mount_folder,
-                self.thread_object
+                self.thread_object,
+                self.fixed_folder,
                 )
 
     def _check_user(self, login):
@@ -260,6 +249,7 @@ class MountWidget(QWidget):
             default=self.default_user,
             login=login,
             extension=self.extension,
+            fixed_folder=self.fixed_folder,
             parent=self
             )
         dialog.exec_()
