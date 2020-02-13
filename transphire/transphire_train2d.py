@@ -94,6 +94,7 @@ def create_train_command(sum_folder, box_folder, output_dir, name, settings):
 
     ignore_list = []
     ignore_list.append('--fine_tune')
+    ignore_list.append('--use_multithreading')
     for entry in ignore_list:
         if settings[prog_name][entry] == 'True':
             command.append(entry)
