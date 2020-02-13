@@ -80,6 +80,7 @@ class MountWidget(QWidget):
         self.mount_worker = mount_worker
         self.fixed_folder = content['Fixed folder'][0]
         self.thread_object = None
+        self.current_folder = None
 
         self.mount_worker.sig_set_folder.connect(self.set_current_folder)
 
