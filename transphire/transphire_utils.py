@@ -358,7 +358,7 @@ def get_function_dict():
             'allow_empty': [],
             }
     function_dict['crYOLO_train >=v1.5.5'] = copy_mod.deepcopy(function_dict['crYOLO_train >=v1.5.4'])
-    function_dict['crYOLO_train >=v1.5.5']['content'] = tc.default_cryolo_v1_5_5
+    function_dict['crYOLO_train >=v1.5.5']['content'] = tc.default_cryolo_train_v1_5_5
 
 
     ### auto processing programs
