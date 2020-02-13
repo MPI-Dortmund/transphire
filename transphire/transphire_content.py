@@ -951,7 +951,7 @@ def default_mount(hdd=None):
         ['Quota command', '', str, '', 'PLAIN', '', ''],
         ['Quota / TB', '', float, '', 'PLAIN', '', ''],
         ['Typ', ['Import', 'Copy_to_work', 'Copy_to_backup'], str, '', 'COMBO', '', ''],
-        ['Fixed folder', '', str, '', 'FILE', '', 'Provide a fixed folder in case you do not want/can remount in every session.'],
+        ['Fixed folder', '', str, '', 'DIR', '', 'Provide a fixed folder in case you do not want/can remount in every session.'],
         ]
     return items
 
