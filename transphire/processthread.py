@@ -4249,11 +4249,11 @@ class ProcessThread(object):
                     except ValueError:
                         old_index = -1
                         old_shrink_ratio = -1
-                        volume = self.settings[prog_name]['Input volume'] if self.settings[prog_name]['Input volume'] else 'XXXNoneXXX'
+                        volume = self.settings[prog_name]['input_volume'] if self.settings[prog_name]['input_volume'] else 'XXXNoneXXX'
             except FileNotFoundError:
                 old_index = -1
                 old_shrink_ratio = -1
-                volume = self.settings[prog_name]['Input volume'] if self.settings[prog_name]['Input volume'] else 'XXXNoneXXX'
+                volume = self.settings[prog_name]['input_volume'] if self.settings[prog_name]['input_volume'] else 'XXXNoneXXX'
 
             # New stack creation, populating the list file, create classes.
             if root_name != 'None':
@@ -4456,8 +4456,8 @@ class ProcessThread(object):
                 cmd.append('--skip_adjust_rviper')
                 cmd.append('--meridien_input_volume={0}'.format(volume))
 
-            if self.settings[prog_name]['Input mask']:
-                cmd.append('--meridien_input_mask={0}'.format(self.settings[prog_name]['Input mask']))
+            if self.settings[prog_name]['input_mask']:
+                cmd.append('--meridien_input_mask={0}'.format(self.settings[prog_name]['input_mask']))
 
             cmd.append('--skip_restack')
             cmd.append('--skip_ctf_refine')
