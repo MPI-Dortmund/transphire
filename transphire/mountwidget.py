@@ -78,8 +78,8 @@ class MountWidget(QWidget):
         self.mount_folder = self.name.replace(' ', '_')
         self.folder_from_root = content['Folder from root'][0]
         self.mount_worker = mount_worker
-        self.thread_object = None
         self.fixed_folder = content['Fixed folder'][0]
+        self.thread_object = None
 
         self.mount_worker.sig_set_folder.connect(self.set_current_folder)
 

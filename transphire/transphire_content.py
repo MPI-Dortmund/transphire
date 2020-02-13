@@ -53,7 +53,7 @@ def default_auto_sphire_v1_3():
 
         ['--skip_meridien', ['False', 'True'], bool,  '', 'COMBO', 'Main', '', 'Skip meridien and just do initial model estimation.'],
         ['--rviper_use_final', ['True', 'False'], bool,  '', 'COMBO', 'Main', '', 'Available memory per node.'],
-        ['Viper filter frequency', '6', float,  '', 'COMBO', 'Main', '', 'Viper filter frequency in Angstroms.'],
+        ['Viper filter frequency', '6', float,  '', 'PLAIN', 'Main', '', 'Viper filter frequency in Angstroms.'],
         ['--sharpening_meridien_ndilation', '2', int,  '', 'PLAIN', 'Main', '', 'Available memory per node.'],
         ['--sharpening_meridien_soft_edge', '1', str,  '', 'PLAIN', 'Main', '', 'Available memory per node.'],
 
