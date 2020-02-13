@@ -96,8 +96,11 @@ def create_train_command(sum_folder, box_folder, output_dir, name, settings):
     ignore_list.append('--fine_tune')
     ignore_list.append('--use_multithreading')
     for entry in ignore_list:
-        if settings[prog_name][entry] == 'True':
-            command.append(entry)
+        try:
+            if settings[prog_name][entry] == 'True':
+                command.append(entry)
+        except KeyError:
+            pass
 
     ignore_list.append('Split Gpu?')
     ignore_list.append('--gpu')

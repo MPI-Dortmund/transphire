@@ -180,6 +180,36 @@ def default_cinderella_v0_3_1():
     return items
 
 
+def default_cryolo_train_v1_5_5():
+    """
+    Content of crYOLO_train version 1.5.5
+
+    Arguments:
+    None
+
+    Return:
+    Content items as list
+    """
+    items = [
+        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['Box size', '205', int, '', 'PLAIN', 'Main', 'Box size used for retraining. Should be quite narrow.'],
+        ['--warmup', '5', int, '', 'PLAIN', 'Main', 'Number of warmup epochs. Set it to zero if you fine tune a model.'],
+        ['--num_cpu', '-1', int, '', 'PLAIN', 'Main', 'Number of CPUs used during training. By default it will use half of the available CPUs.'],
+        ['--early', '10', int, '', 'PLAIN', 'Main', 'Number of CPUs used during training. By default it will use half of the available CPUs.'],
+        ['--fine_tune', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Set it to true if you only want to use the fine tune mode. When using the fine tune mode, only the last layers of your network are trained and youhave to specify pretrained_weights (see action "config"->"Training options") You typically use a general model as pretrained weights.'],
+        ['--use_multithreading', ['True', 'False'], bool, '', 'COMBO', 'Main', 'If python multiprocessing leads to problems during training (e.g. freezing, dying workers) use multithreading instead of multiprocessing.'],
+        ['--layers_fine_tune', '2', int, '--fine_tune:True', 'PLAIN', 'Main', 'Layers to be trained when using fine tuning.'],
+        ['--gpu', '0', [int]*99, '', 'PLAIN', 'Advanced', 'Specifiy which gpu\'s should be used.'],
+        ['--gpu_fraction', '1.0', float, '', 'PLAIN', 'Advanced', 'Specify the fraction of memory per GPU used by crYOLO during prediction. Only values between 0.0 and 1.0 are allowed.'],
+        ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT A CRYOLO TRAIN OPTION. Split the gpu values specified in --gpu to be able to run mutliple crYOLO jobs in parallel.'],
+        ['--train_times', '1', int, '', 'PLAIN', 'Main', 'How often each image is presented to the network during one epoch. The default should be kept until you have many training images.'],
+        ['Maximum micrographs', '50', int, '', 'PLAIN', 'Advanced', 'NOT A CRYOLO TRAIN OPTION. Maximum number of randomly selected micrographs to consider for training.'],
+        ]
+    return items
+
+
 def default_cryolo_train_v1_5_4():
     """
     Content of crYOLO_train version 1.5.4
@@ -199,7 +229,6 @@ def default_cryolo_train_v1_5_4():
         ['--num_cpu', '-1', int, '', 'PLAIN', 'Main', 'Number of CPUs used during training. By default it will use half of the available CPUs.'],
         ['--early', '10', int, '', 'PLAIN', 'Main', 'Number of CPUs used during training. By default it will use half of the available CPUs.'],
         ['--fine_tune', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Set it to true if you only want to use the fine tune mode. When using the fine tune mode, only the last layers of your network are trained and youhave to specify pretrained_weights (see action "config"->"Training options") You typically use a general model as pretrained weights.'],
-        ['--use_multithreading', ['True', 'False'], bool, '', 'COMBO', 'Main', 'If python multiprocessing leads to problems during training (e.g. freezing, dying workers) use multithreading instead of multiprocessing.'],
         ['--layers_fine_tune', '2', int, '--fine_tune:True', 'PLAIN', 'Main', 'Layers to be trained when using fine tuning.'],
         ['--gpu', '0', [int]*99, '', 'PLAIN', 'Advanced', 'Specifiy which gpu\'s should be used.'],
         ['--gpu_fraction', '1.0', float, '', 'PLAIN', 'Advanced', 'Specify the fraction of memory per GPU used by crYOLO during prediction. Only values between 0.0 and 1.0 are allowed.'],
