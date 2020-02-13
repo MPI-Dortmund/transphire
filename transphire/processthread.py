@@ -4479,6 +4479,7 @@ class ProcessThread(object):
             ignore_list.append('Use SSH')
             ignore_list.append('--mtf')
             ignore_list.append('input_volume')
+            ignore_list.append('Viper filter frequency')
             ignore_list.append('input_mask')
             ignore_list.append('SSH username')
             ignore_list.append('SSH password')
@@ -4496,6 +4497,13 @@ class ProcessThread(object):
             ignore_key_list.append('--mask_rviper_addition')
             ignore_key_list.append('--meridien_addition')
             ignore_key_list.append('--sharpening_meridien_addition')
+
+            filter_freq = min(
+                float(self.settings[prog_name]['--apix']) / old_shrink_ratio / float(self.settings[prog_name]['Viper filter frequency']),
+                0.5
+                )
+
+            self.settings[prog_name]['--rviper_addition'] = ' '.join('--fl={0}'.format(filter_freq), self.settings[prog_name]['--rviper_addition'])
 
             for key in self.settings[prog_name]:
                 if key in ignore_list:
@@ -4679,7 +4687,7 @@ class ProcessThread(object):
                         pass
 
             with open(self.shared_dict_typ['number_file'], 'w') as write:
-                write.write('|||'.join([shrink_ratio, current_index, volume]))
+                write.write('|||'.join([str(entry) for entry in [old_shrink_ratio, current_index, volume]]))
 
             with open(self.shared_dict_typ['list_file'], 'r') as read:
                 lines = [
