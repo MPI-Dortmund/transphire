@@ -684,6 +684,10 @@ class MountWorker(QObject):
 
         if fixed_folder:
             self.sig_success.emit('Not connected', device, 'white')
+            device = device.split('/')[-1]
+            with open(self.save_files[device], 'w') as write:
+                write.write('')
+            self.refresh_quota()
             return None
 
         if 'hdd' in device_folder and 'HDD' in device_folder:

@@ -230,8 +230,8 @@ class MountWidget(QWidget):
             self.mount_worker.sig_umount.emit(
                 self.mount_folder,
                 self.mount_folder,
-                self.thread_object,
                 self.fixed_folder,
+                self.thread_object,
                 )
 
     def _check_user(self, login):
@@ -252,7 +252,10 @@ class MountWidget(QWidget):
             fixed_folder=self.fixed_folder,
             parent=self
             )
-        dialog.exec_()
+        if not self.extension and self.fixed_folder:
+            dialog._my_accept()
+        else:
+            dialog.exec_()
         if dialog.result():
             return dialog.username, dialog.password, dialog.folder
         else:

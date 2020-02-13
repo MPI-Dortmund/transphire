@@ -116,8 +116,6 @@ class PasswordDialog(QDialog):
         # Events
         button_accept.clicked.connect(self._my_accept)
         button_reject.clicked.connect(self.reject)
-        if fixed_folder and not self.extension:
-            self.accept.emit()
 
     @pyqtSlot()
     def _my_accept(self):
