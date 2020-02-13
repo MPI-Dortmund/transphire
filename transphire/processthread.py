@@ -4420,7 +4420,7 @@ class ProcessThread(object):
                     non_zero_list=non_zero_list,
                     exists_list=[],
                     folder=self.settings[folder_name],
-                    command=command
+                    command=cmd
                     )
 
             if feedback_loop != '0':
@@ -4526,7 +4526,7 @@ class ProcessThread(object):
                 non_zero_list=non_zero_list,
                 exists_list=[],
                 folder=self.settings[folder_name],
-                command=command
+                command=cmd
                 )
 
             execute_command = []
@@ -4628,7 +4628,7 @@ class ProcessThread(object):
                     non_zero_list=non_zero_list,
                     exists_list=[],
                     folder=self.settings[folder_name],
-                    command=command
+                    command=cmd
                     )
 
             meridien_dir = '{0}/0002_MERIDIEN'.format(log_prefix)
