@@ -4679,7 +4679,7 @@ class ProcessThread(object):
                         pass
 
             with open(self.shared_dict_typ['number_file'], 'w') as write:
-                write.write('|||'.join([shrink_ratio, current_index, volume]))
+                write.write('|||'.join([old_shrink_ratio, current_index, volume]))
 
             with open(self.shared_dict_typ['list_file'], 'r') as read:
                 lines = [
