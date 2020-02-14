@@ -4323,6 +4323,7 @@ class ProcessThread(object):
                     root_name='|||'.join([str(entry) for entry in [feedback_loop, stack_name, n_particles, class_average_file, n_classes]]),
                     file_name=self.shared_dict_typ['list_file'],
                     )
+                self.shared_dict_typ['queue_list'].append('|||'.join([str(entry) for entry in [feedback_loop, stack_name, n_particles, class_average_file, n_classes]]))
                 return None ### Early exit for the preparation here.
 
 
@@ -4411,6 +4412,8 @@ class ProcessThread(object):
                     gpu_list=[],
                     shell=False
                     )
+
+                self.copy_extern('Copy_to_work', [output])
 
                 zero_list = [err_file]
                 non_zero_list = [log_file]
@@ -4503,7 +4506,7 @@ class ProcessThread(object):
                 0.5
                 )
 
-            self.settings[prog_name]['--rviper_addition'] = ' '.join('--fl={0}'.format(filter_freq), self.settings[prog_name]['--rviper_addition'])
+            self.settings[prog_name]['--rviper_addition'] = ' '.join(['--fl={0}'.format(filter_freq), self.settings[prog_name]['--rviper_addition']])
 
             for key in self.settings[prog_name]:
                 if key in ignore_list:
@@ -4553,7 +4556,6 @@ class ProcessThread(object):
                 execute_command.append('cd')
                 execute_command.append('/{0}'.format(self.settings['Mount'][mount_name]['current_folder']))
                 execute_command.append(';')
-                execute_command.append(self.settings[prog_name]['--mpi_submission_command'])
                 if self.settings['General']['Project directory'] != '.':
                     with open(submission_on_work, 'r') as read:
                         content = read.read()
@@ -4577,6 +4579,10 @@ class ProcessThread(object):
                 cmd.append(self.settings[prog_name]['--mpi_submission_command'])
                 new_file = submission_on_work
 
+            execute_command.append('rm -rf')
+            execute_command.append(os.path.join(os.path.dirname(new_file), '00*'))
+            execute_command.append(';')
+            execute_command.append(self.settings[prog_name]['--mpi_submission_command'])
             execute_command.append('/'.join([entry for entry in new_file.split('/') if entry]))
 
             cmd.append("'{0}'".format(' '.join(execute_command)))
@@ -4695,6 +4701,9 @@ class ProcessThread(object):
                     for entry in read.readlines()
                     if entry.strip() and entry.strip() not in lines_to_use
                     ]
+
+            for entry in lines_to_use:
+                self.shared_dict_typ['queue_list'].remove(entry)
 
             with open(self.shared_dict_typ['list_file'], 'w') as write:
                 write.write('\n'.join(lines))
