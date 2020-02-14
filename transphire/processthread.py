@@ -4370,7 +4370,7 @@ class ProcessThread(object):
                 return None
 
             current_index = old_index + 1
-            do_viper = True
+            create_classes = False
             log_prefix = os.path.join(
                 self.settings[folder_name],
                 'AUTOSPHIRE_{0:03d}'.format(current_index),
@@ -4385,10 +4385,10 @@ class ProcessThread(object):
                 index_list = [1, 3]
                 output_list = [output_stack, output_classes]
             elif not os.path.exists(output_classes) and volume == 'XXXNoneXXX':
+                create_classes = True
                 index_list = [3]
                 output_list = [output_classes]
             elif os.path.exists(output_classes) or volume != 'XXXNoneXXX':
-                do_viper = False
                 index_list = [1]
                 output_list = [output_stack]
             else:
@@ -4426,9 +4426,7 @@ class ProcessThread(object):
                     command=cmd
                     )
 
-            if feedback_loop != '0':
-                pass
-            elif do_viper:
+            if create_classes:
                 return None
             else:
                 assert os.path.exists(output_classes) or volume != 'XXXNoneXXX', 'There should be classes or a volume present at this point of the code'
@@ -4451,13 +4449,15 @@ class ProcessThread(object):
                 cmd.append('--skip_meridien')
                 volume = 'SKIP_MERIDIEN'
 
-            elif do_viper:
+            elif os.path.exists(output_classes) and volume == 'XXXNoneXXX':
                 cmd.append('--rviper_input_stack={0}'.format(output_classes))
                 cmd.append('--adjust_rviper_resample={0}'.format(1/old_shrink_ratio))
-            else:
+            elif volume != 'XXXNoneXXX':
                 cmd.append('--skip_rviper')
                 cmd.append('--skip_adjust_rviper')
                 cmd.append('--meridien_input_volume={0}'.format(volume))
+            else:
+                assert False, 'Unreachable code'
 
             if self.settings[prog_name]['input_mask']:
                 cmd.append('--meridien_input_mask={0}'.format(self.settings[prog_name]['input_mask']))
@@ -4506,6 +4506,7 @@ class ProcessThread(object):
                 0.5
                 )
 
+            tmp = self.settings[prog_name]['--rviper_addition']
             self.settings[prog_name]['--rviper_addition'] = ' '.join(['--fl={0}'.format(filter_freq), self.settings[prog_name]['--rviper_addition']])
 
             for key in self.settings[prog_name]:
@@ -4519,6 +4520,7 @@ class ProcessThread(object):
                     cmd.append(
                         '{0}'.format(self.settings[prog_name][key])
                         )
+            self.settings[prog_name]['--rviper_addition'] = tmp
 
             cmd = ' '.join(cmd)
             log_file, err_file = self.run_command(
