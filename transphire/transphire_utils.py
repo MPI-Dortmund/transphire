@@ -236,6 +236,9 @@ def get_function_dict():
 
     function_dict['MotionCor2 >=v1.2.6'] = copy_mod.deepcopy(function_dict['MotionCor2 >=v1.1.0'])
 
+    function_dict['MotionCor2 >=v1.3.0'] = copy_mod.deepcopy(function_dict['MotionCor2 >=v1.1.0'])
+    function_dict['MotionCor2 >=v1.3.0']['content'] = tc.default_motion_cor_2_v1_3_0
+
     ### CTF Programs
 
     function_dict['CTFFIND4 >=v4.1.8'] = {
