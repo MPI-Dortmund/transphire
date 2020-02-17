@@ -82,11 +82,11 @@ class StatusContainer(QWidget):
 
         content_temp = []
         for entry in content_mount:
-            content = {}
+            my_content = {}
             for widget in entry:
                 for key in widget:
-                    content[key] = widget[key]
-            content_temp.append(content)
+                    my_content[key] = widget[key]
+            content_temp.append(my_content)
 
         # Content
         for entry in content_temp:
@@ -134,7 +134,13 @@ class StatusContainer(QWidget):
                 self.content[name] = StatusWidget(name=name, default_name='00|00', default_quota='Not running')
                 layout_v1.addWidget(self.content[name])
 
-        log_viewer = lv.LogViewer(self)
+        layout_v1.addWidget(Separator(typ='horizontal', color='grey', parent=self))
+
+        log_viewer = lv.LogViewer(
+            show_indicators=True,
+            file_name='',
+            parent=self
+            )
         layout_v1.addWidget(log_viewer)
 
         # Add picture

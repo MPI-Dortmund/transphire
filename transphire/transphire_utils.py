@@ -1535,8 +1535,12 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
     QToolTip {0}
     """.format(tooltip_style())
 
+    plain_style = """
+    QPlainTextEdit { background-color: rgba(229, 229, 229, 50); color: white}
+    """
 
-    style = '\n'.join([style_widgets, button_style, label_style, edit_style, check_style, combo_style, tool_style])
+
+    style = '\n'.join([style_widgets, button_style, label_style, edit_style, check_style, combo_style, tool_style, plain_style])
     return style
 
 def tooltip_style():
@@ -1587,6 +1591,8 @@ def get_style(typ):
         color = '#e34234'
     elif typ == 'global':
         color = 'yellow'
+    elif typ == 'white':
+        color = 'white'
     elif typ == 'unchanged':
         color = 'black'
     elif typ == 'changed':

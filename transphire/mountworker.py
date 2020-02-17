@@ -563,12 +563,6 @@ class MountWorker(QObject):
             mount_folder = os.path.join(self.mount_directory, device)
             self.password_dict[device] = password
 
-            if self._check_existence(mount_folder):
-                self.sig_info.emit('First unmount {0}'.format(device))
-                return None
-            else:
-                pass
-
             options = ['-o nolock']
             if typ == 'cifs' or typ == 'smbfs':
                 options.append("username={0},password='{1}',uid={2},vers={3},domain={4},gid={5},sec={6}".format(
