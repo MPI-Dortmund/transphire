@@ -4318,65 +4318,63 @@ class ProcessThread(object):
 
     def run_auto3d(self, root_name):
         """
-        Run Particle extraction.
+        Run AutoSPHIRE.
+        In case of Feedback rounds, just work with what is available.
+        Otherwise, first wait until the required minimum number of classes is reached.
+        Once this condition is met, create the combined classes file and provide it to the first AutoSPHIRE run.
+        Afterwards, when the root_name is None start AutoSPHIRE when the minimum number of particles is met.
 
         root_name - name of the file to process.
 
         Returns:
         None
         """
+        start_prog = time.time()
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name, 'start process'))
+
         def recursive_file_search(folder_name, copy_files):
+            """
+            Helper function to perform a recursion and find files to copy
+
+            folder_name - Name of the current folder to check.
+            copy_files - Output list containing all the found files
+
+            Returns:
+            None - Output saved in copy_files
+            """
             for name in glob.iglob('{0}/*'.format(folder_name)):
                 if os.path.isdir(name):
                     recursive_file_search('{0}'.format(name), copy_files)
                 else:
                     copy_files.append(name)
 
-        if root_name == 'None':
-            self.shared_dict_typ['queue_list_lock'].acquire()
-            try:
-                self.shared_dict_typ['queue_list_time'] = time.time() * 100
-                self.shared_dict_typ['queue_list'][:] = []
-            finally:
-                self.shared_dict_typ['queue_list_lock'].release()
-            return None
-        else:
-            feedback_loop, isac_folder, particle_stack, class_average_file = root_name.split('|||')
-
-        folder_name = 'auto3d_folder_feedback_{0}'.format(feedback_loop)
         prog_name = self.settings['Copy']['Auto3d']
-        prog_name_window = self.settings['Copy']['Extract']
-        prog_name_isac = self.settings['Copy']['Class2d']
-        mount_name = self.settings['Copy']['Copy to work']
-
-        start_prog = time.time()
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name, 'start process'))
-
-        if root_name.endswith('_good.hdf'):
-            self.shared_dict_typ['queue_list_lock'].acquire()
+        self.shared_dict_typ['queue_list_lock'].acquire()
+        try:
             try:
-                try:
-                    with open(self.shared_dict_typ['number_file'], 'r') as read:
-                        try:
-                            old_n_particles, old_n_classes, old_shrink_ratio, old_index, volume, mask = read.read().strip().split('|||')
-                            old_n_particles = int(old_n_particles)
-                            old_n_classes = int(old_n_classes)
-                            old_index = int(old_index)
-                        except ValueError:
-                            old_n_particles = 0
-                            old_n_classes = 0
-                            old_index = -1
-                            volume = 'None'
-                            mask = 'None'
-                except FileNotFoundError:
-                    old_n_particles = 0
-                    old_n_classes = 0
-                    old_index = -1
-                    volume = 'None'
-                    mask = 'None'
+                with open(self.shared_dict_typ['number_file'], 'r') as read:
+                    try:
+                        old_shrink_ratio, old_index, volume = read.read().strip().split('|||')
+                        old_index = int(old_index)
+                        old_shrink_ratio = float(old_shrink_ratio)
+                    except ValueError:
+                        old_index = -1
+                        old_shrink_ratio = -1
+                        volume = self.settings[prog_name]['input_volume'] if self.settings[prog_name]['input_volume'] else 'XXXNoneXXX'
+            except FileNotFoundError:
+                old_index = -1
+                old_shrink_ratio = -1
+                volume = self.settings[prog_name]['input_volume'] if self.settings[prog_name]['input_volume'] else 'XXXNoneXXX'
 
+            # New stack creation, populating the list file, create classes.
+            if root_name != 'None':
+                # Split root_name to get the needed information for this run.
+                feedback_loop, isac_folder, particle_stack, class_average_file = root_name.split('|||')
+                folder_name = 'auto3d_folder_feedback_{0}'.format(feedback_loop)
+
+                # Extract a substack from the good class averages.
                 file_name = tu.get_name(isac_folder)
-                log_prefix = os.path.join(self.settings[folder_name], 'AUTOSPHIRE_{0:03d}_FILES'.format(old_index+1), 'ISAC_{0}'.format(file_name))
+                log_prefix = os.path.join(self.settings[folder_name], 'FILES', 'ISAC_{0}'.format(file_name))
 
                 command, check_files, block_gpu, gpu_list, shell, stack_name = ttrain2d.create_substack_command(
                     class_average_name=class_average_file,
@@ -4428,108 +4426,121 @@ class ProcessThread(object):
                     re.MULTILINE
                     ).group(1))
 
+                if old_shrink_ratio != -1:
+                    assert old_shrink_ratio == float(shrink_ratio), 'Shrink ratios changed! Something is wrong here'
+                with open(self.shared_dict_typ['number_file'], 'w') as write:
+                    write.write('|||'.join([str(entry) for entry in [shrink_ratio, old_index, volume]]))
                 self.add_to_queue_file(
-                    root_name='|||'.join([root_name, stack_name]),
+                    root_name='|||'.join([str(entry) for entry in [feedback_loop, stack_name, n_particles, class_average_file, n_classes]]),
                     file_name=self.shared_dict_typ['list_file'],
                     )
+                self.shared_dict_typ['queue_list'].append('|||'.join([str(entry) for entry in [feedback_loop, stack_name, n_particles, class_average_file, n_classes]]))
+                return None ### Early exit for the preparation here.
 
-                new_n_particles = old_n_particles + n_particles
-                new_n_classes = old_n_classes + n_classes
 
-                n_particles_to_check = int(self.settings[self.settings['Copy']['Auto3d']]['Minimum particles'])
-                n_classes_to_check = int(self.settings[self.settings['Copy']['Auto3d']]['Minimum classes'])
+            prog_name_window = self.settings['Copy']['Extract']
+            prog_name_isac = self.settings['Copy']['Class2d']
+            mount_name = self.settings['Copy']['Copy to work']
 
-                if (new_n_particles > n_particles_to_check and new_n_classes > n_classes_to_check) or feedback_loop != '0':
-                    current_index = old_index + 1
-                    with open(self.shared_dict_typ['number_file'], 'w') as write:
-                        write.write('|||'.join(['0', '0', shrink_ratio, str(current_index), volume, mask]))
+            with open(self.shared_dict_typ['list_file'], 'r') as read:
+                lines = [
+                    entry.strip()
+                    for entry in read.readlines()
+                    if entry.strip()
+                    ]
+            lines_to_use = []
+            total_n = 0
+            n_particles_to_check = int(self.settings[prog_name]['Minimum particles'])
+            n_classes_to_check = int(self.settings[prog_name]['Minimum classes'])
 
-                    with open(self.shared_dict_typ['list_file'], 'r') as read:
-                        list_content = read.read().splitlines()
-                    with open(self.shared_dict_typ['list_file'], 'w') as read:
-                        pass
+            for line in lines:
+                feedback_loop, stack_name, n_particles, class_average_file, n_classes = line.split('|||')
+                folder_name = 'auto3d_folder_feedback_{0}'.format(feedback_loop)
+                output_classes = '{0}/FILES/CLASSES/best_classes.hdf'.format(self.settings[folder_name])
+                if feedback_loop != '0':
+                    lines_to_use = [line]
+                    break
+
+                elif not os.path.exists(output_classes) and volume == 'XXXNoneXXX':
+                    to_check = n_classes_to_check
+                    current_number = int(n_classes)
+
+                elif os.path.exists(output_classes) or volume != 'XXXNoneXXX':
+                    to_check = n_particles_to_check
+                    current_number = int(n_particles)
 
                 else:
-                    with open(self.shared_dict_typ['number_file'], 'w') as write:
-                        write.write('|||'.join([str(new_n_particles), str(new_n_classes), shrink_ratio, str(old_index), volume, mask]))
+                    assert False, 'Unreachable code'
 
-                    self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name, 'stop early 1'))
-                    return None
+                lines_to_use.append(line)
+                total_n += current_number
+                if total_n >= to_check:
+                    break
 
-            finally:
-                self.shared_dict_typ['queue_list_lock'].release()
+            if not lines_to_use:
+                return None
 
-        else:
-            self.shared_dict_typ['queue_list_lock'].acquire()
-            try:
-                self.add_to_queue_file(
-                    root_name=root_name,
-                    file_name=self.shared_dict_typ['list_file'],
-                    )
-            finally:
-                self.shared_dict_typ['queue_list_lock'].release()
-            self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name, 'stop early 2'))
-            return None
-
-        try:
-
-            log_prefix = os.path.join(self.settings[folder_name], 'AUTOSPHIRE_{0:03d}'.format(current_index))
-            output_stack = '{0}_FILES/STACK/stack.hdf'.format(log_prefix)
-            output_classes = '{0}_FILES/CLASSES/best_classes.hdf'.format(log_prefix)
+            current_index = old_index + 1
+            create_classes = False
+            log_prefix = os.path.join(
+                self.settings[folder_name],
+                'AUTOSPHIRE_{0:03d}'.format(current_index),
+                )
             submission_on_work = '{0}/submission_script.sh'.format(log_prefix)
-
-            index_particle_stack = 4
-            cmd = [self.settings['Path']['e2proc2d.py']]
-            cmd.extend([entry.split('|||')[index_particle_stack] for entry in list_content])
-            cmd.append('{0}'.format(output_stack))
-            cmd = ' '.join(cmd)
-
-            tu.mkdir_p(os.path.dirname(output_stack))
-            log_file, err_file = self.run_command(
-                command=cmd,
-                log_prefix='{0}_combine_stack'.format(log_prefix),
-                block_gpu=False,
-                gpu_list=[],
-                shell=False
+            output_stack = os.path.join(
+                '{0}_FILES'.format(log_prefix),
+                'best_stack.hdf',
                 )
 
-            zero_list = [err_file]
-            non_zero_list = [log_file]
+            if feedback_loop != '0':
+                index_list = [1, 3]
+                output_list = [output_stack, output_classes]
+            elif not os.path.exists(output_classes) and volume == 'XXXNoneXXX':
+                create_classes = True
+                index_list = [3]
+                output_list = [output_classes]
+            elif os.path.exists(output_classes) or volume != 'XXXNoneXXX':
+                index_list = [1]
+                output_list = [output_stack]
+            else:
+                assert False, 'Unreachable code'
 
-            tus.check_outputs(
-                zero_list=zero_list,
-                non_zero_list=non_zero_list,
-                exists_list=[],
-                folder=self.settings[folder_name],
-                command=command
-                )
+            for index, output in zip(index_list, output_list):
+                if os.path.exists(output):
+                    os.remove(output)
+                cmd = [self.settings['Path']['e2proc2d.py']]
+                cmd.extend([entry.split('|||')[index] for entry in lines_to_use])
+                cmd.append(output)
+                cmd = ' '.join(cmd)
 
-            index_class_averages = 3
-            cmd = [self.settings['Path']['e2proc2d.py']]
-            cmd.extend([entry.split('|||')[index_class_averages] for entry in list_content])
-            cmd.append(output_classes)
-            cmd = ' '.join(cmd)
+                tu.mkdir_p(os.path.dirname(output))
 
-            tu.mkdir_p(os.path.dirname(output_classes))
+                cur_log_prefix = os.path.dirname(output)
+                log_file, err_file = self.run_command(
+                    command=cmd,
+                    log_prefix='{0}_combine'.format(cur_log_prefix),
+                    block_gpu=False,
+                    gpu_list=[],
+                    shell=False
+                    )
 
-            log_file, err_file = self.run_command(
-                command=cmd,
-                log_prefix='{0}_combine_classes'.format(log_prefix),
-                block_gpu=False,
-                gpu_list=[],
-                shell=False
-                )
+                self.copy_extern('Copy_to_work', [output])
 
-            zero_list = [err_file]
-            non_zero_list = [log_file]
+                zero_list = [err_file]
+                non_zero_list = [log_file]
 
-            tus.check_outputs(
-                zero_list=zero_list,
-                non_zero_list=non_zero_list,
-                exists_list=[],
-                folder=self.settings[folder_name],
-                command=command
-                )
+                tus.check_outputs(
+                    zero_list=zero_list,
+                    non_zero_list=non_zero_list,
+                    exists_list=[],
+                    folder=self.settings[folder_name],
+                    command=cmd
+                    )
+
+            if create_classes:
+                return None
+            else:
+                assert os.path.exists(output_classes) or volume != 'XXXNoneXXX', 'There should be classes or a volume present at this point of the code'
 
             cmd = []
             cmd.append(self.settings['Path'][prog_name])
@@ -4544,27 +4555,23 @@ class ProcessThread(object):
             cmd.append('--box_size={0}'.format(self.settings[prog_name_window]['--box_size']))
             cmd.append('--radius={0}'.format(self.settings[prog_name_isac]['--radius']))
 
-            if self.settings[prog_name]['input_volume'] and volume == 'None':
-                volume = self.settings[prog_name]['input_volume']
-
-            if self.settings[prog_name]['input_mask'] and mask == 'None':
-                mask = self.settings[prog_name]['input_mask']
-
             cmd.append('--skip_mask_rviper')
             if self.settings[prog_name]['--skip_meridien'] == 'True':
                 cmd.append('--skip_meridien')
                 volume = 'SKIP_MERIDIEN'
 
-            elif volume == 'None':
+            elif os.path.exists(output_classes) and volume == 'XXXNoneXXX':
                 cmd.append('--rviper_input_stack={0}'.format(output_classes))
-                cmd.append('--adjust_rviper_resample={0}'.format(1/float(shrink_ratio)))
-            else:
+                cmd.append('--adjust_rviper_resample={0}'.format(1/old_shrink_ratio))
+            elif volume != 'XXXNoneXXX':
                 cmd.append('--skip_rviper')
                 cmd.append('--skip_adjust_rviper')
                 cmd.append('--meridien_input_volume={0}'.format(volume))
+            else:
+                assert False, 'Unreachable code'
 
-            if mask != 'None':
-                cmd.append('--meridien_input_mask={0}'.format(mask))
+            if self.settings[prog_name]['input_mask']:
+                cmd.append('--meridien_input_mask={0}'.format(self.settings[prog_name]['input_mask']))
 
             cmd.append('--skip_restack')
             cmd.append('--skip_ctf_refine')
@@ -4586,6 +4593,7 @@ class ProcessThread(object):
             ignore_list.append('Use SSH')
             ignore_list.append('--mtf')
             ignore_list.append('input_volume')
+            ignore_list.append('Viper filter frequency')
             ignore_list.append('input_mask')
             ignore_list.append('SSH username')
             ignore_list.append('SSH password')
@@ -4604,6 +4612,14 @@ class ProcessThread(object):
             ignore_key_list.append('--meridien_addition')
             ignore_key_list.append('--sharpening_meridien_addition')
 
+            filter_freq = min(
+                float(self.settings[prog_name]['--apix']) / old_shrink_ratio / float(self.settings[prog_name]['Viper filter frequency']),
+                0.5
+                )
+
+            tmp = self.settings[prog_name]['--rviper_addition']
+            self.settings[prog_name]['--rviper_addition'] = ' '.join(['--fl={0}'.format(filter_freq), self.settings[prog_name]['--rviper_addition']])
+
             for key in self.settings[prog_name]:
                 if key in ignore_list:
                     continue
@@ -4615,6 +4631,7 @@ class ProcessThread(object):
                     cmd.append(
                         '{0}'.format(self.settings[prog_name][key])
                         )
+            self.settings[prog_name]['--rviper_addition'] = tmp
 
             cmd = ' '.join(cmd)
             log_file, err_file = self.run_command(
@@ -4633,7 +4650,7 @@ class ProcessThread(object):
                 non_zero_list=non_zero_list,
                 exists_list=[],
                 folder=self.settings[folder_name],
-                command=command
+                command=cmd
                 )
 
             execute_command = []
@@ -4652,7 +4669,6 @@ class ProcessThread(object):
                 execute_command.append('cd')
                 execute_command.append('/{0}'.format(self.settings['Mount'][mount_name]['current_folder']))
                 execute_command.append(';')
-                execute_command.append(self.settings[prog_name]['--mpi_submission_command'])
                 if self.settings['General']['Project directory'] != '.':
                     with open(submission_on_work, 'r') as read:
                         content = read.read()
@@ -4676,6 +4692,10 @@ class ProcessThread(object):
                 cmd.append(self.settings[prog_name]['--mpi_submission_command'])
                 new_file = submission_on_work
 
+            execute_command.append('rm -rf')
+            execute_command.append(os.path.join(os.path.dirname(new_file), '00*'))
+            execute_command.append(';')
+            execute_command.append(self.settings[prog_name]['--mpi_submission_command'])
             execute_command.append('/'.join([entry for entry in new_file.split('/') if entry]))
 
             cmd.append("'{0}'".format(' '.join(execute_command)))
@@ -4735,7 +4755,7 @@ class ProcessThread(object):
                     non_zero_list=non_zero_list,
                     exists_list=[],
                     folder=self.settings[folder_name],
-                    command=command
+                    command=cmd
                     )
 
             meridien_dir = '{0}/0002_MERIDIEN'.format(log_prefix)
@@ -4744,24 +4764,16 @@ class ProcessThread(object):
                     os.path.relpath(self.settings['copy_to_work_folder_feedback_0'])
                     )
 
-            if volume == 'None' and int(feedback_loop) == 0:
+            if volume == 'XXXNoneXXX' and int(feedback_loop) == 0:
                 while True:
                     if self.stop.value:
                         break
                     if os.path.isdir(meridien_dir):
                         viper_model = '{0}/0001_RVIPER_ADJUSTMENT/vol3d_ref_moon_eliminated.hdf'.format(log_prefix)
-                        viper_model = viper_model.replace(
+                        volume = viper_model.replace(
                                 '{0}/'.format(self.settings['General']['Project directory']),
                                 ''
                                 )
-                        self.shared_dict_typ['queue_list_lock'].acquire()
-                        try:
-                            with open(self.shared_dict_typ['number_file'], 'r') as read:
-                                old_n_particles, old_n_classes, old_shrink_ratio, old_index, volume, mask = read.read().strip().split('|||')
-                            with open(self.shared_dict_typ['number_file'], 'w') as write:
-                                write.write('|||'.join([old_n_particles, old_n_classes, shrink_ratio, old_index, viper_model, mask]))
-                        finally:
-                            self.shared_dict_typ['queue_list_lock'].release()
                         break
                     else:
                         time.sleep(10)
@@ -4793,29 +4805,527 @@ class ProcessThread(object):
                     else:
                         pass
 
-        except Exception:
-            self.shared_dict_typ['queue_list_lock'].acquire()
-            try:
-                with open(self.shared_dict_typ['number_file'], 'r') as read:
-                    old_n_particles, old_n_classes, old_shrink_ratio, old_index, volume, mask = read.read().strip().split('|||')
+            with open(self.shared_dict_typ['number_file'], 'w') as write:
+                write.write('|||'.join([str(entry) for entry in [old_shrink_ratio, current_index, volume]]))
 
-                n_particles = int(old_n_particles) + new_n_particles
-                n_classes = int(old_n_classes) + new_n_classes
+            with open(self.shared_dict_typ['list_file'], 'r') as read:
+                lines = [
+                    entry.strip()
+                    for entry in read.readlines()
+                    if entry.strip() and entry.strip() not in lines_to_use
+                    ]
 
-                with open(self.shared_dict_typ['number_file'], 'w') as write:
-                    write.write('|||'.join([str(n_particles), str(n_classes), shrink_ratio, old_index, volume, mask]))
+            for entry in lines_to_use:
+                self.shared_dict_typ['queue_list'].remove(entry)
 
-                for entry in list_content:
-                    self.add_to_queue_file(
-                        root_name=entry,
-                        file_name=self.shared_dict_typ['list_file'],
-                        )
-            finally:
-                self.shared_dict_typ['queue_list_lock'].release()
-            raise
+            with open(self.shared_dict_typ['list_file'], 'w') as write:
+                write.write('\n'.join(lines))
 
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name, 'stop process', time.time() - start_prog))
+            self.shared_dict_typ['queue_list_time'] = time.time()
+        finally:
+            self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name, 'stop process', time.time() - start_prog))
+            self.shared_dict_typ['queue_list_lock'].release()
 
+#    def run_auto3d(self, root_name):
+#        """
+#        Run Particle extraction.
+#
+#        root_name - name of the file to process.
+#
+#        Returns:
+#        None
+#        """
+#        def recursive_file_search(folder_name, copy_files):
+#            for name in glob.iglob('{0}/*'.format(folder_name)):
+#                if os.path.isdir(name):
+#                    recursive_file_search('{0}'.format(name), copy_files)
+#                else:
+#                    copy_files.append(name)
+#
+#        if root_name == 'None':
+#            self.shared_dict_typ['queue_list_lock'].acquire()
+#            try:
+#                self.shared_dict_typ['queue_list_time'] = time.time() * 100
+#                self.shared_dict_typ['queue_list'][:] = []
+#            finally:
+#                self.shared_dict_typ['queue_list_lock'].release()
+#            return None
+#        else:
+#            feedback_loop, isac_folder, particle_stack, class_average_file = root_name.split('|||')
+#
+#        folder_name = 'auto3d_folder_feedback_{0}'.format(feedback_loop)
+#        prog_name = self.settings['Copy']['Auto3d']
+#        prog_name_window = self.settings['Copy']['Extract']
+#        prog_name_isac = self.settings['Copy']['Class2d']
+#        mount_name = self.settings['Copy']['Copy to work']
+#
+#        start_prog = time.time()
+#        self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name, 'start process'))
+#
+#        if root_name.endswith('_good.hdf'):
+#            self.shared_dict_typ['queue_list_lock'].acquire()
+#            try:
+#                try:
+#                    with open(self.shared_dict_typ['number_file'], 'r') as read:
+#                        try:
+#                            old_n_particles, old_n_classes, old_shrink_ratio, old_index, volume, mask = read.read().strip().split('|||')
+#                            old_n_particles = int(old_n_particles)
+#                            old_n_classes = int(old_n_classes)
+#                            old_index = int(old_index)
+#                        except ValueError:
+#                            old_n_particles = 0
+#                            old_n_classes = 0
+#                            old_index = -1
+#                            volume = 'None'
+#                            mask = 'None'
+#                except FileNotFoundError:
+#                    old_n_particles = 0
+#                    old_n_classes = 0
+#                    old_index = -1
+#                    volume = 'None'
+#                    mask = 'None'
+#
+#                file_name = tu.get_name(isac_folder)
+#                log_prefix = os.path.join(self.settings[folder_name], 'AUTOSPHIRE_{0:03d}_FILES'.format(old_index+1), 'ISAC_{0}'.format(file_name))
+#
+#                command, check_files, block_gpu, gpu_list, shell, stack_name = ttrain2d.create_substack_command(
+#                    class_average_name=class_average_file,
+#                    input_stack=particle_stack,
+#                    isac_dir=isac_folder,
+#                    output_dir=log_prefix,
+#                    settings=self.settings,
+#                    )
+#
+#                log_file, err_file = self.run_command(
+#                    command=command,
+#                    log_prefix='{0}_substack'.format(log_prefix),
+#                    block_gpu=block_gpu,
+#                    gpu_list=gpu_list,
+#                    shell=shell
+#                    )
+#
+#                zero_list = [err_file]
+#                non_zero_list = [log_file]
+#                non_zero_list.extend(check_files)
+#
+#                tus.check_outputs(
+#                    zero_list=zero_list,
+#                    non_zero_list=non_zero_list,
+#                    exists_list=[],
+#                    folder=self.settings[folder_name],
+#                    command=command
+#                    )
+#
+#                copy_files = []
+#                recursive_file_search(log_prefix, copy_files)
+#                self.copy_extern('Copy_to_work', copy_files)
+#
+#                with open(log_file, 'r') as read:
+#                    content = read.read()
+#                shrink_ratio = re.search(
+#                    'ISAC shrink ratio\s*:\s*(0\.\d+)',
+#                    content,
+#                    re.MULTILINE
+#                    ).group(1)
+#                n_particles = int(re.search(
+#                    'Accounted particles\s*:\s*(\d+)',
+#                    content,
+#                    re.MULTILINE
+#                    ).group(1))
+#                n_classes = int(re.search(
+#                    'Provided class averages\s*:\s*(\d+)',
+#                    content,
+#                    re.MULTILINE
+#                    ).group(1))
+#
+#                self.add_to_queue_file(
+#                    root_name='|||'.join([root_name, stack_name]),
+#                    file_name=self.shared_dict_typ['list_file'],
+#                    )
+#
+#                new_n_particles = old_n_particles + n_particles
+#                new_n_classes = old_n_classes + n_classes
+#
+#                n_particles_to_check = int(self.settings[self.settings['Copy']['Auto3d']]['Minimum particles'])
+#                n_classes_to_check = int(self.settings[self.settings['Copy']['Auto3d']]['Minimum classes'])
+#
+#                if (new_n_particles > n_particles_to_check and new_n_classes > n_classes_to_check) or feedback_loop != '0':
+#                    current_index = old_index + 1
+#                    with open(self.shared_dict_typ['number_file'], 'w') as write:
+#                        write.write('|||'.join(['0', '0', shrink_ratio, str(current_index), volume, mask]))
+#
+#                    with open(self.shared_dict_typ['list_file'], 'r') as read:
+#                        list_content = read.read().splitlines()
+#                    with open(self.shared_dict_typ['list_file'], 'w') as read:
+#                        pass
+#
+#                else:
+#                    with open(self.shared_dict_typ['number_file'], 'w') as write:
+#                        write.write('|||'.join([str(new_n_particles), str(new_n_classes), shrink_ratio, str(old_index), volume, mask]))
+#
+#                    self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name, 'stop early 1'))
+#                    return None
+#
+#            finally:
+#                self.shared_dict_typ['queue_list_lock'].release()
+#
+#        else:
+#            self.shared_dict_typ['queue_list_lock'].acquire()
+#            try:
+#                self.add_to_queue_file(
+#                    root_name=root_name,
+#                    file_name=self.shared_dict_typ['list_file'],
+#                    )
+#            finally:
+#                self.shared_dict_typ['queue_list_lock'].release()
+#            self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name, 'stop early 2'))
+#            return None
+#
+#        try:
+#
+#            log_prefix = os.path.join(self.settings[folder_name], 'AUTOSPHIRE_{0:03d}'.format(current_index))
+#            output_stack = '{0}_FILES/STACK/stack.hdf'.format(log_prefix)
+#            output_classes = '{0}_FILES/CLASSES/best_classes.hdf'.format(log_prefix)
+#            submission_on_work = '{0}/submission_script.sh'.format(log_prefix)
+#
+#            index_particle_stack = 4
+#            cmd = [self.settings['Path']['e2proc2d.py']]
+#            cmd.extend([entry.split('|||')[index_particle_stack] for entry in list_content])
+#            cmd.append('{0}'.format(output_stack))
+#            cmd = ' '.join(cmd)
+#
+#            tu.mkdir_p(os.path.dirname(output_stack))
+#            log_file, err_file = self.run_command(
+#                command=cmd,
+#                log_prefix='{0}_combine_stack'.format(log_prefix),
+#                block_gpu=False,
+#                gpu_list=[],
+#                shell=False
+#                )
+#
+#            zero_list = [err_file]
+#            non_zero_list = [log_file]
+#
+#            tus.check_outputs(
+#                zero_list=zero_list,
+#                non_zero_list=non_zero_list,
+#                exists_list=[],
+#                folder=self.settings[folder_name],
+#                command=command
+#                )
+#
+#            index_class_averages = 3
+#            cmd = [self.settings['Path']['e2proc2d.py']]
+#            cmd.extend([entry.split('|||')[index_class_averages] for entry in list_content])
+#            cmd.append(output_classes)
+#            cmd = ' '.join(cmd)
+#
+#            tu.mkdir_p(os.path.dirname(output_classes))
+#
+#            log_file, err_file = self.run_command(
+#                command=cmd,
+#                log_prefix='{0}_combine_classes'.format(log_prefix),
+#                block_gpu=False,
+#                gpu_list=[],
+#                shell=False
+#                )
+#
+#            zero_list = [err_file]
+#            non_zero_list = [log_file]
+#
+#            tus.check_outputs(
+#                zero_list=zero_list,
+#                non_zero_list=non_zero_list,
+#                exists_list=[],
+#                folder=self.settings[folder_name],
+#                command=command
+#                )
+#
+#            cmd = []
+#            cmd.append(self.settings['Path'][prog_name])
+#            cmd.append(log_prefix)
+#            cmd.append('--dry_run')
+#            cmd.append('--skip_unblur')
+#            cmd.append('--skip_cter')
+#            cmd.append('--skip_cryolo')
+#            cmd.append('--skip_window')
+#            cmd.append('--skip_isac2')
+#            cmd.append('--skip_cinderella')
+#            cmd.append('--box_size={0}'.format(self.settings[prog_name_window]['--box_size']))
+#            cmd.append('--radius={0}'.format(self.settings[prog_name_isac]['--radius']))
+#
+#            if self.settings[prog_name]['input_volume'] and volume == 'None':
+#                volume = self.settings[prog_name]['input_volume']
+#
+#            if self.settings[prog_name]['input_mask'] and mask == 'None':
+#                mask = self.settings[prog_name]['input_mask']
+#
+#            cmd.append('--skip_mask_rviper')
+#            if self.settings[prog_name]['--skip_meridien'] == 'True':
+#                cmd.append('--skip_meridien')
+#                volume = 'SKIP_MERIDIEN'
+#
+#            elif volume == 'None':
+#                cmd.append('--rviper_input_stack={0}'.format(output_classes))
+#                cmd.append('--adjust_rviper_resample={0}'.format(1/float(shrink_ratio)))
+#            else:
+#                cmd.append('--skip_rviper')
+#                cmd.append('--skip_adjust_rviper')
+#                cmd.append('--meridien_input_volume={0}'.format(volume))
+#
+#            if mask != 'None':
+#                cmd.append('--meridien_input_mask={0}'.format(mask))
+#
+#            cmd.append('--skip_restack')
+#            cmd.append('--skip_ctf_refine')
+#            cmd.append('--meridien_input_stack={0}'.format(output_stack))
+#
+#            if self.settings[prog_name]['--mtf'].strip():
+#                cmd.append('--mtf={0}'.format(self.settings[prog_name]['--mtf']))
+#
+#            if self.settings[prog_name]['--phase_plate'] == 'True':
+#                cmd.append('--phase_plate')
+#
+#            if self.settings[prog_name]['--rviper_use_final'] == 'True':
+#                cmd.append('--rviper_use_final')
+#
+#            ignore_list = []
+#
+#            ignore_list.append('--phase_plate')
+#            ignore_list.append('--rviper_use_final')
+#            ignore_list.append('Use SSH')
+#            ignore_list.append('--mtf')
+#            ignore_list.append('input_volume')
+#            ignore_list.append('input_mask')
+#            ignore_list.append('SSH username')
+#            ignore_list.append('SSH password')
+#            ignore_list.append('Minimum classes')
+#            ignore_list.append('Minimum particles')
+#            ignore_list.append('--skip_meridien')
+#            ignore_list.append('--filament_mode')
+#            if self.settings[prog_name]['--filament_mode'] == 'False':
+#                ignore_list.append('--filament_width')
+#                ignore_list.append('--helical_rise')
+#
+#            ignore_key_list = []
+#            ignore_key_list.append('--rviper_addition')
+#            ignore_key_list.append('--adjust_rviper_addition')
+#            ignore_key_list.append('--mask_rviper_addition')
+#            ignore_key_list.append('--meridien_addition')
+#            ignore_key_list.append('--sharpening_meridien_addition')
+#
+#            for key in self.settings[prog_name]:
+#                if key in ignore_list:
+#                    continue
+#                elif key in ignore_key_list:
+#                    if self.settings[prog_name][key].strip():
+#                        cmd.append("{0}='{1}'".format(key, self.settings[prog_name][key].strip()))
+#                else:
+#                    cmd.append(key)
+#                    cmd.append(
+#                        '{0}'.format(self.settings[prog_name][key])
+#                        )
+#
+#            cmd = ' '.join(cmd)
+#            log_file, err_file = self.run_command(
+#                command=cmd,
+#                log_prefix='{0}_create_template'.format(log_prefix),
+#                block_gpu=False,
+#                gpu_list=[],
+#                shell=True
+#                )
+#
+#            zero_list = [err_file]
+#            non_zero_list = [log_file]
+#
+#            tus.check_outputs(
+#                zero_list=zero_list,
+#                non_zero_list=non_zero_list,
+#                exists_list=[],
+#                folder=self.settings[folder_name],
+#                command=command
+#                )
+#
+#            execute_command = []
+#            cmd = []
+#            if self.settings[prog_name]['Use SSH'] == 'True':
+#
+#                device = os.path.dirname(self.settings['Mount'][mount_name]['IP'].lstrip('/'))
+#                cmd.append('ssh')
+#                cmd.append('-o')
+#                cmd.append('StrictHostKeyChecking=no')
+#                cmd.append('{0}@{1}'.format(
+#                    self.settings[prog_name]['SSH username'],
+#                    device,
+#                    ))
+#
+#                execute_command.append('cd')
+#                execute_command.append('/{0}'.format(self.settings['Mount'][mount_name]['current_folder']))
+#                execute_command.append(';')
+#                execute_command.append(self.settings[prog_name]['--mpi_submission_command'])
+#                if self.settings['General']['Project directory'] != '.':
+#                    with open(submission_on_work, 'r') as read:
+#                        content = read.read()
+#                    submission_on_work = '{0}/submission_script_work.sh'.format(log_prefix)
+#                    with open(submission_on_work, 'w') as write:
+#                        write.write(content.replace(
+#                            '{0}/'.format(self.settings['General']['Project directory']),
+#                            ''
+#                            ))
+#
+#                    new_file = os.path.join(
+#                        os.path.dirname(submission_on_work).replace(
+#                            '{0}/'.format(self.settings['General']['Project directory']),
+#                            ''
+#                            ),
+#                        os.path.basename(submission_on_work),
+#                        )
+#                else:
+#                    new_file = submission_on_work
+#            else:
+#                cmd.append(self.settings[prog_name]['--mpi_submission_command'])
+#                new_file = submission_on_work
+#
+#            execute_command.append('/'.join([entry for entry in new_file.split('/') if entry]))
+#
+#            cmd.append("'{0}'".format(' '.join(execute_command)))
+#            cmd = ' '.join(cmd)
+#
+#            copy_files = []
+#            recursive_file_search(log_prefix, copy_files)
+#            recursive_file_search('{0}_FILES'.format(log_prefix), copy_files)
+#            self.copy_extern('Copy_to_work', copy_files)
+#
+#            if self.settings[prog_name]['Use SSH'] == 'True':
+#                log_file, err_file = tus.get_logfiles('{0}_run_autosphire'.format(log_prefix))
+#                with open(err_file, 'w') as write:
+#                    pass
+#                start_time = time.time()
+#                log = []
+#                child = pe.spawnu(cmd)
+#                try:
+#                    child.expect(
+#                        "{0}@{1}'s password:".format(
+#                            self.settings[prog_name]['SSH username'],
+#                            device
+#                            ),
+#                        )
+#                except pe.exceptions.EOF as e:
+#                    print('SSH autoSPHIRE command failed!')
+#                    with open(err_file, 'w') as write:
+#                        write.write(str(e))
+#                    raise
+#                log.append(child.before)
+#                log.append(child.after)
+#
+#                child.sendline(self.settings[prog_name]['SSH password'])
+#                log.append(child.before)
+#                log.append(child.after)
+#                log.append(cmd)
+#                child.expect(pe.EOF)
+#
+#                stop_time = time.time()
+#                with open(log_file, 'w') as write:
+#                    write.write('\n'.join(log))
+#                    write.write('\nTime: {0} sec'.format(stop_time - start_time)) 
+#            else:
+#                log_file, err_file = self.run_command(
+#                    command=cmd,
+#                    log_prefix='{0}_run_autosphire'.format(log_prefix),
+#                    block_gpu=False,
+#                    gpu_list=[],
+#                    shell=False
+#                    )
+#
+#                zero_list = [err_file]
+#                non_zero_list = [log_file]
+#
+#                tus.check_outputs(
+#                    zero_list=zero_list,
+#                    non_zero_list=non_zero_list,
+#                    exists_list=[],
+#                    folder=self.settings[folder_name],
+#                    command=command
+#                    )
+#
+#            meridien_dir = '{0}/0002_MERIDIEN'.format(log_prefix)
+#            meridien_dir = meridien_dir.replace(
+#                    self.settings['General']['Project directory'],
+#                    os.path.relpath(self.settings['copy_to_work_folder_feedback_0'])
+#                    )
+#
+#            if volume == 'None' and int(feedback_loop) == 0:
+#                while True:
+#                    if self.stop.value:
+#                        break
+#                    if os.path.isdir(meridien_dir):
+#                        viper_model = '{0}/0001_RVIPER_ADJUSTMENT/vol3d_ref_moon_eliminated.hdf'.format(log_prefix)
+#                        viper_model = viper_model.replace(
+#                                '{0}/'.format(self.settings['General']['Project directory']),
+#                                ''
+#                                )
+#                        self.shared_dict_typ['queue_list_lock'].acquire()
+#                        try:
+#                            with open(self.shared_dict_typ['number_file'], 'r') as read:
+#                                old_n_particles, old_n_classes, old_shrink_ratio, old_index, volume, mask = read.read().strip().split('|||')
+#                            with open(self.shared_dict_typ['number_file'], 'w') as write:
+#                                write.write('|||'.join([old_n_particles, old_n_classes, shrink_ratio, old_index, viper_model, mask]))
+#                        finally:
+#                            self.shared_dict_typ['queue_list_lock'].release()
+#                        break
+#                    else:
+#                        time.sleep(10)
+#
+#            skip_list = False
+#            if skip_list:
+#                pass
+#            else:
+#                # Add to queue
+#                for aim in self.content_settings['aim']:
+#                    *compare, aim_name = aim.split(':')
+#                    var = True
+#                    for typ in compare:
+#                        name = typ.split('!')[-1]
+#                        if typ.startswith('!'):
+#                            if self.settings['Copy'][name] == 'False':
+#                                continue
+#                            else:
+#                                var = False
+#                                break
+#                        else:
+#                            if not self.settings['Copy'][name] == 'False':
+#                                continue
+#                            else:
+#                                var = False
+#                                break
+#                    if var:
+#                        pass
+#                    else:
+#                        pass
+#
+#        except Exception:
+#            self.shared_dict_typ['queue_list_lock'].acquire()
+#            try:
+#                with open(self.shared_dict_typ['number_file'], 'r') as read:
+#                    old_n_particles, old_n_classes, old_shrink_ratio, old_index, volume, mask = read.read().strip().split('|||')
+#
+#                n_particles = int(old_n_particles) + new_n_particles
+#                n_classes = int(old_n_classes) + new_n_classes
+#
+#                with open(self.shared_dict_typ['number_file'], 'w') as write:
+#                    write.write('|||'.join([str(n_particles), str(n_classes), shrink_ratio, old_index, volume, mask]))
+#
+#                for entry in list_content:
+#                    self.add_to_queue_file(
+#                        root_name=entry,
+#                        file_name=self.shared_dict_typ['list_file'],
+#                        )
+#            finally:
+#                self.shared_dict_typ['queue_list_lock'].release()
+#            raise
+#
+#        self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name, 'stop process', time.time() - start_prog))
+#
     def copy_extern(self, my_typ, copy_file):
         new_names = []
         for copy_file_name in copy_file:

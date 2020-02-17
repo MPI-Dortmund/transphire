@@ -33,7 +33,7 @@ class PasswordDialog(QDialog):
     None
     """
 
-    def __init__(self, folder, default, login, extension, parent=None):
+    def __init__(self, folder, default, login, extension, fixed_folder, parent=None):
         """
         Initialise layout of the widget.
 
@@ -90,10 +90,15 @@ class PasswordDialog(QDialog):
         central_layout.addWidget(central_widget)
 
         layout = QVBoxLayout(central_widget)
-        layout.addWidget(QLabel('Username', self))
-        layout.addWidget(self.user_le)
-        layout.addWidget(QLabel('Password', self))
-        layout.addWidget(self.password_le)
+        if not fixed_folder:
+            layout.addWidget(QLabel('Username', self))
+            layout.addWidget(self.user_le)
+            layout.addWidget(QLabel('Password', self))
+            layout.addWidget(self.password_le)
+        else:
+            self.user_le.hide()
+            self.user_le.setText('FIXED')
+            self.password_le.hide()
         layout.addWidget(QLabel('Mount device', self))
         layout.addWidget(self.folder_le)
         if self.extension:

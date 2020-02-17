@@ -76,6 +76,7 @@ class MountWidget(QWidget):
         self.mount_folder = self.name.replace(' ', '_')
         self.folder_from_root = content['Folder from root'][0]
         self.mount_worker = mount_worker
+        self.fixed_folder = content['Fixed folder'][0]
         self.thread_object = None
         self.current_folder = None
 
@@ -181,6 +182,7 @@ class MountWidget(QWidget):
                     self.sec,
                     self.gid,
                     self.folder_from_root,
+                    self.fixed_folder,
                     )
             else:
                 print('Wrong identity')
@@ -241,7 +243,8 @@ class MountWidget(QWidget):
             self.mount_worker.sig_umount.emit(
                 self.mount_folder,
                 self.mount_folder,
-                self.thread_object
+                self.fixed_folder,
+                self.thread_object,
                 )
 
     def _check_user(self, login):
@@ -259,9 +262,13 @@ class MountWidget(QWidget):
             default=self.default_user,
             login=login,
             extension=self.extension,
+            fixed_folder=self.fixed_folder,
             parent=self
             )
-        dialog.exec_()
+        if not self.extension and self.fixed_folder:
+            dialog._my_accept()
+        else:
+            dialog.exec_()
         if dialog.result():
             return dialog.username, dialog.password, dialog.folder
         else:

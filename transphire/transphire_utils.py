@@ -353,6 +353,9 @@ def get_function_dict():
     function_dict['MotionCor2 >=v1.2.6'] = copy_mod.deepcopy(function_dict['MotionCor2 >=v1.1.0'])
     function_dict['MotionCor2 >=v1.2.6']['old'] = False
 
+    function_dict['MotionCor2 >=v1.3.0'] = copy_mod.deepcopy(function_dict['MotionCor2 >=v1.1.0'])
+    function_dict['MotionCor2 >=v1.3.0']['content'] = tc.default_motion_cor_2_v1_3_0
+
     ### CTF Programs
 
     function_dict['CTFFIND4 >=v4.1.8'] = {
@@ -479,6 +482,8 @@ def get_function_dict():
             'allow_empty': [],
             'old': False,
             }
+    function_dict['crYOLO_train >=v1.5.5'] = copy_mod.deepcopy(function_dict['crYOLO_train >=v1.5.4'])
+    function_dict['crYOLO_train >=v1.5.5']['content'] = tc.default_cryolo_train_v1_5_5
 
 
     ### auto processing programs
