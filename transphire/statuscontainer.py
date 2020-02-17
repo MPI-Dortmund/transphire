@@ -22,6 +22,7 @@ from PyQt5.QtCore import pyqtSlot, pyqtSignal
 from transphire.statuswidget import StatusWidget
 from transphire.separator import Separator
 from transphire import transphire_utils as tu
+from transphire import logviewer as lv
 
 
 class StatusContainer(QWidget):
@@ -132,6 +133,9 @@ class StatusContainer(QWidget):
                 name = basename
                 self.content[name] = StatusWidget(name=name, default_name='00|00', default_quota='Not running')
                 layout_v1.addWidget(self.content[name])
+
+        log_viewer = lv.LogViewer(self)
+        layout_v1.addWidget(log_viewer)
 
         # Add picture
         if image and os.path.exists(image):

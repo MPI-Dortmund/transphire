@@ -1601,7 +1601,7 @@ def get_style(typ):
         message(msg)
         color = 'black'
 
-    return 'QLineEdit {{color: {0}}} QComboBox {{color: {0}}}'.format(color)
+    return 'QLabel {{color: {0}}} QLineEdit {{color: {0}}} QComboBox {{color: {0}}}'.format(color)
 
 
 def rebin(arr, new_shape):
