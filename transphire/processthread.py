@@ -4709,6 +4709,7 @@ class ProcessThread(object):
 
             with open(self.shared_dict_typ['list_file'], 'w') as write:
                 write.write('\n'.join(lines))
+                write.write('\n')
 
             self.shared_dict_typ['queue_list_time'] = time.time()
         finally:
