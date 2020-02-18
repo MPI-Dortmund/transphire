@@ -174,6 +174,9 @@ def find_frames(frames_root, compare_name, settings, queue_com, name, write_erro
                 settings['General']['Input extension']
                 )
             )
+        if not frames:
+            return False
+
         try:
             value, checked_nr_frames = check_nr_frames(
                 frames=frames,
