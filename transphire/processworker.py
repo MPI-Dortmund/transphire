@@ -997,9 +997,9 @@ class ProcessWorker(QObject):
                 pass
 
         train2d_name = self.settings['Copy']['Train2d']
-        class2d_name = self.settings['Copy']['Class2d']
+        select2d_name = self.settings['Copy']['Select2d']
         if int(self.settings['General']['Number of feedbacks']) != 0:
-            if class2d_name in ('Later', 'False'):
+            if select2d_name in ('Later', 'False'):
                 pass
             elif train2d_name == 'Later':
                 self.sig_error.emit('Number of feedbacks provided and Train2d set to Later. Remember that particle picking and subsequent runs will stall until a Train2d program is provided.')
