@@ -996,6 +996,14 @@ class ProcessWorker(QObject):
             else:
                 pass
 
+        ctf_name = self.settings['Copy']['CTF']
+        motion_name = self.settings['Copy']['Motion']
+        try:
+            if self.settings[ctf_name]['Use movies'] and motion_name in ('Later', 'False'):
+                self.sig_error.emit('Cannot automatically adjust the pixel size for the CTF output files in case of binned micrographs. Remember to adjust it manually if necessary.')
+        except KeyError:
+            pass
+
         train2d_name = self.settings['Copy']['Train2d']
         select2d_name = self.settings['Copy']['Select2d']
         if int(self.settings['General']['Number of feedbacks']) != 0:
