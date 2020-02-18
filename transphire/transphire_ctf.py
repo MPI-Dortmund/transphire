@@ -631,6 +631,16 @@ def combine_ctf_outputs(
     ctf_folder = settings['ctf_folder_feedback_0']
     project_folder = '{0}/'.format(settings['project_folder'])
 
+    try:
+        if ctf_settings['Use movies'] == 'True':
+            motion_name = settings['Copy']['Motion']
+            pixel_size_adjust = float(settings[motion_name]['-FtBin'])
+        else:
+            pixel_size_adjust = 1
+    except KeyError:
+        pixel_size_adjust = 1
+
+
     if ctf_name.lower().startswith('cter'):
         data_star = data
     else:
@@ -644,6 +654,7 @@ def combine_ctf_outputs(
         ctf_folder=ctf_folder,
         sum_file=sum_file,
         dw_file=dw_file,
+        pixel_size_adjust=pixel_size_adjust,
         )
     output_name_star = os.path.join(
         ctf_folder,
@@ -660,6 +671,7 @@ def combine_ctf_outputs(
         project_folder=project_folder,
         ctf_folder=ctf_folder,
         sum_file=sum_file,
+        pixel_size_adjust=pixel_size_adjust,
         )
     output_name_partres = os.path.join(
         ctf_folder,
@@ -680,7 +692,7 @@ def combine_ctf_outputs(
     return output_name_partres_combined, output_name_star_combined, output_name_partres, output_name_star
 
 
-def to_star_file(data, ctf_name, ctf_settings, project_folder, ctf_folder, sum_file, dw_file):
+def to_star_file(data, ctf_name, ctf_settings, project_folder, ctf_folder, sum_file, dw_file, pixel_size_adjust):
     """
     Create a CTF star file from data
 
@@ -733,7 +745,7 @@ def to_star_file(data, ctf_name, ctf_settings, project_folder, ctf_folder, sum_f
             export_data[idx][name] = value
 
         for key, _ in extension_dtype:
-            value = get_constant_value(key, ctf_settings, row, project_folder, ctf_name, ctf_folder)
+            value = get_constant_value(key, ctf_settings, row, project_folder, ctf_name, ctf_folder, pixel_size_adjust)
             export_data[idx][key] = value
 
     lines = [header]
@@ -783,7 +795,7 @@ def create_export_data(export_data, lines, maximum_string):
         lines.append('{0}\n'.format('\t'.join(row_string)))
 
 
-def to_partres_file(data, ctf_name, ctf_settings, project_folder, ctf_folder, sum_file):
+def to_partres_file(data, ctf_name, ctf_settings, project_folder, ctf_folder, sum_file, pixel_size_adjust):
     """
     Create a CTF partres file from data
 
@@ -820,7 +832,7 @@ def to_partres_file(data, ctf_name, ctf_settings, project_folder, ctf_folder, su
                 assert name != 'phase_shift'
                 assert name != 'file_name'
                 if name in constant_settings:
-                    value = get_constant_value(name, ctf_settings, row, project_folder, ctf_name, ctf_folder)
+                    value = get_constant_value(name, ctf_settings, row, project_folder, ctf_name, ctf_folder, pixel_size_adjust)
                     if name == 'const_amplitude_contrast':
                         value *= 100
                     else:
@@ -899,7 +911,7 @@ def get_relion_header(names):
     return '{0}\n'.format('\n'.join(header))
 
 
-def get_constant_value(key, ctf_settings, row, project_folder, ctf_name, ctf_folder):
+def get_constant_value(key, ctf_settings, row, project_folder, ctf_name, ctf_folder, pixel_size_adjust):
     if key == '_rlnCtfImage':
         _, extension = os.path.splitext(row['file_name'])
         if ctf_name.lower().startswith('gctf'):
@@ -972,7 +984,7 @@ def get_constant_value(key, ctf_settings, row, project_folder, ctf_name, ctf_fol
             raise IOError('Cannot find apix key! {0}'.format(
                 ctf_name
                 ))
-        value = float(value)
+        value = float(value) * pixel_size_adjust
     else:
         raise IOError('Dont know {0}'.format(
             key
