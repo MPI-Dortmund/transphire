@@ -851,9 +851,9 @@ def to_partres_file(data, ctf_name, ctf_settings, project_folder, ctf_folder, su
                     else:
                         value = 1 / row['limit']
                 elif name == 'limit_pixel_error':
-                    value = 1 / (get_constant_value('apix', ctf_settings, row, project_folder, ctf_name, ctf_folder) * 2)
+                    value = 1 / (get_constant_value('apix', ctf_settings, row, project_folder, ctf_name, ctf_folder, pixel_size_adjust) * 2)
                 elif name == 'amplitude_contrast':
-                    contrast = get_constant_value('const_amplitude_contrast', ctf_settings, row, project_folder, ctf_name, ctf_folder) * 100
+                    contrast = get_constant_value('const_amplitude_contrast', ctf_settings, row, project_folder, ctf_name, ctf_folder, pixel_size_adjust) * 100
                     contrast = contrast_to_shift(contrast)
                     phase_shift = row['phase_shift']
                     value = shift_to_contrast(contrast + phase_shift)
