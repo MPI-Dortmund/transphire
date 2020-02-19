@@ -528,7 +528,6 @@ class ProcessWorker(QObject):
                 break
             else:
                 time.sleep(3)
-        self.sig_set_project_directory.emit('')
 
     def run_process(self,
             typ_dict,
@@ -926,7 +925,6 @@ class ProcessWorker(QObject):
                 key,
                 'white'
                 )
-        self.sig_set_project_directory.emit('')
         time.sleep(1)
 
     @staticmethod
