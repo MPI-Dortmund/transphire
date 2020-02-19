@@ -1385,7 +1385,7 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
         max-width: {1};
         min-width: {1}
         }}
-    QPushButton#button_entry {{
+    QPushButton#button_entry:enabled {{
         background-color: qradialgradient(
             cx:0.5,
             cy:0.5,
@@ -1536,7 +1536,8 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
     """.format(tooltip_style())
 
     plain_style = """
-    QPlainTextEdit { background-color: rgba(229, 229, 229, 50); color: white}
+    QPlainTextEdit#status { background-color: rgba(229, 229, 229, 50); color: white }
+    QPlainTextEdit#dialog { background-color: rgba(229, 229, 229, 50); color: black }
     """
 
 
@@ -1603,11 +1604,11 @@ def get_style(typ):
         color = '#c3a368'
     else:
         msg = 'Style not known! Go for black!'
-        print(msg)
+        print(msg, ":", typ)
         message(msg)
         color = 'black'
 
-    return 'QLabel {{color: {0}}} QLineEdit {{color: {0}}} QComboBox {{color: {0}}}'.format(color)
+    return 'QPushButton {{color: {0}}} QLabel {{color: {0}}} QLineEdit {{color: {0}}} QComboBox {{color: {0}}}'.format(color)
 
 
 def rebin(arr, new_shape):

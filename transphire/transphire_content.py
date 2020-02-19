@@ -632,7 +632,7 @@ def default_font():
         ['Status info', '15', float, '', 'PLAIN', '', ''],
         ['Status quota', '15', float, '', 'PLAIN', '', ''],
         ['Tab width', '50', float, '', 'PLAIN', '', ''],
-        ['Widget height', '3', float, '', 'PLAIN', '', ''],
+        ['Widget height', '4', float, '', 'PLAIN', '', ''],
         ['Tab height', '5', float, '', 'PLAIN', '', ''],
         ]
     return items

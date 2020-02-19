@@ -141,6 +141,7 @@ class StatusContainer(QWidget):
             file_name='',
             parent=self
             )
+        log_viewer.set_project_path('/home/em-transfer-user/projects/2019_11_06_ULTIMATE_TEST_update_thrl_auto_sphire_krios1_count_K2/')
         layout_v1.addWidget(log_viewer)
 
         # Add picture
