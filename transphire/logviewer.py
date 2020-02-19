@@ -1,5 +1,6 @@
-from PyQt5.QtWidgets import QPlainTextEdit, QWidget, QHBoxLayout, QLabel, QVBoxLayout
+from PyQt5.QtWidgets import QPlainTextEdit, QWidget, QHBoxLayout, QLabel, QVBoxLayout, QPushButton
 from PyQt5.QtGui import QTextOption
+from PyQt5.QtCore import pyqtSlot, QTimer
 from transphire import transphire_utils as tu
 from transphire import logviewerdialog
 import glob
@@ -21,42 +22,54 @@ class LogViewer(QWidget):
         layout = QVBoxLayout(widget)
 
         self.project_path = None
+        self.indicator_names = ('sys_log', 'error')
 
         self.text = QPlainTextEdit(widget)
         self.text.setPlaceholderText('Welcome to TranSPHIRE!')
-        self.text.setToolTip('Double click in order to show more information about logs and errors')
+        self.text.setToolTip('Double click after starting TranSPHIRE in order to show more information')
         self.text.setReadOnly(True)
         self.text.setWordWrapMode(QTextOption.NoWrap)
         layout.addWidget(self.text)
 
+        self.file_name = file_name
+
         self.indicators = {}
+        self.buttons = {}
         if show_indicators:
-            self.text.mouseDoubleClickEvent = self.mouseDoubleClickEvent
-            self.mouseDoubleClickEvent = self.my_mouseDoubleClickEvent
+            self.text.mouseDoubleClickEvent = self.my_click_event
 
             layout_h1 = QHBoxLayout()
 
-            for entry in ('log', 'error'):
+            for entry in self.indicator_names:
                 self.indicators[entry] = QLabel()
                 self.indicators[entry].setObjectName('status_info')
-                label = QLabel('{0}:'.format(entry))
-                label.setStyleSheet('QLabel {color: white}')
-                layout_h1.addWidget(label)
+                self.buttons[entry] = QPushButton('{0}'.format(entry), self)
+                self.buttons[entry].setObjectName('button')
+                self.buttons[entry].clicked.connect(self.my_click_event)
+
+                layout_h1.addWidget(self.buttons[entry])
                 layout_h1.addWidget(self.indicators[entry])
                 self.set_indicator(entry, '0')
 
             layout_h1.addStretch(1)
             layout.addLayout(layout_h1)
+            self.change_state(False)
 
-        if file_name and os.path.exists(file_name):
-            with open(file_name, 'r') as read:
+        if self.file_name and os.path.exists(self.file_name):
+            with open(self.file_name, 'r') as read:
                 self.text.setPlainText(read.read())
 
     def appendPlainText(self, text):
+        try:
+            with open(self.file_name, 'a') as write:
+                write.write(text)
+                write.write('\n')
+        except IOError:
+            pass
         self.text.appendPlainText(text)
 
     def set_indicator(self, indicator, text):
-        if indicator in ('log', 'error'):
+        if indicator in self.indicator_names:
             self.indicators[indicator].setText(text)
             if text == '0':
                 self.indicators[indicator].setStyleSheet(tu.get_style('white'))
@@ -66,34 +79,49 @@ class LogViewer(QWidget):
             assert False, indicator
 
     def get_indicator(self, indicator):
-        if indicator in ('log', 'error'):
+        if indicator in self.indicator_names:
             return self.indicators[indicator].text()
         else:
             assert False, indicator
 
-    def my_mouseDoubleClickEvent(self, event):
-        self.project_path = '/home/em-transfer-user/projects/2019_11_06_ULTIMATE_TEST_krios1_count_K2'
+    @pyqtSlot()
+    def my_click_event(self, event=None):
+        if self.project_path is None:
+            return None
+
+        sender = self.sender()
+        if sender is None:
+            sender = self.text
+            file_names = ['log.txt']
+        elif sender.text() == 'sys_log':
+            file_names = ['sys_log.txt']
+        elif sender.text() == 'error':
+            file_names = [os.path.join('error', os.path.basename(entry)) for entry in glob.glob(os.path.join(self.project_path, 'error', '*'))]
+        else:
+            assert False, sender.text()
+
+        sender.setEnabled(False)
+        QTimer.singleShot(5000, lambda: sender.setEnabled(True))
+
         dialog = logviewerdialog.LogViewerDialog(self)
-
-        dialog.add_tab(
-            LogViewer(file_name=os.path.join(self.project_path, 'log.txt'), parent=self),
-            'Log',
-            file_name=os.path.join(self.project_path, 'log.txt')
-            )
-
-        dialog.add_tab(
-            LogViewer(file_name=os.path.join(self.project_path, 'sys_log.txt'), parent=self),
-            'Sys_log',
-            file_name=os.path.join(self.project_path, 'sys_log.txt')
-            )
-
-        for entry in glob.glob(os.path.join(self.project_path, 'error', '*')):
+        for file_name in file_names:
             dialog.add_tab(
-                LogViewer(file_name=entry, parent=self),
-                os.path.basename(entry),
-                file_name=entry
+                LogViewer(file_name=os.path.join(self.project_path, file_name), parent=self),
+                os.path.basename(file_name),
                 )
         dialog.show()
 
     def set_project_path(self, project_path):
         self.project_path = project_path
+        if not self.file_name:
+            self.file_name = os.path.join(self.project_path, 'log.txt')
+            if os.path.exists(self.file_name):
+                with open(self.file_name, 'r') as read:
+                    self.text.setPlainText(read.read())
+        self.change_state(True)
+
+    def change_state(self, state):
+        self.text.blockSignals(not state)
+        for button in self.buttons.values():
+            button.setEnabled(state)
+            button.blockSignals(not state)
