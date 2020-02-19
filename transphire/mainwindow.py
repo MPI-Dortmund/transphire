@@ -1136,7 +1136,7 @@ class MainWindow(QMainWindow):
         elif os.path.exists(settings['project_folder']):
             result = self.continue_dialog(
                 text1='Output project folder already exists!',
-                text2='Do you really want to continue the old run?\nType: "YES"!'
+                text2='Do you really want to continue the old run?\nType: "YES!"'
                 )
             #if result:
             #    result_session = self.continue_dialog(
@@ -1225,7 +1225,7 @@ class MainWindow(QMainWindow):
         """
         result = self.continue_dialog(
             text1='Do you really want to stop?',
-            text2='Do you really want to stop!\nType: "YES"!'
+            text2='Do you really want to stop!\nType: "YES!"'
             )
         if result:
             self.stop()
