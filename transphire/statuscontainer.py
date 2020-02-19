@@ -136,13 +136,12 @@ class StatusContainer(QWidget):
 
         layout_v1.addWidget(Separator(typ='horizontal', color='grey', parent=self))
 
-        log_viewer = lv.LogViewer(
+        self.log_viewer = lv.LogViewer(
             show_indicators=True,
             file_name='',
             parent=self
             )
-        log_viewer.set_project_path('/home/em-transfer-user/projects/2019_11_06_ULTIMATE_TEST_update_thrl_auto_sphire_krios1_count_K2/')
-        layout_v1.addWidget(log_viewer)
+        layout_v1.addWidget(self.log_viewer)
 
         # Add picture
         if image and os.path.exists(image):
@@ -156,6 +155,7 @@ class StatusContainer(QWidget):
             image_width = image_height * qimage.width() / qimage.height()
         except ZeroDivisionError:
             tu.message('Chosen picture: "{0}" - No longer available!'.format(image))
+            self.log_viewer.appendPlainText('Chosen picture: "{0}" - No longer available!'.format(image))
         else:
             pic_label = QLabel(self)
             pic_label.setObjectName('picture')
@@ -202,11 +202,14 @@ class StatusContainer(QWidget):
         """
         self.content[device].sig_change_info_name.emit(text, color)
         if color == 'white':
+            mount_type = 'Unmount'
             self.content[device].setVisible(False)
         else:
+            mount_type = 'Mount'
             self.content[device].setVisible(True)
         if device != 'scratch' and device != 'project':
-            tu.message('{0} Mount/Unmount successfull!'.format(device))
+            self.log_viewer.appendPlainText('{0} {1} successfull!'.format(device, mount_type))
+            #tu.message('{0} Mount/Unmount successfull!'.format(device))
         else:
             pass
 
@@ -224,11 +227,11 @@ class StatusContainer(QWidget):
         """
         if device != 'None':
             self.content[device].sig_change_info_name.emit('Not connected', 'red')
-        tu.message(text)
+        self.log_viewer.appendPlainText(text)
+        #tu.message(text)
 
-    @staticmethod
     @pyqtSlot(str)
-    def _mount_info(text):
+    def _mount_info(self, text):
         """
         Information for the user
 
@@ -238,7 +241,8 @@ class StatusContainer(QWidget):
         Returns:
         None
         """
-        tu.message(text)
+        self.log_viewer.appendPlainText(text)
+        #tu.message(text)
 
     @pyqtSlot(str, object, str, str)
     def _process_success(self, text, numbers, device, color):
@@ -277,7 +281,7 @@ class StatusContainer(QWidget):
         Returns:
         None
         """
-        tu.message(text)
+        self.log_viewer.appendPlainText(text)
         self.sig_refresh_quota.emit()
 
     @pyqtSlot(str, str, str)

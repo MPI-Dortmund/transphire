@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QPlainTextEdit, QWidget, QHBoxLayout, QLabel, QVBoxLayout, QPushButton
-from PyQt5.QtGui import QTextOption
+from PyQt5.QtGui import QTextOption, QTextCursor
 from PyQt5.QtCore import pyqtSlot, QTimer
 from transphire import transphire_utils as tu
 from transphire import logviewerdialog
@@ -49,7 +49,7 @@ class LogViewer(QWidget):
                 self.buttons[entry][0].clicked.connect(self.my_click_event)
 
                 layout_h1.addWidget(self.buttons[entry][0])
-                self.set_indicator(entry, '0')
+                self.increment_indicator(entry, '0')
 
             layout_h1.addStretch(1)
             layout.addLayout(layout_h1)
@@ -66,17 +66,28 @@ class LogViewer(QWidget):
                 write.write('\n')
         except IOError:
             pass
-        self.text.appendPlainText(text)
+        self.text.appendPlainText(text + '\n')
+        cursor = self.text.textCursor()
+        cursor.movePosition(QTextCursor.End)
+        self.text.setTextCursor(cursor)
+        print(text)
+        if self.project_path is not None:
+            self.increment_indicator('log')
 
-    def set_indicator(self, indicator, text):
+    def increment_indicator(self, indicator, text=''):
         if indicator in self.indicator_names:
             button, template = self.buttons[indicator]
-            button.setText(template.format(text))
-            button.setToolTip(template.format(text))
-            if text == '0':
-                button.setStyleSheet(tu.get_style('unchanged'))
+            if text:
+                cur_text = text
             else:
-                button.setStyleSheet(tu.get_style('global'))
+                cur_text = str(1 + int(self.get_indicator(indicator)))
+
+            button.setText(template.format(cur_text))
+            button.setToolTip(template.format(text))
+            if self.get_indicator(indicator) == '0':
+                button.setStyleSheet('')
+            else:
+                button.setStyleSheet(tu.get_style('changed'))
         else:
             assert False, indicator
 
@@ -102,6 +113,8 @@ class LogViewer(QWidget):
         else:
             assert False, sender.text()
 
+        self.increment_indicator(sender_text, '0')
+
         sender.setEnabled(False)
         QTimer.singleShot(5000, lambda: sender.setEnabled(True))
 
@@ -119,7 +132,7 @@ class LogViewer(QWidget):
             self.file_name = os.path.join(self.project_path, 'log.txt')
             if os.path.exists(self.file_name):
                 with open(self.file_name, 'r') as read:
-                    self.text.setPlainText(read.read())
+                    self.setPlainText(read.read())
         self.change_state(True)
 
     def change_state(self, state):
