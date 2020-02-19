@@ -21,7 +21,7 @@ class LogViewer(QWidget):
 
         layout = QVBoxLayout(widget)
 
-        self.project_path = None
+        self.project_path = ''
         self.indicator_names = ('log', 'error', 'sys_log')
 
         self.text = QPlainTextEdit(widget)
@@ -58,6 +58,9 @@ class LogViewer(QWidget):
         if self.file_name and os.path.exists(self.file_name):
             with open(self.file_name, 'r') as read:
                 self.text.setPlainText(read.read())
+            cursor = self.text.textCursor()
+            cursor.movePosition(QTextCursor.End)
+            self.text.setTextCursor(cursor)
 
     def appendPlainText(self, text):
         try:
@@ -71,7 +74,7 @@ class LogViewer(QWidget):
         cursor.movePosition(QTextCursor.End)
         self.text.setTextCursor(cursor)
         print(text)
-        if self.project_path is not None:
+        if self.project_path:
             self.increment_indicator('log')
 
     def increment_indicator(self, indicator, text=''):
@@ -99,7 +102,7 @@ class LogViewer(QWidget):
 
     @pyqtSlot()
     def my_click_event(self, event=None):
-        if self.project_path is None:
+        if not self.project_path:
             return None
 
         sender = self.sender()
@@ -126,14 +129,22 @@ class LogViewer(QWidget):
                 )
         dialog.show()
 
+    @pyqtSlot(str)
     def set_project_path(self, project_path):
         self.project_path = project_path
-        if not self.file_name:
+        state = True
+        if not self.project_path:
+            state = False
+            self.file_name = ''
+        elif not self.file_name:
             self.file_name = os.path.join(self.project_path, 'log.txt')
             if os.path.exists(self.file_name):
                 with open(self.file_name, 'r') as read:
-                    self.setPlainText(read.read())
-        self.change_state(True)
+                    self.text.setPlainText(read.read())
+                cursor = self.text.textCursor()
+                cursor.movePosition(QTextCursor.End)
+                self.text.setTextCursor(cursor)
+        self.change_state(state)
 
     def change_state(self, state):
         self.text.blockSignals(not state)

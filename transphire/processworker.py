@@ -48,6 +48,7 @@ class ProcessWorker(QObject):
     sig_plot_motion - Emitted to plot motion information (motion_name|str, motion_settings|object, settings|object)
     sig_plot_picking - Emitted to plot picking information (picking_name|str, picking_settings|str, settings|object)
     """
+    sig_set_project_directory = pyqtSignal(str)
     sig_start = pyqtSignal(object)
     sig_finished = pyqtSignal()
     sig_error = pyqtSignal(str)
@@ -358,6 +359,7 @@ class ProcessWorker(QObject):
             settings[settings['Copy']['Picking']]['--weights_old'] = settings[settings['Copy']['Picking']]['--weights']
 
         self.settings = settings
+        self.sig_set_project_directory.emit(self.settings['project_folder'])
 
         manager = mp.Manager()
         typ_dict = {}
@@ -876,7 +878,7 @@ class ProcessWorker(QObject):
             thread_obj.stop.value = True
 
         for _, name, _, thread_obj in thread_list:
-            print('Waiting for', name, 'to finish!')
+            queue_com['log'].put('Waiting for {0} to finish!'.format(name))
             while not thread_obj.has_finished.value:
                 time.sleep(1)
                 self.check_queue(queue_com=queue_com)
@@ -901,8 +903,8 @@ class ProcessWorker(QObject):
                 'Feedbacks',
                 'white'
                 ])
+        queue_com['log'].put('All done!')
         self.check_queue(queue_com=queue_com)
-        print('All done!')
 
         final_sizes = []
         for key, settings_content in full_content:
@@ -923,6 +925,7 @@ class ProcessWorker(QObject):
                 key,
                 'white'
                 )
+        self.sig_set_project_directory.emit('')
         time.sleep(1)
 
     @staticmethod

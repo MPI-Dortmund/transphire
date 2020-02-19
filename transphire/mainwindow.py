@@ -1007,7 +1007,7 @@ class MainWindow(QMainWindow):
                 continue
             self._extract_settings(key, settings, error_list, check_list)
 
-        if error_list:
+        if error_list and not monitor:
             tu.message('\n'.join(error_list))
             self.enable(True)
             return None
@@ -1031,7 +1031,7 @@ class MainWindow(QMainWindow):
         if not re.match(
                 self.project_name_pattern,
                 settings['General']['Project name']
-                ):
+                ) and not monitor:
             self.enable(True)
             tu.message(
                 'Project name needs to match pattern:\n{0}\n For example: {1}'.format(
@@ -1048,6 +1048,11 @@ class MainWindow(QMainWindow):
             settings['General']['Project directory'],
             settings['General']['Project name']
             )
+        if not os.path.exists(settings['project_folder']) and monitor:
+            self.enable(True)
+            tu.message('Project needs to exists in order to start Monitor mode')
+            return None
+
         settings['scratch_folder'] = os.path.join(
             settings['General']['Scratch directory'],
             settings['General']['Project name']

@@ -183,6 +183,7 @@ class StatusContainer(QWidget):
         mount_worker.sig_quota.connect(self.refresh_quota)
 
         process_worker.sig_status.connect(self._process_success)
+        process_worker.sig_set_project_directory.connect(self.log_viewer.set_project_path)
         process_worker.sig_error.connect(self._process_error)
 
         self.sig_refresh_quota.connect(mount_worker.refresh_quota)
