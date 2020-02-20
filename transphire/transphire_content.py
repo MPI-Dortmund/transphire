@@ -1237,6 +1237,7 @@ def default_copy(settings_folder):
     Content items as list
     """
     extend_list = ['Later', 'False']
+    extend_list_small = ['False']
     mount_dict = tu.get_key_names(
         settings_folder=settings_folder,
         name='Mount'
@@ -1251,8 +1252,11 @@ def default_copy(settings_folder):
     copy_to_backup.extend(extend_list)
     copy_to_hdd.extend(extend_list)
 
-    for value in programs_extern.values():
-        value.extend(extend_list)
+    for key, value in programs_extern.items():
+        if key in ('Compress'):
+            value.extend(extend_list_small)
+        else:
+            value.extend(extend_list)
 
     #valid_sub_items = [entry['typ'] for entry in value for value in tu.get_function_dict().values() in entry['typ'] is not None]
     valid_sub_items = tu.get_unique_types()

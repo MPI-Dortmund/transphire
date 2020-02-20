@@ -440,6 +440,7 @@ def combine_motion_outputs(
     motion_settings = settings[motion_name]
     log_folder = os.path.dirname(log_file)
     stack_folder = settings['stack_folder']
+    compress_folder = settings['compress_folder_feedback_0']
     project_folder = '{0}/'.format(settings['project_folder'])
     sum_file = sum_file.replace(project_folder, '')
     if dw_file:
@@ -501,11 +502,17 @@ def combine_motion_outputs(
         )
     movie_name = re.search( r'^-(?:InTiff|InMrc)[ ]+([^ ]+)$', data_read, re.MULTILINE).group(1)
 
-    if settings['Copy']['Compress'] == 'True':
-        movie_name = movie_name.replace(stack_folder, 'Compress')
-        movie_name = movie_name.replace('.mrc', '.tiff')
-    else:
+    compress_name = settings['Copy']['Compress']
+    if compress_name == 'False' or settings['General']['Input extension'] in ('tiff', 'tif'):
         pass
+    elif compress_name == 'Compress cmd':
+        movie_name = movie_name.replace(stack_folder, compress_folder)
+        movie_name = movie_name.replace(
+            '.' + settings['General']['Input extension'],
+            '.' + settings[compress_name]['--command_compress_option']
+            )
+    else:
+        assert False, compress_name
 
     data_meta = [
         '',
