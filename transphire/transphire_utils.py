@@ -81,17 +81,11 @@ def find_latest_version(name, dictionary):
     """
     prog_name = name
     valid_versions = [
-        tuple([entry, tuple([int(num) for num in VERSION_RE.search(entry).group(2).split('.')])])
+        tuple([tuple([int(num) for num in VERSION_RE.search(entry).group(2).split('.')]), entry])
         for entry in dictionary.keys()
         if prog_name in entry
         ]
-    return_key = None
-    for current_key, version in reversed(sorted(valid_versions)):
-        version_string = '.'.join([str(entry) for entry in version])
-        return_key = current_key
-        break
-    assert return_key is not None, (name, prog_name, valid_versions, dictionary)
-    return return_key
+    return sorted(valid_versions)[-1][-1]
 
 
 def find_best_match(name, dictionary):
@@ -107,12 +101,12 @@ def find_best_match(name, dictionary):
     """
     prog_name, _ = VERSION_RE.search(name).groups()
     valid_versions = [
-        tuple([entry, tuple([int(num) for num in VERSION_RE.search(entry).group(2).split('.')])])
+        tuple([tuple([int(num) for num in VERSION_RE.search(entry).group(2).split('.')]), entry])
         for entry in dictionary.keys()
         if prog_name in entry
         ]
     return_key = None
-    for current_key, version in reversed(sorted(valid_versions)):
+    for version, current_key in reversed(sorted(valid_versions)):
         version_string = '.'.join([str(entry) for entry in version])
         if is_higher_version(name, version_string):
             return_key = current_key

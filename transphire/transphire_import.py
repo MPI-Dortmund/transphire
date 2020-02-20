@@ -378,6 +378,7 @@ def import_cinderella_v0_3_1(name, name_no_feedback, directory_name, import_name
     for file_name in files:
         try:
             with open(file_name, 'r') as read:
+                # Regex documentation can be found here: https://regex101.com/r/MxOgyg/3
                 match = re.search(
                     '^\s*Good(?: classes|):\s*(\d+) .*$(?:\n|\r\n)(?:\n|\r\n)(?:\n|\r\n)^\s*Bad(?: classes|):\s*(\d+) .*$(?:\n|\r\n)(?:\n|\r\n)^Bad Particles(?:\n|\r\n)(\d+)(?:\n|\r\n)Good Particles(?:\n|\r\n)(\d+)$',
                     read.read(),
