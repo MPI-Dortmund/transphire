@@ -3394,7 +3394,7 @@ class ProcessThread(object):
         # Combine Stacks to one stack for ISAC
         try:
             if self.settings['do_feedback_loop'].value:
-                for type_name in ('Picking', 'Extract', 'Class2d'):
+                for type_name in ('Picking', 'Extract'):
                     self.shared_dict['typ'][type_name]['queue_lock'].acquire()
                     try:
                         with open(self.shared_dict['typ'][type_name]['feedback_lock_file'], 'w') as write:

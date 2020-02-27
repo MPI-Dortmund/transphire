@@ -51,7 +51,7 @@ class ProcessWorker(QObject):
     sig_plot_motion - Emitted to plot motion information (motion_name|str, motion_settings|object, settings|object)
     sig_plot_picking - Emitted to plot picking information (picking_name|str, picking_settings|str, settings|object)
     """
-    sig_start = pyqtSignal(object)
+    sig_start = pyqtSignal(object, str)
     sig_finished = pyqtSignal()
     sig_error = pyqtSignal(str)
     sig_status = pyqtSignal(str, object, str, str)
@@ -332,8 +332,8 @@ class ProcessWorker(QObject):
                         except KeyError:
                             pass
 
-    @pyqtSlot(object)
-    def run(self, settings):
+    @pyqtSlot(object, str)
+    def run(self, settings, settings_file):
         """
         Start the process.
 
@@ -463,6 +463,7 @@ class ProcessWorker(QObject):
                 content_process=content_process,
                 full_content=full_content,
                 manager=manager,
+                settings_file=settings_file,
                 )
 
         self.sig_finished.emit()
@@ -539,6 +540,7 @@ class ProcessWorker(QObject):
             content_process,
             full_content,
             manager,
+            settings_file,
         ):
         """
         Run the TranSPHIRE process.
@@ -753,7 +755,8 @@ class ProcessWorker(QObject):
                         continue
                     self.prefill_queue(
                         shared_dict=shared_dict,
-                        entry=process[key][1]
+                        entry=process[key][1],
+                        settings_file=settings_file,
                         )
 
         self.emit_plot_signals(folder_list=folder_list, monitor=False)
@@ -1112,7 +1115,7 @@ class ProcessWorker(QObject):
                 write.write('')
         return dictionary
 
-    def prefill_queue(self, shared_dict, entry):
+    def prefill_queue(self, shared_dict, entry, settings_file):
         """
         Prefill the queues for continue mode
 
@@ -1136,6 +1139,9 @@ class ProcessWorker(QObject):
         if self.settings["General"]["Software"] == "Just Stack":
             self.settings['copy_software_meta'] = False
 
+        if key.startswith('Copy_to'):
+            with open(save_file, 'a') as append:
+                append.write('{0}\n'.format(settings_file))
 
         if os.path.exists(save_file):
             with open(save_file, 'r') as read:

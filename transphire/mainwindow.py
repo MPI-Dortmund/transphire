@@ -863,7 +863,7 @@ class MainWindow(QMainWindow):
             else:
                 tu.message(message_pass)
             print(message_pass)
-            return True
+            return file_name
 
     def monitor(self, start):
         """
@@ -897,7 +897,7 @@ class MainWindow(QMainWindow):
                 self.content['Button'].start_monitor_button.setEnabled(True)
                 start = False
             else:
-                self.workers['process'].sig_start.emit(settings)
+                self.workers['process'].sig_start.emit(settings, '')
                 self.content['Button'].start_button.setEnabled(False)
                 self.content['Button'].stop_button.setEnabled(False)
         else:
@@ -1157,14 +1157,14 @@ class MainWindow(QMainWindow):
                 if entry in ('mount', 'process'):
                     continue
                 self.workers[entry].reset_list()
-            self.workers['process'].sig_start.emit(settings)
-            self.workers['mount'].set_settings(settings=settings)
-            self.save(
+            settings_file = self.save(
                 file_name=os.path.join(
                     settings['settings_folder'],
                     settings['General']['Project name']
                     )
                 )
+            self.workers['process'].sig_start.emit(settings, settings_file)
+            self.workers['mount'].set_settings(settings=settings)
             self.save_temp_settings()
         else:
             tu.message('Input needs to be "YES!" to work')
