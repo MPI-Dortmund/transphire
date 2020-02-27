@@ -3875,159 +3875,65 @@ class ProcessThread(object):
                     )
                 file_logs.append(log_files)
 
-            if float(self.settings[self.settings['Copy']['Picking']]['--threshold']) == -1.0:
-                for file_use, file_name in zip(file_use_list, file_name_list):
-                    import_name = tu.get_name(file_use)
-                    data, data_orig = tu.get_function_dict()[self.settings['Copy']['Picking']]['plot_data'](
-                        self.settings['Copy']['Picking'],
-                        self.settings['Copy']['Picking'],
-                        self.settings[entry_name][self.settings['Copy']['Picking']],
-                        import_name
-                        )
-                    self.shared_dict_typ['queue_list_lock'].acquire()
-                    try:
-                        try:
-                            with open(self.shared_dict_typ['number_file'], 'r') as read:
-                                try:
-                                    old_nr_of_particles, old_nr_of_micrographs = read.read().strip().split('|||')
-                                    old_nr_of_particles = int(old_nr_of_particles)
-                                    old_nr_of_micrographs = int(old_nr_of_micrographs)
-                                except ValueError:
-                                    old_nr_of_particles = 0
-                                    old_nr_of_micrographs = 0
-                        except FileNotFoundError:
-                            old_nr_of_particles = 0
-                            old_nr_of_micrographs = 0
+            export_log_files = []
+            for file_use, file_name, file_log in zip(file_use_list, file_name_list, file_logs):
+                import_name = tu.get_name(file_use)
+                data, data_orig = tu.get_function_dict()[self.settings['Copy']['Picking']]['plot_data'](
+                    self.settings['Copy']['Picking'],
+                    self.settings['Copy']['Picking'],
+                    self.settings[entry_name][self.settings['Copy']['Picking']],
+                    import_name
+                    )
 
-                        try:
-                            nr_particles = data['particles'][0]
-                        except IndexError:
-                            nr_particles = 0
-
-                        new_nr_of_particles = old_nr_of_particles + nr_particles
-                        new_nr_of_micrographs = old_nr_of_micrographs + 1
-                        with open(self.shared_dict_typ['number_file'], 'w') as write:
-                            write.write('{0}|||{1}'.format(new_nr_of_particles, new_nr_of_micrographs))
-                    finally:
-                        self.shared_dict_typ['queue_list_lock'].release()
-
-                percent = float(self.settings[self.settings['Copy']['Picking']]['Lowest defocus percent'])
-                n_mics_to_check = int(self.settings[self.settings['Copy']['Picking']]['Minimum micrographs'])
-                n_particles_to_check = int(self.settings[self.settings['Copy']['Picking']]['Minimum particles'])
-                threshold_percent = float(self.settings[self.settings['Copy']['Picking']]['Mean percent'])
-
-                if new_nr_of_particles > n_particles_to_check and new_nr_of_micrographs > n_mics_to_check / percent:
-
-                    output_name_partres_combined = os.path.join(
-                        self.settings['project_folder'],
-                        '{0}_transphire_ctf_partres.txt'.format(
-                            self.settings['Copy']['CTF'].replace(' ', '_').replace('>=', '')
-                            )
-                        )
-                    data_ctf = np.genfromtxt(output_name_partres_combined, dtype=None)
-                    mic_name = data_ctf['f' + str(len(data_ctf[0])-1)]
-                    defocus = data_ctf['f0']
-                    indices = np.argsort(defocus)
-
-                    mic_name_sorted_subset = mic_name.astype('U')[indices]
-
-                    boxes = []
-                    mics = 0
-                    for entry in mic_name_sorted_subset:
-                        file_name = os.path.join(
-                            self.settings[entry_name][self.settings['Copy']['Picking']],
-                            'CBOX',
-                            '{0}.cbox'.format(tu.get_name(entry))
-                            )
-                        try:
-                            _, _, _, _, data = np.genfromtxt(file_name, unpack=True)
-                        except ValueError:
-                            continue
-                        except OSError:
-                            continue
-                        boxes.extend(np.atleast_1d(data).tolist())
-                        mics += 1
-                        if mics > n_mics_to_check:
-                            break
-                    new_threshold = threshold_percent * np.mean(boxes)
-
-                    self.shared_dict_typ['queue_list_lock'].acquire()
-                    try:
-                        with open(self.shared_dict_typ['settings_file'], 'w') as write:
-                            write.write('|||'.join([
-                                self.settings[self.settings['Copy']['Picking']]['--weights'],
-                                self.settings[self.settings['Copy']['Picking']]['--conf'],
-                                str(new_threshold)
-                                ]))
-                        with open(self.shared_dict_typ['number_file'], 'w') as write:
-                            write.write('0|||0')
-                    finally:
-                        self.shared_dict_typ['queue_list_lock'].release()
-                    self.reset_queue(
-                        aim=self.typ,
-                        switch_feedback=False,
-                        )
-
-            else:
-                export_log_files = []
-                for file_use, file_name, file_log in zip(file_use_list, file_name_list, file_logs):
-                    import_name = tu.get_name(file_use)
-                    data, data_orig = tu.get_function_dict()[self.settings['Copy']['Picking']]['plot_data'](
-                        self.settings['Copy']['Picking'],
-                        self.settings['Copy']['Picking'],
-                        self.settings[entry_name][self.settings['Copy']['Picking']],
-                        import_name
-                        )
-
-                    warnings, skip_list = tus.check_for_outlier(
-                        dict_name='Picking',
-                        data=data,
-                        file_name=file_use,
-                        settings=self.settings
-                        )
-
-                    if skip_list:
-                        self.remove_from_translate(os.path.basename(file_use))
-                    else:
-                        export_log_files.extend(file_log)
-
-                for warning in skip_list:
-                    self.send_out_of_range_error(warning, root_name, 'skip')
-
-                for warning in warnings:
-                    self.send_out_of_range_error(warning, root_name, 'warning')
+                warnings, skip_list = tus.check_for_outlier(
+                    dict_name='Picking',
+                    data=data,
+                    file_name=file_use,
+                    settings=self.settings
+                    )
 
                 if skip_list:
-                    pass
+                    self.remove_from_translate(os.path.basename(file_use))
                 else:
-                    # Add to queue
-                    for aim in self.content_settings['aim']:
-                        *compare, aim_name = aim.split(':')
-                        var = True
-                        for typ in compare:
-                            name = typ.split('!')[-1]
-                            if typ.startswith('!'):
-                                if self.settings['Copy'][name] == 'False':
-                                    continue
-                                else:
-                                    var = False
-                                    break
+                    export_log_files.extend(file_log)
+
+            for warning in skip_list:
+                self.send_out_of_range_error(warning, root_name, 'skip')
+
+            for warning in warnings:
+                self.send_out_of_range_error(warning, root_name, 'warning')
+
+            if skip_list:
+                pass
+            else:
+                # Add to queue
+                for aim in self.content_settings['aim']:
+                    *compare, aim_name = aim.split(':')
+                    var = True
+                    for typ in compare:
+                        name = typ.split('!')[-1]
+                        if typ.startswith('!'):
+                            if self.settings['Copy'][name] == 'False':
+                                continue
                             else:
-                                if not self.settings['Copy'][name] == 'False':
-                                    continue
-                                else:
-                                    var = False
-                                    break
-                        if var:
-                            if 'Extract' in compare:
-                                self.add_to_queue(
-                                    aim=aim_name,
-                                    root_name=[entry for entry in export_log_files if 'EMAN' in entry and 'EMAN_START_END' not in entry]
-                                    )
-                            else:
-                                self.add_to_queue(aim=aim_name, root_name=export_log_files)
+                                var = False
+                                break
                         else:
-                            pass
+                            if not self.settings['Copy'][name] == 'False':
+                                continue
+                            else:
+                                var = False
+                                break
+                    if var:
+                        if 'Extract' in compare:
+                            self.add_to_queue(
+                                aim=aim_name,
+                                root_name=[entry for entry in export_log_files if 'EMAN' in entry and 'EMAN_START_END' not in entry]
+                                )
+                        else:
+                            self.add_to_queue(aim=aim_name, root_name=export_log_files)
+                    else:
+                        pass
         except Exception:
             self.shared_dict_typ['queue_list'].extend(file_queue_list)
             raise

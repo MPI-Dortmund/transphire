@@ -128,7 +128,7 @@ def default_isac2_1_2():
         ['--gpu_class_limit', '-1', int, '', 'PLAIN', 'Advanced', 'By default ISAC will check how much data can fit on the available GPUs. This can take more than a minute, which is annoying for testing. To skip this check, use --gpu_info to get a class limit value to use for this parameter. [Default: -1]'],
         ['--gpu_memory_use', '-1', float, '', 'PLAIN', 'Advanced', 'Specify how much memory on the chosen GPUs ISAC is allowed to use. A value of 0.9 means 90% of the available memory (this is the default; higher percentages should be used with caution). [Default: -1.0]'],
         ['GPU', '0', [int]*99, '', 'PLAIN', 'Advanced', 'NOT AN ISAC2 OPTION. Specifiy which gpu\'s should be used.'],
-        ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT AN ISAC2 OPTION. Split the gpu values specified in --gpu to be able to run mutliple crYOLO jobs in parallel.'],
+        ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT AN ISAC2 OPTION. Split the gpu values specified in --gpu to be able to run mutliple ISAC2 jobs in parallel.'],
         ]
     return items
 
@@ -176,7 +176,7 @@ def default_cinderella_v0_3_1():
         ['--confidence_threshold', '0.5', float, '', 'PLAIN', 'Main', 'Classes with a confidence higher as that threshold are classified as good.'],
         ['--batch_size', '32', int, '', 'PLAIN', 'Main', 'Classes with a confidence higher as that threshold are classified as good.'],
         ['--gpu', '0', [int]*99, '', 'PLAIN', 'Advanced', 'Specifiy which gpu\'s should be used.'],
-        ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT A CRYOLO OPTION. Split the gpu values specified in --gpu to be able to run mutliple crYOLO jobs in parallel.'],
+        ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT A Cinderella OPTION. Split the gpu values specified in --gpu to be able to run mutliple Cinderella jobs in parallel.'],
         ]
     return items
 
@@ -240,6 +240,45 @@ def default_cryolo_train_v1_5_4():
     return items
 
 
+def default_cryolo_v1_5_0():
+    """
+    Content of crYOLO version 1.5.0
+
+    Arguments:
+    None
+
+    Return:
+    Content items as list
+    """
+    items = [
+        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['--conf', '', str, '', 'FILE', 'Main', '', 'Path to configuration file.'],
+        ['--weights', '', str, '', 'FILE', 'Main', 'Path to pretrained weights.'],
+        ['--threshold', '0.3', float, '', 'PLAIN', 'Main', 'Confidence threshold. Have to be between 0 and 1. The higher, the more conservative.'],
+        ['Box size', '200', int, '', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Box size value. Only used for visual representation.'],
+        ['--filament', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Activate filament mode'],
+        ['--filament_width', '0', float, '--filament:True', 'PLAIN', 'Main', '(FILAMENT MODE) Filament width (in pixel)'],
+        ['--nomerging', ['False', 'True'], bool, '', 'COMBO', 'Main', '(FILAMENT MODE) The filament mode does not merge filaments'],
+        ['--nosplit', ['False', 'True'], bool, '', 'COMBO', 'Main', '(FILAMENT MODE) The filament mode does not split to curved filaments'],
+        ['--box_distance', '0', int, '--filament:True', 'PLAIN', 'Main', '(FILAMENT MODE) Distance between two boxes(in pixel)'],
+        ['--mask_width', '100', int, '--filament:True', 'PLAIN', 'Main', '(FILAMENT MODE) Mask width (in pixel)'],
+        ['--search_range_factor', '1.41', float, '--filament:True', 'PLAIN', 'Main', '(FILAMENT MODE) The search range for connecting boxes is the box size times this factor.'],
+        ['--minimum_number_boxes', '0', int, '--filament:True', 'PLAIN', 'Main', '(FILAMENT MODE) Distance between two boxes(in pixel)'],
+        ['--patch', '-1', int, '', 'PLAIN', 'Advanced', 'Number of patches. (-1 uses the patch size specified in the configuration file.)'],
+        ['--distance', '0', int, '', 'PLAIN', 'Advanced', 'Particles with a distance less than this value (in pixel) will be removed'],
+        ['--norm_margin', '0', int, '', 'PLAIN', 'Advanced', 'Relative margin size for normalization.'],
+        ['--prediction_batch_size', '3', int, '', 'PLAIN', 'Advanced', 'How many images should be predicted in one batch.  Smaller values might resolve memory issues.'],
+        ['--num_cpu', '-1', int, '', 'PLAIN', 'Advanced', '(FILAMENT MODE) Number of CPUs used during filament tracing. By default it will use all of the available CPUs.'],
+        ['--otf', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'On the fly filtering.'],
+        ['--gpu', '0', [int]*99, '', 'PLAIN', 'Advanced', 'Specifiy which gpu\'s should be used.'],
+        ['--gpu_fraction', '1.0', float, '', 'PLAIN', 'Advanced', 'Specify the fraction of memory per GPU used by crYOLO during prediction. Only values between 0.0 and 1.0 are allowed.'],
+        ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT A CRYOLO OPTION. Split the gpu values specified in --gpu to be able to run mutliple crYOLO jobs in parallel.'],
+        ]
+    return items
+
+
 def default_cryolo_v1_4_1():
     """
     Content of crYOLO version 1.4.1
@@ -279,10 +318,6 @@ def default_cryolo_v1_4_1():
         ['--gpu', '0', [int]*99, '', 'PLAIN', 'Advanced', 'Specifiy which gpu\'s should be used.'],
         ['--gpu_fraction', '1.0', float, '', 'PLAIN', 'Advanced', 'Specify the fraction of memory per GPU used by crYOLO during prediction. Only values between 0.0 and 1.0 are allowed.'],
         ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT A CRYOLO OPTION. Split the gpu values specified in --gpu to be able to run mutliple crYOLO jobs in parallel.'],
-        ['Lowest defocus percent', '0.5', float, '', 'PLAIN', 'Advanced', 'NOT A CRYOLO OPTION. Calculate the picking threshold on the lower "Lowest defocus percent" percent of the dataset'],
-        ['Minimum micrographs', '50', int, '', 'PLAIN', 'Advanced', 'NOT A CRYOLO OPTION. Minimum number of micrographs to check the picking threshold on.'],
-        ['Minimum particles', '20000', int, '', 'PLAIN', 'Advanced', 'NOT A CRYOLO OPTION. Minimum number of particles to check the picking threshold on.'],
-        ['Mean percent', '0.75', float, '', 'PLAIN', 'Advanced', 'NOT A CRYOLO OPTION. Percentage of the mean to use for particle picking.'],
         ]
     return items
 
@@ -1074,7 +1109,7 @@ def default_motion_cor_2_v1_0_5():
         ['-InFmMotion', '0', int, '', 'PLAIN', 'Advanced', '1. 1 - Account for in-frame motion.  0 - Do not account for in-frame motion.'],
         ['-Crop', '0 0', [int, int], '', 'PLAIN', 'Advanced', '1. Crop the loaded frames to the given size.  2. By default the original size is loaded.'],
         ['-Gpu', '0', [int]*99, '', 'PLAIN', 'Advanced', ' GPU IDs. Default 0.  For multiple GPUs, separate IDs by space.  For example, -Gpu 0 1 2 3 specifies 4 GPUs.'],
-        ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT A CRYOLO OPTION. Split the gpu values specified in --Gpu to be able to run mutliple crYOLO jobs in parallel.'],
+        ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT A MotionCor2 OPTION. Split the gpu values specified in --Gpu to be able to run mutliple MotionCor2 jobs in parallel.'],
         ['dose cutoff', '4', float, '', 'PLAIN', 'Advanced', 'NOT A MOTIONCOR OPTION. Used to create the Relion3 bayesian polishing files.'],
         ]
     return items
@@ -1122,7 +1157,7 @@ def default_motion_cor_2_v1_1_0():
         ['-Crop', '0 0', [int, int], '', 'PLAIN', 'Advanced', '1. Crop the loaded frames to the given size.  2. By default the original size is loaded.'],
         ['-Gpu', '0', [int]*99, '', 'PLAIN', 'Advanced', ' GPU IDs. Default 0.  For multiple GPUs, separate IDs by space.  For example, -Gpu 0 1 2 3 specifies 4 GPUs.'],
         ['-GpuMemUsage', '0.5', float, '', 'PLAIN', 'Advanced', '1. GPU memory usage, default 0.5, meaning 50% of GPU memory will be used to buffer movie frames.  2. The value should be between 0 and 0.5. When 0 is given, all movie frames are buffered on CPU memory.'],
-        ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT A CRYOLO OPTION. Split the gpu values specified in --Gpu to be able to run mutliple crYOLO jobs in parallel.'],
+        ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT A MotionCor2 OPTION. Split the gpu values specified in --Gpu to be able to run mutliple MotionCor2 jobs in parallel.'],
         ['dose cutoff', '4', float, '', 'PLAIN', 'Advanced', 'NOT A MOTIONCOR OPTION. Used to create the Relion3 bayesian polishing files.'],
         ]
     return items
@@ -1171,7 +1206,7 @@ def default_motion_cor_2_v1_3_0():
         ['-Gpu', '0', [int]*99, '', 'PLAIN', 'Advanced', ' GPU IDs. Default 0.  For multiple GPUs, separate IDs by space.  For example, -Gpu 0 1 2 3 specifies 4 GPUs.'],
         ['-GpuMemUsage', '0.5', float, '', 'PLAIN', 'Advanced', '1. GPU memory usage, default 0.5, meaning 50% of GPU memory will be used to buffer movie frames.  2. The value should be between 0 and 0.5. When 0 is given, all movie frames are buffered on CPU memory.'],
         ['-SumRange', '0 0', str, '', 'PLAIN', 'Advanced', '1. Sum frames whose accumulated doses fall in the specified range. The first number is the minimum dose and the second is the maximum dose.  2. The default range is [0, 0] electrons per square angstrom, meaning that no SumRange files will be created.'],
-        ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT A CRYOLO OPTION. Split the gpu values specified in --Gpu to be able to run mutliple crYOLO jobs in parallel.'],
+        ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT A MotionCor2 OPTION. Split the gpu values specified in --Gpu to be able to run mutliple MotionCor2 jobs in parallel.'],
         ['dose cutoff', '4', float, '', 'PLAIN', 'Advanced', 'NOT A MOTIONCOR OPTION. Used to create the Relion3 bayesian polishing files.'],
         ]
     return items

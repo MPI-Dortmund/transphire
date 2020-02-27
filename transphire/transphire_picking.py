@@ -208,7 +208,11 @@ def create_filter_command(
     folder_name = 'picking_folder_feedback_{0}'.format(settings['do_feedback_loop'].value)
 
     file_output_tmp = file_input
-    if settings[picking_name]['Filter micrographs'] == 'True':
+    try:
+        do_filter = bool(settings[picking_name]['Filter micrographs'] == 'True')
+    except KeyError:
+        do_filter = False
+    if do_filter:
 
         filter_high = float(settings[picking_name]['Filter value high pass (A)'])
         filter_low = float(settings[picking_name]['Filter value low pass (A)'])
