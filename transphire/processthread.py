@@ -2374,8 +2374,9 @@ class ProcessThread(object):
                 if do_dw:
                     non_zero_list_scratch.append(file_dw_pre_move)
                     non_zero_list.append(file_dw_post_move)
-                    non_zero_list_scratch.append(file_dws_pre_move)
-                    non_zero_list.append(file_dws_post_move)
+                    if os.path.exists(file_dws_pre_move):
+                        non_zero_list_scratch.append(file_dws_pre_move)
+                        non_zero_list.append(file_dws_post_move)
                 else:
                     pass
 
