@@ -4085,7 +4085,10 @@ class ProcessThread(object):
                 command=command
                 )
 
-            #os.remove(uncompress_new_name)
+            try:
+                os.remove(uncompress_new_name)
+            except OSError:
+                pass
 
         # Add to queue
         for aim in self.content_settings['aim']:
