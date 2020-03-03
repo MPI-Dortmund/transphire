@@ -4248,6 +4248,7 @@ class ProcessThread(object):
                     if entry.strip()
                     ]
             lines_to_use = []
+            final_lines_to_use = []
             total_n = 0
             n_particles_to_check = int(self.settings[prog_name]['Minimum particles'])
             n_classes_to_check = int(self.settings[prog_name]['Minimum classes'])
@@ -4257,7 +4258,7 @@ class ProcessThread(object):
                 folder_name = 'auto3d_folder_feedback_{0}'.format(feedback_loop)
                 output_classes = '{0}/FILES/CLASSES/best_classes.hdf'.format(self.settings[folder_name])
                 if feedback_loop != '0':
-                    lines_to_use = [line]
+                    final_lines_to_use = [line]
                     break
 
                 elif not os.path.exists(output_classes) and volume == 'XXXNoneXXX':
@@ -4274,9 +4275,10 @@ class ProcessThread(object):
                 lines_to_use.append(line)
                 total_n += current_number
                 if total_n >= to_check:
+                    final_lines_to_use = lines_to_use
                     break
 
-            if not lines_to_use:
+            if not final_lines_to_use:
                 return None
 
             current_index = old_index + 1
