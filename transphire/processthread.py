@@ -1377,7 +1377,7 @@ class ProcessThread(object):
                             )
 
                     if os.path.exists('{0}_krios_sum.mrc'.format(new_name_meta)):
-                        self.stop = True
+                        self.stop.value = True
                         message = '{0}: Filenumber {1} already exists!\n'.format(
                             self.name,
                             self.shared_dict_typ['file_number']
