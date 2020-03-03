@@ -1156,7 +1156,7 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
             fy:0.5,
             radius:1,
             stop:0 white,
-            stop:1 red
+            stop:1 #e34234
             );
         min-width: {0};
         max-width: {0};
@@ -1189,6 +1189,19 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
         max-width: {2};
         min-width: {2}
         }}
+    QPushButton#unmount {{
+        background-color: qradialgradient(
+            cx:0.5,
+            cy:0.5,
+            fx:0.5,
+            fy:0.5,
+            radius:1,
+            stop:0 green,
+            stop:1 #68a3c3
+            );
+        max-width: {3};
+        min-width: {3}
+        }}
     QPushButton#mount {{
         background-color: qradialgradient(
             cx:0.5,
@@ -1196,7 +1209,7 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
             fx:0.5,
             fy:0.5,
             radius:1,
-            stop:0 white,
+            stop:0 green,
             stop:1 #68a3c3
             );
         max-width: {3};

@@ -88,7 +88,7 @@ class MountWidget(QWidget):
         self.mount_button = QPushButton('Mount {0}'.format(self.name), self)
         self.mount_button.setObjectName('mount')
         self.umount_button = QPushButton('Unmount {0}'.format(self.name), self)
-        self.umount_button.setObjectName('mount')
+        self.umount_button.setObjectName('unmount')
 
         # Layout
         layout = QHBoxLayout(self)
