@@ -823,47 +823,51 @@ class MainWindow(QMainWindow):
             pass
 
         error = False
-        with open(file_name, 'w') as write:
-            for key in self.content:
-                if key == 'Mount':
-                    continue
-                else:
-                    pass
-                try:
-                    settings = self.content[key].get_settings()
-                except AttributeError:
-                    continue
-                if settings is not None:
-                    write.write('###\t{0}\n'.format(key))
-                    for entry in settings:
-                        for key_entry in entry:
-                            if key_entry == 'SSH password':
-                                continue
-                            write.write(
-                                '{0}\t{1}\n'.format(key_entry, entry[key_entry])
-                                )
-                else:
-                    error = True
-                    message = 'Setting of {0} not valid!'.format(key)
-                    tu.message(message)
-                    continue
-            write.write('###\tEnd\n')
-            write.write('The\tEnd\n')
-
-        message_pass = 'Valid settings saved to {0}'.format(file_name)
-        message_error = 'Invalid setting detected! Saveing failed!'
-        if error:
-            os.remove(file_name)
-            tu.message(message_error)
-            print(message_error)
-            return False
+        try:
+            with open(file_name, 'w') as write:
+                for key in self.content:
+                    if key == 'Mount':
+                        continue
+                    else:
+                        pass
+                    try:
+                        settings = self.content[key].get_settings()
+                    except AttributeError:
+                        continue
+                    if settings is not None:
+                        write.write('###\t{0}\n'.format(key))
+                        for entry in settings:
+                            for key_entry in entry:
+                                if key_entry == 'SSH password':
+                                    continue
+                                write.write(
+                                    '{0}\t{1}\n'.format(key_entry, entry[key_entry])
+                                    )
+                    else:
+                        error = True
+                        message = 'Setting of {0} not valid!'.format(key)
+                        tu.message(message)
+                        continue
+                write.write('###\tEnd\n')
+                write.write('The\tEnd\n')
+        except Exception as e:
+            error = False
+            tu.message('Failed to save settings: {0}'.format(e))
         else:
-            if temp:
-                pass
+            message_pass = 'Valid settings saved to {0}'.format(file_name)
+            message_error = 'Invalid setting detected! Saveing failed!'
+            if error:
+                os.remove(file_name)
+                tu.message(message_error)
+                print(message_error)
+                return False
             else:
-                tu.message(message_pass)
-            print(message_pass)
-            return file_name
+                if temp:
+                    pass
+                else:
+                    tu.message(message_pass)
+                print(message_pass)
+                return file_name
 
     def monitor(self, start):
         """
