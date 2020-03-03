@@ -1195,9 +1195,9 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
             cy:0.5,
             fx:0.5,
             fy:0.5,
-            radius:1,
-            stop:0 green,
-            stop:1 #68a3c3
+            radius:8,
+            stop:0 white,
+            stop:1 #e34234
             );
         max-width: {3};
         min-width: {3}
@@ -1208,9 +1208,9 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
             cy:0.5,
             fx:0.5,
             fy:0.5,
-            radius:1,
-            stop:0 green,
-            stop:1 #68a3c3
+            radius:8,
+            stop:0 white,
+            stop:1 green
             );
         max-width: {3};
         min-width: {3}
