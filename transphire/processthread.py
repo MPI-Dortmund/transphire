@@ -3267,10 +3267,9 @@ class ProcessThread(object):
                 remove_pattern=remove_pattern,
                 )
 
-        self.settings['do_feedback_loop'].value -= 1
         command = None
-        if not self.settings['do_feedback_loop'].value:
-            command, check_files, block_gpu, gpu_list, shell = ttrain2d.get_eval_command(new_config, new_model, log_file, self.settings)
+        if self.settings['do_feedback_loop'].value == 1:
+            command, check_files, block_gpu, gpu_list, shell = ttrain2d.create_eval_command(new_config, new_model, log_file, self.settings)
             if command is not None:
                 log_file, err_file = self.run_command(
                     command=command,
@@ -3347,6 +3346,8 @@ class ProcessThread(object):
                     write.write('0')
             finally:
                 self.shared_dict['typ'][type_name]['queue_lock'].release()
+
+        self.settings['do_feedback_loop'].value -= 1
 
         with open(self.settings['feedback_file'], 'w') as write:
             write.write(str(self.settings['do_feedback_loop'].value))

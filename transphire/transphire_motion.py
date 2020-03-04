@@ -598,24 +598,28 @@ def combine_motion_outputs(
     sum_early = 0
     sum_late = 0
     frame_cutoff = float(motion_settings['dose cutoff']) - float(motion_settings['-InitDose'])
-    frame_cutoff /= float(motion_settings['-FmDose'])
-    for idx in range(1, data_original.shape[1]):
-        drift = np.sqrt(
-            (data_original[idx_x][idx-1] - data_original[idx_x][idx])**2 +
-            (data_original[idx_y][idx-1] - data_original[idx_y][idx])**2
-            )
-        sum_total += drift
-        if idx <= frame_cutoff:
-            sum_early += drift
-        else:
-            sum_late += drift
+    try:
+        frame_cutoff /= float(motion_settings['-FmDose'])
+    except ZeroDivisionError:
+        data_meta = ['-FmDose needs to be specified in order to use the meta files']
+    else:
+        for idx in range(1, data_original.shape[1]):
+            drift = np.sqrt(
+                (data_original[idx_x][idx-1] - data_original[idx_x][idx])**2 +
+                (data_original[idx_y][idx-1] - data_original[idx_y][idx])**2
+                )
+            sum_total += drift
+            if idx <= frame_cutoff:
+                sum_early += drift
+            else:
+                sum_late += drift
 
-    for idx in range(data_original.shape[1]):
-        data_meta.extend(['{0}\t{1}\t{2}'.format(
-            idx+1,
-            data_original[idx_x][idx]-offset_x,
-            data_original[idx_y][idx]-offset_y
-            )])
+        for idx in range(data_original.shape[1]):
+            data_meta.extend(['{0}\t{1}\t{2}'.format(
+                idx+1,
+                data_original[idx_x][idx]-offset_x,
+                data_original[idx_y][idx]-offset_y
+                )])
 
     relion3_meta = os.path.join(
         log_folder,
