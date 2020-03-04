@@ -807,7 +807,7 @@ def import_motion_cor_2_v1_0_0(name, name_no_feedback, directory_name, import_na
     """
     dtype_import_dict_name = tu.find_best_match(name_no_feedback, get_dtype_import_dict())
 
-    directory_names = glob.glob('{0}/*_with_DW_log'.format(directory_name))
+    directory_names = glob.glob('{0}/*_with*_DW_log'.format(directory_name))
     files = np.array(
         [
             entry
