@@ -4236,7 +4236,6 @@ class ProcessThread(object):
                 self.shared_dict_typ['queue_list'].append('|||'.join([str(entry) for entry in [feedback_loop, stack_name, n_particles, class_average_file, n_classes]]))
                 return None ### Early exit for the preparation here.
 
-            try:
             prog_name_window = self.settings['Copy']['Extract']
             prog_name_isac = self.settings['Copy']['Class2d']
             mount_name = self.settings['Copy']['Copy to work']

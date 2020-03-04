@@ -97,6 +97,7 @@ class PlotWidget(QWidget):
             layout_h = QHBoxLayout()
             self.combo_box = QComboBox(self)
             self.combo_box.addItems([self.default_value])
+            self.combo_box.view().setMinimumWidth(len(self.default_value)*self.combo_box.font().pointSize())
             self.combo_box.currentIndexChanged.connect(lambda: self.change_idx('combo'))
 
             layout_h.addWidget(self.combo_box)
@@ -479,6 +480,7 @@ class PlotWidget(QWidget):
                 for entry in self.data['file_name'].tolist()
                 ])
             self.combo_box.addItems(files)
+            self.combo_box.view().setMinimumWidth(max(map(len, files))*self.combo_box.font().pointSize())
 
             self.idx = max(0, self.combo_box.findText(current_text))
             self.combo_box.setCurrentIndex(self.idx)
