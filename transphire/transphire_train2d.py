@@ -16,6 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import re
 import shutil
 import os
 
@@ -62,6 +63,28 @@ def create_restack_command(stack_name, output_dir, settings):
     command.append('--reboxing')
 
     return ' '.join(command), check_files, block_gpu, gpu_list, shell, os.path.join(output_dir, 'BOX', 'original')
+
+
+def create_eval_command(config_file, weight_file, log_file, settings):
+    prog_name = settings['Path']['cryolo_evaluation.py']
+    command = []
+    block_gpu = False
+    gpu_list = []
+    shell = False
+    check_files = []
+    gpu_list = []
+
+    with open(log_file, 'r') as read:
+        match = re.search('^.*Wrote runfile to: (.*)$', read.read())
+
+    if match is None:
+        return None, check_files, block_gpu, gpu_list, shell
+
+    command.append(prog_name)
+    command.appnd('-c={0}'.format(config_file))
+    command.appnd('-w={0}'.format(weight_file))
+    command.appnd('-r={0}'.format(match.group(1).strip()))
+    return ' '.join(command), check_files, block_gpu, gpu_list, shell
 
 
 def create_train_command(sum_folder, box_folder, output_dir, name, settings):

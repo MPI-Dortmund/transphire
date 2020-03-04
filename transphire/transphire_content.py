@@ -615,6 +615,7 @@ def default_path():
         ['mpirun', 'mpirun', str, '', 'FILE', 'Main', ''],
         ['SumMovie v1.0.2', 'summovie', str, '', 'FILE', 'Main', ''],
         ['cryolo_gui.py', 'cryolo_gui.py', str, '', 'FILE', 'Main', ''],
+        ['cryolo_evaluation.py', 'cryolo_evaluation.py', str, '', 'FILE', 'Main', ''],
         ]
     function_dict = tu.get_function_dict()
     for key in sorted(function_dict.keys()):

@@ -3267,10 +3267,48 @@ class ProcessThread(object):
                 remove_pattern=remove_pattern,
                 )
 
+        self.settings['do_feedback_loop'].value -= 1
+        command = None
+        if not self.settings['do_feedback_loop'].value:
+            command, check_files, block_gpu, gpu_list, shell = ttrain2d.get_eval_command(new_config, new_model, log_file, self.settings)
+            if command is not None:
+                log_file, err_file = self.run_command(
+                    command=command,
+                    log_prefix='{0}_evaluation'.format(log_prefix),
+                    block_gpu=block_gpu,
+                    gpu_list=gpu_list,
+                    shell=shell
+                    )
+                all_logs.append(log_file)
+                all_logs.append(err_file)
+
+                zero_list = []
+                non_zero_list = [err_file, log_file]
+                non_zero_list.extend(check_files)
+
+                tus.check_outputs(
+                    zero_list=zero_list,
+                    non_zero_list=non_zero_list,
+                    exists_list=[],
+                    folder=self.settings[folder_name],
+                    command=command
+                    )
+
+                try:
+                    with open(log_file, 'r') as read:
+                        threshold = re.search('^.*according F2 statistic: (.*)$', read.read()).group(1).strip()
+                except Exception:
+                    message = 'Could not find F2 score in the output file: {0}!'.format(log_file)
+                    self.queue_com['error'].put(message)
+                    raise
+
+        if command is None:
+            threshold = str(self.settings[self.settings['Copy']['Picking']]['--threshold_old'])
+
         self.shared_dict['typ']['Picking']['queue_list_lock'].acquire()
         try:
             with open(self.shared_dict['typ']['Picking']['settings_file'], 'w') as write:
-                write.write('|||'.join([new_model, new_config, str(self.settings[self.settings['Copy']['Picking']]['--threshold_old'])]))
+                write.write('|||'.join([new_model, new_config, threshold]))
         finally:
             self.shared_dict['typ']['Picking']['queue_list_lock'].release()
 
@@ -3302,16 +3340,14 @@ class ProcessThread(object):
                     pass
 
         #self.remove_from_queue_file(matches_in_queue, self.shared_dict_typ['list_file'])
-        if self.settings['do_feedback_loop'].value:
-            for type_name in ('Picking', 'Extract', 'Class2d'):
-                self.shared_dict['typ'][type_name]['queue_lock'].acquire()
-                try:
-                    with open(self.shared_dict['typ'][type_name]['feedback_lock_file'], 'w') as write:
-                        write.write('0')
-                finally:
-                    self.shared_dict['typ'][type_name]['queue_lock'].release()
+        for type_name in ('Picking', 'Extract', 'Class2d'):
+            self.shared_dict['typ'][type_name]['queue_lock'].acquire()
+            try:
+                with open(self.shared_dict['typ'][type_name]['feedback_lock_file'], 'w') as write:
+                    write.write('0')
+            finally:
+                self.shared_dict['typ'][type_name]['queue_lock'].release()
 
-        self.settings['do_feedback_loop'].value -= 1
         with open(self.settings['feedback_file'], 'w') as write:
             write.write(str(self.settings['do_feedback_loop'].value))
 

@@ -953,6 +953,7 @@ class ProcessWorker(QObject):
         try:
             if self.settings['Copy']['Train2d'] not in ('False', 'Later'):
                 check_files.append(['Path', 'cryolo_gui.py'])
+                check_files.append(['Path', 'cryolo_evaluation.py'])
             else:
                 pass
         except KeyError:
