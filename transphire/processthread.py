@@ -3295,7 +3295,7 @@ class ProcessThread(object):
 
                 try:
                     with open(log_file, 'r') as read:
-                        threshold = re.search('^.*according F2 statistic: (.*)$', read.read()).group(1).strip()
+                        threshold = re.search('^.*according F2 statistic: (.*)$', read.read(), re.M).group(1).strip() # https://regex101.com/r/ZvTGaw
                 except Exception:
                     message = 'Could not find F2 score in the output file: {0}!'.format(log_file)
                     self.queue_com['error'].put(message)
