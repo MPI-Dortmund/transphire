@@ -81,9 +81,9 @@ def create_eval_command(config_file, weight_file, log_file, settings):
         return None, check_files, block_gpu, gpu_list, shell
 
     command.append(prog_name)
-    command.appnd('-c={0}'.format(config_file))
-    command.appnd('-w={0}'.format(weight_file))
-    command.appnd('-r={0}'.format(match.group(1).strip()))
+    command.append('-c={0}'.format(config_file))
+    command.append('-w={0}'.format(weight_file))
+    command.append('-r={0}'.format(match.group(1).strip()))
     return ' '.join(command), check_files, block_gpu, gpu_list, shell
 
 
