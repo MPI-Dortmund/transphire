@@ -181,9 +181,9 @@ def default_cinderella_v0_3_1():
     return items
 
 
-def default_cryolo_train_v1_5_5():
+def default_cryolo_train_v1_5_8():
     """
-    Content of crYOLO_train version 1.5.5
+    Content of crYOLO_train version 1.5.8
 
     Arguments:
     None
@@ -240,9 +240,9 @@ def default_cryolo_train_v1_5_4():
     return items
 
 
-def default_cryolo_v1_5_0():
+def default_cryolo_v1_5_8():
     """
-    Content of crYOLO version 1.5.0
+    Content of crYOLO version 1.5.8
 
     Arguments:
     None

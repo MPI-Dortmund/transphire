@@ -3268,7 +3268,7 @@ class ProcessThread(object):
                 )
 
         command = None
-        if self.settings['do_feedback_loop'].value == 1 and self.settings[self.settings['Copy']['Picking']]['--filament'] == 'False':
+        if self.settings['do_feedback_loop'].value == 1 and self.settings[self.settings['Copy']['Picking']]['--filament'] == 'False' and tu.is_higher_version(self.settings['Copy']['Train2d'], '1.5.8'):
             command, check_files, block_gpu, gpu_list, shell = ttrain2d.create_eval_command(new_config, new_model, log_file, self.settings)
             if command is not None:
                 log_file, err_file = self.run_command(
