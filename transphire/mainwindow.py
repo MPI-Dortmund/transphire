@@ -813,7 +813,9 @@ class MainWindow(QMainWindow):
             file_name = '{0}.txt'.format(file_name)
 
         # Do not override settings
-        if os.path.exists(file_name) and not interactive:
+        if interactive:
+            pass
+        else:
             old_filename, old_ext = os.path.splitext(file_name)
             for number in range(9999):
                 file_name = '{0}_{1:03d}{2}'.format(old_filename, number, old_ext)
@@ -821,8 +823,6 @@ class MainWindow(QMainWindow):
                     continue
                 else:
                     break
-        else:
-            pass
 
         error = False
         try:
