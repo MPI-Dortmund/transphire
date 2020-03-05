@@ -783,7 +783,9 @@ class MainWindow(QMainWindow):
         Return:
         True, if saving was succesful.
         """
+        interactive = False
         if file_name is None:
+            interactive = True
             file_name = QFileDialog.getSaveFileName(
                 caption='Save settings',
                 directory=self.path,
@@ -811,10 +813,10 @@ class MainWindow(QMainWindow):
             file_name = '{0}.txt'.format(file_name)
 
         # Do not override settings
-        if os.path.exists(file_name):
-            old_filename = file_name
+        if os.path.exists(file_name) and not interactive:
+            old_filename, old_ext = os.path.splitext(file_name)
             for number in range(9999):
-                file_name = '{0}_{1}'.format(old_filename, number)
+                file_name = '{0}_{1:03d}{2}'.format(old_filename, number, old_ext)
                 if os.path.exists(file_name):
                     continue
                 else:
