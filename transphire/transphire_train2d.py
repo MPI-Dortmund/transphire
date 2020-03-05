@@ -75,7 +75,7 @@ def create_eval_command(config_file, weight_file, log_file, settings):
     gpu_list = []
 
     with open(log_file, 'r') as read:
-        match = re.search('^.*Wrote runfile to: (.*)$', read.read())
+        match = re.search('^.*Wrote runfile to: (.*)$', read.read(), re.M) # https://regex101.com/r/BY0m3B/1
 
     if match is None:
         return None, check_files, block_gpu, gpu_list, shell
