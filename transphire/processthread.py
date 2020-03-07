@@ -4346,7 +4346,7 @@ class ProcessThread(object):
                 if os.path.exists(output):
                     os.remove(output)
                 cmd = [self.settings['Path']['e2proc2d.py']]
-                cmd.extend([entry.split('|||')[index] for entry in lines_to_use])
+                cmd.extend([entry.split('|||')[index] for entry in final_lines_to_use])
                 cmd.append(output)
                 cmd = ' '.join(cmd)
 
