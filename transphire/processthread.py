@@ -4252,7 +4252,7 @@ class ProcessThread(object):
                     re.MULTILINE
                     ).group(1)
                 n_particles = int(re.search(
-                    'Accounted particles\s*:\s*(\d+)',
+                    'ISAC substack size\s*:\s*(\d+)',
                     content,
                     re.MULTILINE
                     ).group(1))
