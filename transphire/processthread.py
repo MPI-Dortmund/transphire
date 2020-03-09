@@ -4649,10 +4649,10 @@ class ProcessThread(object):
                 lines = [
                     entry.strip()
                     for entry in read.readlines()
-                    if entry.strip() and entry.strip() not in lines_to_use
+                    if entry.strip() and entry.strip() not in final_lines_to_use
                     ]
 
-            for entry in lines_to_use:
+            for entry in final_lines_to_use:
                 self.shared_dict_typ['queue_list'].remove(entry)
 
             with open(self.shared_dict_typ['list_file'], 'w') as write:
