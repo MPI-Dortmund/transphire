@@ -325,7 +325,7 @@ class MainWindow(QMainWindow):
             os.remove('{0}.txt'.format(self.temp_save))
         else:
             pass
-        value = self.save(file_name=self.temp_save, temp=True)
+        value = self.save(file_name=self.temp_save, temp=True, interactive=True)
         return value
 
     def postprocess_content(self, error_list):
@@ -772,7 +772,7 @@ class MainWindow(QMainWindow):
 
         return settings_dict
 
-    def save(self, file_name=None, temp=False):
+    def save(self, file_name=None, temp=False, interactive=False):
         """
         Save GUI status to file.
 
@@ -783,7 +783,6 @@ class MainWindow(QMainWindow):
         Return:
         True, if saving was succesful.
         """
-        interactive = False
         if file_name is None:
             interactive = True
             file_name = QFileDialog.getSaveFileName(
