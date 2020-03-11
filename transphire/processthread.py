@@ -3023,7 +3023,12 @@ class ProcessThread(object):
             command=command
             )
 
-        n_particles = tue.get_particle_number(log_file, self.settings)
+        n_particles = tue.get_particle_number(
+            log_file,
+            self.settings,
+            queue_com=self.queue_com,
+            name=self.name
+            )
 
         try:
             log_files.remove(err_file)
@@ -3537,8 +3542,6 @@ class ProcessThread(object):
             tuclass2d.create_jpg_file(
                 file_name,
                 self.settings[folder_name],
-                queue_com=self.queue_com,
-                name=self.name,
                 )
 
         except Exception:

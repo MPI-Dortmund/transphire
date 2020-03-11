@@ -903,18 +903,18 @@ def look_and_feel_small(app, font=None):
     app.setFont(font_type)
     style_widgets = """
     QWidget#central_raw {{
-        background-image: url("{1}");
+        background-image: url("{0}");
         }}
     QWidget#central {{
-        background-color: {2};
+        background-color: {1};
         border-radius: 15px;
         }}
     QWidget#settings {{
-        background-color: {3};
+        background-color: {2};
         border-radius: 15px
         }}
     QWidget#tab {{
-        background-color: {3};
+        background-color: {2};
         border-radius: 15px
         }}
     QTabWidget::pane {{
@@ -950,7 +950,6 @@ def look_and_feel_small(app, font=None):
         border-radius: 5px
         }}
     """.format(
-        'lightgrey',
         '{0}/images/sxgui_background.png'.format(os.path.dirname(__file__)),
         'rgba(229, 229, 229, 192)',
         'rgba(229, 229, 229, 120)',
@@ -1044,22 +1043,22 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
     # Style sheet
     style_widgets = """
     QWidget#central_raw {{
-        background-image: url("{1}");
+        background-image: url("{0}");
         }}
     QWidget#central {{
-        background-color: {2};
+        background-color: {1};
         border-radius: 15px;
         }}
     QWidget#central_black {{
-        background-color: {4};
+        background-color: {3};
         border-radius: 15px;
         }}
     QWidget#settings {{
-        background-color: {3};
+        background-color: {2};
         border-radius: 15px
         }}
     QWidget#tab {{
-        background-color: {3};
+        background-color: {2};
         border-radius: 15px
         }}
     QTabWidget::tab-bar {{
@@ -1079,21 +1078,20 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
         border-top: 2px solid #C2C7CB;
         }}
     QTabBar::tab {{
-        max-width: {5};
-        max-height: {6};
+        max-width: {4};
+        max-height: {5};
         }}
     QMessageBox {{
-        background-image: url("{1}");
+        background-image: url("{0}");
         color: white;
         }}
     QFileDialog {{
-        background-color: {2}
+        background-color: {1}
         }}
     QScrollArea {{ background-color: transparent }}
     QDockWidget {{ background-color: rgb(229, 229, 229) }}
 
     """.format(
-        'lightgrey',
         '{0}/images/sxgui_background.png'.format(os.path.dirname(__file__)),
         'rgba(229, 229, 229, 192)',
         'rgba(229, 229, 229, 120)',

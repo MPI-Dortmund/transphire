@@ -223,7 +223,7 @@ def create_jpg_file(file_name, output_dir):
     plt.close('all')
 
 
-def get_particle_number(self, log_file, settings, queue_com, name):
+def get_particle_number(log_file, settings, queue_com, name):
     extract_name = settings['Copy']['Extract']
     with open(log_file, 'r') as read:
         if 'WINDOW' in extract_name:

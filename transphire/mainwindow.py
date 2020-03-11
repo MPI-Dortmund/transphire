@@ -1291,6 +1291,7 @@ class MainWindow(QMainWindow):
             result = tu.question(
                 head='Error saving file!',
                 text='Wrong setting detected! Quit without saving?',
+                parent=self
                 )
             # Result is true if the answer is Yes
             if result:

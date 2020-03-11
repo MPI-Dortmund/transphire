@@ -303,7 +303,7 @@ def dummy(name, name_no_feedback, directory_name, import_name='', send_data=None
 def import_isac_v1_2(name, name_no_feedback, directory_name, import_name='', send_data=None):
     files = [
         entry for entry in glob.glob(
-        '{0}/*/ISAC2'.format(directory_name, import_name)
+        '{0}/*/ISAC2'.format(directory_name)
         )
         ]
     useable_files = []
@@ -319,7 +319,7 @@ def import_isac_v1_2(name, name_no_feedback, directory_name, import_name='', sen
         except FileNotFoundError:
             rejected = 0
         classes = len([entry for entry in glob.glob(
-            '{0}/png/*'.format(os.path.dirname(file_name), import_name)
+            '{0}/png/*'.format(os.path.dirname(file_name))
             )])
         useable_files.append([os.path.dirname(file_name), accepted, rejected, classes])
 

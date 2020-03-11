@@ -759,6 +759,17 @@ class ProcessWorker(QObject):
                         settings_file=settings_file,
                         )
 
+        # Unlock the Class2d queue in case of a TranSPHIRE crash during 2D classification
+        try:
+            with open(self.shared_dict['typ']['Class2d']['feedback_lock_file'], 'r') as read:
+                in_feedback = '1' in read.read()
+
+            if in_feedback and shared_dict['queue']['Select2d'].empty() and shared_dict['queue']['Train2d'].empty():
+                with open(self.shared_dict['typ']['Class2d']['feedback_lock_file'], 'w') as write:
+                    write.write('0')
+        except FileNotFoundError:
+            pass
+
         self.emit_plot_signals(folder_list=folder_list, monitor=False)
 
         # Define file number and check if file already exists
