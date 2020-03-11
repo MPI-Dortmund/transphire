@@ -426,7 +426,7 @@ class PlotWidget(QWidget):
                         y_values,
                         change,
                         )
-                except ValueError as e:
+                except ValueError:
                     print('Chosen values: {0} to {1} with {2} bins lead to zero data points! Falling back to +-infinity.'.format(lower_lim, upper_lim, bins))
                     self.notification.setText('Chosen values: {0} to {1} with {2} bins lead to zero data points! Falling back to +-infinity.'.format(lower_lim, upper_lim, bins))
                     self.lower_edit.setText('-inf')
