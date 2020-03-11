@@ -16,6 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import re
 import os
 import glob
 import shutil
@@ -59,17 +60,27 @@ def get_extract_command(file_sum, file_box, file_ctf, output_dir, settings, queu
             block_gpu = False
             gpu_list = []
             shell = True
+        else:
+            message = '\n'.join([
+                'Version for {0}: Not known!'.format(extract_name),
+                'Please contact the TranSPHIRE authors!'
+                ])
+            queue_com['error'].put(
+                message,
+                name
+                )
+            raise IOError(message)
 
     else:
         message = '\n'.join([
-            '{0}: Not known!'.format(settings['Copy']['CTF']),
+            '{0}: Not known!'.format(extract_name),
             'Please contact the TranSPHIRE authors!'
             ])
         queue_com['error'].put(
             message,
             name
             )
-        IOError(message)
+        raise IOError(message)
 
     assert command is not None, 'command not specified: {0}'.format(extract_name)
     assert block_gpu is not None, 'block_gpu not specified: {0}'.format(extract_name)
@@ -210,3 +221,33 @@ def create_jpg_file(file_name, output_dir):
     tu.mkdir_p(os.path.join(output_dir, 'jpg'))
     plt.savefig(os.path.join(output_dir, 'jpg', '{0}.jpg'.format(file_name)), dpi=dpi, transparent=True, edgecolor=None) 
     plt.close('all')
+
+
+def get_particle_number(self, log_file, settings, queue_com, name):
+    extract_name = settings['Copy']['Extract']
+    with open(log_file, 'r') as read:
+        if 'WINDOW' in extract_name:
+            if tu.is_higher_version(extract_name, '1.2'):
+                n_particles = re.search('Global.*Processed\s*:\s*(\d+)', read.read(), re.S) #https://regex101.com/r/Jyo5hi/1
+
+            else:
+                message = '\n'.join([
+                    'Version for {0}: Not known!'.format(extract_name),
+                    'Please contact the TranSPHIRE authors!'
+                    ])
+                queue_com['error'].put(
+                    message,
+                    name
+                    )
+                raise IOError(message)
+        else:
+            message = '\n'.join([
+                '{0}: Not known!'.format(extract_name),
+                'Please contact the TranSPHIRE authors!'
+                ])
+            queue_com['error'].put(
+                message,
+                name
+                )
+            raise IOError(message)
+    return n_particles

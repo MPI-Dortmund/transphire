@@ -3023,6 +3023,8 @@ class ProcessThread(object):
             command=command
             )
 
+        n_particles = tue.get_particle_number(log_file, self.settings)
+
         try:
             log_files.remove(err_file)
             copied_log_files.remove(err_file)
@@ -3068,7 +3070,7 @@ class ProcessThread(object):
                         self.add_to_queue(
                             aim=aim_name,
                             root_name=[
-                                '|||'.join([entry, file_box])
+                                '|||'.join([n_particles, entry])
                                 for entry in copied_log_files
                                 if '.bdb' in entry and not entry.endswith('data.bdb')
                                 ]
@@ -3386,211 +3388,213 @@ class ProcessThread(object):
 
         self.shared_dict_typ['queue_list_lock'].acquire()
         try:
+            try:
+                with open(self.shared_dict_typ['number_file'], 'r') as read:
+                    try:
+                        old_index = read.read().strip().split('|||')
+                        old_index = int(old_index)
+                    except ValueError:
+                        old_index = -1
+            except FileNotFoundError:
+                old_index = -1
 
-#    def run_class2d(self, root_name):
-#        if root_name == 'None':
-#            self.shared_dict_typ['queue_list_lock'].acquire()
-#            try:
-#                self.shared_dict_typ['queue_list_time'] = time.time() * 100
-#            finally:
-#                self.shared_dict_typ['queue_list_lock'].release()
-#            return None
-#
-#        folder_name = 'class2d_folder_feedback_{0}'.format(self.settings['do_feedback_loop'].value)
-#
-#        start_prog = time.time()
-#        self.queue_com['log'].put(tu.create_log(self.name, 'run_class2d', root_name, 'start process'))
-#
-#        class2d_name = self.settings['Copy'][self.typ]
-#
-#        self.shared_dict_typ['queue_list_lock'].acquire()
-#        try:
-#            try:
-#                with open(self.shared_dict_typ['number_file'], 'r') as read:
-#                    try:
-#                        data = read.read().strip().split('|||')
-#                        old_nr_of_particles = int(data[0])
-#                        class_idx = int(data[1])
-#                    except ValueError:
-#                        old_nr_of_particles = 0
-#                        class_idx = 0
-#            except FileNotFoundError:
-#                old_nr_of_particles = 0
-#                class_idx = 0
-#
-#            stack_name, box_name = root_name.split('|||')
-#            with open(box_name, 'r') as read:
-#                nr_particles = len([entry for entry in read.readlines() if entry.split() and not entry.startswith('#')])
-#            new_nr_of_particles = old_nr_of_particles + nr_particles
-#
-#            with open(self.shared_dict_typ['number_file'], 'w') as write:
-#                write.write('{0}|||{1}'.format(new_nr_of_particles, class_idx))
-#            self.add_to_queue_file(
-#                root_name=root_name,
-#                file_name=self.shared_dict_typ['list_file'],
-#                )
-#            self.shared_dict_typ['queue_list'].append(root_name)
-#
-#            if new_nr_of_particles < int(self.settings[class2d_name]['Nr. Particles']):
-#                self.queue_com['log'].put(tu.create_log(self.name, 'run_class2d', root_name, 'stop early 1'))
-#                return None
-#
-#            file_queue_list = self.shared_dict_typ['queue_list'][:]
-#            file_names = [entry for entry in self.shared_dict_typ['queue_list'] if entry.strip()]
-#            self.shared_dict_typ['queue_list'][:] = []
-#        finally:
-#            self.shared_dict_typ['queue_list_lock'].release()
-#
-#        # Combine Stacks to one stack for ISAC
-#        try:
-#            if self.settings['do_feedback_loop'].value:
-#                for type_name in ('Picking', 'Extract'):
-#                    self.shared_dict['typ'][type_name]['queue_lock'].acquire()
-#                    try:
-#                        with open(self.shared_dict['typ'][type_name]['feedback_lock_file'], 'w') as write:
-#                            write.write('1')
-#                    finally:
-#                        self.shared_dict['typ'][type_name]['queue_lock'].release()
-#
-#            file_name = '{0:03d}'.format(class_idx)
-#            command, check_files, block_gpu, gpu_list, shell, new_stack = tuclass2d.create_stack_combine_command(
-#                class2d_name=class2d_name,
-#                file_names=[entry.strip().split('|||')[0] for entry in file_names if entry.strip()],
-#                file_name=file_name,
-#                output_dir=self.settings[folder_name],
-#                settings=self.settings,
-#                queue_com=self.queue_com,
-#                name=self.name,
-#                )
-#
-#            # Log files
-#            log_prefix = os.path.join(
-#                    self.settings[folder_name],
-#                    '{0}_combine'.format(file_name)
-#                    )
-#
-#            log_file, err_file = self.run_command(
-#                command=command,
-#                log_prefix=log_prefix,
-#                block_gpu=block_gpu,
-#                gpu_list=gpu_list,
-#                shell=shell
-#                )
-#
-#            command, check_files, block_gpu, gpu_list, shell = tuclass2d.create_class2d_command(
-#                class2d_name=class2d_name,
-#                stack_name=new_stack,
-#                file_name=file_name,
-#                output_dir=self.settings[folder_name],
-#                settings=self.settings,
-#                queue_com=self.queue_com,
-#                name=self.name,
-#                )
-#
-#            # Log files
-#            log_prefix = os.path.join(
-#                    self.settings[folder_name],
-#                    '{0}'.format(file_name)
-#                    )
-#
-#            log_file, err_file = self.run_command(
-#                command=command,
-#                log_prefix=log_prefix,
-#                block_gpu=block_gpu,
-#                gpu_list=gpu_list,
-#                shell=shell
-#                )
-#
-#            zero_list = [err_file]
-#            non_zero_list = [log_file]
-#            non_zero_list.extend(check_files)
-#
-#            log_files, copied_log_files = tuclass2d.find_logfiles(
-#                root_path=os.path.join(self.settings[folder_name], file_name),
-#                settings=self.settings,
-#                queue_com=self.queue_com,
-#                name=self.name
-#                )
-#
-#            tus.check_outputs(
-#                zero_list=zero_list,
-#                non_zero_list=non_zero_list,
-#                exists_list=log_files,
-#                folder=self.settings[folder_name],
-#                command=command
-#                )
-#
-#            try:
-#                log_files.remove(err_file)
-#                copied_log_files.remove(err_file)
-#            except ValueError:
-#                pass
-#
-#            for old_file, new_file in zip(log_files, copied_log_files):
-#                if os.path.realpath(old_file) != os.path.realpath(new_file):
-#                    os.remove(old_file)
-#                else:
-#                    pass
-#
-#            copied_log_files.extend(non_zero_list)
-#            copied_log_files.extend(zero_list)
-#            copied_log_files = list(set(copied_log_files))
-#
-#            tuclass2d.create_jpg_file(file_name, self.settings[folder_name])
-#
-#            skip_list = False
-#            if skip_list:
-#                pass
-#            else:
-#                # Add to queue
-#                for aim in self.content_settings['aim']:
-#                    *compare, aim_name = aim.split(':')
-#                    var = True
-#                    for typ in compare:
-#                        name = typ.split('!')[-1]
-#                        if typ.startswith('!'):
-#                            if self.settings['Copy'][name] == 'False':
-#                                continue
-#                            else:
-#                                var = False
-#                                break
-#                        else:
-#                            if not self.settings['Copy'][name] == 'False':
-#                                continue
-#                            else:
-#                                var = False
-#                                break
-#                    if var:
-#                        if 'Select2d' in compare:
-#                            self.add_to_queue(aim=aim_name, root_name='|||'.join([log_prefix, new_stack]))
-#                        else:
-#                            self.add_to_queue(aim=aim_name, root_name=copied_log_files)
-#                    else:
-#                        pass
-#
-#        except Exception:
-#            if self.settings['do_feedback_loop'].value:
-#                for type_name in ('Picking', 'Extract', 'Class2d'):
-#                    self.shared_dict['typ'][type_name]['queue_lock'].acquire()
-#                    try:
-#                        with open(self.shared_dict['typ'][type_name]['feedback_lock_file'], 'w') as write:
-#                            write.write('0')
-#                    finally:
-#                        self.shared_dict['typ'][type_name]['queue_lock'].release()
-#
-#            self.shared_dict_typ['queue_list'].extend(file_queue_list)
-#            raise
-#
-#        else:
-#            self.shared_dict_typ['queue_list_lock'].acquire()
-#            try:
-#                with open(self.shared_dict_typ['number_file'], 'w') as write:
-#                    write.write('0|||{0}'.format(class_idx+1))
-#                self.remove_from_queue_file(file_names, self.shared_dict_typ['list_file'])
-#            finally:
-#                self.shared_dict_typ['queue_list_lock'].release()
-#
-#        self.queue_com['log'].put(tu.create_log(self.name, 'run_class2d', root_name, 'stop process', time.time() - start_prog))
+            if root_name != 'None':
+                self.shared_dict_typ['queue_list'].append(root_name)
+                self.add_to_queue_file(
+                    root_name=root_name,
+                    file_name=self.shared_dict_typ['list_file'],
+                    )
+                self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name, 'stop early 1', time.time() - start_prog))
+                return None
+
+            lines_to_use = []
+            final_lines_to_use = []
+            total_n = 0
+            n_particles_to_check = int(self.settings[self.prog_name]['Nr. Particles'])
+
+            for line in self.shared_dict_typ['queue_list']:
+                lines_to_use.append(line)
+                n_particles, stack_name = line.split('|||')
+                total_n += int(n_particles)
+                if total_n >= n_particles_to_check:
+                    final_lines_to_use = lines_to_use
+                    break
+
+            if not final_lines_to_use:
+                self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name, 'stop early 2', time.time() - start_prog))
+                self.shared_dict_typ['queue_list_time'] = time.time()
+                return None
+
+            with open(self.shared_dict['typ']['Class2d']['feedback_lock_file'], 'r') as read:
+                if '1' in read.read():
+                    self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name, 'stop early 3', time.time() - start_prog))
+                    self.shared_dict_typ['queue_list_time'] = time.time()
+                    return None
+
+            current_idx = old_index + 1
+            with open(self.shared_dict_typ['number_file'], 'w') as write:
+                write.write(str(current_idx))
+
+            for entry in final_lines_to_use:
+                self.shared_dict_typ['queue_list'].remove(entry)
+
+            if self.settings['do_feedback_loop'].value:
+                for type_name in ('Picking', 'Extract', 'Class2d'):
+                    self.shared_dict['typ'][type_name]['queue_lock'].acquire()
+                    try:
+                        with open(self.shared_dict['typ'][type_name]['feedback_lock_file'], 'w') as write:
+                            write.write('1')
+                    finally:
+                        self.shared_dict['typ'][type_name]['queue_lock'].release()
+        finally:
+            self.shared_dict_typ['queue_list_lock'].release()
+
+        try:
+            file_name = '{0:03d}'.format(current_idx)
+            command, check_files, block_gpu, gpu_list, shell, new_stack = tuclass2d.create_stack_combine_command(
+                class2d_name=self.prog_name,
+                file_names=[entry.strip().split('|||')[1] for entry in final_lines_to_use if entry.strip()],
+                file_name=file_name,
+                output_dir=self.settings[folder_name],
+                settings=self.settings,
+                queue_com=self.queue_com,
+                name=self.name,
+                )
+
+            # Log files
+            log_prefix = os.path.join(
+                    self.settings[folder_name],
+                    '{0}_combine'.format(file_name)
+                    )
+
+            log_file, err_file = self.run_command(
+                command=command,
+                log_prefix=log_prefix,
+                block_gpu=block_gpu,
+                gpu_list=gpu_list,
+                shell=shell
+                )
+
+            command, check_files, block_gpu, gpu_list, shell = tuclass2d.create_class2d_command(
+                class2d_name=self.prog_name,
+                stack_name=new_stack,
+                file_name=file_name,
+                output_dir=self.settings[folder_name],
+                settings=self.settings,
+                queue_com=self.queue_com,
+                name=self.name,
+                )
+
+            # Log files
+            log_prefix = os.path.join(
+                    self.settings[folder_name],
+                    '{0}'.format(file_name)
+                    )
+
+            log_file, err_file = self.run_command(
+                command=command,
+                log_prefix=log_prefix,
+                block_gpu=block_gpu,
+                gpu_list=gpu_list,
+                shell=shell
+                )
+
+            zero_list = [err_file]
+            non_zero_list = [log_file]
+            non_zero_list.extend(check_files)
+
+            log_files, copied_log_files = tuclass2d.find_logfiles(
+                root_path=os.path.join(self.settings[folder_name], file_name),
+                settings=self.settings,
+                queue_com=self.queue_com,
+                name=self.name
+                )
+
+            tus.check_outputs(
+                zero_list=zero_list,
+                non_zero_list=non_zero_list,
+                exists_list=log_files,
+                folder=self.settings[folder_name],
+                command=command
+                )
+
+            try:
+                log_files.remove(err_file)
+                copied_log_files.remove(err_file)
+            except ValueError:
+                pass
+
+            for old_file, new_file in zip(log_files, copied_log_files):
+                if os.path.realpath(old_file) != os.path.realpath(new_file):
+                    os.remove(old_file)
+                else:
+                    pass
+
+            copied_log_files.extend(non_zero_list)
+            copied_log_files.extend(zero_list)
+            copied_log_files = list(set(copied_log_files))
+
+            tuclass2d.create_jpg_file(
+                file_name,
+                self.settings[folder_name],
+                queue_com=self.queue_com,
+                name=self.name,
+                )
+
+        except Exception:
+            self.shared_dict_typ['queue_list_lock'].acquire()
+            try:
+                self.shared_dict_typ['queue_list'].extend(final_lines_to_use)
+                with open(self.shared_dict['typ'][self.typ]['feedback_lock_file'], 'w') as write:
+                    write.write('0')
+            finally:
+                self.shared_dict_typ['queue_list_lock'].release()
+            self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name, 'stop early 4', time.time() - start_prog))
+        else:
+            skip_list = False
+            if skip_list:
+                pass
+            else:
+                # Add to queue
+                for aim in self.content_settings['aim']:
+                    *compare, aim_name = aim.split(':')
+                    var = True
+                    for typ in compare:
+                        name = typ.split('!')[-1]
+                        if typ.startswith('!'):
+                            if self.settings['Copy'][name] == 'False':
+                                continue
+                            else:
+                                var = False
+                                break
+                        else:
+                            if not self.settings['Copy'][name] == 'False':
+                                continue
+                            else:
+                                var = False
+                                break
+                    if var:
+                        if 'Select2d' in compare:
+                            self.add_to_queue(aim=aim_name, root_name='|||'.join([log_prefix, new_stack]))
+                        else:
+                            self.add_to_queue(aim=aim_name, root_name=copied_log_files)
+                    else:
+                        pass
+
+            self.shared_dict_typ['queue_list_lock'].acquire()
+            try:
+                self.remove_from_queue_file(final_lines_to_use, self.shared_dict_typ['list_file'])
+            finally:
+                self.shared_dict_typ['queue_list_lock'].release()
+
+        finally:
+            self.shared_dict_typ['queue_list_lock'].acquire()
+            try:
+                self.shared_dict_typ['queue_list_time'] = time.time()
+            finally:
+                self.shared_dict_typ['queue_list_lock'].release()
+
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_class2d', root_name, 'stop process', time.time() - start_prog))
 
     def run_select2d(self, root_name):
         """
