@@ -110,7 +110,10 @@ class ProcessThread(object):
         self.queue = shared_dict['queue'][self.content_settings['name']]
         self.shared_dict_typ = shared_dict['typ'][self.content_settings['name']]
         self.queue_lock = self.shared_dict_typ['queue_lock']
-        self.prog_name = self.settings['Copy'][self.typ]
+        try:
+            self.prog_name = self.settings['Copy'][self.typ]
+        except KeyError:
+            self.prog_name = None
 
         try:
             self.later = bool(self.settings['Copy'][self.typ] == 'Later')
@@ -3396,7 +3399,7 @@ class ProcessThread(object):
             try:
                 with open(self.shared_dict_typ['number_file'], 'r') as read:
                     try:
-                        old_index = read.read().strip().split('|||')
+                        old_index = read.read().strip()
                         old_index = int(old_index)
                     except ValueError:
                         old_index = -1
@@ -3430,11 +3433,14 @@ class ProcessThread(object):
                 self.shared_dict_typ['queue_list_time'] = time.time()
                 return None
 
-            with open(self.shared_dict['typ']['Class2d']['feedback_lock_file'], 'r') as read:
-                if '1' in read.read():
-                    self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name, 'stop early 3', time.time() - start_prog))
-                    self.shared_dict_typ['queue_list_time'] = time.time()
-                    return None
+            try:
+                with open(self.shared_dict['typ']['Class2d']['feedback_lock_file'], 'r') as read:
+                    if '1' in read.read():
+                        self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name, 'stop early 3', time.time() - start_prog))
+                        self.shared_dict_typ['queue_list_time'] = time.time()
+                        return None
+            except FileNotFoundError:
+                pass
 
             current_idx = old_index + 1
             with open(self.shared_dict_typ['number_file'], 'w') as write:

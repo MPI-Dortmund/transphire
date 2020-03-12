@@ -228,7 +228,7 @@ def get_particle_number(log_file, settings, queue_com, name):
     with open(log_file, 'r') as read:
         if 'WINDOW' in extract_name:
             if tu.is_higher_version(extract_name, '1.2'):
-                n_particles = re.search('Global.*Processed\s*:\s*(\d+)', read.read(), re.S) #https://regex101.com/r/Jyo5hi/1
+                n_particles = re.search('Global.*Processed\s*:\s*(\d+)', read.read(), re.S).group(1) #https://regex101.com/r/Jyo5hi/1
 
             else:
                 message = '\n'.join([
