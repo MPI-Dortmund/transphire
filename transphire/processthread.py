@@ -3559,6 +3559,7 @@ class ProcessThread(object):
             finally:
                 self.shared_dict_typ['queue_list_lock'].release()
             self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name, 'stop early 4', time.time() - start_prog))
+            raise
         else:
             skip_list = False
             if skip_list:
