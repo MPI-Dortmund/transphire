@@ -34,6 +34,8 @@ def create_substack_command(class_average_name, input_stack, isac_dir, output_di
     except IOError:
         pass
 
+    picking_name = settings['Copy']['Picking']
+
     command.append("PATH=$(dirname $(which {0})):${{PATH}}".format(settings['Path']['sp_pipe.py']))
     command.append(settings['Path']['sp_pipe.py'])
     command.append('isac_substack')
@@ -41,6 +43,9 @@ def create_substack_command(class_average_name, input_stack, isac_dir, output_di
     command.append(os.path.join(isac_dir, 'ISAC2'))
     command.append(os.path.join(output_dir, 'STACK'))
     command.append('--isac_class_avgs_path={0}'.format(class_average_name))
+
+    if settings[picking_name]['--filament'] == 'True':
+        command.append('--min_nr_segments={0}'.format(settings[picking_name]['--minimum_number_boxes']))
 
     return ' '.join(command), check_files, block_gpu, gpu_list, shell, 'bdb:{0}/{1}'.format(os.path.join(output_dir, 'STACK'), 'isac_substack')
 
