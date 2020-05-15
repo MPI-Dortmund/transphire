@@ -3355,7 +3355,7 @@ class ProcessThread(object):
                     pass
 
         #self.remove_from_queue_file(matches_in_queue, self.shared_dict_typ['list_file'])
-        for type_name in ('Picking', 'Extract', 'Class2d'):
+        for type_name in ('Extract', 'Class2d'):
             self.shared_dict['typ'][type_name]['queue_lock'].acquire()
             try:
                 with open(self.shared_dict['typ'][type_name]['feedback_lock_file'], 'w') as write:
@@ -3456,7 +3456,7 @@ class ProcessThread(object):
                 self.shared_dict_typ['queue_list'].remove(entry)
 
             if self.settings['do_feedback_loop'].value:
-                for type_name in ('Picking', 'Extract', 'Class2d'):
+                for type_name in ('Extract', 'Class2d'):
                     self.shared_dict['typ'][type_name]['queue_lock'].acquire()
                     try:
                         with open(self.shared_dict['typ'][type_name]['feedback_lock_file'], 'w') as write:
