@@ -1614,8 +1614,9 @@ class ProcessThread(object):
         Returns:
         None
         """
+        root_name_input = root_name
         start_prog = time.time()
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_import', root_name, 'start process'))
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_import', root_name_input, 'start process'))
         root_name_raw = root_name
         number, root_name = root_name_raw.split('|||')
         number = int(number)
@@ -1641,7 +1642,7 @@ class ProcessThread(object):
                 message = \
                     '{0}: In queue, but already copied! Skip!'.format(self.name)
                 self.write_error(msg=message, root_name=root_name)
-                self.queue_com['log'].put(tu.create_log(self.name, 'run_import', root_name, 'stop early 1'))
+                self.queue_com['log'].put(tu.create_log(self.name, 'run_import', root_name_input, 'stop early 1'))
                 return None
             else:
                 pass
@@ -1649,7 +1650,7 @@ class ProcessThread(object):
             message = '{0}: No frames found! If this appears very often, please restart TranSPHIRE.'.format(self.name)
             self.queue_com['notification'].put(message)
             self.write_error(msg=message, root_name=root_name)
-            self.queue_com['log'].put(tu.create_log(self.name, 'run_import', root_name, 'stop early 2'))
+            self.queue_com['log'].put(tu.create_log(self.name, 'run_import', root_name_input, 'stop early 2'))
             return None
 
         if overall_file_size > \
@@ -1860,7 +1861,7 @@ class ProcessThread(object):
         finally:
             self.shared_dict['typ'][self.content_settings['group']]['share_lock'].release()
 
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_import', root_name, 'stop process', time.time() - start_prog))
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_import', root_name_input, 'stop process', time.time() - start_prog))
 
 
     def already_in_translation_file(self, root_name):
@@ -2166,8 +2167,9 @@ class ProcessThread(object):
         Returns:
         None
         """
+        root_name_input = root_name
         start_prog = time.time()
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', root_name, 'start process'))
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', root_name_input, 'start process'))
         if not os.path.isfile(root_name):
             compress_name = self.settings['Copy']['Compress']
             try:
@@ -2694,7 +2696,7 @@ class ProcessThread(object):
             os.remove(file_stack)
         else:
             pass
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', root_name, 'stop process', time.time() - start_prog))
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', root_name_input, 'stop process', time.time() - start_prog))
 
     def run_ctf(self, root_name):
         """
@@ -2705,8 +2707,9 @@ class ProcessThread(object):
         Returns:
         None
         """
+        root_name_input = root_name
         start_prog = time.time()
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_ctf', root_name, 'start process'))
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_ctf', root_name_input, 'start process'))
         root_name_raw = root_name
         # Split is file_sum, file_dw_sum, file_frames
         try:
@@ -2933,7 +2936,7 @@ class ProcessThread(object):
                         self.add_to_queue(aim=aim_name, root_name=copied_log_files)
                 else:
                     pass
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_ctf', root_name, 'stop process', time.time() - start_prog))
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_ctf', root_name_input, 'stop process', time.time() - start_prog))
 
     def run_extract(self, root_name):
         """
@@ -2944,6 +2947,7 @@ class ProcessThread(object):
         Returns:
         None
         """
+        root_name_input = root_name
         if root_name == 'None':
             self.shared_dict_typ['queue_list_lock'].acquire()
             try:
@@ -2956,7 +2960,7 @@ class ProcessThread(object):
         folder_name = 'extract_folder_feedback_{0}'.format(self.settings['do_feedback_loop'].value)
 
         start_prog = time.time()
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_extract', root_name, 'start process'))
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_extract', root_name_input, 'start process'))
 
         self.shared_dict_typ['queue_list_lock'].acquire()
         try:
@@ -2967,7 +2971,7 @@ class ProcessThread(object):
             file_name = tu.get_name(tu.get_name(tu.get_name(root_name)))
             matches_in_queue = self.all_in_queue_file(self.typ, file_name, lock=False)
             if len(matches_in_queue) != 3:
-                self.queue_com['log'].put(tu.create_log(self.name, 'run_extract', root_name, 'stop early 1'))
+                self.queue_com['log'].put(tu.create_log(self.name, 'run_extract', root_name_input, 'stop early 1'))
                 return None
         finally:
             self.shared_dict_typ['queue_list_lock'].release()
@@ -3090,7 +3094,7 @@ class ProcessThread(object):
                     pass
 
         self.remove_from_queue_file(matches_in_queue, self.shared_dict_typ['list_file'])
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_extract', root_name, 'stop process', time.time() - start_prog))
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_extract', root_name_input, 'stop process', time.time() - start_prog))
 
     @staticmethod
     def symlink_rel(src, dst):
@@ -3107,6 +3111,7 @@ class ProcessThread(object):
         Returns:
         None
         """
+        root_name_input = root_name
         if root_name == 'None':
             self.shared_dict_typ['queue_list_lock'].acquire()
             try:
@@ -3119,7 +3124,7 @@ class ProcessThread(object):
         folder_name = 'train2d_folder_feedback_{0}'.format(self.settings['do_feedback_loop'].value)
 
         start_prog = time.time()
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_train2d', root_name, 'start process'))
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_train2d', root_name_input, 'start process'))
 
         if root_name.endswith('_good.hdf'):
             all_logs = []
@@ -3384,13 +3389,14 @@ class ProcessThread(object):
                 'lightgreen'
                 ])
 
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_train2d', root_name, 'stop process', time.time() - start_prog))
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_train2d', root_name_input, 'stop process', time.time() - start_prog))
 
 
 
     def run_class2d(self, root_name):
+        root_name_input = root_name
         start_prog = time.time()
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_class2d', root_name, 'start process'))
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_class2d', root_name_input, 'start process'))
 
         folder_name = 'class2d_folder_feedback_{0}'.format(self.settings['do_feedback_loop'].value)
 
@@ -3412,7 +3418,7 @@ class ProcessThread(object):
                     root_name=root_name,
                     file_name=self.shared_dict_typ['list_file'],
                     )
-                self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name, 'stop early 1', time.time() - start_prog))
+                self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name_input, 'stop early 1', time.time() - start_prog))
                 return None
 
             lines_to_use = []
@@ -3429,14 +3435,14 @@ class ProcessThread(object):
                     break
 
             if not final_lines_to_use:
-                self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name, 'stop early 2', time.time() - start_prog))
+                self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name_input, 'stop early 2', time.time() - start_prog))
                 self.shared_dict_typ['queue_list_time'] = time.time()
                 return None
 
             try:
                 with open(self.shared_dict['typ']['Class2d']['feedback_lock_file'], 'r') as read:
                     if '1' in read.read():
-                        self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name, 'stop early 3', time.time() - start_prog))
+                        self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name_input, 'stop early 3', time.time() - start_prog))
                         self.shared_dict_typ['queue_list_time'] = time.time()
                         return None
             except FileNotFoundError:
@@ -3558,7 +3564,7 @@ class ProcessThread(object):
                     write.write('0')
             finally:
                 self.shared_dict_typ['queue_list_lock'].release()
-            self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name, 'stop early 4', time.time() - start_prog))
+            self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name_input, 'stop early 4', time.time() - start_prog))
             raise
         else:
             skip_list = False
@@ -3604,7 +3610,7 @@ class ProcessThread(object):
             finally:
                 self.shared_dict_typ['queue_list_lock'].release()
 
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_class2d', root_name, 'stop process', time.time() - start_prog))
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_class2d', root_name_input, 'stop process', time.time() - start_prog))
 
     def run_select2d(self, root_name):
         """
@@ -3615,6 +3621,7 @@ class ProcessThread(object):
         Returns:
         None
         """
+        root_name_input = root_name
         if root_name == 'None':
             self.shared_dict_typ['queue_list_lock'].acquire()
             try:
@@ -3631,7 +3638,7 @@ class ProcessThread(object):
         folder_name = 'select2d_folder_feedback_{0}'.format(self.settings['do_feedback_loop'].value)
 
         start_prog = time.time()
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_select_2d', root_name, 'start process'))
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_select_2d', root_name_input, 'start process'))
         file_name = tu.get_name(tu.get_name(tu.get_name(root_name)))
 
         # Create the command
@@ -3764,7 +3771,7 @@ class ProcessThread(object):
                 else:
                     pass
 
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_select2d', root_name, 'stop process', time.time() - start_prog))
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_select2d', root_name_input, 'stop process', time.time() - start_prog))
 
     def run_picking(self, root_name):
         """
@@ -3775,8 +3782,9 @@ class ProcessThread(object):
         Returns:
         None
         """
+        root_name_input = root_name
         start_prog = time.time()
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name, 'start process'))
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name_input, 'start process'))
 
         self.shared_dict['typ']['Picking']['queue_list_lock'].acquire()
         try:
@@ -3848,7 +3856,7 @@ class ProcessThread(object):
                     )
                 self.shared_dict_typ['queue_list'].append(root_name)
                 if time.time() - self.shared_dict_typ['queue_list_time'] < 30:
-                    self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name, self.shared_dict_typ['queue_list_time'], time.time() - self.shared_dict_typ['queue_list_time'], 'stop early 1', time.time() - start_prog))
+                    self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name_input, self.shared_dict_typ['queue_list_time'], time.time() - self.shared_dict_typ['queue_list_time'], 'stop early 1', time.time() - start_prog))
                     return None
                 else:
                     pass
@@ -3858,11 +3866,11 @@ class ProcessThread(object):
         self.shared_dict_typ['queue_list_lock'].acquire()
         try:
             if time.time() - self.shared_dict_typ['queue_list_time'] < 30:
-                self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name, self.shared_dict_typ['queue_list_time'], time.time() - self.shared_dict_typ['queue_list_time'], 'stop early 2', time.time() - start_prog))
+                self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name_input, self.shared_dict_typ['queue_list_time'], time.time() - self.shared_dict_typ['queue_list_time'], 'stop early 2', time.time() - start_prog))
                 return None
             elif not self.shared_dict_typ['queue_list']:
                 self.shared_dict_typ['queue_list_time'] = time.time()
-                self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name, self.shared_dict_typ['queue_list_time'], time.time() - self.shared_dict_typ['queue_list_time'], 'stop early 3', time.time() - start_prog))
+                self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name_input, self.shared_dict_typ['queue_list_time'], time.time() - self.shared_dict_typ['queue_list_time'], 'stop early 3', time.time() - start_prog))
                 return None
             file_use_list = []
             file_name_list = []
@@ -4003,7 +4011,7 @@ class ProcessThread(object):
             raise
         else:
             self.remove_from_queue_file(file_queue_list, self.shared_dict_typ['list_file'])
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name, 'stop process', time.time() - start_prog))
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_picking', root_name_input, 'stop process', time.time() - start_prog))
 
     def run_compress(self, root_name):
         """
@@ -4014,8 +4022,9 @@ class ProcessThread(object):
         Returns:
         None
         """
+        root_name_input = root_name
         start_prog = time.time()
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_compress', root_name, 'start process'))
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_compress', root_name_input, 'start process'))
         new_root_name, extension = os.path.splitext(os.path.basename(root_name))
 
         log_prefix = os.path.join(
@@ -4108,7 +4117,7 @@ class ProcessThread(object):
             if not os.path.exists(root_name) and os.path.exists(new_name):
                 print(root_name, ' does not exist anymore, but', new_name, 'does already!')
                 print('Compress - Skip file!')
-                self.queue_com['log'].put(tu.create_log(self.name, 'run_compress', root_name, 'stop early 1'))
+                self.queue_com['log'].put(tu.create_log(self.name, 'run_compress', root_name_input, 'stop early 1'))
                 return None
 
             if os.path.exists(new_name):
@@ -4175,7 +4184,7 @@ class ProcessThread(object):
                 self.add_to_queue(aim=aim_name, root_name=[new_name, log_file, err_file])
             else:
                 pass
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_compress', root_name, 'stop process', time.time() - start_prog))
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_compress', root_name_input, 'stop process', time.time() - start_prog))
 
 
     def run_auto3d(self, root_name):
@@ -4191,8 +4200,9 @@ class ProcessThread(object):
         Returns:
         None
         """
+        root_name_input = root_name
         start_prog = time.time()
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name, 'start process'))
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name_input, 'start process'))
 
         def recursive_file_search(folder_name, copy_files):
             """
@@ -4686,7 +4696,7 @@ class ProcessThread(object):
 
         finally:
             self.shared_dict_typ['queue_list_time'] = time.time()
-            self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name, 'stop process', time.time() - start_prog))
+            self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name_input, 'stop process', time.time() - start_prog))
             self.shared_dict_typ['queue_list_lock'].release()
 
     def copy_extern(self, my_typ, copy_file):
@@ -4752,8 +4762,9 @@ class ProcessThread(object):
         Returns:
         None
         """
+        root_name_input = root_name
         start_prog = time.time()
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_copy_extern', root_name, 'start process'))
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_copy_extern', root_name_input, 'start process'))
         dont_tar = False
         if root_name == 'None':
             pass
@@ -4805,11 +4816,11 @@ class ProcessThread(object):
                         if self.settings['tar_folder'] in entry
                         ][0]
                 except IndexError:
-                    self.queue_com['log'].put(tu.create_log(self.name, 'run_copy_extern', root_name, 'stop early 1', time.time() - start_prog))
+                    self.queue_com['log'].put(tu.create_log(self.name, 'run_copy_extern', root_name_input, 'stop early 1', time.time() - start_prog))
                     return None
                 if not os.path.exists(copy_file):
                     self.shared_dict_typ['queue_list_time'] = time.time()
-                    self.queue_com['log'].put(tu.create_log(self.name, 'run_copy_extern', root_name, 'stop early 2', time.time() - start_prog))
+                    self.queue_com['log'].put(tu.create_log(self.name, 'run_copy_extern', root_name_input, 'stop early 2', time.time() - start_prog))
                     return None
 
                 self.shared_dict_typ['queue_list'].remove(copy_file)
@@ -4881,7 +4892,7 @@ class ProcessThread(object):
                         )
                 else:
                     self.shared_dict_typ['queue_list_time'] = time.time()
-                    self.queue_com['log'].put(tu.create_log(self.name, 'run_copy_extern', root_name, 'stop early 3', time.time() - start_prog))
+                    self.queue_com['log'].put(tu.create_log(self.name, 'run_copy_extern', root_name_input, 'stop early 3', time.time() - start_prog))
                     return None
             finally:
                 self.shared_dict_typ['queue_list_lock'].release()
@@ -4892,7 +4903,7 @@ class ProcessThread(object):
         self.copy_extern(self.typ, copy_file)
 
         self.shared_dict_typ['queue_list_time'] = time.time()
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_copy_extern', root_name, 'stop process', time.time() - start_prog))
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_copy_extern', root_name_input, 'stop process', time.time() - start_prog))
 
     def copy_as_user(self, file_in, file_out):
         """
