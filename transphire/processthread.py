@@ -1734,6 +1734,7 @@ class ProcessThread(object):
             )
 
         log_file, err_file = self.run_command(
+            root_name_input=root_name_input,
             command=command,
             log_prefix=new_name_stack,
             block_gpu=False,
@@ -2359,6 +2360,7 @@ class ProcessThread(object):
                     )
 
                 file_stdout_scratch, file_stderr_scratch = self.run_command(
+                    root_name_input=root_name_input,
                     command=command,
                     log_prefix=file_log_scratch,
                     block_gpu=block_gpu,
@@ -2400,6 +2402,7 @@ class ProcessThread(object):
                     )
 
                 file_stdout_scratch, file_stderr_scratch = self.run_command(
+                    root_name_input=root_name_input,
                     command=command,
                     log_prefix=file_log_scratch,
                     block_gpu=block_gpu,
@@ -2768,6 +2771,7 @@ class ProcessThread(object):
             )
 
         log_file, err_file = self.run_command(
+            root_name_input=root_name_input,
             command=command,
             log_prefix=log_prefix,
             block_gpu=block_gpu,
@@ -3004,6 +3008,7 @@ class ProcessThread(object):
                 )
 
         log_file, err_file = self.run_command(
+            root_name_input=root_name_input,
             command=command,
             log_prefix=log_prefix,
             block_gpu=block_gpu,
@@ -3143,6 +3148,7 @@ class ProcessThread(object):
             all_logs.append(stack_name)
 
             log_file, err_file = self.run_command(
+                root_name_input=root_name_input,
                 command=command,
                 log_prefix='{0}_substack'.format(log_prefix),
                 block_gpu=block_gpu,
@@ -3171,6 +3177,7 @@ class ProcessThread(object):
                 )
 
             log_file, err_file = self.run_command(
+                root_name_input=root_name_input,
                 command=command,
                 log_prefix='{0}_restack'.format(log_prefix),
                 block_gpu=block_gpu,
@@ -3245,6 +3252,7 @@ class ProcessThread(object):
             )
 
         log_file, err_file = self.run_command(
+            root_name_input=root_name_input,
             command=command,
             log_prefix='{0}_train'.format(log_prefix),
             block_gpu=block_gpu,
@@ -3288,6 +3296,7 @@ class ProcessThread(object):
             command, check_files, block_gpu, gpu_list, shell = ttrain2d.create_eval_command(new_config, new_model, log_file, self.settings)
             if command is not None:
                 log_file, err_file = self.run_command(
+                    root_name_input=root_name_input,
                     command=command,
                     log_prefix='{0}_evaluation'.format(log_prefix),
                     block_gpu=block_gpu,
@@ -3485,6 +3494,7 @@ class ProcessThread(object):
                     )
 
             log_file, err_file = self.run_command(
+                root_name_input=root_name_input,
                 command=command,
                 log_prefix=log_prefix,
                 block_gpu=block_gpu,
@@ -3509,6 +3519,7 @@ class ProcessThread(object):
                     )
 
             log_file, err_file = self.run_command(
+                root_name_input=root_name_input,
                 command=command,
                 log_prefix=log_prefix,
                 block_gpu=block_gpu,
@@ -3659,6 +3670,7 @@ class ProcessThread(object):
                 )
 
         log_file, err_file = self.run_command(
+            root_name_input=root_name_input,
             command=command,
             log_prefix=log_prefix,
             block_gpu=block_gpu,
@@ -3830,6 +3842,7 @@ class ProcessThread(object):
                     )
 
             log_file, err_file = self.run_command(
+                root_name_input=root_name_input,
                 command=command,
                 log_prefix=log_prefix,
                 block_gpu=block_gpu,
@@ -3907,6 +3920,7 @@ class ProcessThread(object):
                     )
 
             log_file, err_file = self.run_command(
+                root_name_input=root_name_input,
                 command=command,
                 log_prefix=log_prefix,
                 block_gpu=block_gpu,
@@ -4125,6 +4139,7 @@ class ProcessThread(object):
 
             # Log files
             log_file, err_file = self.run_command(
+                root_name_input=root_name_input,
                 command=command,
                 log_prefix=log_prefix,
                 block_gpu=False,
@@ -4142,6 +4157,7 @@ class ProcessThread(object):
 
             # Log files
             log_file_uncompress, err_file_uncompress = self.run_command(
+                root_name_input=root_name_input,
                 command=command_uncompress,
                 log_prefix='{0}_uncompress'.format(log_prefix),
                 block_gpu=False,
@@ -4256,6 +4272,7 @@ class ProcessThread(object):
                     )
 
                 log_file, err_file = self.run_command(
+                    root_name_input=root_name_input,
                     command=command,
                     log_prefix='{0}_substack'.format(log_prefix),
                     block_gpu=block_gpu,
@@ -4389,6 +4406,7 @@ class ProcessThread(object):
 
                 cur_log_prefix = os.path.dirname(output)
                 log_file, err_file = self.run_command(
+                    root_name_input=root_name_input,
                     command=cmd,
                     log_prefix='{0}_combine'.format(cur_log_prefix),
                     block_gpu=False,
@@ -4507,6 +4525,7 @@ class ProcessThread(object):
 
             cmd = ' '.join(cmd)
             log_file, err_file = self.run_command(
+                root_name_input=root_name_input,
                 command=cmd,
                 log_prefix='{0}_create_template'.format(log_prefix),
                 block_gpu=False,
@@ -4612,6 +4631,7 @@ class ProcessThread(object):
                     write.write('\nTime: {0} sec'.format(stop_time - start_time)) 
             else:
                 log_file, err_file = self.run_command(
+                    root_name_input=root_name_input,
                     command=cmd,
                     log_prefix='{0}_run_autosphire'.format(log_prefix),
                     block_gpu=False,
@@ -4983,7 +5003,7 @@ class ProcessThread(object):
         else:
             pass
 
-    def run_command(self, command, log_prefix, block_gpu, gpu_list, shell, file_to_delete=None):
+    def run_command(self, command, log_prefix, block_gpu, gpu_list, shell, file_to_delete=None, root_name_input='INVALID'):
         """
         Run the command with respect to the gpu list.
 
@@ -5025,6 +5045,7 @@ class ProcessThread(object):
         # Run the command
         self.delete_file_to_delete(file_to_delete)
 
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_command', root_name_input, 'start program'))
         while True:
             with open(log_file, 'w') as out:
                 out.write(command)
@@ -5045,6 +5066,7 @@ class ProcessThread(object):
                 if 'Error: All GPUs are in use, quit.' in err.read():
                     continue
             break
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_command', root_name_input, 'stop program'))
 
         self.delete_file_to_delete(file_to_delete)
 
