@@ -3291,7 +3291,7 @@ class ProcessThread(object):
                 remove_pattern=remove_pattern,
                 )
 
-        command = None
+        new_threshold = None
         if self.settings['do_feedback_loop'].value == 1 and self.settings[self.settings['Copy']['Picking']]['--filament'] == 'False' and tu.is_higher_version(self.settings['Copy']['Train2d'], '1.5.8'):
             command, check_files, block_gpu, gpu_list, shell = ttrain2d.create_eval_command(new_config, new_model, log_file, self.settings)
             if command is not None:
@@ -3320,14 +3320,18 @@ class ProcessThread(object):
 
                 try:
                     with open(log_file, 'r') as read:
-                        threshold = re.search('^.*according F2 statistic: (.*)$', read.read(), re.M).group(1).strip() # https://regex101.com/r/ZvTGaw
+                        new_threshold = re.search('^.*according F2 statistic: (.*)$', read.read(), re.M).group(1).strip() # https://regex101.com/r/ZvTGaw
                 except Exception:
                     message = 'Could not find F2 score in the output file: {0}!'.format(log_file)
                     self.queue_com['error'].put(message)
                     raise
+        elif self.settings['do_feedback_loop'].value == 1 and self.settings[self.settings['Copy']['Picking']]['--filament'] == 'True' and tu.is_higher_version(self.settings['Copy']['Train2d'], '1.5.8'):
+            new_threshold = 0.3
 
-        if command is None:
+        if new_threshold is None:
             threshold = str(self.settings[self.settings['Copy']['Picking']]['--threshold_old'])
+        else:
+            threshold = new_threshold
 
         self.shared_dict['typ']['Picking']['queue_list_lock'].acquire()
         try:
