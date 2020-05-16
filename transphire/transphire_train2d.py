@@ -70,7 +70,7 @@ def create_restack_command(stack_name, output_dir, settings):
     return ' '.join(command), check_files, block_gpu, gpu_list, shell, os.path.join(output_dir, 'BOX', 'original')
 
 
-def create_eval_command(config_file, weight_file, log_file, settings):
+def create_eval_command(config_file, weight_file, log_file, settings, name):
     prog_name = settings['Path']['cryolo_evaluation.py']
     command = []
     block_gpu = False
