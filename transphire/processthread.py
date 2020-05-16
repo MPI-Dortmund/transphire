@@ -153,6 +153,16 @@ class ProcessThread(object):
 
         # Event loop
         while not self.stop.value:
+            if self.shared_dict_typ['do_update_count'] != 0:
+                self.queue_lock.acquire()
+                try:
+                    self.shared_dict_typ['do_update_count'] -= 1
+                finally:
+                    self.queue_lock.release()
+
+                self.shared_dict['global_update_lock'].acquire()
+                self.shared_dict['global_update_lock'].release()
+
             if self.done:
                 while not self.stop.value:
                     self.queue_com['status'].put([
@@ -255,7 +265,7 @@ class ProcessThread(object):
                         ])
                 i = 0
                 while i < 6:
-                    time.sleep(10)
+                    time.sleep(1)
                     if self.stop.value:
                         break
                     else:
@@ -492,6 +502,16 @@ class ProcessThread(object):
     def reset_queue(self, aim=None, switch_feedback=False, remove_pattern='THIS IS A DUMMY PATTERN'):
         if aim is None:
             aim = self.typ
+
+        self.shared_dict['typ'][aim]['queue_lock'].acquire()
+        try:
+            self.shared_dict['typ'][aim]['do_update_count'] = self.shared_dict['typ'][aim]['max_running'] - bool(self.typ == aim)
+        finally:
+            self.shared_dict['typ'][aim]['queue_lock'].release()
+
+        while self.shared_dict['typ'][aim]['do_update_count'] != 0:
+            time.sleep(0.5)
+
         self.shared_dict['typ'][aim]['queue_lock'].acquire()
         try:
             while not self.shared_dict['queue'][aim].empty():
@@ -518,7 +538,7 @@ class ProcessThread(object):
                     )
 
             pattern = re.compile(remove_pattern)
-            combined_content = [entry for entry in content_done + content_save if pattern.search(entry) is None]
+            combined_content = sorted([entry for entry in content_done + content_save if pattern.search(entry) is None])
 
             with open(self.shared_dict['typ'][aim]['save_file'], 'w') as write:
                 write.write('{0}\n'.format('\n'.join(combined_content)))
@@ -3276,131 +3296,136 @@ class ProcessThread(object):
             command=command
             )
 
-        for aim in ('Picking', 'Extract', 'Class2d', 'Select2d', 'Train2d'):
-            if aim in ('Picking'):
-                remove_pattern = 'THIS IS A DUMMY PATTERN!'
-            elif aim in ('Extract'):
-                remove_pattern = '.*\.box'
-            elif aim in ('Train2d'):
-                remove_pattern = '.*\.hdf'
-            else:
-                remove_pattern = '.*'
-            self.reset_queue(
-                aim=aim,
-                switch_feedback=True,
-                remove_pattern=remove_pattern,
-                )
-
-        new_threshold = None
-        if self.settings['do_feedback_loop'].value == 1 and self.settings[self.settings['Copy']['Picking']]['--filament'] == 'False' and tu.is_higher_version(self.settings['Copy']['Train2d'], '1.5.8'):
-            command, check_files, block_gpu, gpu_list, shell = ttrain2d.create_eval_command(new_config, new_model, log_file, self.settings)
-            if command is not None:
-                log_file, err_file = self.run_command(
-                    root_name_input=root_name_input,
-                    command=command,
-                    log_prefix='{0}_evaluation'.format(log_prefix),
-                    block_gpu=block_gpu,
-                    gpu_list=gpu_list,
-                    shell=shell
-                    )
-                all_logs.append(log_file)
-                all_logs.append(err_file)
-
-                zero_list = []
-                non_zero_list = [err_file, log_file]
-                non_zero_list.extend(check_files)
-
-                tus.check_outputs(
-                    zero_list=zero_list,
-                    non_zero_list=non_zero_list,
-                    exists_list=[],
-                    folder=self.settings[folder_name],
-                    command=command
-                    )
-
-                try:
-                    with open(log_file, 'r') as read:
-                        new_threshold = re.search('^.*according F2 statistic: (.*)$', read.read(), re.M).group(1).strip() # https://regex101.com/r/ZvTGaw
-                except Exception:
-                    message = 'Could not find F2 score in the output file: {0}!'.format(log_file)
-                    self.queue_com['error'].put(message)
-                    raise
-        elif self.settings['do_feedback_loop'].value == 1 and self.settings[self.settings['Copy']['Picking']]['--filament'] == 'True' and tu.is_higher_version(self.settings['Copy']['Train2d'], '1.5.8'):
-            new_threshold = 0.3
-
-        if new_threshold is None:
-            threshold = str(self.settings[self.settings['Copy']['Picking']]['--threshold_old'])
-        else:
-            threshold = new_threshold
-
-        self.shared_dict['typ']['Picking']['queue_list_lock'].acquire()
+        self.shared_dict['global_update_lock'].acquire()
         try:
-            with open(self.shared_dict['typ']['Picking']['settings_file'], 'w') as write:
-                write.write('|||'.join([new_model, new_config, threshold]))
-        finally:
-            self.shared_dict['typ']['Picking']['queue_list_lock'].release()
-
-        skip_list = False
-        if skip_list:
-            pass
-        else:
-            # Add to queue
-            for aim in self.content_settings['aim']:
-                *compare, aim_name = aim.split(':')
-                var = True
-                for typ in compare:
-                    name = typ.split('!')[-1]
-                    if typ.startswith('!'):
-                        if self.settings['Copy'][name] == 'False':
-                            continue
-                        else:
-                            var = False
-                            break
-                    else:
-                        if not self.settings['Copy'][name] == 'False':
-                            continue
-                        else:
-                            var = False
-                            break
-                if var:
-                    self.add_to_queue(aim=aim_name, root_name=all_logs)
+            for aim in ('Picking', 'Extract', 'Class2d', 'Select2d', 'Train2d'):
+                if aim in ('Picking'):
+                    remove_pattern = 'THIS IS A DUMMY PATTERN!'
+                elif aim in ('Extract'):
+                    remove_pattern = '.*\.box'
+                elif aim in ('Train2d'):
+                    remove_pattern = '.*\.hdf'
                 else:
-                    pass
+                    remove_pattern = '.*'
+                self.reset_queue(
+                    aim=aim,
+                    switch_feedback=True,
+                    remove_pattern=remove_pattern,
+                    )
 
-        #self.remove_from_queue_file(matches_in_queue, self.shared_dict_typ['list_file'])
-        for type_name in ('Extract', 'Class2d'):
-            self.shared_dict['typ'][type_name]['queue_lock'].acquire()
+            new_threshold = None
+            if self.settings['do_feedback_loop'].value == 1 and self.settings[self.settings['Copy']['Picking']]['--filament'] == 'False' and tu.is_higher_version(self.settings['Copy']['Train2d'], '1.5.8'):
+                command, check_files, block_gpu, gpu_list, shell = ttrain2d.create_eval_command(new_config, new_model, log_file, self.settings, self.name)
+                if command is not None:
+                    log_file, err_file = self.run_command(
+                        root_name_input=root_name_input,
+                        command=command,
+                        log_prefix='{0}_evaluation'.format(log_prefix),
+                        block_gpu=block_gpu,
+                        gpu_list=gpu_list,
+                        shell=shell
+                        )
+                    all_logs.append(log_file)
+                    all_logs.append(err_file)
+
+                    zero_list = []
+                    non_zero_list = [err_file, log_file]
+                    non_zero_list.extend(check_files)
+
+                    tus.check_outputs(
+                        zero_list=zero_list,
+                        non_zero_list=non_zero_list,
+                        exists_list=[],
+                        folder=self.settings[folder_name],
+                        command=command
+                        )
+
+                    try:
+                        with open(log_file, 'r') as read:
+                            new_threshold = re.search('^.*according F2 statistic: (.*)$', read.read(), re.M).group(1).strip() # https://regex101.com/r/ZvTGaw
+                    except Exception:
+                        message = 'Could not find F2 score in the output file: {0}!'.format(log_file)
+                        self.queue_com['error'].put(message)
+                        raise
+
+            elif self.settings['do_feedback_loop'].value == 1 and self.settings[self.settings['Copy']['Picking']]['--filament'] == 'True' and tu.is_higher_version(self.settings['Copy']['Train2d'], '1.5.8'):
+                new_threshold = 0.3
+
+            if new_threshold is None:
+                threshold = str(self.settings[self.settings['Copy']['Picking']]['--threshold_old'])
+            else:
+                threshold = new_threshold
+
+            self.shared_dict['typ']['Picking']['queue_list_lock'].acquire()
             try:
-                with open(self.shared_dict['typ'][type_name]['feedback_lock_file'], 'w') as write:
-                    write.write('0')
+                with open(self.shared_dict['typ']['Picking']['settings_file'], 'w') as write:
+                    write.write('|||'.join([new_model, new_config, threshold]))
             finally:
-                self.shared_dict['typ'][type_name]['queue_lock'].release()
+                self.shared_dict['typ']['Picking']['queue_list_lock'].release()
 
-        self.settings['do_feedback_loop'].value -= 1
+            skip_list = False
+            if skip_list:
+                pass
+            else:
+                # Add to queue
+                for aim in self.content_settings['aim']:
+                    *compare, aim_name = aim.split(':')
+                    var = True
+                    for typ in compare:
+                        name = typ.split('!')[-1]
+                        if typ.startswith('!'):
+                            if self.settings['Copy'][name] == 'False':
+                                continue
+                            else:
+                                var = False
+                                break
+                        else:
+                            if not self.settings['Copy'][name] == 'False':
+                                continue
+                            else:
+                                var = False
+                                break
+                    if var:
+                        self.add_to_queue(aim=aim_name, root_name=all_logs)
+                    else:
+                        pass
 
-        with open(self.settings['feedback_file'], 'w') as write:
-            write.write(str(self.settings['do_feedback_loop'].value))
+            #self.remove_from_queue_file(matches_in_queue, self.shared_dict_typ['list_file'])
+            for type_name in ('Extract', 'Class2d'):
+                self.shared_dict['typ'][type_name]['queue_lock'].acquire()
+                try:
+                    with open(self.shared_dict['typ'][type_name]['feedback_lock_file'], 'w') as write:
+                        write.write('0')
+                finally:
+                    self.shared_dict['typ'][type_name]['queue_lock'].release()
 
-        if self.settings['do_feedback_loop'].value == 0:
-            self.queue_com['status'].put([
-                '{0:02d}|{1:02d}'.format(
-                    int(self.settings['General']['Number of feedbacks']) - self.settings['do_feedback_loop'].value,
-                    int(self.settings['General']['Number of feedbacks'])
-                    ),
-                ['Done'],
-                'Feedbacks',
-                '#d9d9d9'
-                ])
-        else:
-            self.queue_com['status'].put([
-                '{0:02d}|{1:02d}'.format(
-                    int(self.settings['General']['Number of feedbacks']) - self.settings['do_feedback_loop'].value,
-                    int(self.settings['General']['Number of feedbacks'])
-                    ),
-                ['Running'],
-                'Feedbacks',
-                'lightgreen'
-                ])
+            self.settings['do_feedback_loop'].value -= 1
+
+            with open(self.settings['feedback_file'], 'w') as write:
+                write.write(str(self.settings['do_feedback_loop'].value))
+
+            if self.settings['do_feedback_loop'].value == 0:
+                self.queue_com['status'].put([
+                    '{0:02d}|{1:02d}'.format(
+                        int(self.settings['General']['Number of feedbacks']) - self.settings['do_feedback_loop'].value,
+                        int(self.settings['General']['Number of feedbacks'])
+                        ),
+                    ['Done'],
+                    'Feedbacks',
+                    '#d9d9d9'
+                    ])
+            else:
+                self.queue_com['status'].put([
+                    '{0:02d}|{1:02d}'.format(
+                        int(self.settings['General']['Number of feedbacks']) - self.settings['do_feedback_loop'].value,
+                        int(self.settings['General']['Number of feedbacks'])
+                        ),
+                    ['Running'],
+                    'Feedbacks',
+                    'lightgreen'
+                    ])
+        finally:
+            self.shared_dict['global_update_lock'].release()
 
         self.queue_com['log'].put(tu.create_log(self.name, 'run_train2d', root_name_input, 'stop process', time.time() - start_prog))
 

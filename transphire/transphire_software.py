@@ -906,7 +906,7 @@ def get_copy_command_for_frames(settings, queue_com, name):
     """
     message = None
     if settings['General']['Software'] == 'Just Stack':
-        return "rsync --copy-links"
+        return "ln -rs"
     elif settings['General']['Software'] == 'Latitude S':
         if settings['General']['Type'] == 'Frames':
             message = '\n'.join([
