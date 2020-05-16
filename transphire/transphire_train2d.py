@@ -86,10 +86,25 @@ def create_eval_command(config_file, weight_file, log_file, settings):
         return None, check_files, block_gpu, gpu_list, shell
 
     command.append(prog_name)
-    command.append('-c={0}'.format(config_file))
-    command.append('-w={0}'.format(weight_file))
-    command.append('-r={0}'.format(match.group(1).strip()))
-    return ' '.join(command), check_files, block_gpu, gpu_list, shell
+    command.append('--config={0}'.format(config_file))
+    command.append('--weights={0}'.format(weight_file))
+    command.append('--runfile={0}'.format(match.group(1).strip()))
+
+    prog_name_train = settings['Copy']['Train2d']
+    if settings[prog_name_train]['Split Gpu?'] == 'True':
+        try:
+            gpu_id = int(name.split('_')[-1])-1
+        except ValueError:
+            gpu_id = 0
+        try:
+            gpu = settings[prog_name_train]['--gpu'].split()[gpu_id]
+        except IndexError:
+            raise UserWarning('There are less gpus provided than threads available! Please restart with the same number of pipeline processors as GPUs provided and restart! Stopping this thread!')
+    else:
+        gpu = settings[prog_name_train]['--gpu']
+    command.append('--gpu={0}'.format(gpu))
+
+    return ' '.join(command), check_files, block_gpu, gpu.split(), shell
 
 
 def create_train_command(sum_folder, box_folder, output_dir, name, settings):
