@@ -967,13 +967,39 @@ class ProcessWorker(QObject):
             if self.settings['Copy']['Train2d'] not in ('False', 'Later'):
                 check_files.append(['Path', 'cryolo_gui.py'])
                 check_files.append(['Path', 'cryolo_evaluation.py'])
+                check_files.append(['Path', 'sp_pipe.py'])
             else:
                 pass
         except KeyError:
             pass
 
         try:
-            if self.settings[self.settings['Copy']['Picking']]['Filter micrographs'] == 'True':
+            if self.settings['Copy']['Select2d'] not in ('False', 'Later'):
+                check_files.append(['Path', 'sp_header.py'])
+            else:
+                pass
+        except KeyError:
+            pass
+
+        try:
+            if self.settings['Copy']['Class2d'] not in ('False', 'Later'):
+                check_files.append(['Path', 'e2bdb.py'])
+                check_files.append(['Path', 'mpirun'])
+            else:
+                pass
+        except KeyError:
+            pass
+
+        try:
+            if self.settings['Copy']['Auto3d'] not in ('False', 'Later'):
+                check_files.append(['Path', 'sp_pipe.py'])
+            else:
+                pass
+        except KeyError:
+            pass
+
+        try:
+            if [entry for entry in map(lambda x: x not in ('False', 'Later'), ['Class2d', 'CTF', 'Extract', 'Picking', 'Select2d']) if entry]:
                 check_files.append(['Path', 'e2proc2d.py'])
             else:
                 pass
@@ -1033,7 +1059,7 @@ class ProcessWorker(QObject):
                 error = True
 
         auto3d_name = self.settings['Copy']['Auto3d']
-        if auto3d_name != 'False' and auto3d_name != 'Later':
+        if auto3d_name not in ('False', 'Later'):
             if self.settings[auto3d_name]['Use SSH'] == 'True':
                 device_name = [
                     entry
