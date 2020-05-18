@@ -146,7 +146,7 @@ class PlotWidget(QWidget):
             layout_h.addStretch(1)
             layout_v.addLayout(layout_h)
 
-        layout_v.addLayout(self.layout_canvas)
+        layout_v.addLayout(self.layout_canvas, stretch=1)
         self.add_canvas()
 
     def add_canvas(self):
