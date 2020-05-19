@@ -3254,6 +3254,7 @@ class ProcessThread(object):
                     )
             finally:
                 self.shared_dict_typ['queue_list_lock'].release()
+                self.queue_com['log'].put(tu.create_log(self.name, 'run_train2d', root_name_input, 'stop early 1', time.time() - start_prog))
             return None
 
 
