@@ -3353,14 +3353,14 @@ class ProcessThread(object):
                 new_threshold = 0.3
 
             if new_threshold is None:
-                threshold = str(self.settings[self.settings['Copy']['Picking']]['--threshold_old'])
+                threshold = self.settings[self.settings['Copy']['Picking']]['--threshold_old']
             else:
                 threshold = new_threshold
 
             self.shared_dict['typ']['Picking']['queue_list_lock'].acquire()
             try:
                 with open(self.shared_dict['typ']['Picking']['settings_file'], 'w') as write:
-                    write.write('|||'.join([new_model, new_config, threshold]))
+                    write.write('|||'.join([new_model, new_config, str(threshold)]))
             finally:
                 self.shared_dict['typ']['Picking']['queue_list_lock'].release()
 
