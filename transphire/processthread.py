@@ -3633,6 +3633,20 @@ class ProcessThread(object):
                     if var:
                         if 'Select2d' in compare:
                             self.add_to_queue(aim=aim_name, root_name='|||'.join([log_prefix, new_stack]))
+                        elif 'Auto3d' in compare:
+                            self.add_to_queue(
+                                aim=aim_name,
+                                root_name='|||'.join([
+                                    str(self.settings['do_feedback_loop'].value),
+                                    log_prefix,
+                                    new_stack,
+                                    os.path.join(
+                                        log_prefix,
+                                        file_name,
+                                        'ordered_class_averages.hdf'
+                                        )
+                                    ])
+                                )
                         else:
                             self.add_to_queue(aim=aim_name, root_name=copied_log_files)
                     else:
