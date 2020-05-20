@@ -1053,13 +1053,18 @@ class ProcessWorker(QObject):
             if select2d_name in ('Later', 'False'):
                 pass
             elif train2d_name == 'Later':
-                self.sig_error.emit('Number of feedbacks provided and Train2d set to Later. Remember that particle picking and subsequent runs will stall until a Train2d program is provided.')
+                self.sig_error.emit('Number of feedbacks provided and Train2d set to Later. Remember that particle extraction and subsequent runs will stall until a Train2d program is provided.')
             elif train2d_name == 'False':
                 self.sig_error.emit('Number of feedbacks provided and Train2d set to False. This is not possible, because the program will stall infinitely.')
                 error = True
 
         auto3d_name = self.settings['Copy']['Auto3d']
         if auto3d_name not in ('False', 'Later'):
+            if self.settings['Copy']['Class2d'] in ('False') and \
+                    not self.settings[auto3d_name]['input_volume']:
+                self.sig_error.emit('An input volume needs to be provided to Auto3d if no 2D classification should be performed!')
+                error = True
+
             if self.settings[auto3d_name]['Use SSH'] == 'True':
                 device_name = [
                     entry

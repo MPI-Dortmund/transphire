@@ -859,6 +859,7 @@ def default_pipeline():
             int,
             'Extract;' +
             'Class2d:Class2d,' +
+            '!Class2d:Auto3d:Auto3d,' +
             'Extract to work:Copy to work:Copy_to_work,' +
             'Extract to HDD:Copy to HDD:Copy_to_hdd,' +
             'Extract to backup:Copy to backup:Copy_to_backup',
@@ -872,6 +873,7 @@ def default_pipeline():
             int,
             'Class2d;' +
             'Select2d:Select2d,' +
+            '!Select2d:Auto3d:Auto3d,' +
             'Class2d to work:Copy to work:Copy_to_work,' +
             'Class2d to HDD:Copy to HDD:Copy_to_hdd,' +
             'Class2d to backup:Copy to backup:Copy_to_backup',

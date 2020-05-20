@@ -3103,7 +3103,7 @@ class ProcessThread(object):
                             var = False
                             break
                 if var:
-                    if 'Class2d' in compare:
+                    if 'Class2d' in compare or 'Auto3d' in compare:
                         self.add_to_queue(
                             aim=aim_name,
                             root_name=[
@@ -3796,18 +3796,19 @@ class ProcessThread(object):
                                 ])
                             )
                     elif 'Auto3d' in compare:
-                        self.add_to_queue(
-                            aim=aim_name,
-                            root_name='|||'.join([
-                                str(self.settings['do_feedback_loop'].value),
-                                root_name_raw,
-                                os.path.join(
-                                    self.settings[folder_name],
-                                    file_name,
-                                    'ordered_class_averages_good.hdf'
-                                    )
-                                ])
-                            )
+                        pass
+                        #self.add_to_queue(
+                        #    aim=aim_name,
+                        #    root_name='|||'.join([
+                        #        str(self.settings['do_feedback_loop'].value),
+                        #        root_name_raw,
+                        #        os.path.join(
+                        #            self.settings[folder_name],
+                        #            file_name,
+                        #            'ordered_class_averages_good.hdf'
+                        #            )
+                        #        ])
+                        #    )
                     else:
                         self.add_to_queue(aim=aim_name, root_name=copied_log_files)
                 else:
@@ -4284,7 +4285,26 @@ class ProcessThread(object):
                 volume = self.settings[self.prog_name]['input_volume'] if self.settings[self.prog_name]['input_volume'] else 'XXXNoneXXX'
 
             # New stack creation, populating the list file, create classes.
-            if root_name != 'None':
+            if root_name != 'None' and len(root_name.split('|||')) == 2:
+                n_particles, stack_name = root_name.split('|||')
+                folder_name = 'auto3d_folder_feedback_{0}'.format(feedback_loop)
+
+                # Extract a substack from the good class averages.
+                file_name = tu.get_name(root_name)
+                log_prefix = os.path.join(self.settings[folder_name], 'FILES', 'WINDOW_{0}'.format(file_name))
+                with open(self.shared_dict_typ['number_file'], 'w') as write:
+                    write.write('|||'.join([str(entry) for entry in [old_shrink_ratio, old_index, volume]]))
+
+                add_to_string = map(str, [0, stack_name, n_particles, 'NONE', 0])
+                self.add_to_queue_file(
+                    root_name=add_to_string,
+                    file_name=self.shared_dict_typ['list_file'],
+                    )
+                self.shared_dict_typ['queue_list'].append(add_to_string)
+                self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name_input, 'stop early 1', time.time() - start_prog))
+                return None ### Early exit for the preparation here.
+
+            elif root_name != 'None' and len(root_name.split('|||')) == 4:
                 # Split root_name to get the needed information for this run.
                 feedback_loop, isac_folder, particle_stack, class_average_file = root_name.split('|||')
                 folder_name = 'auto3d_folder_feedback_{0}'.format(feedback_loop)
@@ -4348,12 +4368,13 @@ class ProcessThread(object):
                     assert old_shrink_ratio == float(shrink_ratio), 'Shrink ratios changed! Something is wrong here'
                 with open(self.shared_dict_typ['number_file'], 'w') as write:
                     write.write('|||'.join([str(entry) for entry in [shrink_ratio, old_index, volume]]))
+                add_to_string = map(str, [feedback_loop, stack_name, n_particles, class_average_file, n_classes])
                 self.add_to_queue_file(
-                    root_name='|||'.join([str(entry) for entry in [feedback_loop, stack_name, n_particles, class_average_file, n_classes]]),
+                    root_name=add_to_string,
                     file_name=self.shared_dict_typ['list_file'],
                     )
-                self.shared_dict_typ['queue_list'].append('|||'.join([str(entry) for entry in [feedback_loop, stack_name, n_particles, class_average_file, n_classes]]))
-                self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name_input, 'stop early 1', time.time() - start_prog))
+                self.shared_dict_typ['queue_list'].append(add_to_string)
+                self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name_input, 'stop early 2', time.time() - start_prog))
                 return None ### Early exit for the preparation here.
 
             prog_name_window = self.settings['Copy']['Extract']
