@@ -4353,6 +4353,7 @@ class ProcessThread(object):
                     file_name=self.shared_dict_typ['list_file'],
                     )
                 self.shared_dict_typ['queue_list'].append('|||'.join([str(entry) for entry in [feedback_loop, stack_name, n_particles, class_average_file, n_classes]]))
+                self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name_input, 'stop early 1', time.time() - start_prog))
                 return None ### Early exit for the preparation here.
 
             prog_name_window = self.settings['Copy']['Extract']
@@ -4397,10 +4398,10 @@ class ProcessThread(object):
                     break
 
             if not final_lines_to_use:
+                self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name_input, 'stop early 2', time.time() - start_prog))
                 return None
 
             current_index = old_index + 1
-            create_classes = False
             log_prefix = os.path.join(
                 self.settings[folder_name],
                 'AUTOSPHIRE_{0:03d}'.format(current_index),
@@ -4411,6 +4412,7 @@ class ProcessThread(object):
                 'best_stack.hdf',
                 )
 
+            create_classes = False
             if feedback_loop != '0':
                 index_list = [1, 3]
                 output_list = [output_stack, output_classes]
@@ -4458,7 +4460,7 @@ class ProcessThread(object):
                     )
 
             if create_classes:
-                return None
+                assert os.path.exists(output_classes) and volume == 'XXXNoneXXX', 'There should be classes but no volume present at this point of the code'
             else:
                 assert os.path.exists(output_classes) or volume != 'XXXNoneXXX', 'There should be classes or a volume present at this point of the code'
 
@@ -4480,7 +4482,8 @@ class ProcessThread(object):
                 cmd.append('--skip_meridien')
                 volume = 'SKIP_MERIDIEN'
 
-            elif os.path.exists(output_classes) and volume == 'XXXNoneXXX':
+            if os.path.exists(output_classes) and volume == 'XXXNoneXXX':
+                cmd.append('--skip_meridien')
                 cmd.append('--rviper_input_stack={0}'.format(output_classes))
                 cmd.append('--adjust_rviper_resample={0}'.format(1/old_shrink_ratio))
             elif volume != 'XXXNoneXXX':
@@ -4645,6 +4648,7 @@ class ProcessThread(object):
                     print('SSH autoSPHIRE command failed!')
                     with open(err_file, 'w') as write:
                         write.write(str(e))
+                    self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name_input, 'stop early 4', time.time() - start_prog))
                     raise
                 log.append(child.before)
                 log.append(child.after)
@@ -4690,10 +4694,13 @@ class ProcessThread(object):
                 while True:
                     if self.stop.value:
                         break
-                    if os.path.isdir(meridien_dir):
-                        viper_model = '{0}/0001_RVIPER_ADJUSTMENT/vol3d_ref_moon_eliminated.hdf'.format(log_prefix)
+                    viper_model = '{0}/0001_RVIPER_ADJUSTMENT/vol3d_ref_moon_eliminated.hdf'.format(log_prefix).replace(
+                        self.settings['General']['Project directory'],
+                        os.path.relpath(self.settings['copy_to_work_folder_feedback_0'])
+                        )
+                    if os.path.isfile(viper_model):
                         volume = viper_model.replace(
-                                '{0}/'.format(self.settings['General']['Project directory']),
+                                '{0}/'.format(self.settings['General']['copy_to_work_folder_feedback_0']),
                                 ''
                                 )
                         break
