@@ -43,6 +43,7 @@ def default_auto_sphire_v1_3():
 
         ['--apix', '1.0', float, '', 'PLAIN', 'Main', '', 'Pixel size in A/pixel.'],
         ['--mol_mass', '250.0', float, '', 'PLAIN', 'Main', '', 'Molecular mass of the protein in kDa. Used to calculate the masking density threshold.'],
+        ['--radius', '-1', float, '', 'PLAIN', 'Main', '', 'Protein radius in pixels'],
         ['--symmetry', 'c1', str, '', 'PLAIN', 'Main', '', 'Symmetry of the particle.'],
         ['--mtf', '', str, '', 'FILE', 'Main', '', 'MTF file for the sharpening step'],
         ['--phase_plate', ['False', 'True'], bool, '', 'COMBO', 'Main', '', 'Input is phase_plate.'],

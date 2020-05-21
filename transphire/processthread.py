@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import hashlib
 import time
 import os
 import re
@@ -3103,11 +3104,21 @@ class ProcessThread(object):
                             var = False
                             break
                 if var:
-                    if 'Class2d' in compare or 'Auto3d' in compare:
+                    if 'Class2d' in compare:
                         self.add_to_queue(
                             aim=aim_name,
                             root_name=[
                                 '|||'.join([n_particles, entry])
+                                for entry in copied_log_files
+                                if '.bdb' in entry and not entry.endswith('data.bdb')
+                                ]
+                            )
+
+                    elif 'Auto3d' in compare:
+                        self.add_to_queue(
+                            aim=aim_name,
+                            root_name=[
+                                '|||'.join([n_particles, 'bdb:{0}'.format(entry.replace('EMAN2DB/', '').replace('.bdb', ''))])
                                 for entry in copied_log_files
                                 if '.bdb' in entry and not entry.endswith('data.bdb')
                                 ]
@@ -4301,7 +4312,7 @@ class ProcessThread(object):
             # New stack creation, populating the list file, create classes.
             if root_name != 'None' and len(root_name.split('|||')) == 2:
                 n_particles, stack_name = root_name.split('|||')
-                folder_name = 'auto3d_folder_feedback_{0}'.format(feedback_loop)
+                folder_name = 'auto3d_folder_feedback_{0}'.format(0)
 
                 # Extract a substack from the good class averages.
                 file_name = tu.get_name(root_name)
@@ -4309,7 +4320,7 @@ class ProcessThread(object):
                 with open(self.shared_dict_typ['number_file'], 'w') as write:
                     write.write('|||'.join([str(entry) for entry in [old_shrink_ratio, old_index, volume]]))
 
-                add_to_string = map(str, [0, stack_name, n_particles, 'NONE', 0])
+                add_to_string = '|||'.join(map(str, [0, stack_name, n_particles, 'NONE', 0]))
                 self.add_to_queue_file(
                     root_name=add_to_string,
                     file_name=self.shared_dict_typ['list_file'],
@@ -4382,7 +4393,7 @@ class ProcessThread(object):
                     assert old_shrink_ratio == float(shrink_ratio), 'Shrink ratios changed! Something is wrong here'
                 with open(self.shared_dict_typ['number_file'], 'w') as write:
                     write.write('|||'.join([str(entry) for entry in [shrink_ratio, old_index, volume]]))
-                add_to_string = map(str, [feedback_loop, stack_name, n_particles, class_average_file, n_classes])
+                add_to_string = '|||'.join(map(str, [feedback_loop, stack_name, n_particles, class_average_file, n_classes]))
                 self.add_to_queue_file(
                     root_name=add_to_string,
                     file_name=self.shared_dict_typ['list_file'],
@@ -4392,7 +4403,6 @@ class ProcessThread(object):
                 return None ### Early exit for the preparation here.
 
             prog_name_window = self.settings['Copy']['Extract']
-            prog_name_isac = self.settings['Copy']['Class2d']
             mount_name = self.settings['Copy']['Copy to work']
 
             with open(self.shared_dict_typ['list_file'], 'r') as read:
@@ -4510,7 +4520,7 @@ class ProcessThread(object):
             cmd.append('--skip_isac2')
             cmd.append('--skip_cinderella')
             cmd.append('--box_size={0}'.format(self.settings[prog_name_window]['--box_size']))
-            cmd.append('--radius={0}'.format(self.settings[prog_name_isac]['--radius']))
+            cmd.append('--radius={0}'.format(self.settings[self.prog_name]['--radius']))
 
             cmd.append('--skip_mask_rviper')
             if self.settings[self.prog_name]['--skip_meridien'] == 'True':
@@ -5010,7 +5020,21 @@ class ProcessThread(object):
         self.check_ready_for_copy(file_out=file_out)
 
         tu.mkdir_p(os.path.dirname(file_out))
-        tu.copy(file_in, file_out)
+        counter = 0
+        with open(file_in, 'rb') as read:
+            checksum_in = hashlib.sha1(read.read()).hexdigest()
+        while True:
+            tu.copy(file_in, file_out)
+            with open(file_out, 'rb') as read:
+                checksum_out = hashlib.sha1(read.read()).hexdigest()
+            if checksum_in == checksum_out:
+                break
+            elif counter == 5:
+                print('PROBLEM', file_in, file_out)
+                raise IOError('PROBLEM')
+            else:
+                print('PROBLEM1', file_in, file_out)
+                counter += 1
 
 
     def check_ready_for_copy(self, file_out):
@@ -5037,22 +5061,39 @@ class ProcessThread(object):
         self.check_ready_for_copy(file_out=file_out)
 
         self.mkdir_p_as_another_user(folder=os.path.dirname(file_out))
-        command = 'sudo -k -S -u {0} rsync {1} {2}'.format(
-            self.user,
-            file_in,
-            file_out
-            )
-        child = pe.spawnu(command)
-        child.sendline(self.password)
-        child.expect(pe.EOF)
 
-        if 'rsync:' in child.before:
-            text = child.before.replace(self.password, 'PASSWORD')
-            raise IOError(
-                'Cannot copy file: {0}! {1}'.format(file_out, text)
+
+        counter = 0
+        with open(file_in, 'rb') as read:
+            checksum_in = hashlib.sha1(read.read()).hexdigest()
+        while True:
+            command = 'sudo -k -S -u {0} rsync {1} {2}'.format(
+                self.user,
+                file_in,
+                file_out
                 )
-        else:
-            pass
+            child = pe.spawnu(command)
+            child.sendline(self.password)
+            child.expect(pe.EOF)
+
+            if 'rsync:' in child.before:
+                text = child.before.replace(self.password, 'PASSWORD')
+                raise IOError(
+                    'Cannot copy file: {0}! {1}'.format(file_out, text)
+                    )
+            else:
+                pass
+
+            with open(file_out, 'rb') as read:
+                checksum_out = hashlib.sha1(read.read()).hexdigest()
+            if checksum_in == checksum_out:
+                break
+            elif counter == 5:
+                print('PROBLEM', file_in, file_out)
+                raise IOError('PROBLEM')
+            else:
+                print('PROBLEM1', file_in, file_out)
+                counter += 1
 
     def mkdir_p_as_another_user(self, folder):
         """

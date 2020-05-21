@@ -1049,13 +1049,14 @@ class ProcessWorker(QObject):
 
         train2d_name = self.settings['Copy']['Train2d']
         select2d_name = self.settings['Copy']['Select2d']
+        class2d_name = self.settings['Copy']['Class2d']
+        extract_name = self.settings['Copy']['Extract']
         if int(self.settings['General']['Number of feedbacks']) != 0:
-            if select2d_name in ('Later', 'False'):
-                pass
-            elif train2d_name == 'Later':
-                self.sig_error.emit('Number of feedbacks provided and Train2d set to Later. Remember that particle extraction and subsequent runs will stall until a Train2d program is provided.')
-            elif train2d_name == 'False':
-                self.sig_error.emit('Number of feedbacks provided and Train2d set to False. This is not possible, because the program will stall infinitely.')
+            if 'Later' in (train2d_name, select2d_name, extract_name, class2d_name):
+                self.sig_error.emit('Number of feedbacks provided and Extract, Class2d, Select2d, or Train2d set to Later. Remember that particle extraction and subsequent runs will stall until a Extract, Class2d, Select2d, or Train2d  program is provided.')
+                error = True
+            if 'False' in (train2d_name, select2d_name, extract_name, class2d_name):
+                self.sig_error.emit('Number of feedbacks provided and Extract, Class2d, Select2d, or Train2d set to False. This is not possible, because the program will stall infinitely.')
                 error = True
 
         auto3d_name = self.settings['Copy']['Auto3d']
