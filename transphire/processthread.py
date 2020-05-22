@@ -15,7 +15,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import hashlib
 import time
 import os
 import re
@@ -3651,11 +3650,7 @@ class ProcessThread(object):
                                     str(self.settings['do_feedback_loop'].value),
                                     log_prefix,
                                     new_stack,
-                                    os.path.join(
-                                        log_prefix,
-                                        file_name,
-                                        'ordered_class_averages.hdf'
-                                        )
+                                    check_files[0]
                                     ])
                                 )
                         else:
@@ -5021,19 +5016,35 @@ class ProcessThread(object):
 
         tu.mkdir_p(os.path.dirname(file_out))
         counter = 0
-        with open(file_in, 'rb') as read:
-            checksum_in = hashlib.sha1(read.read()).hexdigest()
+
+        do_checksum = os.path.split(file_in)[0] != self.settings['project_folder']
+        if do_checksum:
+            with open(file_in, 'rb') as read:
+                content = read.read()
+            checksum_in = hash(content)
+            len_data_in = len(content)
+
         while True:
             tu.copy(file_in, file_out)
-            with open(file_out, 'rb') as read:
-                checksum_out = hashlib.sha1(read.read()).hexdigest()
-            if checksum_in == checksum_out:
+            if not do_checksum:
                 break
-            elif counter == 5:
-                print('PROBLEM', file_in, file_out)
-                raise IOError('PROBLEM')
+
+            with open(file_out, 'rb') as read:
+                content = read.read()
+            len_data_out = len(content)
+            checksum_out = hash(content)
+
+            if len_data_in == len_data_out:
+                if checksum_in == checksum_out:
+                    break
+                elif counter == 5:
+                    print('PROBLEM', counter, file_in, file_out)
+                    raise IOError('PROBLEM')
+                else:
+                    print('PROBLEM', counter, file_in, file_out)
+                    counter += 1
             else:
-                print('PROBLEM1', file_in, file_out)
+                print('PROBLEM', counter, file_in, file_out)
                 counter += 1
 
 
@@ -5064,8 +5075,13 @@ class ProcessThread(object):
 
 
         counter = 0
-        with open(file_in, 'rb') as read:
-            checksum_in = hashlib.sha1(read.read()).hexdigest()
+        do_checksum = os.path.split(file_in)[0] != self.settings['project_folder']
+        if do_checksum:
+            with open(file_in, 'rb') as read:
+                content = read.read()
+            checksum_in = hash(content)
+            len_data_in = len(content)
+
         while True:
             command = 'sudo -k -S -u {0} rsync {1} {2}'.format(
                 self.user,
@@ -5084,15 +5100,25 @@ class ProcessThread(object):
             else:
                 pass
 
-            with open(file_out, 'rb') as read:
-                checksum_out = hashlib.sha1(read.read()).hexdigest()
-            if checksum_in == checksum_out:
+            if not do_checksum:
                 break
-            elif counter == 5:
-                print('PROBLEM', file_in, file_out)
-                raise IOError('PROBLEM')
+
+            with open(file_out, 'rb') as read:
+                content = read.read()
+            len_data_out = len(content)
+            checksum_out = hash(content)
+
+            if len_data_in == len_data_out:
+                if checksum_in == checksum_out:
+                    break
+                elif counter == 5:
+                    print('PROBLEM', counter, file_in, file_out)
+                    raise IOError('PROBLEM')
+                else:
+                    print('PROBLEM', counter, file_in, file_out)
+                    counter += 1
             else:
-                print('PROBLEM1', file_in, file_out)
+                print('PROBLEM', counter, file_in, file_out)
                 counter += 1
 
     def mkdir_p_as_another_user(self, folder):
