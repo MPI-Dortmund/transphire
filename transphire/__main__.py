@@ -20,7 +20,7 @@ import sys
 import os
 import json
 import argparse
-import urllib
+import urllib.request
 try:
     from PyQt4.QtGui import QApplication
 except ImportError:
@@ -236,7 +236,8 @@ def check_update():
                 vers = V(ver)
                 if vers > V(latest_version) and len(vers.version) == 3:
                     latest_version = ver
-    except Exception:
+    except Exception as e:
+        print(e)
         print('Could not check for updates! Please check your internet connection or for erros in the command:  {0}'.format(current_version))
         print('If you have questions, please contact the TranSPHIRE authors.')
         return
