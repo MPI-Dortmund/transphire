@@ -504,7 +504,13 @@ class MainWindow(QMainWindow):
         List of errors that occured.
         """
         self.content = {}
-        exclude_set = tu.get_exclude_set(content=content_gui)
+        for entry in content_gui:
+            if entry['name'] == 'Path':
+                exclude_set = tu.get_exclude_set_path(content=entry['content'])
+                tu.reduce_path_widget(exclude_set=exclude_set, content=entry['content'])
+        for entry in content_gui:
+            if entry['name'] == 'Copy':
+                tu.reduce_copy_entries(exclude_set=exclude_set, content=entry['content'])
         error_list = []
         tab_list = []
         for entry in content_gui:
@@ -523,10 +529,6 @@ class MainWindow(QMainWindow):
                 separator = entry['separator']
                 self.layout[layout].addWidget(separator)
                 continue
-            elif key == 'Path':
-                tu.reduce_path_widget(exclude_set=exclude_set, content=entry['content'])
-            elif key == 'Copy':
-                tu.reduce_copy_entries(exclude_set=exclude_set, content=entry['content'])
             else:
                 pass
 

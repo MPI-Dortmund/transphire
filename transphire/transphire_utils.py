@@ -575,7 +575,7 @@ def question(head, text, parent):
     return result
 
 
-def get_exclude_set(content):
+def get_exclude_set_path(content):
     """
     Check the widget_2 variable, if the program should be loaded or not.
 
@@ -586,36 +586,25 @@ def get_exclude_set(content):
     List of names to exclude
     """
     exclude_list = []
-    content_with_content = []
-    for entry in content:
-        try:
-            content_with_content.append(entry['content'])
-        except KeyError:
-            continue
 
-    for entry in content_with_content:
-        if not isinstance(entry, list):
-            continue
-        else:
-            pass
-        for sub_content in entry:
-            for entry2 in sub_content:
-                for key in entry2:
-                    widget_2 = entry2[key][1]['widget_2']
-                    if widget_2 is None:
-                        continue
-                    elif widget_2 == 'Main':
-                        continue
-                    elif widget_2 == 'Advanced' or widget_2 == 'Rare':
-                        exclude_list.append(key)
-                        exclude_list.append('Plot {0}'.format(key))
-                        exclude_list.append('Plot {0}'.format('{0} feedback'.format(key)))
-                    else:
-                        print(
-                            'TransphireUtils: widget_2 content unknown! Exit here!',
-                            widget_2
-                            )
-                        sys.exit(1)
+    for sub_content in content:
+        for entry2 in sub_content:
+            for key in entry2:
+                widget_2 = entry2[key][1]['widget_2']
+                if widget_2 is None:
+                    continue
+                elif widget_2 == 'Main':
+                    continue
+                elif widget_2 == 'Advanced' or widget_2 == 'Rare':
+                    exclude_list.append(key)
+                    exclude_list.append('Plot {0}'.format(key))
+                    exclude_list.append('Plot {0}'.format('{0} feedback'.format(key)))
+                else:
+                    print(
+                        'TransphireUtils: widget_2 content unknown! Exit here!',
+                        widget_2
+                        )
+                    sys.exit(1)
     return set(exclude_list)
 
 
@@ -677,9 +666,12 @@ def reduce_copy_entries(exclude_set, content):
                 else:
                     break
             if values is not None:
-                for key in exclude_set:
+                for key in list(exclude_set):
                     if key in values:
                         values.remove(key)
+                if sorted(values) == ['False', 'Later']:
+                    sub_item[list(sub_item)[0]][0] = 'False'
+                    exclude_set.add(list(sub_item)[0])
 
 
 def reduce_path_widget(exclude_set, content):
