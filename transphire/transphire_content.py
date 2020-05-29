@@ -1061,8 +1061,8 @@ def default_unblur_v1_0_0():
         # Magnification distortion options
         ['Correct Magnification Distortion?', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Correct Magnification Distortion?'],
         ['Distortion Angle (Degrees)', '0.0', float, '', 'PLAIN', 'Advanced', 'Distortion Angle (Degrees)'],
-        ['Major Scale', '1.0', float, '', 'PLAIN', 'Advanced', 'Major Scale'],
-        ['Minor Scale', '1.0', float, '', 'PLAIN', 'Advanced', 'Minor Scale'],
+        ['Major Scale', '1.0', float, 'Correct Magnification Distortion?:True', 'PLAIN', 'Advanced', 'Major Scale'],
+        ['Minor Scale', '1.0', float, 'Correct Magnification Distortion?:True', 'PLAIN', 'Advanced', 'Minor Scale'],
         ]
     return items
 

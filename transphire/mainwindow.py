@@ -866,12 +866,12 @@ class MainWindow(QMainWindow):
                     print(message_error)
                     return False
                 else:
-                print(message_pass)
-                if temp:
-                    pass
-                else:
-                    tu.message(message_pass)
-                return file_name
+                    print(message_pass)
+                    if temp:
+                        pass
+                    else:
+                        tu.message(message_pass)
+                    return file_name
             else:
                 if error:
                     return False, essage_error

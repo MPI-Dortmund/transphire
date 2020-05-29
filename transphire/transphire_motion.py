@@ -325,11 +325,51 @@ def create_unblur_v1_0_0_command(
     commands = []
 
     for weighting_entry in [0] + [1] * do_dw:
+        if weighting_entry:
+            file_output_use = '{}_DW{}'.format(*os.path.splitext(file_output))
+        else:
+            file_output_use = file_output
         cmd = []
         # Input stack filename
-        cmd.append('{0}'.format(file_input))
+        cmd.append(file_input)
         # Output aligned sum
-        cmd.append('{0}'.format(file_output))
+        cmd.append(file_output_use)
+        cmd.append(settings[motion_name]['Pixel size of image (A)'])
+        cmd.append(settings[motion_name]['Output binning factor'])
+        if weighting_entry:
+            cmd.append('yes')
+            cmd.append(settings[motion_name]['Exposure per frame (e/A^2)'])
+            cmd.append(settings[motion_name]['Acceleration voltage'])
+            cmd.append(settings[motion_name]['Pre-exposure amount (e/A^2)'])
+        else:
+            cmd.append('no')
+        cmd.append('yes')
+        cmd.append(settings[motion_name]['Minimum shift for initial search (A)'])
+        cmd.append(settings[motion_name]['Outer radius shift limit (A)'])
+        cmd.append(settings[motion_name]['B-factor to apply to images (A^2)'])
+        cmd.append(settings[motion_name]['Half-width of vertical Fourier mask'])
+        cmd.append(settings[motion_name]['Half-width of horizontal Fourier mask'])
+        cmd.append(settings[motion_name]['Termination shift threshold (A)'])
+        cmd.append(settings[motion_name]['Maximum number of iterations'])
+        if weighting_entry:
+            if settings[motion_name]['Restore Noise Power?'] == 'True':
+                cmd.append('yes')
+            else:
+                cmd.append('no')
+        if settings[motion_name]['Gain image filename'] != '':
+            cmd.append('no')
+            cmd.append(settings[motion_name]['Gain image filename'])
+        else:
+            cmd.append('yes')
+        cmd.append(settings[motion_name]['First frame to use for sum'])
+        cmd.append(settings[motion_name]['Last frame to use for sum'])
+        if settings[motion_name]['Correct Magnification Distortion?'] == 'True':
+            cmd.append('yes')
+            cmd.append(settings[motion_name]['Distortion Angle (Degrees)'])
+            cmd.append(settings[motion_name]['Major Scale'])
+            cmd.append(settings[motion_name]['Minor Scale'])
+        else:
+            cmd.append('no')
 
 
         commands.append('echo "{0}" | {1}'.format(
