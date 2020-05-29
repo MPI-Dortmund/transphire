@@ -267,7 +267,7 @@ def get_motion_command(file_input, file_output_scratch, file_log_scratch, settin
                 name
                 )
             raise IOError(message)
-    elif motion_name.startswith('MotionCor2'):
+    elif motion_name.startswith('Unblur'):
         if tu.is_higher_version(motion_name, '1.0.0'):
             gpu_list = []
             block_gpu = False

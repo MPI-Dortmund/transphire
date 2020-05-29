@@ -774,7 +774,7 @@ class MainWindow(QMainWindow):
 
         return settings_dict
 
-    def save(self, file_name=None, temp=False, interactive=False):
+    def save(self, file_name=None, temp=False, interactive=False, do_message=True):
         """
         Save GUI status to file.
 
@@ -859,18 +859,24 @@ class MainWindow(QMainWindow):
         else:
             message_pass = 'Valid settings saved to {0}'.format(file_name)
             message_error = 'Invalid setting detected! Saveing failed!'
-            if error:
-                os.remove(file_name)
-                tu.message(message_error)
-                print(message_error)
-                return False
-            else:
+            if do_message:
+                if error:
+                    os.remove(file_name)
+                    tu.message(message_error)
+                    print(message_error)
+                    return False
+                else:
+                print(message_pass)
                 if temp:
                     pass
                 else:
                     tu.message(message_pass)
-                print(message_pass)
                 return file_name
+            else:
+                if error:
+                    return False, essage_error
+                else:
+                    return file_name, message_pass
 
     def monitor(self, start):
         """
@@ -1164,15 +1170,17 @@ class MainWindow(QMainWindow):
                 if entry in ('mount', 'process'):
                     continue
                 self.workers[entry].reset_list()
-            settings_file = self.save(
+            settings_file, message = self.save(
                 file_name=os.path.join(
                     settings['settings_folder'],
                     settings['General']['Project name']
-                    )
+                    ),
+                do_message=False
                 )
             self.workers['process'].sig_start.emit(settings, settings_file)
             self.workers['mount'].set_settings(settings=settings)
             self.save_temp_settings()
+            tu.message(message)
         else:
             tu.message('Input needs to be "YES!" to work')
             self.enable(True)
