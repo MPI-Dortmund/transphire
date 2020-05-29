@@ -67,14 +67,6 @@ def get_motion_default(settings, motion_frames, queue_com, name):
                 )
     elif motion_name.startswith('Unblur'):
         if tu.is_higher_version(motion_name, '1.0.0'):
-            if motion_frames is not None:
-                ###NEEEDSWORK###
-                motion_frames['last'] = \
-                    int(settings['General']['Number of frames']) - \
-                    int(settings[motion_name]['-Trunc'])
-                motion_frames['first'] = \
-                    int(settings[motion_name]['-Throw']) + 1
-
             return bool(
                     settings[motion_name]['Pixel size of image (A)'] != '0' and
                     settings[motion_name]['Exposure per frame (e/A^2)'] != '0' and
