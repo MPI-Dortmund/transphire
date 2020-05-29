@@ -220,6 +220,7 @@ def get_function_dict():
             'executable': True,
             'has_path': 'MotionCor2',
             'typ': 'Motion',
+            'category': 'External software',
             'allow_empty': ['-DefectFile', '-Gain', '-Dark'],
             }
     function_dict['MotionCor2 >=v1.0.5'] = copy_mod.deepcopy(function_dict['MotionCor2 >=v1.0.0'])
@@ -233,6 +234,17 @@ def get_function_dict():
     function_dict['MotionCor2 >=v1.3.0'] = copy_mod.deepcopy(function_dict['MotionCor2 >=v1.1.0'])
     function_dict['MotionCor2 >=v1.3.0']['content'] = tc.default_motion_cor_2_v1_3_0
 
+    function_dict['Unblur >=v1.0.0'] = {
+            'plot': tp.update_motion_cor_2_v1_0_0,
+            'plot_data': ti.import_motion_cor_2_v1_0_0,
+            'content': tc.default_unblur_v1_0_0,
+            'executable': True,
+            'has_path': 'unblur',
+            'typ': 'Motion',
+            'category': 'External software',
+            'allow_empty': [],
+            }
+
     ### CTF Programs
 
     function_dict['CTFFIND4 >=v4.1.8'] = {
@@ -242,6 +254,7 @@ def get_function_dict():
             'executable': True,
             'has_path': 'ctffind',
             'typ': 'CTF',
+            'category': 'External software',
             'allow_empty': ['Gain file'],
             }
     function_dict['CTFFIND4 >=v4.1.10'] = function_dict['CTFFIND4 >=v4.1.8']
@@ -254,6 +267,7 @@ def get_function_dict():
             'executable': True,
             'has_path': 'Gctf',
             'typ': 'CTF',
+            'category': 'External software',
             'allow_empty': [],
             }
     function_dict['Gctf >=v1.18'] = {
@@ -263,6 +277,7 @@ def get_function_dict():
             'executable': True,
             'has_path': 'Gctf_v1.18',
             'typ': 'CTF',
+            'category': 'External software',
             'allow_empty': [],
             }
     function_dict['Gctf >=v1.18'] = copy_mod.deepcopy(function_dict['Gctf >=v1.06'])
@@ -275,6 +290,7 @@ def get_function_dict():
             'executable': True,
             'has_path': 'sp_cter.py',
             'typ': 'CTF',
+            'category': 'External software',
             'allow_empty': [],
             }
     function_dict['CTER >=v1.3'] = function_dict['CTER >=v1.0']
@@ -288,6 +304,7 @@ def get_function_dict():
             'executable': True,
             'has_path': 'cryolo_predict.py',
             'typ': 'Picking',
+            'category': 'External software',
             'allow_empty': [],
             }
     function_dict['crYOLO >=v1.0.5'] = copy_mod.deepcopy(function_dict['crYOLO >=v1.0.4'])
@@ -317,6 +334,7 @@ def get_function_dict():
             'executable': True,
             'has_path': 'sp_window.py',
             'typ': 'Extract',
+            'category': 'External software',
             'allow_empty': [''],
             }
 
@@ -330,6 +348,7 @@ def get_function_dict():
             'executable': True,
             'has_path': 'sp_isac2_gpu.py',
             'typ': 'Class2d',
+            'category': 'External software',
             'allow_empty': [''],
             }
 
@@ -343,6 +362,7 @@ def get_function_dict():
             'executable': True,
             'has_path': 'sp_cinderella_predict.py',
             'typ': 'Select2d',
+            'category': 'External software',
             'allow_empty': [],
             }
 
@@ -355,6 +375,7 @@ def get_function_dict():
             'executable': True,
             'has_path': 'cryolo_train.py',
             'typ': 'Train2d',
+            'category': 'External software',
             'allow_empty': [],
             }
     function_dict['crYOLO_train >=v1.5.8'] = copy_mod.deepcopy(function_dict['crYOLO_train >=v1.5.4'])
@@ -370,6 +391,7 @@ def get_function_dict():
             'executable': True,
             'has_path': 'sp_auto.py',
             'typ': 'Auto3d',
+            'category': 'External software',
             'allow_empty': [
                 'SSH username',
                 'SSH password',
@@ -391,18 +413,20 @@ def get_function_dict():
             'executable': True,
             'has_path': False,
             'typ': 'Compress',
+            'category': 'External software',
             'allow_empty': ['--command_uncompress'],
             }
 
     ### Other no executable stuff
 
-    function_dict['Mount'] = {
+    function_dict['Copy'] = {
             'plot': None,
             'plot_data': None,
-            'content': tc.default_mount,
+            'content': tc.default_copy,
             'executable': False,
             'has_path': False,
             'typ': None,
+            'category': 'Internal settings',
             'allow_empty': [],
             }
     function_dict['Pipeline'] = {
@@ -412,6 +436,7 @@ def get_function_dict():
             'executable': False,
             'has_path': False,
             'typ': None,
+            'category': 'Internal settings',
             'allow_empty': [],
             }
     function_dict['General'] = {
@@ -421,7 +446,19 @@ def get_function_dict():
             'executable': False,
             'has_path': False,
             'typ': None,
-            'allow_empty': ['Rename suffix'],
+            'category': 'Internal settings',
+            'allow_empty': ['Rename suffix', 'Rename prefix'],
+            }
+
+    function_dict['Mount'] = {
+            'plot': None,
+            'plot_data': None,
+            'content': tc.default_mount,
+            'executable': False,
+            'has_path': False,
+            'typ': None,
+            'category': 'TranSPHIRE settings',
+            'allow_empty': [],
             }
     function_dict['Notification'] = {
             'plot': None,
@@ -430,6 +467,7 @@ def get_function_dict():
             'executable': False,
             'has_path': False,
             'typ': None,
+            'category': 'TranSPHIRE settings',
             'allow_empty': [],
             }
     function_dict['Notification_widget'] = {
@@ -439,6 +477,7 @@ def get_function_dict():
             'executable': False,
             'has_path': False,
             'typ': None,
+            'category': 'TranSPHIRE settings',
             'allow_empty': [],
             }
     function_dict['Others'] = {
@@ -448,6 +487,7 @@ def get_function_dict():
             'executable': False,
             'has_path': False,
             'typ': None,
+            'category': 'TranSPHIRE settings',
             'allow_empty': [],
             }
     function_dict['Font'] = {
@@ -457,15 +497,7 @@ def get_function_dict():
             'executable': False,
             'has_path': False,
             'typ': None,
-            'allow_empty': [],
-            }
-    function_dict['Copy'] = {
-            'plot': None,
-            'plot_data': None,
-            'content': tc.default_copy,
-            'executable': False,
-            'has_path': False,
-            'typ': None,
+            'category': 'TranSPHIRE settings',
             'allow_empty': [],
             }
     function_dict['Path'] = {
@@ -475,6 +507,7 @@ def get_function_dict():
             'executable': False,
             'has_path': False,
             'typ': None,
+            'category': 'TranSPHIRE settings',
             'allow_empty': [],
             }
     return function_dict

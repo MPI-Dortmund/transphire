@@ -1025,6 +1025,48 @@ def default_mount(hdd=None):
     return items
 
 
+def default_unblur_v1_0_0():
+    """
+    Content of Unblur version 1.0.0.
+
+    Arguments:
+    None
+
+    Return:
+    Content items as list
+    """
+    items = [
+        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['Pixel size of image (A)', '1.0', float, '', 'PLAIN', 'Main', 'Pixel size in A of input stack in angstrom.'],
+        ['Output binning factor', '1', float, '', 'PLAIN', 'Advanced', 'Binning performed in Fourier space, default 1.0.'],
+        ['Exposure per frame (e/A^2)', '0', float, '', 'PLAIN', 'Main', 'Frame dose in e/A^2. If not specified, dose weighting will be skipped.'],
+        ['Acceleration voltage', '300', float, '', 'PLAIN', 'Main', 'High tension in kV needed for dose weighting.  Default is 300.'],
+        ['Pre-exposure amount (e/A^2)', '0', float, '', 'PLAIN', 'Advanced', 'Initial dose in e/A^2 received before stack is acquired'],
+
+        # Expert options
+        ['Minimum shift for initial search (A)', '2.0', float, '', 'PLAIN', 'Advanced', 'Minimum shift for initial search in Angstrom'],
+        ['Outer radius shift limit (A)', '80', int, '', 'PLAIN', 'Advanced', 'Minimum shift for initial search in Angstrom'],
+        ['B-factor to apply to images (A^2)', '1500', float, '', 'PLAIN', 'Advanced', 'Applied B-factor'],
+        ['Half-width of vertical Fourier mask', '1', float, '', 'PLAIN', 'Advanced', 'Half-width of vertical Fourier mask'],
+        ['Half-width of horizontal Fourier mask', '1', float, '', 'PLAIN', 'Advanced', 'Half-width of horizontal Fourier mask'],
+        ['Termination shift threshold (A)', '1', float, '', 'PLAIN', 'Advanced', 'Termination shift threshold (A)'],
+        ['Maximum number of iterations', '20', int, '', 'PLAIN', 'Advanced', 'Maximum number of iterations'],
+        ['Restore Noise Power?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Restore Noise Power?'],
+        ['Gain image filename', '', str, '', 'FILE', 'Main', 'Gain image filename'],
+        ['First frame to use for sum', '1', int, '', 'PLAIN', 'Advanced', 'First frame to use for sum'],
+        ['Last frame to use for sum', '0', int, '', 'PLAIN', 'Advanced', 'Last frame to use for sum. (0 for last frame)'],
+
+        # Magnification distortion options
+        ['Correct Magnification Distortion?', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Correct Magnification Distortion?'],
+        ['Distortion Angle (Degrees)', '0.0', float, '', 'PLAIN', 'Advanced', 'Distortion Angle (Degrees)'],
+        ['Major Scale', '1.0', float, '', 'PLAIN', 'Advanced', 'Major Scale'],
+        ['Minor Scale', '1.0', float, '', 'PLAIN', 'Advanced', 'Minor Scale'],
+        ]
+    return items
+
+
 def default_motion_cor_2_v1_0_0():
     """
     Content of MotionCor2 version 1.0.0.

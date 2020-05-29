@@ -84,122 +84,11 @@ class DefaultSettings(QDialog):
         self.tab_widget.setObjectName('tab')
         self.tab_content = {}
 
-        self.default_tabs = {
-            'External software': {
-                'sub_content': {
-                    'CTF': {
-                        'sub_content': {
-                            'CTFFIND4': {
-                                'sub_content': {},
-                                'content': ['CTFFIND4'],
-                                },
-                            'Gctf': {
-                                'sub_content': {},
-                                'content': ['Gctf'],
-                                },
-                            'CTER': {
-                                'sub_content': {},
-                                'content': ['CTER'],
-                                },
-                            },
-                        'content': [],
-                        },
-                    'Motion': {
-                        'sub_content': {
-                            'MotionCor2': {
-                                'sub_content': {},
-                                'content': ['MotionCor2'],
-                                },
-                            },
-                        'content': [],
-                        },
-                    'Picking': {
-                        'sub_content': {
-                            'crYOLO': {
-                                'sub_content': {},
-                                'content': ['crYOLO'],
-                                },
-                            },
-                        'content': [],
-                        },
-                    'Extract': {
-                        'sub_content': {
-                            'WINDOW': {
-                                'sub_content': {},
-                                'content': ['WINDOW'],
-                                },
-                            },
-                        'content': [],
-                        },
-                    'Class2d': {
-                        'sub_content': {
-                            'ISAC2': {
-                                'sub_content': {},
-                                'content': ['ISAC2'],
-                                },
-                            },
-                        'content': [],
-                        },
-                    'Select2d': {
-                        'sub_content': {
-                            'Cinderella': {
-                                'sub_content': {},
-                                'content': ['Cinderella'],
-                                },
-                            },
-                        'content': [],
-                        },
-                    'Train2d': {
-                        'sub_content': {
-                            'crYOLO_train': {
-                                'sub_content': {},
-                                'content': ['crYOLO_train'],
-                                },
-                            },
-                        'content': [],
-                        },
-                    'Auto3d': {
-                        'sub_content': {
-                            'sp_auto': {
-                                'sub_content': {},
-                                'content': ['sp_auto'],
-                                },
-                            },
-                        'content': [],
-                        },
-                    'Compress': {
-                        'sub_content': {
-                            'Compress cmd': {
-                                'sub_content': {},
-                                'content': ['Compress cmd'],
-                                },
-                            },
-                        'content': [],
-                        },
-                    },
-                'content': [],
-                },
-            'Internal settings': {
-                'sub_content': {},
-                'content': [
-                    'General',
-                    'Copy',
-                    'Pipeline',
-                    ],
-                },
-            'TranSPHIRE settings': {
-                'sub_content': {},
-                'content': [
-                    'Path',
-                    'Mount',
-                    'Notification',
-                    'Notification_widget',
-                    'Others',
-                    'Font',
-                    ],
-                },
-            }
+        content_dict = tu.get_function_dict()
 
+        self.default_tabs = {}
+
+        self.fill_default_dict()
         self.create_initial_tabs(self.default_tabs, self.tab_widget)
 
         # Variables
@@ -217,6 +106,40 @@ class DefaultSettings(QDialog):
             apply_button = QPushButton('Quit dialog and apply changes.', self)
             apply_button.clicked.connect(lambda: self.check_modified_widgets(done=False))
             layout.addWidget(apply_button)
+
+    def fill_default_dict(self):
+        """
+        Fill the default dict with the information from the function dict.
+
+        Arguments:
+        None - The self.default_dict is used
+
+        Returns:
+        None - The self.default_dict is changed in-place
+        """
+        function_dict = tu.get_function_dict()
+        for name_version, content in function_dict.items():
+            name = name_version.split(' >=')[0]
+            typ = content['typ']
+            category = content['category']
+            if typ is None:
+                self.default_tabs \
+                    .setdefault(category, {}) \
+                    .setdefault('content', []) \
+                    .append(name)
+                self.default_tabs[category]['sub_content'] = {}
+            else:
+                self.default_tabs \
+                    .setdefault(category, {}) \
+                    .setdefault('sub_content', {}) \
+                    .setdefault(typ, {}) \
+                    .setdefault('sub_content', {}) \
+                    .setdefault(name, {}) \
+                    .setdefault('content', []).append(name)
+                self.default_tabs[category]['content'] = []
+                self.default_tabs[category]['sub_content'][typ]['content'] = []
+                self.default_tabs[category]['sub_content'][typ]['sub_content'][name]['sub_content'] = {}
+
 
     def create_initial_tabs(self, tab_dict, parent_widget):
         for tab_name in tab_dict:

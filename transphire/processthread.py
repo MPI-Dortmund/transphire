@@ -2369,7 +2369,7 @@ class ProcessThread(object):
                     queue_com=self.queue_com,
                     name=self.name
                     )
-                command, block_gpu, gpu_list, file_to_delete = tum.get_motion_command(
+                command, block_gpu, gpu_list, file_to_delete, shell = tum.get_motion_command(
                     file_input=file_input,
                     file_output_scratch=file_output_scratch,
                     file_log_scratch=file_log_scratch,
@@ -2385,7 +2385,7 @@ class ProcessThread(object):
                     log_prefix=file_log_scratch,
                     block_gpu=block_gpu,
                     gpu_list=gpu_list,
-                    shell=False,
+                    shell=shell,
                     file_to_delete=file_to_delete,
                     )
                 file_stdout = file_stdout_scratch.replace(

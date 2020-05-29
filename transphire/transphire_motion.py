@@ -41,29 +41,65 @@ def get_motion_default(settings, motion_frames, queue_com, name):
     """
 
     motion_name = settings['Copy']['Motion']
-    if tu.is_higher_version(motion_name, '1.0.0'):
-        motion_frames['last'] = \
-            int(settings['General']['Number of frames']) - \
-            int(settings[motion_name]['-Trunc'])
-        motion_frames['first'] = \
-            int(settings[motion_name]['-Throw']) + 1
+    if motion_name.startswith('MotionCor2'):
+        if tu.is_higher_version(motion_name, '1.0.0'):
+            if motion_frames is not None:
+                motion_frames['last'] = \
+                    int(settings['General']['Number of frames']) - \
+                    int(settings[motion_name]['-Trunc'])
+                motion_frames['first'] = \
+                    int(settings[motion_name]['-Throw']) + 1
 
-        return bool(
-                settings[motion_name]['-FmDose'] != '0' and
-                settings[motion_name]['-PixSize'] != '0' and
-                settings[motion_name]['-kV'] != '0'
+            return bool(
+                    settings[motion_name]['-FmDose'] != '0' and
+                    settings[motion_name]['-PixSize'] != '0' and
+                    settings[motion_name]['-kV'] != '0'
+                    )
+
+        else:
+            message = '\n'.join([
+                '{0}: Motion version not known.'.format(motion_name),
+                'Please contact the TranSPHIRE authors!'
+                ])
+            queue_com['error'].put(
+                message,
+                name
                 )
+    elif motion_name.startswith('Unblur'):
+        if tu.is_higher_version(motion_name, '1.0.0'):
+            if motion_frames is not None:
+                ###NEEEDSWORK###
+                motion_frames['last'] = \
+                    int(settings['General']['Number of frames']) - \
+                    int(settings[motion_name]['-Trunc'])
+                motion_frames['first'] = \
+                    int(settings[motion_name]['-Throw']) + 1
 
+            return bool(
+                    settings[motion_name]['Pixel size of image (A)'] != '0' and
+                    settings[motion_name]['Exposure per frame (e/A^2)'] != '0' and
+                    settings[motion_name]['Acceleration voltage'] != '0'
+                    )
+
+        else:
+            message = '\n'.join([
+                '{0}: Motion version not known.'.format(motion_name),
+                'Please contact the TranSPHIRE authors!'
+                ])
+            queue_com['error'].put(
+                message,
+                name
+                )
     else:
         message = '\n'.join([
-            '{0}: Motion version not known.'.format(motion_name),
+            '{0}: Motion name not known.'.format(motion_name),
             'Please contact the TranSPHIRE authors!'
             ])
         queue_com['error'].put(
             message,
             name
             )
-        raise IOError(message)
+    raise IOError(message)
 
 
 def get_dws_file_name(output_transfer_scratch, file_name, settings, queue_com, name):
@@ -80,22 +116,37 @@ def get_dws_file_name(output_transfer_scratch, file_name, settings, queue_com, n
     File path of the DW file.
     """
     motion_name = settings['Copy']['Motion']
-    if tu.is_higher_version(motion_name, '1.0.0'):
-        return os.path.join(
-            output_transfer_scratch,
-            '{0}_DWS.mrc'.format(file_name)
-            )
+    if motion_name.startswith('MotionCor2'):
+        if tu.is_higher_version(motion_name, '1.0.0'):
+            return os.path.join(
+                output_transfer_scratch,
+                '{0}_DWS.mrc'.format(file_name)
+                )
 
-    else:
-        message = '\n'.join([
-            '{0}: Motion version not known.'.format(motion_name),
-            'Please contact the TranSPHIRE authors!'
-            ])
-        queue_com['error'].put(
-            message,
-            name
-            )
-        raise IOError(message)
+        else:
+            message = '\n'.join([
+                '{0}: Motion version not known.'.format(motion_name),
+                'Please contact the TranSPHIRE authors!'
+                ])
+            queue_com['error'].put(
+                message,
+                name
+                )
+            raise IOError(message)
+    elif motion_name.startswith('Unblur'):
+        if tu.is_higher_version(motion_name, '1.0.0'):
+            return 'None_TRANSPHIRE_DUMMY'
+
+        else:
+            message = '\n'.join([
+                '{0}: Motion version not known.'.format(motion_name),
+                'Please contact the TranSPHIRE authors!'
+                ])
+            queue_com['error'].put(
+                message,
+                name
+                )
+            raise IOError(message)
 
 
 def get_dw_file_name(output_transfer_scratch, file_name, settings, queue_com, name):
@@ -112,22 +163,40 @@ def get_dw_file_name(output_transfer_scratch, file_name, settings, queue_com, na
     File path of the DW file.
     """
     motion_name = settings['Copy']['Motion']
-    if tu.is_higher_version(motion_name, '1.0.0'):
-        return os.path.join(
-            output_transfer_scratch,
-            '{0}_DW.mrc'.format(file_name)
-            )
+    if motion_name.startswith('MotionCor2'):
+        if tu.is_higher_version(motion_name, '1.0.0'):
+            return os.path.join(
+                output_transfer_scratch,
+                '{0}_DW.mrc'.format(file_name)
+                )
 
-    else:
-        message = '\n'.join([
-            '{0}: Motion version not known.'.format(motion_name),
-            'Please contact the TranSPHIRE authors!'
-            ])
-        queue_com['error'].put(
-            message,
-            name
-            )
-        raise IOError(message)
+        else:
+            message = '\n'.join([
+                '{0}: Motion version not known.'.format(motion_name),
+                'Please contact the TranSPHIRE authors!'
+                ])
+            queue_com['error'].put(
+                message,
+                name
+                )
+            raise IOError(message)
+    elif motion_name.startswith('Unblur'):
+        if tu.is_higher_version(motion_name, '1.0.0'):
+            return os.path.join(
+                output_transfer_scratch,
+                '{0}_DW.mrc'.format(file_name)
+                )
+
+        else:
+            message = '\n'.join([
+                '{0}: Motion version not known.'.format(motion_name),
+                'Please contact the TranSPHIRE authors!'
+                ])
+            queue_com['error'].put(
+                message,
+                name
+                )
+            raise IOError(message)
 
 
 def get_motion_command(file_input, file_output_scratch, file_log_scratch, settings, queue_com, name, do_subsum):
@@ -145,71 +214,138 @@ def get_motion_command(file_input, file_output_scratch, file_log_scratch, settin
     Motion command
     """
     motion_name = settings['Copy']['Motion']
+    shell = False
     command = None
     block_gpu = None
     gpu_list = None
     file_to_delete = None
-    if tu.is_higher_version(motion_name, '1.0.0'):
-        mem_is_one = bool(float(settings[motion_name]['-GpuMemUsage']) == 1)
-        if mem_is_one:
-            settings[motion_name]['-GpuMemUsage'] = '0.5'
-        command, gpu = create_motion_cor_2_v1_0_0_command(
-            motion_name=motion_name,
-            file_input=file_input,
-            file_output=file_output_scratch,
-            file_log=file_log_scratch,
-            settings=settings,
-            queue_com=queue_com,
-            name=name,
-            do_subsum=do_subsum,
-            )
-        gpu_list = gpu.split()
+    if motion_name.startswith('MotionCor2'):
+        if tu.is_higher_version(motion_name, '1.0.0'):
+            mem_is_one = bool(float(settings[motion_name]['-GpuMemUsage']) == 1)
+            if mem_is_one:
+                settings[motion_name]['-GpuMemUsage'] = '0.5'
+            command, gpu = create_motion_cor_2_v1_0_0_command(
+                motion_name=motion_name,
+                file_input=file_input,
+                file_output=file_output_scratch,
+                file_log=file_log_scratch,
+                settings=settings,
+                queue_com=queue_com,
+                name=name,
+                do_subsum=do_subsum,
+                )
+            gpu_list = gpu.split()
 
-        if tu.is_higher_version(motion_name, '1.2.0'):
-            if '_' in gpu:
-                if mem_is_one:
-                    raise UserWarning('Sub GPUs are only supported if the GpuMemUsage option is not equal 1')
+            if tu.is_higher_version(motion_name, '1.2.0'):
+                if '_' in gpu:
+                    if mem_is_one:
+                        raise UserWarning('Sub GPUs are only supported if the GpuMemUsage option is not equal 1')
+                    block_gpu = True
+                    file_to_delete = '/tmp/MotionCor2_FreeGpus.txt'
+                elif float(settings[motion_name]['-GpuMemUsage']) == 0:
+                    block_gpu = False
+                    file_to_delete = '/tmp/MotionCor2_FreeGpus.txt'
+                else:
+                    block_gpu = True
+            elif tu.is_higher_version(motion_name, '1.1.0'):
+                if '_' in gpu:
+                    if mem_is_one:
+                        raise UserWarning('Sub GPUs are only supported if the GpuMemUsage option is not equal 1')
+                    block_gpu = True
+                elif float(settings[motion_name]['-GpuMemUsage']) == 0:
+                    block_gpu = False
+                else:
+                    block_gpu = True
+            elif tu.is_higher_version(motion_name, '1.0.5'):
                 block_gpu = True
-                file_to_delete = '/tmp/MotionCor2_FreeGpus.txt'
-            elif float(settings[motion_name]['-GpuMemUsage']) == 0:
+                if '_' in gpu:
+                    raise UserWarning('Sub GPUs are only supported in MotionCor version >=1.1.0, <1.2.0')
+            elif tu.is_higher_version(motion_name, '1.0.0'):
                 block_gpu = False
-                file_to_delete = '/tmp/MotionCor2_FreeGpus.txt'
-            else:
-                block_gpu = True
-        elif tu.is_higher_version(motion_name, '1.1.0'):
-            if '_' in gpu:
-                if mem_is_one:
-                    raise UserWarning('Sub GPUs are only supported if the GpuMemUsage option is not equal 1')
-                block_gpu = True
-            elif float(settings[motion_name]['-GpuMemUsage']) == 0:
-                block_gpu = False
-            else:
-                block_gpu = True
-        elif tu.is_higher_version(motion_name, '1.0.5'):
-            block_gpu = True
-            if '_' in gpu:
-                raise UserWarning('Sub GPUs are only supported in MotionCor version >=1.1.0, <1.2.0')
-        elif tu.is_higher_version(motion_name, '1.0.0'):
+                if '_' in gpu:
+                    raise UserWarning('Sub GPUs are only supported in MotionCor version >=1.1.0, <1.2.0')
+
+        else:
+            message = '\n'.join([
+                '{0}: Motion version not known.'.format(settings['Copy']['Motion']),
+                'Please contact the TranSPHIRE authors!'
+                ])
+            queue_com['error'].put(
+                message,
+                name
+                )
+            raise IOError(message)
+    elif motion_name.startswith('MotionCor2'):
+        if tu.is_higher_version(motion_name, '1.0.0'):
+            gpu_list = []
             block_gpu = False
-            if '_' in gpu:
-                raise UserWarning('Sub GPUs are only supported in MotionCor version >=1.1.0, <1.2.0')
-
-    else:
-        message = '\n'.join([
-            '{0}: Motion version not known.'.format(settings['Copy']['Motion']),
-            'Please contact the TranSPHIRE authors!'
-            ])
-        queue_com['error'].put(
-            message,
-            name
-            )
-        raise IOError(message)
+            shell = True
+            command = create_unblur_v1_0_0_command(
+                motion_name=motion_name,
+                file_input=file_input,
+                file_output=file_output_scratch,
+                file_log=file_log_scratch,
+                settings=settings,
+                queue_com=queue_com,
+                name=name,
+                do_subsum=do_subsum,
+                )
 
     assert command is not None, 'command not specified: {0}'.format(motion_name)
     assert block_gpu is not None, 'block_gpu not specified: {0}'.format(motion_name)
     assert gpu_list is not None, 'gpu_list not specified: {0}'.format(motion_name)
 
-    return command, block_gpu, gpu_list, file_to_delete
+    return command, block_gpu, gpu_list, file_to_delete, shell
+
+
+def create_unblur_v1_0_0_command(
+        motion_name,
+        file_input,
+        file_output,
+        file_log,
+        settings,
+        queue_com,
+        name,
+        do_subsum,
+        ):
+    """
+    Create the SumMovie v1.0.2 command.
+
+    motion_frames - Sub frames settings dictionary
+    file_input - File to sum.
+    file_output - Output file name
+    file_shift - Output shift file name
+    file_frc - Output frc file name
+    settings - TranSPHIRE settings
+    queue_com - Queue for communication
+    name - Name of the process
+
+    Returns:
+    Command for Summovie v1.0.2
+    """
+    do_dw = get_motion_default(
+        settings,
+        None,
+        queue_com,
+        name)
+
+
+    commands = []
+
+    for weighting_entry in [0] + [1] * do_dw:
+        cmd = []
+        # Input stack filename
+        cmd.append('{0}'.format(file_input))
+        # Output aligned sum
+        cmd.append('{0}'.format(file_output))
+
+
+        commands.append('echo "{0}" | {1}'.format(
+            '\n'.join(cmd),
+            '{0}'.format(settings['Path'][motion_name])
+            ))
+
+    return ';'.join(commands)
 
 
 def create_motion_cor_2_v1_0_0_command(motion_name, file_input, file_output, file_log, settings, queue_com, name, do_subsum):
