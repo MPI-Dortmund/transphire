@@ -338,8 +338,8 @@ def create_unblur_v1_0_0_command(
         cmd.append(settings[motion_name]['Output binning factor'])
         if weighting_entry:
             cmd.append('yes')
-            cmd.append(settings[motion_name]['Exposure per frame (e/A^2)'])
             cmd.append(settings[motion_name]['Acceleration voltage'])
+            cmd.append(settings[motion_name]['Exposure per frame (e/A^2)'])
             cmd.append(settings[motion_name]['Pre-exposure amount (e/A^2)'])
         else:
             cmd.append('no')
