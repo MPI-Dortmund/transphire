@@ -874,7 +874,7 @@ class MainWindow(QMainWindow):
                     return file_name
             else:
                 if error:
-                    return False, essage_error
+                    return False, message_error
                 else:
                     return file_name, message_pass
 

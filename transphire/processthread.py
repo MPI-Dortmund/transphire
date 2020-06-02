@@ -2614,7 +2614,7 @@ class ProcessThread(object):
                 log_file=file_stdout_combine,
                 sum_file=sum_file,
                 dw_file=dw_file,
-                stack_file=file_stack,
+                stack_file=file_input,
                 )
             output_name_mic = output_combine[5]
             output_name_star = output_combine[6]

@@ -20,7 +20,6 @@ import glob
 import os
 from transphire import transphire_utils as tu
 from transphire import transphire_import as ti
-from transphire import transphire_software as ts
 
 
 def default_auto_sphire_v1_3():

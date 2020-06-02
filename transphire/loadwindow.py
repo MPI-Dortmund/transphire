@@ -84,8 +84,6 @@ class DefaultSettings(QDialog):
         self.tab_widget.setObjectName('tab')
         self.tab_content = {}
 
-        content_dict = tu.get_function_dict()
-
         self.default_tabs = {}
 
         self.fill_default_dict()

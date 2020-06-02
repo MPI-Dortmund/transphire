@@ -17,7 +17,7 @@
 """
 
 import os
-import re
+#import re
 import collections as co
 import numpy as np
 import mrcfile as mrc
@@ -25,6 +25,7 @@ import matplotlib
 matplotlib.use('QT5Agg')
 import matplotlib.image as mi
 from transphire import transphire_utils as tu
+from transphire import transphire_software as ts
 
 
 def get_motion_default(settings, motion_frames, queue_com, name):

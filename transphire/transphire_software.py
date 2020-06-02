@@ -645,7 +645,7 @@ def check_nr_frames(frames, settings, force=False):
         nr_frames = 0
         for line in text.split('\n'):
             if line.startswith(' Number of columns, rows, sections .....'):
-                x_dim, y_dim, z_dim = line.split()
+                x_dim, y_dim, z_dim = line.split()[-3:]
 
         return bool(nr_frames == int(settings['General']['Number of frames'])), x_dim, y_dim, z_dim
 
