@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import subprocess
 import os
 import glob
 import re
@@ -119,6 +120,7 @@ def get_dtype_dict():
     dtype['Auto3d'] = [
         ('resolution', '<f8'),
         ('file_name', '|U1200'),
+        ('image', '|U1200'),
         ]
 
     dtype['Select2d'] = [
@@ -299,14 +301,14 @@ def get_dtype_import_dict():
     return dtype_import
 
 
-def dummy(name, name_no_feedback, directory_name, import_name='', send_data=None):
+def dummy(name, name_no_feedback, settings, directory_name, import_name='', send_data=None):
     if send_data is None:
         return None, None
     else:
         send_data.send((None, None))
 
 
-def import_isac_v1_2(name, name_no_feedback, directory_name, import_name='', send_data=None):
+def import_isac_v1_2(name, name_no_feedback, settings, directory_name, import_name='', send_data=None):
     files = [
         entry for entry in glob.glob(
         '{0}/*/ISAC2'.format(directory_name)
@@ -374,7 +376,7 @@ def import_isac_v1_2(name, name_no_feedback, directory_name, import_name='', sen
         send_data.send((data, data))
 
 
-def import_cinderella_v0_3_1(name, name_no_feedback, directory_name, import_name='', send_data=None):
+def import_cinderella_v0_3_1(name, name_no_feedback, settings, directory_name, import_name='', send_data=None):
     files = [
         entry for entry in glob.glob(
         '{0}/{1}*_transphire.log'.format(directory_name, import_name)
@@ -448,7 +450,7 @@ def import_cinderella_v0_3_1(name, name_no_feedback, directory_name, import_name
         send_data.send((data, data))
 
 
-def import_window_v1_2(name, name_no_feedback, directory_name, import_name='', send_data=None):
+def import_window_v1_2(name, name_no_feedback, settings, directory_name, import_name='', send_data=None):
     files = [
         entry for entry in glob.glob(
         '{0}/{1}*_transphire.log'.format(directory_name, import_name)
@@ -512,7 +514,7 @@ def import_window_v1_2(name, name_no_feedback, directory_name, import_name='', s
         send_data.send((data, data))
 
 
-def import_ctffind_v4_1_8(name, name_no_feedback, directory_name, import_name='', send_data=None):
+def import_ctffind_v4_1_8(name, name_no_feedback, settings, directory_name, import_name='', send_data=None):
     """
     Import ctf information for CTFFIND v4.1.8.
     Defocus in angstrom, phase shift in degree.
@@ -612,7 +614,7 @@ def import_ctffind_v4_1_8(name, name_no_feedback, directory_name, import_name=''
         send_data.send((data, data_original))
 
 
-def import_gctf_v1_06(name, name_no_feedback, directory_name, import_name='', send_data=None):
+def import_gctf_v1_06(name, name_no_feedback, settings, directory_name, import_name='', send_data=None):
     """
     Import ctf information for Gctf v1.06.
     Defocus in angstrom, phase shift in degree.
@@ -713,7 +715,7 @@ def import_gctf_v1_06(name, name_no_feedback, directory_name, import_name='', se
         send_data.send((data, data_original))
 
 
-def import_cter_v1_0(name, name_no_feedback, directory_name, import_name='', send_data=None):
+def import_cter_v1_0(name, name_no_feedback, settings, directory_name, import_name='', send_data=None):
     """
     Import ctf information for CTER v1.0.
     Defocus in angstrom, phase shift in degree.
@@ -800,7 +802,7 @@ def import_cter_v1_0(name, name_no_feedback, directory_name, import_name='', sen
         send_data.send((data, data_original))
 
 
-def import_motion_cor_2_v1_0_0(name, name_no_feedback, directory_name, import_name='', send_data=None):
+def import_motion_cor_2_v1_0_0(name, name_no_feedback, settings, directory_name, import_name='', send_data=None):
     """
     Import motion information for MotionCor2 v1.0.0.
 
@@ -908,7 +910,7 @@ def import_motion_cor_2_v1_0_0(name, name_no_feedback, directory_name, import_na
         send_data.send((data, data_original))
 
 
-def import_cryolo_v1_2_2(name, name_no_feedback, directory_name, import_name='', send_data=None):
+def import_cryolo_v1_2_2(name, name_no_feedback, settings, directory_name, import_name='', send_data=None):
     """
     Import picking information for crYOLO v1.2.2.
 
@@ -922,6 +924,7 @@ def import_cryolo_v1_2_2(name, name_no_feedback, directory_name, import_name='',
     return import_cryolo_v1_0_4(
         name,
         name_no_feedback,
+        settings,
         directory_name,
         sub_directory=['CBOX', 'EMAN', 'EMAN_HELIX_SEGMENTED'],
         import_name=import_name,
@@ -929,7 +932,7 @@ def import_cryolo_v1_2_2(name, name_no_feedback, directory_name, import_name='',
         )
 
 
-def import_cryolo_v1_0_4(name, name_no_feedback, directory_name, import_name='', send_data=None, sub_directory=None, ):
+def import_cryolo_v1_0_4(name, name_no_feedback, settings, directory_name, import_name='', send_data=None, sub_directory=None, ):
     """
     Import picking information for crYOLO v1.0.4.
 
@@ -1006,7 +1009,7 @@ def import_cryolo_v1_0_4(name, name_no_feedback, directory_name, import_name='',
         send_data.send((data, data_original))
 
 
-def import_unblur_v1_0_0(name, name_no_feedback, directory_name, import_name='', send_data=None):
+def import_unblur_v1_0_0(name, name_no_feedback, settings, directory_name, import_name='', send_data=None):
     """
     Import motion information for cisTEM Unblur v1.0.0.
 
@@ -1126,6 +1129,85 @@ def import_unblur_v1_0_0(name, name_no_feedback, directory_name, import_name='',
     sort_idx = np.argsort(data, order='file_name')
     data = data[sort_idx]
     data_original = np.array(data_original)[sort_idx]
+    if send_data is None:
+        return data, data_original
+    else:
+        send_data.send((data, data_original))
+
+
+def import_auto_sphire_v1_3(name, name_no_feedback, settings, directory_name, import_name='', send_data=None):
+    """
+    Import motion information for auto_sphire.py version 1.3
+
+    Arguments:
+    name - Name of motion program
+    directory_name - Name of the directory to search for files
+
+    Return:
+    Imported data
+    """
+
+    mount_work = directory_name.replace(
+        settings['General']['Project directory'],
+        settings['copy_to_work_folder_feedback_0'],
+        )
+    directory_names = glob.glob(os.path.join(mount_work, '{0}*_FILES'.format(import_name)))
+
+    useable_files = []
+    for entry in directory_names:
+        if glob.glob(os.path.join(entry[:-6], '*_SHARPENING/vol_combined.hdf')):
+            useable_files.append(entry[:-6])
+
+    final_resolution = []
+    final_jpg = []
+    final_file_name = []
+    for entry in useable_files:
+        jpg_file = os.path.join(
+            directory_name,
+            'jpg',
+            '{}.jpg'.format(os.path.basename(entry))
+            )
+        jpg_file_log = os.path.join(
+            directory_name,
+            'jpg',
+            '{}.log'.format(os.path.basename(entry))
+            )
+        if not os.path.isfile(jpg_file):
+            tu.mkdir_p(os.path.join(directory_name, 'jpg'))
+            with open(jpg_file_log, 'w') as write:
+                subprocess.call(
+                    '{0} --script "{1}/support_scripts/chimerax.py {2} {3}" --nogui --offscreen'.format(
+                        settings['Path']['chimerax'],
+                        os.path.dirname(__file__),
+                        glob.glob(os.path.join(entry, '*_SHARPENING/vol_combined.hdf'))[0],
+                        jpg_file,
+                        ),
+                    shell=True,
+                    stdout=write,
+                    stderr=write,
+                    )
+
+        log_file = glob.glob(os.path.join(entry, '*_SHARPENING/log.txt'))[0]
+        with open(log_file, 'r') as read:
+            content = read.read()
+        resolution = re.search('^.*FSC masked halves :.* 0\.143:\s*([.\d]*)A$', content, re.M).group(1) # https://regex101.com/r/6xdngz/1/
+
+        final_resolution.append(float(resolution))
+        final_jpg.append(';;;'.join([jpg_file]))
+        final_file_name.append(tu.get_name(entry).replace('AUTOSPHIRE_', ''))
+
+    data = np.zeros(
+        len(final_jpg),
+        dtype=get_dtype_dict()['Auto3d']
+        )
+    data = np.atleast_1d(data)
+    data['resolution'] = final_resolution
+    data['image'] = final_jpg
+    data['file_name'] = final_file_name
+
+    sort_idx = np.argsort(data, order='file_name')
+    data = data[sort_idx]
+    data_original = data
     if send_data is None:
         return data, data_original
     else:

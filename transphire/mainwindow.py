@@ -351,7 +351,7 @@ class MainWindow(QMainWindow):
             self.workers['process'].signals[entry] = signal
 
             self.timers[entry] = QTimer(self)
-            self.timers[entry].setInterval(30000)
+            self.timers[entry].setInterval(90000)
             self.timers[entry].timeout.connect(self.workers[entry].sig_calculate.emit)
             self.timers[entry].start()
 

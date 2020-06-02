@@ -134,6 +134,7 @@ class PlotWorker(QObject):
             data, _ = tu.get_function_dict()[name_no_feedback]['plot_data'](
                 name=name,
                 name_no_feedback=name_no_feedback,
+                settings=settings,
                 directory_name=directory_name
                 )
         except KeyError:

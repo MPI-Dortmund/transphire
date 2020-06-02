@@ -21,6 +21,7 @@ for list_index in range(4):
     ccc.run(session, 'turn x {} models #{}'.format(rotation_list[list_index][1], volume_index))
 
 ccc.run(session, 'windowsize 800 800')
+ccc.run(session, 'set bgColor white')
 ccc.run(session, 'tile')
 ccc.run(session, 'save {}'.format(output_file))
 ccc.run(session, 'exit')

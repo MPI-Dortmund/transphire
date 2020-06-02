@@ -605,6 +605,7 @@ def default_path():
         ['WIDGETS MAIN', '8', int, '', 'PLAIN', 'Main', ''],
         ['WIDGETS ADVANCED', '8', int, '', 'PLAIN', 'Main', ''],
         ['WIDGETS RARE', '8', int, '', 'PLAIN', 'Main', ''],
+        ['chimerax', 'chimerax', str, '', 'FILE', 'Main', ''],
         ['IMOD header', 'header', str, '', 'FILE', 'Main', ''],
         ['IMOD newstack', 'newstack', str, '', 'FILE', 'Main', ''],
         ['IMOD dm2mrc', 'dm2mrc', str, '', 'FILE', 'Main', ''],

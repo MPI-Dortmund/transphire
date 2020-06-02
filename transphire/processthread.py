@@ -2547,6 +2547,7 @@ class ProcessThread(object):
         data, data_original = tu.get_function_dict()[self.settings['Copy']['Motion']]['plot_data'](
             self.settings['Copy']['Motion'],
             self.settings['Copy']['Motion'],
+            self.settings,
             self.settings['Motion_folder_feedback_0'][self.settings['Copy']['Motion']],
             import_name
             )
@@ -2861,6 +2862,8 @@ class ProcessThread(object):
         data, data_orig = tu.get_function_dict()[self.settings['Copy']['CTF']]['plot_data'](
             self.settings['Copy']['CTF'],
             self.settings['Copy']['CTF'],
+            self.settings['copy_to_work_feedback_0'],
+            self.settings,
             self.settings['ctf_folder_feedback_0'],
             import_name
             )
@@ -4019,6 +4022,7 @@ class ProcessThread(object):
                 data, data_orig = tu.get_function_dict()[self.settings['Copy']['Picking']]['plot_data'](
                     self.settings['Copy']['Picking'],
                     self.settings['Copy']['Picking'],
+                    self.settings,
                     self.settings[entry_name][self.settings['Copy']['Picking']],
                     import_name
                     )

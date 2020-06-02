@@ -385,8 +385,8 @@ def get_function_dict():
     ### auto processing programs
 
     function_dict['sp_auto >=v1.3'] = {
-            'plot': tp.dummy,
-            'plot_data': ti.dummy,
+            'plot': tp.update_window_1_3,
+            'plot_data': ti.import_auto_sphire_v1_3,
             'content': tc.default_auto_sphire_v1_3,
             'executable': True,
             'has_path': 'sp_auto.py',
