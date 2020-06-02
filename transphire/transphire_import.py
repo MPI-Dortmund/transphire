@@ -284,6 +284,12 @@ def get_dtype_import_dict():
         ('shift_y', '<f8')
         ]
 
+    dtype_import['Unblur >=v1.0.0'] = [
+        ('frame_number', '<i8'),
+        ('shift_x', '<f8'),
+        ('shift_y', '<f8')
+        ]
+
     dtype_import['crYOLO >=v1.0.4'] = [
         ('coord_x', '<f8'),
         ('coord_y', '<f8'),
@@ -994,6 +1000,132 @@ def import_cryolo_v1_0_4(name, name_no_feedback, directory_name, import_name='',
     data_original = None
 
     data = np.sort(data, order='file_name')
+    if send_data is None:
+        return data, data_original
+    else:
+        send_data.send((data, data_original))
+
+
+def import_unblur_v1_0_0(name, name_no_feedback, directory_name, import_name='', send_data=None):
+    """
+    Import motion information for cisTEM Unblur v1.0.0.
+
+    Arguments:
+    name - Name of motion program
+    directory_name - Name of the directory to search for files
+
+    Return:
+    Imported data
+    """
+    dtype_import_dict_name = tu.find_best_match(name_no_feedback, get_dtype_import_dict())
+
+    directory_names = glob.glob('{0}/*_with*_DW_log'.format(directory_name))
+    files = np.array(
+        [
+            entry
+            for directory_name in directory_names
+            for entry in glob.glob('{0}/{1}*_transphire.log'.format(directory_name, import_name))
+            ],
+        dtype=str
+        )
+
+    useable_files = []
+    re_comp = re.compile('^image #(?P<frame>\d+) = (?P<xshift>[-\d.]+), (?P<yshift>[-\d.]+)$', re.M) # https://regex101.com/r/jmBPfH/1/ regex explanation
+    for file_name in files:
+        try:
+            with open(file_name, 'r') as read:
+                content = read.read()
+        except ValueError:
+            continue
+        except IOError:
+            continue
+        else:
+            if len(re_comp.findall(content)) > 0:
+                useable_files.append(file_name)
+            else:
+                continue
+
+    useable_files_jpg = set([
+        tu.get_name(entry)
+        for entry in glob.glob(os.path.join(directory_name, 'jpg*', '*.jpg'))
+        ])
+    useable_files = [
+        file_name
+        for file_name in sorted(useable_files)
+        if tu.get_name(tu.get_name(file_name)) in useable_files_jpg
+        ]
+
+    data = np.zeros(
+        len(useable_files),
+        dtype=get_dtype_dict()['Motion']
+        )
+    data = np.atleast_1d(data)
+    data_original = []
+    for idx, file_name in enumerate(useable_files):
+        try:
+            with open(file_name, 'r') as read:
+                content = read.read()
+        except ValueError:
+            continue
+        except IOError:
+            continue
+        else:
+            matches = re_comp.findall(content)
+            if len(matches) > 0:
+                pass
+            else:
+                continue
+
+        shift_x = []
+        shift_y = []
+        frame_list = []
+        for match in matches:
+            if int(match[0])+1 in frame_list:
+                break
+            shift_x.append(float(match[1]))
+            shift_y.append(float(match[2]))
+            frame_list.append(int(match[0])+1)
+
+        data_name = np.empty(
+            len(shift_x),
+            dtype=get_dtype_import_dict()[dtype_import_dict_name]
+            )
+        data_name['shift_x'] = shift_x
+        data_name['shift_y'] = shift_y
+        data_name['frame_number'] = frame_list
+
+        data_original.append([data_name['shift_x'], data_name['shift_y']])
+        data[idx]['file_name'] = file_name
+        shift_x = np.array([
+            data_name['shift_x'][i+1] - data_name['shift_x'][i] \
+            for i in range(0, int(data_name['frame_number'][-1]-1))
+            ])
+        shift_y = np.array([
+            data_name['shift_y'][i+1] - data_name['shift_y'][i] \
+            for i in range(0, int(data_name['frame_number'][-1]-1))
+            ])
+        for entry in data.dtype.names:
+            if entry == 'overall drift':
+                data[idx][entry] = np.sum(np.sqrt(shift_x**2 + shift_y**2))
+            elif entry == 'average drift per frame':
+                data[idx][entry] = np.sum(np.sqrt(shift_x**2 + shift_y**2))/len(shift_x)
+            elif entry == 'first frame drift':
+                data[idx][entry] = np.sqrt(shift_x[0]**2 + shift_y[0]**2)
+            elif entry == 'average drift per frame without first':
+                data[idx][entry] = np.sum(np.sqrt(shift_x[1:]**2 + shift_y[1:]**2))/len(shift_x)
+            else:
+                pass
+
+        jpg_name = os.path.join(
+            directory_name,
+            'jpg*',
+            '{0}.jpg'.format(tu.get_name(tu.get_name(file_name)))
+            )
+        data[idx]['image'] = ';;;'.join(glob.glob(jpg_name))
+
+    sort_idx = np.argsort(data, order='file_name')
+    data = data[sort_idx]
+    data_original = np.array(data_original)[sort_idx]
     if send_data is None:
         return data, data_original
     else:

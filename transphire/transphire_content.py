@@ -20,6 +20,7 @@ import glob
 import os
 from transphire import transphire_utils as tu
 from transphire import transphire_import as ti
+from transphire import transphire_software as ts
 
 
 def default_auto_sphire_v1_3():
@@ -1063,6 +1064,7 @@ def default_unblur_v1_0_0():
         ['Distortion Angle (Degrees)', '0.0', float, '', 'PLAIN', 'Advanced', 'Distortion Angle (Degrees)'],
         ['Major Scale', '1.0', float, 'Correct Magnification Distortion?:True', 'PLAIN', 'Advanced', 'Major Scale'],
         ['Minor Scale', '1.0', float, 'Correct Magnification Distortion?:True', 'PLAIN', 'Advanced', 'Minor Scale'],
+        ['dose cutoff', '4', float, '', 'PLAIN', 'Advanced', 'NOT AN UNBLUR OPTION. Used to create the Relion3 bayesian polishing files.'],
         ]
     return items
 

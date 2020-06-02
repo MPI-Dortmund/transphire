@@ -178,7 +178,7 @@ def find_frames(frames_root, compare_name, settings, queue_com, name, write_erro
             return False
 
         try:
-            value, checked_nr_frames = check_nr_frames(
+            value, _, _, checked_nr_frames = check_nr_frames(
                 frames=frames,
                 settings=settings
                 )
@@ -241,7 +241,7 @@ def find_frames(frames_root, compare_name, settings, queue_com, name, write_erro
                     return None
                 else:
                     try:
-                        value, checked_nr_frames = check_nr_frames(
+                        value, _, _, checked_nr_frames = check_nr_frames(
                             frames=frames,
                             settings=settings
                             )
@@ -365,7 +365,7 @@ def find_frames(frames_root, compare_name, settings, queue_com, name, write_erro
                     return None
                 else:
                     try:
-                        value, checked_nr_frames = check_nr_frames(
+                        value, _, _, checked_nr_frames = check_nr_frames(
                             frames=frames,
                             settings=settings
                             )
@@ -476,7 +476,7 @@ def find_frames(frames_root, compare_name, settings, queue_com, name, write_erro
                     return None
                 else:
                     try:
-                        value, checked_nr_frames = check_nr_frames(
+                        value, _, _, checked_nr_frames = check_nr_frames(
                             frames=frames,
                             settings=settings
                             )
@@ -521,7 +521,7 @@ def find_frames(frames_root, compare_name, settings, queue_com, name, write_erro
                     return None
                 else:
                     try:
-                        value, checked_nr_frames = check_nr_frames(
+                        value, _, _, checked_nr_frames = check_nr_frames(
                             frames=frames,
                             settings=settings
                             )
@@ -567,7 +567,7 @@ def find_frames(frames_root, compare_name, settings, queue_com, name, write_erro
                     return None
                 else:
                     try:
-                        value, checked_nr_frames = check_nr_frames(
+                        value, _, _, checked_nr_frames = check_nr_frames(
                             frames=frames,
                             settings=settings
                             )
@@ -622,7 +622,7 @@ def find_frames(frames_root, compare_name, settings, queue_com, name, write_erro
     raise IOError(message)
 
 
-def check_nr_frames(frames, settings):
+def check_nr_frames(frames, settings, force=False):
     """
     Check if the nr of frames of the stack match the given nr of frames
 
@@ -630,8 +630,8 @@ def check_nr_frames(frames, settings):
     frames - List of found frames
     settings - TranSPHIRE settings
     """
-    if int(settings['General']['Number of frames']) == -1:
-        return True, 0
+    if int(settings['General']['Number of frames']) == -1 and not force:
+        return True, 0, 0, 0
     else:
         command = "{0} '{1}'".format(
             settings['Path']['IMOD header'],
@@ -645,9 +645,9 @@ def check_nr_frames(frames, settings):
         nr_frames = 0
         for line in text.split('\n'):
             if line.startswith(' Number of columns, rows, sections .....'):
-                nr_frames = int(line.split()[-1])
+                x_dim, y_dim, z_dim = line.split()
 
-        return bool(nr_frames == int(settings['General']['Number of frames'])), nr_frames
+        return bool(nr_frames == int(settings['General']['Number of frames'])), x_dim, y_dim, z_dim
 
 
 def find_related_frames_to_jpg(frames_root, root_name, settings, queue_com, name):

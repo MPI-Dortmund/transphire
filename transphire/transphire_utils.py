@@ -236,7 +236,7 @@ def get_function_dict():
 
     function_dict['Unblur >=v1.0.0'] = {
             'plot': tp.update_motion_cor_2_v1_0_0,
-            'plot_data': ti.import_motion_cor_2_v1_0_0,
+            'plot_data': ti.import_unblur_v1_0_0,
             'content': tc.default_unblur_v1_0_0,
             'executable': True,
             'has_path': 'unblur',
