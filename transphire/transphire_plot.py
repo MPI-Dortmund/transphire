@@ -67,10 +67,10 @@ def get_mic_number(array, settings, as_int=True):
 
 
 def dummy(data, settings, label):
-    return '', '', '', ''
+    return '', '', '', '', ''
 
 
-def update_ctffind_4_v4_1_8(data, settings, label):
+def update_ctf(data, settings, label):
     """
     Update the plot for CTFFIND v4.1.8.
 
@@ -122,10 +122,10 @@ def update_ctffind_4_v4_1_8(data, settings, label):
     else:
         raise Exception('Plotwidget: Do not know what to do :O {0}'.format(label))
 
-    return x_values, y_values, label, title
+    return x_values, y_values, 'Micrograph', label, title
 
 
-def update_motion_cor_2_v1_0_0(data, settings, label):
+def update_motion(data, settings, label):
     """
     Update the plot for MotionCor2 v1.0.0.
 
@@ -159,7 +159,7 @@ def update_motion_cor_2_v1_0_0(data, settings, label):
         print('Plotwidget: Do not know what to do :O', label)
         raise Exception
 
-    return x_values, y_values, label, title
+    return x_values, y_values, 'Micrograph', label, title
 
 
 def update_cryolo_v1_0_4(data, settings, label):
@@ -187,10 +187,10 @@ def update_cryolo_v1_0_4(data, settings, label):
     else:
         print('Plotwidget: Do not know what to do :O', label)
         raise Exception
-    return x_values, y_values, label, title
+    return x_values, y_values, 'Micrograph', label, title
 
 
-def update_window_1_3(data, settings, label):
+def update_with_sum(data, settings, label):
     """
     Update the plot for crYOLO v1.0.4.
 
@@ -205,6 +205,22 @@ def update_window_1_3(data, settings, label):
     x_values = get_mic_number(data['file_name'], settings)
     y_values = data[label]
     title ='Total {0}: {1}'.format(label, np.sum(data[label]))
-    label = 'Nr. of {0}'.format(label)
-    return x_values, y_values, label, title
+    return x_values, y_values, 'Micrograph', label, title
+
+def update_without_sum(data, settings, label):
+    """
+    Update the plot for crYOLO v1.0.4.
+
+    Arguments:
+    data - Data to plot
+    settings - User provided settings
+    label - Label of the plot
+
+    Return:
+    x values, y values, label, title
+    """
+    x_values = get_mic_number(data['file_name'], settings)
+    y_values = data[label]
+    title = label
+    return x_values, y_values, 'Batch', label, title
 

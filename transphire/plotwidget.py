@@ -233,7 +233,8 @@ class PlotWidget(QWidget):
             new_x_max,
             new_y_min,
             new_y_max,
-            new_label,
+            new_xlabel,
+            new_ylabel,
             new_title,
             x_values,
             y_values,
@@ -260,20 +261,21 @@ class PlotWidget(QWidget):
                     pass
                 self.line, = axis.plot([0], [1], '.', color=self.color)
                 axis.grid()
-                axis.set_xlabel('Micrograph ID')
                 x_step = (np.max(x_values) - np.min(x_values)) * 0.1
                 axis.set_xlim([np.min(x_values)-x_step, np.max(x_values)+x_step])
 
                 y_step = (np.max(y_values) - np.min(y_values)) * 0.05
                 axis.set_ylim([np.min(y_values)-y_step, np.max(y_values)+y_step])
                 change = True
+
             if self.label is None:
-                self.label = new_label
-                axis.set_ylabel(self.label)
+                self.label = new_ylabel
                 change = True
             if self.title is None:
-                axis.set_title(new_title)
                 change = True
+            axis.set_xlabel('{} ID'.format(new_xlabel))
+            axis.set_title(new_title)
+            axis.set_ylabel(self.label)
 
         elif self.plot_typ == 'histogram':
             if self.x_min > new_x_min or self.x_max < new_x_max or self.line is None or change:
@@ -289,7 +291,6 @@ class PlotWidget(QWidget):
                         edgecolor='k'
                         )
                 axis.grid()
-                axis.set_ylabel('Nr. of micrographs')
                 x_step = (np.max(x_values) - np.min(x_values)) * 0.1
                 axis.set_xlim([np.min(x_values)-x_step, np.max(x_values)+x_step])
 
@@ -297,12 +298,13 @@ class PlotWidget(QWidget):
                 axis.set_ylim([np.min(y_values), np.max(y_values)+y_step])
                 change = True
             if self.label is None:
-                self.label = new_label
-                axis.set_xlabel(self.label)
+                self.label = new_ylabel
                 change = True
             if self.title is None:
-                axis.set_title(new_title)
                 change = True
+            axis.set_ylabel('Nr. of {}{}'.format(new_xlabel, 'es' if new_xlabel == 'Batch' else 's'))
+            axis.set_xlabel(self.label)
+            axis.set_title(new_title)
 
         if new_x_max - new_x_min < 0.001:
             self.x_min = new_x_min - 0.5
@@ -389,7 +391,7 @@ class PlotWidget(QWidget):
         None
         """
         if self.plot_typ == 'values' or self.plot_typ == 'histogram':
-            x_values_raw, y_values_raw, label, title = tu.get_function_dict()[name_no_feedback]['plot'](
+            x_values_raw, y_values_raw, x_label, y_label, title = tu.get_function_dict()[name_no_feedback]['plot'](
                 data=data,
                 settings=settings,
                 label=self.plot_label,
@@ -420,7 +422,8 @@ class PlotWidget(QWidget):
                         np.max(x_values),
                         np.min(y_values),
                         np.max(y_values),
-                        label,
+                        x_label,
+                        y_label,
                         title,
                         x_values,
                         y_values,

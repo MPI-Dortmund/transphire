@@ -214,7 +214,7 @@ def get_function_dict():
     ### Motion programs
 
     function_dict['MotionCor2 >=v1.0.0'] = {
-            'plot': tp.update_motion_cor_2_v1_0_0,
+            'plot': tp.update_motion,
             'plot_data': ti.import_motion_cor_2_v1_0_0,
             'content': tc.default_motion_cor_2_v1_0_0,
             'executable': True,
@@ -235,7 +235,7 @@ def get_function_dict():
     function_dict['MotionCor2 >=v1.3.0']['content'] = tc.default_motion_cor_2_v1_3_0
 
     function_dict['Unblur >=v1.0.0'] = {
-            'plot': tp.update_motion_cor_2_v1_0_0,
+            'plot': tp.update_motion,
             'plot_data': ti.import_unblur_v1_0_0,
             'content': tc.default_unblur_v1_0_0,
             'executable': True,
@@ -248,7 +248,7 @@ def get_function_dict():
     ### CTF Programs
 
     function_dict['CTFFIND4 >=v4.1.8'] = {
-            'plot': tp.update_ctffind_4_v4_1_8,
+            'plot': tp.update_ctf,
             'plot_data': ti.import_ctffind_v4_1_8,
             'content': tc.default_ctffind_4_v4_1_8,
             'executable': True,
@@ -261,7 +261,7 @@ def get_function_dict():
     function_dict['CTFFIND4 >=v4.1.13'] = function_dict['CTFFIND4 >=v4.1.8']
 
     function_dict['Gctf >=v1.06'] = {
-            'plot': tp.update_ctffind_4_v4_1_8,
+            'plot': tp.update_ctf,
             'plot_data': ti.import_gctf_v1_06,
             'content': tc.default_gctf_v1_06,
             'executable': True,
@@ -271,7 +271,7 @@ def get_function_dict():
             'allow_empty': [],
             }
     function_dict['Gctf >=v1.18'] = {
-            'plot': tp.update_ctffind_4_v4_1_8,
+            'plot': tp.update_ctf,
             'plot_data': ti.import_gctf_v1_06,
             'content': tc.default_gctf_v1_18,
             'executable': True,
@@ -284,7 +284,7 @@ def get_function_dict():
     function_dict['Gctf >=v1.18']['content'] = tc.default_gctf_v1_18
 
     function_dict['CTER >=v1.0'] = {
-            'plot': tp.update_ctffind_4_v4_1_8,
+            'plot': tp.update_ctf,
             'plot_data': ti.import_cter_v1_0,
             'content': tc.default_cter_v1_0,
             'executable': True,
@@ -328,7 +328,7 @@ def get_function_dict():
     ### Extract programs
 
     function_dict['WINDOW >=v1.2'] = {
-            'plot': tp.update_window_1_3,
+            'plot': tp.update_with_sum,
             'plot_data': ti.import_window_v1_2,
             'content': tc.default_window_1_2,
             'executable': True,
@@ -342,7 +342,7 @@ def get_function_dict():
     ### 2D classification programs
 
     function_dict['ISAC2 >=v1.2'] = {
-            'plot': tp.update_window_1_3,
+            'plot': tp.update_without_sum,
             'plot_data': ti.import_isac_v1_2,
             'content': tc.default_isac2_1_2,
             'executable': True,
@@ -356,7 +356,7 @@ def get_function_dict():
     ### 2D selection programs
 
     function_dict['Cinderella >=v0.3.1'] = {
-            'plot': tp.update_window_1_3,
+            'plot': tp.update_without_sum,
             'plot_data': ti.import_cinderella_v0_3_1,
             'content': tc.default_cinderella_v0_3_1,
             'executable': True,
@@ -385,7 +385,7 @@ def get_function_dict():
     ### auto processing programs
 
     function_dict['sp_auto >=v1.3'] = {
-            'plot': tp.update_window_1_3,
+            'plot': tp.update_without_sum,
             'plot_data': ti.import_auto_sphire_v1_3,
             'content': tc.default_auto_sphire_v1_3,
             'executable': True,
