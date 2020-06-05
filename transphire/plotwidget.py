@@ -142,8 +142,8 @@ class PlotWidget(QWidget):
         layout_v.addLayout(self.layout_canvas, stretch=1)
 
         self._plot_ref = None
-
         self._color = '#68a3c3'
+
         self._cur_min_x = 0
         self._cur_max_x = 0
         self._cur_min_y = 0
@@ -152,6 +152,7 @@ class PlotWidget(QWidget):
         self._applied_max_x = 0
         self._applied_min_y = 0
         self._applied_max_y = 0
+
         self._bins = 50
         self._minimum_y = float('-inf')
         self._maximum_y = float('inf')
@@ -164,7 +165,6 @@ class PlotWidget(QWidget):
 
     def start_plotting(self):
         self.add_canvas()
-
         self.parent.parent.content[self.parent.parent_layout].sig_start_plot.connect(self.update_figure)
 
         timer = QTimer(self)
