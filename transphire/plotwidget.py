@@ -86,16 +86,21 @@ class PlotWidget(QWidget):
         self._plot_ref = None
 
         self._color = '#68a3c3'
-        self._boarder_x = 0
-        self._boarder_y = 0
         self._cur_min_x = 0
         self._cur_max_x = 0
         self._cur_min_y = 0
         self._cur_max_y = 0
+        self._applied_min_x = 0
+        self._applied_max_x = 0
+        self._applied_min_y = 0
+        self._applied_max_y = 0
+        self._bins = 5
 
         n_data = 50
-        self._xdata = list(range(n_data))
-        self._ydata = [random.randint(0, 10) for i in range(n_data)]
+        self._xdata_tmp = list(range(n_data))
+        self._ydata_tmp = [random.randint(0, 10) for i in range(n_data)]
+        self._xdata = []
+        self._ydata = []
 
     def start_plotting(self):
         self.add_canvas()
@@ -129,23 +134,22 @@ class PlotWidget(QWidget):
         self._settings = settings
 
     def update_data(self, data_x, data_y):
-        self._ydata = data_y + [random.randint(0, 1000)]
-        self._xdata = data_x + [data_x[-1]+1]
+        self._ydata_tmp = data_y + [random.randint(0, 1000)]
+        self._xdata_tmp = data_x + [data_x[-1]+1]
+
+
+        if self.plot_typ == 'values':
+            self._xdata = self._xdata_tmp
+            self._ydata = self._ydata_tmp
+        elif self.plot_typ == 'histogram':
+            self._ydata, self._xdata = np.histogram(self._ydata_tmp, self._bins)
 
     @pyqtSlot()
     def force_update(self):
         self._plot_ref = None
         self.update_figure()
 
-    @pyqtSlot()
-    def update_figure(self):
-        self.update_data(self._xdata, self._ydata)
-
-        is_active = self.parent.parent.content[self.parent.parent_layout] == self.parent.parent.content[self.parent.parent_layout].latest_active[0]
-        if not self.dock_widget.isFloating() and not is_active:
-            return
-
-        update = self._plot_ref is None
+    def prepare_axes(self, update):
         if (
                 (
                     self._cur_min_x > min(self._xdata) or \
@@ -153,44 +157,102 @@ class PlotWidget(QWidget):
                     self._cur_max_x < max(self._xdata) or \
                     self._cur_max_y < max(self._ydata)
                     ) and \
-                    self.canvas.axes.get_xlim() == (self._cur_min_x, self._cur_max_x) and \
-                    self.canvas.axes.get_ylim() == (self._cur_min_y, self._cur_max_y)
+                    self.canvas.axes.get_xlim() == (self._applied_min_x, self._applied_max_x) and \
+                    self.canvas.axes.get_ylim() == (self._applied_min_y, self._applied_max_y)
                 ) or \
                 update:
 
+            is_histogram = bool(self.plot_typ == 'histogram')
+
+            width = self._xdata[1] - self._xdata[0]
             diff_x = np.max(self._xdata) - np.min(self._xdata)
-            diff_y = np.max(self._ydata) - np.min(self._ydata)
+            diff_y = np.max(self._ydata) - np.min(self._ydata) * is_histogram
 
             mult = 0.05
-            self._boarder_x = diff_x * mult / 2
-            self._boarder_y = diff_y * mult / 2
+            boarder_x = max(diff_x * mult / 2, width * is_histogram)
+            boarder_y = diff_y * mult / 2
 
-            self._cur_min_x = min(self._xdata) - self._boarder_x
-            self._cur_min_y = min(self._ydata) - self._boarder_y
-            self._cur_max_x = max(self._xdata) + self._boarder_x
-            self._cur_max_y = max(self._ydata) + self._boarder_y
+            if self.plot_typ == 'values':
+                self._cur_min_x = min(self._xdata) - boarder_x
+                self._cur_min_y = min(self._ydata) - boarder_y
+                self._cur_max_x = max(self._xdata) + boarder_x
+                self._cur_max_y = max(self._ydata) + boarder_y
+
+                self._applied_min_x = self._curr_min_x - boarder_y / 2
+                self._applied_min_y = self._curr_min_y - boarder_y / 2
+                self._applied_max_x = self._curr_max_x + boarder_y / 2
+                self._applied_max_y = self._curr_max_y + boarder_y / 2
+
+            elif self.plot_typ == 'histogram':
+                self._cur_min_x = min(self._xdata[:-1]) - boarder_x
+                self._cur_min_y = 0
+                self._cur_max_x = max(self._xdata[:-1]) + boarder_x
+                self._cur_max_y = max(self._ydata) + boarder_y
+
+                self._applied_min_x = self._curr_min_x
+                self._applied_min_y = self._curr_min_y
+                self._applied_max_x = self._curr_max_x
+                self._applied_max_y = self._curr_max_y + boarder_y / 2
+
             update = True
+        return update
+
+    @pyqtSlot()
+    def update_figure(self):
+        self.update_data(self._xdata_tmp, self._ydata_tmp)
+
+        is_active = self.parent.parent.content[self.parent.parent_layout] == self.parent.parent.content[self.parent.parent_layout].latest_active[0]
+        if not self.dock_widget.isFloating() and not is_active:
+            return
+
+        try:
+            update = self.prepare_axes(update=self._plot_ref is None)
+        except ValueError:
+            return
 
         if self.plot_typ == 'values':
             self.update_values(update)
+        elif self.plot_typ == 'histogram':
+            self.update_histogram(update)
+
+        if update:
+            self.canvas.axes.set_xlim(self._applied_min_x, self._applied_max_x)
+            self.canvas.axes.set_ylim(self._applied_min_y, self._applied_max_y)
+            self.canvas.draw()
+        else:
+            self.canvas.update()
+            self.canvas.flush_events()
+
+    def update_histogram(self, update):
+        width = self._xdata[1] - self._xdata[0]
+        if update:
+            if self._plot_ref is not None:
+                for entry in self._plot_ref:
+                    entry.remove()
+            self._plot_ref = self.canvas.axes.bar(
+                    self._xdata[:-1],
+                    self._ydata,
+                    width,
+                    facecolor=self._color,
+                    edgecolor='k'
+                    )
+        else:
+            for value, patch in zip(self._ydata, self._plot_ref):
+                if patch.get_height() != value:
+                    patch.set_height(value)
+                    patch.set_width(width)
+                    self.canvas.axes.draw_artist(patch)
 
     def update_values(self, update):
         if update:
             if self._plot_ref is not None:
                 self._plot_ref.remove()
-            #self.canvas.axes.cla()
             self._plot_ref, = self.canvas.axes.plot(
                 self._xdata,
                 self._ydata,
                 '.',
                 color=self._color
                 )
-
-            self.canvas.axes.set_xlim(self._cur_min_x, self._cur_max_x)
-            self.canvas.axes.set_ylim(self._cur_min_y, self._cur_max_y)
-            self.canvas.draw()
         else:
             self._plot_ref.set_data(self._xdata, self._ydata)
             self.canvas.axes.draw_artist(self._plot_ref)
-            self.canvas.update()
-            self.canvas.flush_events()
