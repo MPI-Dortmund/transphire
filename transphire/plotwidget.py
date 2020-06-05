@@ -27,7 +27,7 @@ matplotlib.use('QT5Agg')
 from PyQt5.QtWidgets import QApplication
 
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QPushButton, QLineEdit, QLabel
-from PyQt5.QtCore import pyqtSlot, QTimer
+from PyQt5.QtCore import pyqtSlot, QTimer, pyqtSignal
 from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
     NavigationToolbar2QT as NavigationToolbar
@@ -36,12 +36,62 @@ from transphire import transphire_utils as tu
 warnings.filterwarnings('ignore')
 
 
+class TrimWidget(QWidget):
+    sig_update = pyqtSignal()
+
+    def __init__(self, plot_typ, parent=None):
+        super(TrimWidget, self).__init__(parent=parent)
+
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        fields = [
+            ['Min', '-inf'],
+            ['Max', 'inf'],
+            ['Bins', '50'],
+            ]
+        self.buttons = {}
+        for label, default in fields:
+            self.buttons[label] = [QLineEdit(default, self), default]
+            self.buttons[label][0].editingFinished.connect(self.sig_update.emit)
+            qt_label = QLabel(label + ':', self)
+
+            if not plot_typ == 'histogram' and label == 'Bins':
+                self.buttons[label][0].setVisible(False)
+                qt_label.setVisible(False)
+            else:
+                layout.addWidget(qt_label)
+                layout.addWidget(self.buttons[label][0])
+
+        self.btn_reset = QPushButton('Reset', self)
+        self.btn_reset.clicked.connect(self.reset_values)
+        layout.addWidget(self.btn_reset)
+        layout.addStretch(1)
+
+    @pyqtSlot()
+    def reset_values(self):
+        for widget, default in self.buttons.values():
+            widget.setText(default)
+        self.sig_update.emit()
+
+    def get_values(self):
+        return_values = []
+        for widget, default in self.buttons.values():
+            return_values.append(float(widget.text()))
+        return return_values
+
+    def set_values(self, value_dict):
+        for key, value in value_dict.items():
+            self.buttons[key][0].setText(str(value))
+
+
 class MplCanvas(FigureCanvas):
     def __init__(self, width=5, height=5, dpi=100, parent=None):
         fig = matplotlib.figure.Figure(figsize=(width, height), dpi=dpi)
         self.axes = fig.add_subplot(111)
         self.axes.grid(True)
         self.axes.autoscale(enable=False)
+        fig.tight_layout()
         super(MplCanvas, self).__init__(fig)
 
 
@@ -80,6 +130,14 @@ class PlotWidget(QWidget):
         self.dock_widget = dock_widget
 
         layout_v = QVBoxLayout(self)
+
+        self.trim_widget = TrimWidget(self.plot_typ, self)
+        self.trim_widget.sig_update.connect(self.update_trim)
+        if self.plot_typ in ('values', 'histogram'):
+            layout_v.addWidget(self.trim_widget, stretch=0)
+        else:
+            self.trim_widget.setVisible(False)
+
         self.layout_canvas = QVBoxLayout()
         layout_v.addLayout(self.layout_canvas, stretch=1)
 
@@ -94,13 +152,15 @@ class PlotWidget(QWidget):
         self._applied_max_x = 0
         self._applied_min_y = 0
         self._applied_max_y = 0
-        self._bins = 5
+        self._bins = 50
+        self._minimum_y = float('-inf')
+        self._maximum_y = float('inf')
 
         n_data = 50
-        self._xdata_tmp = list(range(n_data))
-        self._ydata_tmp = [random.randint(0, 10) for i in range(n_data)]
-        self._xdata = []
-        self._ydata = []
+        self._xdata_tmp = np.arange(n_data)
+        self._ydata_tmp = np.array([random.randint(0, 10) for i in range(n_data)])
+        self._xdata = np.array([])
+        self._ydata = np.array([])
 
     def start_plotting(self):
         self.add_canvas()
@@ -133,19 +193,50 @@ class PlotWidget(QWidget):
         self._directory_name = directory_name
         self._settings = settings
 
-    def update_data(self, data_x, data_y):
-        self._ydata_tmp = data_y + [random.randint(0, 1000)]
-        self._xdata_tmp = data_x + [data_x[-1]+1]
+    @pyqtSlot()
+    def update_trim(self):
+        previous_dict = {'Min': self._minimum_y, 'Max': self._maximum_y, 'Bins': self._bins}
+        try:
+            minimum, maximum, bins = self.trim_widget.get_values()
+        except ValueError:
+            tu.message('Non-float value detected! Falling back to previous values!')
+            self.trim_widget.set_values(previous_dict)
+            return
 
+        if minimum > maximum:
+            tu.message('Minimum cannot be greater than maximum! Falling back to previous values!')
+            self.trim_widget.set_values(previous_dict)
+            return
+
+        try:
+            bins = int(bins)
+        except ValueError:
+            tu.message('Bins need to be an integer! Falling back to previous values!')
+            self.trim_widget.set_values(previous_dict)
+            return
+
+        self._minimum_y = minimum
+        self._maximum_y = maximum
+        self._bins = bins
+        self.force_update()
+
+    def update_data(self, data_x, data_y):
+        self._ydata_tmp = np.array(data_y.tolist() + [random.randint(0, 1000)])
+        self._xdata_tmp = np.array(data_x.tolist() + [data_x[-1]+1])
+
+        mask = (self._ydata_tmp >= self._minimum_y) & (self._ydata_tmp <= self._maximum_y)
 
         if self.plot_typ == 'values':
-            self._xdata = self._xdata_tmp
-            self._ydata = self._ydata_tmp
+            self._xdata = self._xdata_tmp[mask]
+            self._ydata = self._ydata_tmp[mask]
         elif self.plot_typ == 'histogram':
-            self._ydata, self._xdata = np.histogram(self._ydata_tmp, self._bins)
+            self._ydata, self._xdata = np.histogram(self._ydata_tmp[mask], self._bins)
 
     @pyqtSlot()
     def force_update(self):
+        if self._plot_ref is not None:
+            for entry in self._plot_ref:
+                entry.remove()
         self._plot_ref = None
         self.update_figure()
 
@@ -178,10 +269,10 @@ class PlotWidget(QWidget):
                 self._cur_max_x = max(self._xdata) + boarder_x
                 self._cur_max_y = max(self._ydata) + boarder_y
 
-                self._applied_min_x = self._curr_min_x - boarder_y / 2
-                self._applied_min_y = self._curr_min_y - boarder_y / 2
-                self._applied_max_x = self._curr_max_x + boarder_y / 2
-                self._applied_max_y = self._curr_max_y + boarder_y / 2
+                self._applied_min_x = self._cur_min_x - boarder_y / 2
+                self._applied_min_y = self._cur_min_y - boarder_y / 2
+                self._applied_max_x = self._cur_max_x + boarder_y / 2
+                self._applied_max_y = self._cur_max_y + boarder_y / 2
 
             elif self.plot_typ == 'histogram':
                 self._cur_min_x = min(self._xdata[:-1]) - boarder_x
@@ -189,10 +280,10 @@ class PlotWidget(QWidget):
                 self._cur_max_x = max(self._xdata[:-1]) + boarder_x
                 self._cur_max_y = max(self._ydata) + boarder_y
 
-                self._applied_min_x = self._curr_min_x
-                self._applied_min_y = self._curr_min_y
-                self._applied_max_x = self._curr_max_x
-                self._applied_max_y = self._curr_max_y + boarder_y / 2
+                self._applied_min_x = self._cur_min_x
+                self._applied_min_y = self._cur_min_y
+                self._applied_max_x = self._cur_max_x
+                self._applied_max_y = self._cur_max_y + boarder_y / 2
 
             update = True
         return update
@@ -246,13 +337,13 @@ class PlotWidget(QWidget):
     def update_values(self, update):
         if update:
             if self._plot_ref is not None:
-                self._plot_ref.remove()
-            self._plot_ref, = self.canvas.axes.plot(
+                self._plot_ref[0].remove()
+            self._plot_ref = self.canvas.axes.plot(
                 self._xdata,
                 self._ydata,
                 '.',
                 color=self._color
                 )
         else:
-            self._plot_ref.set_data(self._xdata, self._ydata)
-            self.canvas.axes.draw_artist(self._plot_ref)
+            self._plot_ref[0].set_data(self._xdata, self._ydata)
+            self.canvas.axes.draw_artist(self._plot_ref[0])
