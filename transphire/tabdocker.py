@@ -19,6 +19,7 @@ try:
     from PyQt4.QtGui import QWidget, QVBoxLayout, QTabWidget
 except ImportError:
     from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTabWidget
+    from PyQt5.QtCore import pyqtSlot, pyqtSignal
 
 
 class TabDocker(QWidget):
@@ -28,6 +29,8 @@ class TabDocker(QWidget):
     Inherits:
     QWidget
     """
+    sig_start_plot = pyqtSignal()
+    latest_active = [None]
 
     def __init__(self, parent=None, **kwargs):
         """
@@ -50,8 +53,6 @@ class TabDocker(QWidget):
         except KeyError:
             self.name = None
 
-        self.is_visible = False
-
         layout_tmp = QVBoxLayout(self)
         self.parent_widget = QWidget(self)
         layout_tmp.addWidget(self.parent_widget)
@@ -60,6 +61,56 @@ class TabDocker(QWidget):
         layout = QVBoxLayout(self.parent_widget)
         self.tab_widget = QTabWidget(self)
         layout.addWidget(self.tab_widget)
+
+        self.tab_widget.currentChanged.connect(self.assign_latest)
+
+    @pyqtSlot(int)
+    def assign_latest(self, idx):
+        current_name = self.tab_widget.tabText(idx)
+        try:
+            parent_content = self.parent.content[self.layout].name
+        except AttributeError: # Exception for the Default settings dialog
+            parent_content = False
+        except TypeError: # Exception for the Default settings dialog
+            parent_content = False
+        except KeyError: # Exception for the main window dialog
+            parent_content = False
+
+        check_list = (parent_content, self.name, current_name)
+
+        latest_active = self
+        for list_idx, entry in enumerate(check_list):
+            if entry == 'Visualisation':
+                cur_tab_widget = self.tab_widget.widget(idx)
+                try:
+                    for i in range(list_idx):
+                        idx = cur_tab_widget.currentIndex()
+                        cur_tab_widget = cur_tab_widget.widget(idx)
+                    latest_active = cur_tab_widget if cur_tab_widget is not None else self
+                except:
+                    latest_active = self
+                break
+        self.latest_active[0] = latest_active
+        latest_active.sig_start_plot.emit()
+
+    def setCurrentIndex(self, idx):
+        """
+        Get the current Index of the tab_widget.
+
+        Arguments:
+        idx - Index to set
+
+        Returns: Current index of self.tab_widget
+        """
+        return self.tab_widget.setCurrentIndex(idx)
+
+    def currentIndex(self):
+        """
+        Get the current Index of the tab_widget.
+
+        Returns: Current index of self.tab_widget
+        """
+        return self.tab_widget.currentIndex()
 
     def add_tab(self, widget, name):
         """
@@ -189,6 +240,8 @@ class TabDocker(QWidget):
         for name, widget in sorted(widget_tuple):
             self.add_tab(widget, name)
         widget_tuple = tuple([(self.widget(idx).name, self.widget(idx)) for idx in range(self.count())])
+
+        self.parent.content[self.layout].assign_latest(self.parent.content[self.layout].currentIndex())
 
     def enable_tab(self, visible):
         """

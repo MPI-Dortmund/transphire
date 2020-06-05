@@ -72,10 +72,10 @@ class PlotContainer(QMainWindow):
             else:
                 pass
 
-            widget = PlotWidget(label=label, plot_typ=content, parent=self)
-            self.content.append(widget)
-
             dock_widget = QDockWidget(label, self)
+            widget = PlotWidget(label=label, plot_typ=content, dock_widget=dock_widget, parent=self)
+
+            self.content.append(widget)
             dock_widget.setWidget(widget)
             dock_widget.installEventFilter(self)
             dock_widget.setFeatures(QDockWidget.DockWidgetFloatable | QDockWidget.DockWidgetMovable)
@@ -166,9 +166,10 @@ class PlotContainer(QMainWindow):
     @pyqtSlot(bool, str)
     def set_visibility(self, visible, name):
         if name == self.plot_name:
-            if self.parent.content[self.parent_layout].is_visible != visible:
-                self.parent.content[self.parent_layout].enable_tab(visible)
-                self.parent.content[self.parent_layout].is_visible = visible
+            self.parent.content[self.parent_layout].enable_tab(visible)
+            if visible:
+                for widget in self.content:
+                    widget.start_plotting()
 
     def synchronize_tabs(self, widget):
         compare_name = widget.windowTitle()
