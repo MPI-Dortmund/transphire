@@ -40,7 +40,7 @@ from transphire.settingscontainer import SettingsContainer
 from transphire.framecontainer import FrameContainer
 from transphire.buttoncontainer import ButtonContainer
 from transphire.notificationcontainer import NotificationContainer
-from transphire.plotcontainer import PlotContainer
+from transphire.plotcontainer import PlotContainer, TwinContainer
 from transphire.tabdocker import TabDocker
 from transphire import transphire_content as tc
 from transphire import transphire_plot as tp
@@ -876,6 +876,13 @@ def get_content_gui(content, template_name, n_feedbacks):
                         'name': 'Plot {0}'.format(feedback_content),
                         'widget': TabDocker,
                         'layout': 'Plot {0}'.format(typ),
+                        })
+                    gui_content.append({
+                        'name': 'Overview',
+                        'widget': PlotContainer,
+                        'content': 'overview',
+                        'plot_type': '{0}_feedback_{1}'.format(typ, index),
+                        'layout': 'Plot {0}'.format(feedback_content),
                         })
                     gui_content.append({
                         'name': 'Show images',

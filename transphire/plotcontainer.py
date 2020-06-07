@@ -17,11 +17,28 @@
 """
 try:
     from PyQt4.QtCore import pyqtSlot, Qt, QEvent, pyqtSignal
-    from PyQt4.QtGui import QMainWindow, QDockWidget, QTabWidget
+    from PyQt4.QtGui import QMainWindow, QDockWidget, QTabWidget, QWidget
 except ImportError:
     from PyQt5.QtCore import pyqtSlot, Qt, QEvent, pyqtSignal
-    from PyQt5.QtWidgets import QMainWindow, QDockWidget, QTabWidget
-from transphire.plotwidget import PlotWidget
+    from PyQt5.QtWidgets import QMainWindow, QDockWidget, QTabWidget, QWidget, QHBoxLayout, QVBoxLayout
+from transphire.plotwidget import PlotWidget, MplCanvas
+
+
+class TwinContainer(QWidget):
+
+    def __init__(self, dock_widget, *args, parent=None, **kwargs):
+        super(TwinContainer, self).__init__(parent)
+        self.layout = QVBoxLayout(self)
+        self.layouts = {}
+        self.dock_widget = dock_widget
+
+    def add_to_layout(self, name, widget):
+        if name not in self.layouts:
+            keys = sorted(list(self.layouts) + [name])
+            idx = keys.index(name)
+            self.layouts[name] = QHBoxLayout()
+            self.layout.insertLayout(idx, self.layouts[name])
+        self.layouts[name].addWidget(widget)
 
 
 class PlotContainer(QMainWindow):
@@ -57,6 +74,9 @@ class PlotContainer(QMainWindow):
 
         self.content = []
         self.dock_widgets = []
+        if self.name == 'Overview':
+            plot_labels = [[content]]
+
         for label in plot_labels:
             label = label[0]
             if label == 'mic_number':
@@ -73,7 +93,15 @@ class PlotContainer(QMainWindow):
                 pass
 
             dock_widget = QDockWidget(label, self)
-            widget = PlotWidget(label=label, plot_typ=content, dock_widget=dock_widget, parent=self)
+
+            if label == 'overview':
+                widget = TwinContainer(dock_widget=dock_widget, parent=self)
+            else:
+                if label == 'image':
+                    twin_container = None
+                else:
+                    twin_container = self.parent.content[layout].widget(0).content[0]
+                widget = PlotWidget(label=label, plot_typ=content, dock_widget=dock_widget, twin_container=twin_container, parent=self)
 
             self.content.append(widget)
             dock_widget.setWidget(widget)

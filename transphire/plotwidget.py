@@ -36,49 +36,215 @@ from transphire import transphire_utils as tu
 warnings.filterwarnings('ignore')
 
 
-class TrimWidget(QWidget):
+class SelectWidget(QWidget):
     sig_update = pyqtSignal()
 
-    def __init__(self, plot_typ, parent=None):
-        super(TrimWidget, self).__init__(parent=parent)
+    def __init__(self, parent=None):
+        super(SelectWidget, self).__init__(parent=parent)
+        self._full_combo_list = []
+        self.prev_text = 'Prev'
+        self.next_text = 'Next'
+        self.first_text = 'First'
+        self.last_text = 'Last'
 
         layout = QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
 
         fields = [
-            ['Min', '-inf'],
-            ['Max', 'inf'],
-            ['Bins', '50'],
+            ['Image', QComboBox],
+            ['Filter', QLineEdit],
+            ]
+        self.buttons = {}
+        for label, widget in fields:
+            self.buttons[label] = widget(self)
+            qt_label = QLabel(label + ':', self)
+            layout.addWidget(qt_label)
+            layout.addWidget(self.buttons[label])
+
+        fields = [
+            [self.prev_text, QPushButton],
+            [self.next_text, QPushButton],
+            [self.first_text, QPushButton],
+            [self.last_text, QPushButton],
+            ['Reset', QPushButton],
+            ]
+        for label, widget in fields:
+            self.buttons[label] = widget(label, self)
+            self.buttons[label].setObjectName('frame')
+            layout.addWidget(self.buttons[label])
+
+        self.buttons['Image'].addItem('latest')
+        self.buttons[self.prev_text].clicked.connect(self.handle_change)
+        self.buttons[self.next_text].clicked.connect(self.handle_change)
+        self.buttons[self.first_text].clicked.connect(self.handle_change)
+        self.buttons[self.last_text].clicked.connect(self.handle_change)
+        self.buttons['Reset'].clicked.connect(self.reset_values)
+
+        self.buttons['Image'].currentTextChanged.connect(self.sig_update.emit)
+        self.buttons['Image'].activated.connect(self.check_enable)
+        self.buttons['Filter'].textEdited.connect(self.filter_combo)
+        self.set_values(list(map(str, range(1000))))
+
+        layout.addStretch(1)
+
+    @pyqtSlot(int)
+    def check_enable(self, idx):
+        if idx == 0 and idx == self.buttons['Image'].count() + 1:
+            self.buttons[self.prev_text].setEnabled(False)
+            self.buttons[self.next_text].setEnabled(False)
+        elif idx == 0:
+            self.buttons[self.prev_text].setEnabled(False)
+            self.buttons[self.next_text].setEnabled(True)
+        elif idx == self.buttons['Image'].count() - 1:
+            self.buttons[self.prev_text].setEnabled(True)
+            self.buttons[self.next_text].setEnabled(False)
+        elif idx == -1:
+            self.buttons[self.prev_text].setEnabled(False)
+            self.buttons[self.next_text].setEnabled(False)
+        else:
+            self.buttons[self.prev_text].setEnabled(True)
+            self.buttons[self.next_text].setEnabled(True)
+
+    @pyqtSlot()
+    def handle_change(self):
+        current_idx = self.buttons['Image'].currentIndex()
+        sender_text = self.sender().text() if self.sender() is not None else 'None'
+        if sender_text == self.first_text:
+            current_idx = 0
+        elif sender_text == self.last_text:
+            current_idx = self.buttons['Image'].count() - 1
+        elif sender_text == self.prev_text:
+            current_idx -= 1
+        elif sender_text == self.next_text:
+            current_idx += 1
+        else:
+            current_idx = current_idx
+        self.buttons['Image'].blockSignals(True)
+        self.buttons['Image'].setCurrentIndex(current_idx)
+        self.buttons['Image'].blockSignals(False)
+        self.buttons['Image'].activated.emit(current_idx)
+        self.buttons['Image'].currentTextChanged.emit(self.buttons['Image'].currentText())
+
+
+    @pyqtSlot()
+    def reset_values(self):
+        self.buttons['Filter'].setText('')
+        self.buttons['Filter'].textEdited.emit('')
+        self.handle_change()
+
+    @pyqtSlot(str)
+    def filter_combo(self, text):
+        items = [entry for entry in self._full_combo_list if text in entry]
+
+        self.buttons['Image'].blockSignals(True)
+        self.buttons['Image'].clear()
+        self.buttons['Image'].addItems(['latest'] * bool(text == '') + items)
+        self.buttons['Image'].blockSignals(False)
+        if items:
+            self.handle_change()
+
+    def get_value(self):
+        return self.buttons['Image'].currentText()
+
+    def set_values(self, value_list):
+        self._full_combo_list = value_list
+        self.buttons['Filter'].setText('')
+
+        self.buttons['Image'].blockSignals(True)
+        current_value = self.buttons['Image'].currentText()
+        self.buttons['Image'].clear()
+        self.buttons['Image'].addItems(['latest'] + self._full_combo_list)
+        idx = self.buttons['Image'].setCurrentText(current_value)
+        self.buttons['Image'].blockSignals(False)
+        if idx == -1:
+            self.handle_change()
+
+
+class TrimWidget(QWidget):
+    sig_update = pyqtSignal()
+
+    def __init__(self, plot_typ, min_default_x, max_default_x, min_default_y, max_default_y, bin_default, parent=None):
+        super(TrimWidget, self).__init__(parent=parent)
+
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        self._name_min_y = 'Min Y'
+        self._name_max_y = 'Max Y'
+        self._name_min_x = 'Min X'
+        self._name_max_x = 'Max X'
+        self._name_bins = 'Bins'
+
+        self.widget_idx = 0
+        self.previous_idx = 1
+        self.default_idx = 2
+
+        fields = [
+            [self._name_min_x, str(min_default_x)],
+            [self._name_max_x, str(max_default_x)],
+            [self._name_min_y, str(min_default_y)],
+            [self._name_max_y, str(max_default_y)],
+            [self._name_bins, str(bin_default)],
             ]
         self.buttons = {}
         for label, default in fields:
-            self.buttons[label] = [QLineEdit(default, self), default]
-            self.buttons[label][0].editingFinished.connect(self.sig_update.emit)
+            self.buttons[label] = [QLineEdit(default, self), default, default]
+            self.buttons[label][self.widget_idx].editingFinished.connect(self.sig_update.emit)
             qt_label = QLabel(label + ':', self)
 
-            if not plot_typ == 'histogram' and label == 'Bins':
-                self.buttons[label][0].setVisible(False)
+            if not plot_typ == 'histogram' and label == self._name_bins:
+                self.buttons[label][self.widget_idx].setVisible(False)
                 qt_label.setVisible(False)
             else:
                 layout.addWidget(qt_label)
-                layout.addWidget(self.buttons[label][0])
+                layout.addWidget(self.buttons[label][self.widget_idx])
 
         self.btn_reset = QPushButton('Reset', self)
+        self.btn_reset.setObjectName('frame')
         self.btn_reset.clicked.connect(self.reset_values)
         layout.addWidget(self.btn_reset)
         layout.addStretch(1)
 
     @pyqtSlot()
     def reset_values(self):
-        for widget, default in self.buttons.values():
-            widget.setText(default)
+        for entry in self.buttons.values():
+            entry[self.widget_idx].setText(entry[self.default_idx])
         self.sig_update.emit()
 
     def get_values(self):
-        return_values = []
-        for widget, default in self.buttons.values():
-            return_values.append(float(widget.text()))
-        return return_values
+        previous_dict = {}
+        for key, value in self.buttons.items():
+            previous_dict[key] = value[self.previous_idx]
+
+        return_dict = {}
+        try:
+            for key, value in self.buttons.items():
+                return_dict[key] = float(value[self.widget_idx].text())
+        except ValueError:
+            tu.message('Non-float value detected! Falling back to previous values!')
+            self.set_values(previous_dict)
+            return
+
+        if return_dict[self._name_min_x] > return_dict[self._name_max_x] or return_dict[self._name_min_y] > return_dict[self._name_max_y]:
+            tu.message('Minimum cannot be greater than maximum! Falling back to previous values!')
+            self.set_values(previous_dict)
+            return
+
+        try:
+            return_dict[self._name_bins] = int(return_dict[self._name_bins])
+        except ValueError:
+            tu.message('Bins need to be an integer! Falling back to previous values!')
+            self.set_values(previous_dict)
+            return
+
+        if return_dict[self._name_bins] <= 0:
+            tu.message('Bins need to be a positive integer > 0! Falling back to previous values!')
+            self.set_values(previous_dict)
+            return
+
+        for key, value in return_dict.items():
+            self.buttons[key][self.previous_idx] = str(value)
+
+        return return_dict.values()
 
     def set_values(self, value_dict):
         for key, value in value_dict.items():
@@ -86,13 +252,14 @@ class TrimWidget(QWidget):
 
 
 class MplCanvas(FigureCanvas):
-    def __init__(self, width=5, height=5, dpi=100, parent=None):
-        fig = matplotlib.figure.Figure(figsize=(width, height), dpi=dpi)
-        self.axes = fig.add_subplot(111)
-        self.axes.grid(True)
+    def __init__(self, no_grid, width=5, height=5, dpi=100, parent=None):
+        
+        self.fig = matplotlib.figure.Figure(figsize=(width, height), dpi=dpi)
+        self.axes = self.fig.add_subplot(111)
+        self.axes.grid(not no_grid)
         self.axes.autoscale(enable=False)
-        fig.tight_layout()
-        super(MplCanvas, self).__init__(fig)
+        self.fig.tight_layout()
+        super(MplCanvas, self).__init__(self.fig)
 
 
 import random
@@ -108,7 +275,7 @@ class PlotWidget(QWidget):
     None
     """
 
-    def __init__(self, label, plot_typ, dock_widget, *args, parent=None, **kwargs):
+    def __init__(self, label, plot_typ, dock_widget, twin_container, *args, parent=None, **kwargs):
         """
         Setup the layout for the widget.
 
@@ -128,40 +295,59 @@ class PlotWidget(QWidget):
         self.label = label
         self.plot_typ = plot_typ
         self.dock_widget = dock_widget
+        self.twin_container = twin_container
 
         layout_v = QVBoxLayout(self)
-
-        self.trim_widget = TrimWidget(self.plot_typ, self)
-        self.trim_widget.sig_update.connect(self.update_trim)
-        if self.plot_typ in ('values', 'histogram'):
-            layout_v.addWidget(self.trim_widget, stretch=0)
-        else:
-            self.trim_widget.setVisible(False)
-
         self.layout_canvas = QVBoxLayout()
+
+        if self.plot_typ in ('values', 'histogram'):
+            self._bins = 50
+            self._minimum_x = float('-inf')
+            self._maximum_x = float('inf')
+            self._minimum_y = float('-inf')
+            self._maximum_y = float('inf')
+
+            self._plot_ref = [None, None]
+            self._color = '#68a3c3'
+            self.markersize = 4
+
+            self._cur_min_x = 0
+            self._cur_max_x = 0
+            self._cur_min_y = 0
+            self._cur_max_y = 0
+
+            self._applied_min_x = 0
+            self._applied_max_x = 0
+            self._applied_min_y = 0
+            self._applied_max_y = 0
+
+            n_data = 50
+            self._xdata_tmp = np.arange(n_data)
+            self._ydata_tmp = np.array([random.randint(0, 10) for i in range(n_data)])
+            self._xdata = np.array([])
+            self._ydata = np.array([])
+            self.mask = None
+
+            self.trim_widget = TrimWidget(
+                self.plot_typ,
+                self._minimum_x,
+                self._maximum_x,
+                self._minimum_y,
+                self._maximum_y,
+                self._bins,
+                self
+                )
+            self.trim_widget.sig_update.connect(self.update_trim)
+            layout_v.addWidget(self.trim_widget, stretch=0)
+
+        elif plot_typ == 'image' and label == 'image':
+            self.select_widget = SelectWidget(self)
+            self.select_widget.sig_update.connect(lambda: print('ok'))
+            layout_v.addWidget(self.select_widget, stretch=0)
+
+            self._image_dict = {}
+
         layout_v.addLayout(self.layout_canvas, stretch=1)
-
-        self._plot_ref = None
-        self._color = '#68a3c3'
-
-        self._cur_min_x = 0
-        self._cur_max_x = 0
-        self._cur_min_y = 0
-        self._cur_max_y = 0
-        self._applied_min_x = 0
-        self._applied_max_x = 0
-        self._applied_min_y = 0
-        self._applied_max_y = 0
-
-        self._bins = 50
-        self._minimum_y = float('-inf')
-        self._maximum_y = float('inf')
-
-        n_data = 50
-        self._xdata_tmp = np.arange(n_data)
-        self._ydata_tmp = np.array([random.randint(0, 10) for i in range(n_data)])
-        self._xdata = np.array([])
-        self._ydata = np.array([])
 
     def start_plotting(self):
         self.add_canvas()
@@ -174,7 +360,13 @@ class PlotWidget(QWidget):
 
     def add_canvas(self):
         layout_v = QVBoxLayout()
-        self.canvas = MplCanvas(parent=self)
+        no_grid = self.plot_typ == 'image'
+        self.canvas = MplCanvas(parent=self, no_grid=no_grid)
+        if self.twin_container is not None:
+            self.twin_canvas = MplCanvas(parent=self, no_grid=no_grid)
+            self.twin_container.add_to_layout(self.plot_typ, self.twin_canvas)
+        else:
+            self.twin_canvas = None
         toolbar = NavigationToolbar(self.canvas, self)
         toolbar.actions()[0].triggered.connect(self.force_update)
 
@@ -195,49 +387,43 @@ class PlotWidget(QWidget):
 
     @pyqtSlot()
     def update_trim(self):
-        previous_dict = {'Min': self._minimum_y, 'Max': self._maximum_y, 'Bins': self._bins}
-        try:
-            minimum, maximum, bins = self.trim_widget.get_values()
-        except ValueError:
-            tu.message('Non-float value detected! Falling back to previous values!')
-            self.trim_widget.set_values(previous_dict)
-            return
-
-        if minimum > maximum:
-            tu.message('Minimum cannot be greater than maximum! Falling back to previous values!')
-            self.trim_widget.set_values(previous_dict)
-            return
-
-        try:
-            bins = int(bins)
-        except ValueError:
-            tu.message('Bins need to be an integer! Falling back to previous values!')
-            self.trim_widget.set_values(previous_dict)
-            return
-
-        self._minimum_y = minimum
-        self._maximum_y = maximum
-        self._bins = bins
-        self.force_update()
+        return_value = self.trim_widget.get_values()
+        if return_value is not None:
+            self._minimum_x, self._maximum_x, self._minimum_y, self._maximum_y, self._bins = \
+                return_value
+            self.force_update()
 
     def update_data(self, data_x, data_y):
-        self._ydata_tmp = np.array(data_y.tolist() + [random.randint(0, 1000)])
-        self._xdata_tmp = np.array(data_x.tolist() + [data_x[-1]+1])
+        if self.plot_typ in ('values', 'histogram'):
+            self._ydata_tmp = np.array(data_y.tolist() + [random.randint(0, 1000)])
+            self._xdata_tmp = np.array(data_x.tolist() + [data_x[-1]+1])
 
-        mask = (self._ydata_tmp >= self._minimum_y) & (self._ydata_tmp <= self._maximum_y)
+            mask_y = np.logical_and(self._ydata_tmp >= self._minimum_y, self._ydata_tmp <= self._maximum_y)
+            mask_x = np.logical_and(self._xdata_tmp >= self._minimum_x, self._xdata_tmp <= self._maximum_x)
+            self.mask = np.logical_and(mask_y, mask_x)
 
-        if self.plot_typ == 'values':
-            self._xdata = self._xdata_tmp[mask]
-            self._ydata = self._ydata_tmp[mask]
-        elif self.plot_typ == 'histogram':
-            self._ydata, self._xdata = np.histogram(self._ydata_tmp[mask], self._bins)
+            if self.plot_typ == 'values':
+                self._xdata = self._xdata_tmp[self.mask]
+                self._ydata = self._ydata_tmp[self.mask]
+            elif self.plot_typ == 'histogram':
+                self._ydata, self._xdata = np.histogram(self._ydata_tmp[self.mask], self._bins)
+        elif self.plot_typ == 'image':
+            self._ydata_tmp = np.array(data_y.tolist()[1:] + [random.randint(0, 1000)])
+            self._xdata_tmp = data_x
+
+            self._image_dict[np.sum(self._ydata_tmp)] = np.multiply.outer(self._xdata_tmp, self._ydata_tmp)
+
+        else:
+            assert False, self.plot_typ
+
 
     @pyqtSlot()
     def force_update(self):
-        if self._plot_ref is not None:
-            for entry in self._plot_ref:
-                entry.remove()
-        self._plot_ref = None
+        for plot_line in self._plot_ref:
+            if plot_line is not None:
+                for entry in plot_line:
+                    entry.remove()
+        self._plot_ref = [None, None]
         self.update_figure()
 
     def prepare_axes(self, update):
@@ -290,37 +476,45 @@ class PlotWidget(QWidget):
 
     @pyqtSlot()
     def update_figure(self):
-        self.update_data(self._xdata_tmp, self._ydata_tmp)
 
         is_active = self.parent.parent.content[self.parent.parent_layout] == self.parent.parent.content[self.parent.parent_layout].latest_active[0]
-        if not self.dock_widget.isFloating() and not is_active:
+        overview_is_floating = self.twin_container.dock_widget.isFloating() if self.twin_canvas is not None else False
+        if not self.dock_widget.isFloating() and not is_active and not overview_is_floating:
             return
 
-        try:
-            update = self.prepare_axes(update=self._plot_ref is None)
-        except ValueError:
-            return
+        if self.plot_typ in ('values', 'histogram'):
+            self.update_data(self._xdata_tmp, self._ydata_tmp)
+            try:
+                update = self.prepare_axes(update=self._plot_ref[0] is None)
+            except ValueError:
+                return
 
-        if self.plot_typ == 'values':
-            self.update_values(update)
-        elif self.plot_typ == 'histogram':
-            self.update_histogram(update)
+            for plot_idx, canvas in enumerate((self.canvas, self.twin_canvas)):
+                if canvas is None:
+                    continue
 
-        if update:
-            self.canvas.axes.set_xlim(self._applied_min_x, self._applied_max_x)
-            self.canvas.axes.set_ylim(self._applied_min_y, self._applied_max_y)
-            self.canvas.draw()
-        else:
-            self.canvas.update()
-            self.canvas.flush_events()
+                if update and self._plot_ref[plot_idx] is not None:
+                    for entry in self._plot_ref[plot_idx]:
+                        entry.remove()
 
-    def update_histogram(self, update):
+                if self.plot_typ == 'values':
+                    self.update_values(canvas, plot_idx, update)
+                elif self.plot_typ == 'histogram':
+                    self.update_histogram(canvas, plot_idx, update)
+
+                if update:
+                    canvas.axes.set_xlim(self._applied_min_x, self._applied_max_x)
+                    canvas.axes.set_ylim(self._applied_min_y, self._applied_max_y)
+                    canvas.fig.tight_layout()
+                    canvas.draw()
+                else:
+                    canvas.update()
+                    canvas.flush_events()
+
+    def update_histogram(self, canvas, plot_idx, update):
         width = self._xdata[1] - self._xdata[0]
         if update:
-            if self._plot_ref is not None:
-                for entry in self._plot_ref:
-                    entry.remove()
-            self._plot_ref = self.canvas.axes.bar(
+            self._plot_ref[plot_idx] = canvas.axes.bar(
                     self._xdata[:-1],
                     self._ydata,
                     width,
@@ -328,22 +522,21 @@ class PlotWidget(QWidget):
                     edgecolor='k'
                     )
         else:
-            for value, patch in zip(self._ydata, self._plot_ref):
+            for value, patch in zip(self._ydata, self._plot_ref[plot_idx]):
                 if patch.get_height() != value:
                     patch.set_height(value)
                     patch.set_width(width)
-                    self.canvas.axes.draw_artist(patch)
+                    canvas.axes.draw_artist(patch)
 
-    def update_values(self, update):
+    def update_values(self, canvas, plot_idx, update):
         if update:
-            if self._plot_ref is not None:
-                self._plot_ref[0].remove()
-            self._plot_ref = self.canvas.axes.plot(
+            self._plot_ref[plot_idx] = canvas.axes.plot(
                 self._xdata,
                 self._ydata,
                 '.',
-                color=self._color
+                color=self._color,
+                markersize=self.markersize / (plot_idx+1)
                 )
         else:
-            self._plot_ref[0].set_data(self._xdata, self._ydata)
-            self.canvas.axes.draw_artist(self._plot_ref[0])
+            self._plot_ref[plot_idx][0].set_data(self._xdata, self._ydata)
+            canvas.axes.draw_artist(self._plot_ref[plot_idx][0])
