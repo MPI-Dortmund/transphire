@@ -37,7 +37,7 @@ warnings.filterwarnings('ignore')
 
 
 class SelectWidget(QWidget):
-    sig_update = pyqtSignal()
+    sig_update = pyqtSignal(str)
 
     def __init__(self, parent=None):
         super(SelectWidget, self).__init__(parent=parent)
@@ -80,7 +80,7 @@ class SelectWidget(QWidget):
         self.buttons[self.last_text].clicked.connect(self.handle_change)
         self.buttons['Reset'].clicked.connect(self.reset_values)
 
-        self.buttons['Image'].currentTextChanged.connect(self.sig_update.emit)
+        self.buttons['Image'].currentTextChanged.connect(lambda x: self.sig_update.emit(x))
         self.buttons['Image'].activated.connect(self.check_enable)
         self.buttons['Filter'].textEdited.connect(self.filter_combo)
         self.set_values(list(map(str, range(1000))))
@@ -125,7 +125,6 @@ class SelectWidget(QWidget):
         self.buttons['Image'].activated.emit(current_idx)
         self.buttons['Image'].currentTextChanged.emit(self.buttons['Image'].currentText())
 
-
     @pyqtSlot()
     def reset_values(self):
         self.buttons['Filter'].setText('')
@@ -148,16 +147,15 @@ class SelectWidget(QWidget):
 
     def set_values(self, value_list):
         self._full_combo_list = value_list
-        self.buttons['Filter'].setText('')
-
-        self.buttons['Image'].blockSignals(True)
-        current_value = self.buttons['Image'].currentText()
-        self.buttons['Image'].clear()
-        self.buttons['Image'].addItems(['latest'] + self._full_combo_list)
-        idx = self.buttons['Image'].setCurrentText(current_value)
-        self.buttons['Image'].blockSignals(False)
-        if idx == -1:
-            self.handle_change()
+        if self.buttons['Filter'].text() == '':
+            self.buttons['Image'].blockSignals(True)
+            current_value = self.buttons['Image'].currentText()
+            self.buttons['Image'].clear()
+            self.buttons['Image'].addItems(['latest'] + self._full_combo_list)
+            idx = self.buttons['Image'].setCurrentText(current_value)
+            self.buttons['Image'].blockSignals(False)
+            if idx == -1:
+                self.handle_change()
 
 
 class TrimWidget(QWidget):
@@ -257,6 +255,8 @@ class MplCanvas(FigureCanvas):
         self.fig = matplotlib.figure.Figure(figsize=(width, height), dpi=dpi)
         self.axes = self.fig.add_subplot(111)
         self.axes.grid(not no_grid)
+        self.axes.get_xaxis().set_visible(not no_grid)
+        self.axes.get_yaxis().set_visible(not no_grid)
         self.axes.autoscale(enable=False)
         self.fig.tight_layout()
         super(MplCanvas, self).__init__(self.fig)
@@ -298,7 +298,9 @@ class PlotWidget(QWidget):
         self.twin_container = twin_container
 
         layout_v = QVBoxLayout(self)
-        self.layout_canvas = QVBoxLayout()
+        self.layout_canvas = QHBoxLayout()
+        self._plot_ref = []
+        self._canvas_list = []
 
         if self.plot_typ in ('values', 'histogram'):
             self._bins = 50
@@ -307,7 +309,6 @@ class PlotWidget(QWidget):
             self._minimum_y = float('-inf')
             self._maximum_y = float('inf')
 
-            self._plot_ref = [None, None]
             self._color = '#68a3c3'
             self.markersize = 4
 
@@ -341,41 +342,72 @@ class PlotWidget(QWidget):
             layout_v.addWidget(self.trim_widget, stretch=0)
 
         elif plot_typ == 'image' and label == 'image':
+            n_data = 50
+            self._xdata_tmp = np.arange(n_data)
+            self._ydata_tmp = np.array([random.randint(0, 10) for i in range(n_data)])
+
             self.select_widget = SelectWidget(self)
-            self.select_widget.sig_update.connect(lambda: print('ok'))
+            self.select_widget.sig_update.connect(self.set_current_image_name)
             layout_v.addWidget(self.select_widget, stretch=0)
 
             self._image_dict = {}
+            self.current_image_name = 'latest'
 
         layout_v.addLayout(self.layout_canvas, stretch=1)
+
+    @pyqtSlot(str)
+    def set_current_image_name(self, text):
+        self.current_image_name = text
+        self.update_figure()
 
     def start_plotting(self):
         self.add_canvas()
         self.parent.parent.content[self.parent.parent_layout].sig_start_plot.connect(self.update_figure)
 
-        timer = QTimer(self)
-        timer.setInterval(1000)
-        timer.timeout.connect(self.update_figure)
-        timer.start()
+        if self.plot_typ in ('values', 'histogram'):
+            timer = QTimer(self)
+            timer.setInterval(1000)
+            timer.timeout.connect(self.update_figure)
+            timer.start()
 
     def add_canvas(self):
         layout_v = QVBoxLayout()
-        no_grid = self.plot_typ == 'image'
-        self.canvas = MplCanvas(parent=self, no_grid=no_grid)
-        if self.twin_container is not None:
-            self.twin_canvas = MplCanvas(parent=self, no_grid=no_grid)
+        is_image = self.plot_typ == 'image'
+        self.canvas = MplCanvas(parent=self, no_grid=is_image)
+        self._plot_ref.append(None)
+        if self.twin_container is not None and not is_image:
+            self.twin_canvas = MplCanvas(parent=self, no_grid=is_image)
             self.twin_container.add_to_layout(self.plot_typ, self.twin_canvas)
+            self._plot_ref.append(None)
         else:
             self.twin_canvas = None
         toolbar = NavigationToolbar(self.canvas, self)
         toolbar.actions()[0].triggered.connect(self.force_update)
 
-        self.update_figure()
-
         layout_v.addWidget(toolbar)
         layout_v.addWidget(self.canvas, stretch=1)
 
         self.layout_canvas.addLayout(layout_v)
+        self._canvas_list.append(self.canvas)
+
+    def clear_canvas(self):
+        for idx in reversed(range(self.layout_canvas.count())):
+            current_layout = self.layout_canvas.itemAt(idx)
+            for idx2 in reversed(range(current_layout.count())):
+                widget = current_layout.itemAt(idx2).widget()
+                try:
+                    self._canvas_list.remove(widget)
+                except ValueError:
+                    pass
+                current_layout.removeWidget(widget)
+                widget.setParent(None)
+                widget = None
+                del widget
+            self.layout_canvas.removeItem(current_layout)
+            current_layout.setParent(None)
+            current_layout = None
+            del current_layout
+        self._plot_ref = []
 
     @pyqtSlot(str, str, object, str, object)
     def set_settings(self, name, name_no_feedback, data, directory_name, settings):
@@ -411,7 +443,14 @@ class PlotWidget(QWidget):
             self._ydata_tmp = np.array(data_y.tolist()[1:] + [random.randint(0, 1000)])
             self._xdata_tmp = data_x
 
-            self._image_dict[np.sum(self._ydata_tmp)] = np.multiply.outer(self._xdata_tmp, self._ydata_tmp)
+            data1 = np.multiply.outer(self._xdata_tmp, self._ydata_tmp)
+            data2 = np.subtract.outer(self._xdata_tmp, self._ydata_tmp)
+
+            self._image_dict[str(np.sum(self._ydata_tmp))] = [
+                data1,
+                data2
+                ]
+            self.select_widget.set_values(list(self._image_dict.keys()))
 
         else:
             assert False, self.plot_typ
@@ -423,7 +462,7 @@ class PlotWidget(QWidget):
             if plot_line is not None:
                 for entry in plot_line:
                     entry.remove()
-        self._plot_ref = [None, None]
+        self._plot_ref = [None] * len(self._plot_ref)
         self.update_figure()
 
     def prepare_axes(self, update):
@@ -476,14 +515,16 @@ class PlotWidget(QWidget):
 
     @pyqtSlot()
     def update_figure(self):
-
         is_active = self.parent.parent.content[self.parent.parent_layout] == self.parent.parent.content[self.parent.parent_layout].latest_active[0]
         overview_is_floating = self.twin_container.dock_widget.isFloating() if self.twin_canvas is not None else False
         if not self.dock_widget.isFloating() and not is_active and not overview_is_floating:
             return
 
+        if not self._plot_ref:
+            return
+
+        self.update_data(self._xdata_tmp, self._ydata_tmp)
         if self.plot_typ in ('values', 'histogram'):
-            self.update_data(self._xdata_tmp, self._ydata_tmp)
             try:
                 update = self.prepare_axes(update=self._plot_ref[0] is None)
             except ValueError:
@@ -511,6 +552,39 @@ class PlotWidget(QWidget):
                     canvas.update()
                     canvas.flush_events()
 
+        elif self.plot_typ in ('image'):
+            self.update_image()
+
+    def update_image(self):
+        current_name = self.current_image_name
+        if current_name == 'latest':
+            try:
+                current_name = list(self._image_dict.keys())[-1]
+            except IndexError:
+                pass
+
+        try:
+            data_list = self._image_dict[current_name]
+        except KeyError:
+            self.clear_canvas()
+            return
+
+        if len(data_list) != len(self._canvas_list):
+            self.clear_canvas()
+            for _ in range(len(data_list)):
+                self.add_canvas()
+
+        for idx, data in enumerate(data_list):
+            if self._plot_ref[idx] is None:
+                self._plot_ref[idx] = self._canvas_list[idx].axes.imshow(data)
+            else:
+                self._plot_ref[idx].set_data(data)
+            self._canvas_list[idx].axes.set_xlim(0, data.shape[0]-1)
+            self._canvas_list[idx].axes.set_ylim(0, data.shape[1]-1)
+            self._canvas_list[idx].axes.set_title(current_name)
+            self._canvas_list[idx].fig.tight_layout()
+            self._canvas_list[idx].draw()
+
     def update_histogram(self, canvas, plot_idx, update):
         width = self._xdata[1] - self._xdata[0]
         if update:
@@ -526,7 +600,10 @@ class PlotWidget(QWidget):
                 if patch.get_height() != value:
                     patch.set_height(value)
                     patch.set_width(width)
-                    canvas.axes.draw_artist(patch)
+                    try:
+                        canvas.axes.draw_artist(patch)
+                    except AttributeError:
+                        canvas.draw()
 
     def update_values(self, canvas, plot_idx, update):
         if update:
@@ -539,4 +616,7 @@ class PlotWidget(QWidget):
                 )
         else:
             self._plot_ref[plot_idx][0].set_data(self._xdata, self._ydata)
-            canvas.axes.draw_artist(self._plot_ref[plot_idx][0])
+            try:
+                canvas.axes.draw_artist(self._plot_ref[plot_idx][0])
+            except AttributeError:
+                canvas.draw()

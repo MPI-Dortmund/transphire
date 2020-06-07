@@ -65,7 +65,7 @@ class TabDocker(QWidget):
         self.tab_widget.currentChanged.connect(self.assign_latest)
 
     @pyqtSlot(int)
-    def assign_latest(self, idx):
+    def assign_latest(self, idx, do_signal=True):
         current_name = self.tab_widget.tabText(idx)
         try:
             parent_content = self.parent.content[self.layout].name
@@ -91,7 +91,8 @@ class TabDocker(QWidget):
                     latest_active = self
                 break
         self.latest_active[0] = latest_active
-        latest_active.sig_start_plot.emit()
+        if do_signal:
+            latest_active.sig_start_plot.emit()
 
     def setCurrentIndex(self, idx):
         """
@@ -241,7 +242,7 @@ class TabDocker(QWidget):
             self.add_tab(widget, name)
         widget_tuple = tuple([(self.widget(idx).name, self.widget(idx)) for idx in range(self.count())])
 
-        self.parent.content[self.layout].assign_latest(self.parent.content[self.layout].currentIndex())
+        self.parent.content[self.layout].assign_latest(self.parent.content[self.layout].currentIndex(), do_signal=False)
 
     def enable_tab(self, visible):
         """

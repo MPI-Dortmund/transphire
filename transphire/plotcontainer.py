@@ -130,7 +130,7 @@ class PlotContainer(QMainWindow):
         """
         if self.plot_name == name:
             for entry in self.content:
-                entry.update_figure(
+                entry.set_settings(
                     name=name,
                     name_no_feedback=name_no_feedback,
                     data=data,
