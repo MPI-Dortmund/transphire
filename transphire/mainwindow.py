@@ -166,7 +166,8 @@ class MainWindow(QMainWindow):
         self.layout = None
         self.n_feedbacks = n_feedbacks
         function_dict = tu.get_function_dict()
-        self.types = ['mount', 'process']
+        self.default_types = ['mount', 'process', 'plotting']
+        self.types = self.default_types[:]
         for value in function_dict.values():
             if value['typ'] is not None and value['typ'] not in self.types:
                 #self.types.append(value['typ'])
@@ -241,16 +242,21 @@ class MainWindow(QMainWindow):
                     content_process=content_pipeline,
                     mount_directory=self.mount_directory
                     )
-            else:
+            elif entry == 'plotting':
                 self.workers[entry] = PlotWorker()
+            else:
+                self.workers[entry] = None
 
-            # Create threads
-            self.threads[entry] = QThread(self)
-            # Start threads
-            self.threads[entry].start()
+            if entry in self.default_types:
+                # Create threads
+                self.threads[entry] = QThread(self)
+                # Start threads
+                self.threads[entry].start()
 
-            # Start objects in threads
-            self.workers[entry].moveToThread(self.threads[entry])
+                # Start objects in threads
+                self.workers[entry].moveToThread(self.threads[entry])
+            else:
+                self.threads[entry] = None
 
     @pyqtSlot(str, object)
     def reset_gui(self, template_name, load_file):
@@ -342,18 +348,14 @@ class MainWindow(QMainWindow):
             tu.message(entry)
 
         self.workers['process'].sig_finished.connect(self._finished)
-        for idx, entry in enumerate(self.types):
-            if entry in ('mount', 'process'):
-                continue
+        self.workers['process'].signal_plot.connect(self.workers['plotting'].set_settings)
 
-            signal = getattr(self.workers['process'], 'sig_plot_{0}'.format(idx))
-            signal.connect(self.workers[entry].set_settings)
-            self.workers['process'].signals[entry] = signal
-
-            self.timers[entry] = QTimer(self)
-            self.timers[entry].setInterval(10000)
-            self.timers[entry].timeout.connect(self.workers[entry].sig_calculate.emit)
-            #self.timers[entry].start()
+        self.timers['plotting'] = QTimer(self)
+        self.timers['plotting'].setInterval(10000)
+        self.timers['plotting'].setSingleShot(True)
+        self.timers['plotting'].timeout.connect(self.workers['plotting'].sig_calculate.emit)
+        self.timers['plotting'].start()
+        self.workers['plotting'].sig_new_round.connect(self.new_round_plot)
 
         self.mount_thread_list = {}
         for key in self.content['Mount'].content:
@@ -381,6 +383,10 @@ class MainWindow(QMainWindow):
                 mount_calculator.calculate_get_quota
                 )
         self.content['Mount'].set_threadlist(thread_list=self.mount_thread_list)
+
+    @pyqtSlot()
+    def new_round_plot(self):
+        self.timers['plotting'].start()
 
     def abort_finished(self, *args, **kwargs):
         """
@@ -551,7 +557,7 @@ class MainWindow(QMainWindow):
             self.content[key] = entry['widget'](
                 mount_worker=self.workers['mount'],
                 process_worker=self.workers['process'],
-                plot_worker=self.workers,
+                plot_worker=self.workers['plotting'],
                 settings_folder=self.settings_folder,
                 template_name=self.template_name,
                 plot_labels=plot_labels,
@@ -601,9 +607,6 @@ class MainWindow(QMainWindow):
                     key == 'Show images':
                 self.content[key].worker.sig_data.connect(
                     self.content[key].update_figure
-                    )
-                self.content[key].sig_update_done.connect(
-                    self.content[key].worker.reset_running
                     )
                 self.content[key].worker.sig_visible.connect(
                     self.content[key].set_visibility
@@ -892,10 +895,7 @@ class MainWindow(QMainWindow):
         self.content['Button'].start_monitor_button.setEnabled(False)
         self.content['Button'].stop_monitor_button.setEnabled(False)
 
-        for entry in self.types:
-            if entry in ('mount', 'process'):
-                continue
-            self.workers[entry].sig_reset_list.emit()
+        self.workers['plotting'].sig_reset_list.emit()
 
         if start:
             settings = self.get_start_settings(monitor=True)
@@ -1166,10 +1166,7 @@ class MainWindow(QMainWindow):
             self.content['Button'].stop_button.setEnabled(True)
             self.content['Button'].start_monitor_button.setEnabled(False)
             self.content['Button'].stop_monitor_button.setEnabled(False)
-            for entry in self.types:
-                if entry in ('mount', 'process'):
-                    continue
-                self.workers[entry].reset_list()
+            self.workers['plotting'].reset_list()
             settings_file, message = self.save(
                 file_name=os.path.join(
                     settings['settings_folder'],
@@ -1313,15 +1310,17 @@ class MainWindow(QMainWindow):
             pass
 
         for entry in self.types:
-            self.threads[entry].stop = True
+            if self.threads[entry] is not None:
+                self.threads[entry].stop = True
 
-            if entry not in ('mount', 'process'):
-                self.timers[entry].stop()
+                if entry not in self.default_types:
+                    self.timers[entry].stop()
 
         print('Wait for threads to exit.')
         for thread_instance in self.threads.values():
-            thread_instance.quit()
-            thread_instance.wait()
+            if thread_instance is not None:
+                thread_instance.quit()
+                thread_instance.wait()
 
         print('Wait for thread mount')
         for key in self.content['Mount'].content:

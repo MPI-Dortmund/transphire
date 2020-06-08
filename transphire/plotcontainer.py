@@ -55,7 +55,6 @@ class PlotContainer(QMainWindow):
     Inherits:
     QMainWindow
     """
-    sig_update_done = pyqtSignal()
 
     def __init__(self, name, content, plot_labels, plot_name, plot_worker, plot_type, layout, *args, parent=None, **kwargs):
         """
@@ -77,7 +76,7 @@ class PlotContainer(QMainWindow):
         self.plot_name = plot_name
         self.name = name
 
-        self.worker = plot_worker[plot_type]
+        self.worker = plot_worker
 
         self.content = []
         self.dock_widgets = []
@@ -121,6 +120,7 @@ class PlotContainer(QMainWindow):
             self.tabifyDockWidget(self.dock_widgets[0], self.dock_widgets[idx])
         self.tabifiedDockWidgetActivated.connect(self.synchronize_tabs)
         self.parent.content[self.parent_layout].enable_tab(False)
+        self._is_visible = False
 
     @pyqtSlot(str, str, object, str, object)
     def update_figure(self, name, name_no_feedback, data, directory_name, settings):
@@ -144,9 +144,7 @@ class PlotContainer(QMainWindow):
                     directory_name=directory_name,
                     settings=settings
                     )
-            self.sig_update_done.emit()
-        else:
-            pass
+                entry.update_figure()
 
     def eventFilter(self, source, event):
         """
@@ -201,10 +199,13 @@ class PlotContainer(QMainWindow):
     @pyqtSlot(bool, str)
     def set_visibility(self, visible, name):
         if name == self.plot_name:
-            self.parent.content[self.parent_layout].enable_tab(visible)
-            if visible:
-                for widget in self.content:
-                    widget.start_plotting()
+            if self._is_visible != visible:
+                self.parent.content[self.parent_layout].enable_tab(visible)
+                if visible:
+                    for widget in self.content:
+                        widget.show()
+                        widget.start_plotting()
+                self._is_visible = visible
 
     def synchronize_tabs(self, widget):
         compare_name = widget.windowTitle()

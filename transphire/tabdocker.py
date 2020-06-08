@@ -62,10 +62,27 @@ class TabDocker(QWidget):
         self.tab_widget = QTabWidget(self)
         layout.addWidget(self.tab_widget)
 
+        try:
+            self.parent.content[self.layout].establish_link()
+        except AttributeError:
+            pass
+        except TypeError:
+            pass
+        except KeyError:
+            pass
+
+    def establish_link(self):
+        self.disconnect_link()
         self.tab_widget.currentChanged.connect(self.assign_latest)
 
+    def disconnect_link(self):
+        try:
+            self.tab_widget.currentChanged.disconnect(self.assign_latest)
+        except TypeError:
+            pass
+
     @pyqtSlot(int)
-    def assign_latest(self, idx, do_signal=True):
+    def assign_latest(self, idx):
         current_name = self.tab_widget.tabText(idx)
         try:
             parent_content = self.parent.content[self.layout].name
@@ -77,6 +94,7 @@ class TabDocker(QWidget):
             parent_content = False
 
         check_list = (parent_content, self.name, current_name)
+        print(check_list)
 
         latest_active = self
         for list_idx, entry in enumerate(check_list):
@@ -91,8 +109,7 @@ class TabDocker(QWidget):
                     latest_active = self
                 break
         self.latest_active[0] = latest_active
-        if do_signal:
-            latest_active.sig_start_plot.emit()
+        latest_active.sig_start_plot.emit()
 
     def setCurrentIndex(self, idx):
         """
@@ -242,8 +259,6 @@ class TabDocker(QWidget):
             self.add_tab(widget, name)
         widget_tuple = tuple([(self.widget(idx).name, self.widget(idx)) for idx in range(self.count())])
 
-        self.parent.content[self.layout].assign_latest(self.parent.content[self.layout].currentIndex(), do_signal=False)
-
     def enable_tab(self, visible):
         """
         Enable or disable the tab.
@@ -256,9 +271,14 @@ class TabDocker(QWidget):
         Returns:
         None
         """
+        self.parent.content[self.layout].tab_widget.blockSignals(True)
         index = self.parent.content[self.layout].indexOf(self)
         if not visible:
             self.parent.content[self.layout].removeTab(index)
+            self.disconnect_link()
         else:
             self.parent.content[self.layout].add_tab(self, self.name)
             self.parent.content[self.layout].order_tabs()
+            self.establish_link()
+        self.parent.content[self.layout].tab_widget.blockSignals(False)
+

@@ -16,7 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import sys
-sys.setrecursionlimit(2*sys.getrecursionlimit())
+sys.setrecursionlimit(4*sys.getrecursionlimit())
 
 import os
 import warnings
@@ -282,6 +282,10 @@ class MplCanvasWidget(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.mpl_canvas)
 
+    def __del__(self):
+        matplotlib.pyplot.close(self.mpl_canvas.fig)
+        del self.mpl_canvas
+
 
 import random
 class PlotWidget(QWidget):
@@ -317,11 +321,13 @@ class PlotWidget(QWidget):
         self.plot_typ = plot_typ
         self.dock_widget = dock_widget
         self.twin_container = twin_container
+        self.twin_canvas = None
 
         layout_v = QVBoxLayout(self)
         self.layout_canvas = QHBoxLayout()
         self._plot_ref = []
         self._canvas_list = []
+        self._is_started = False
 
         if self.plot_typ in ('values', 'histogram'):
             self._bins = 50
@@ -388,14 +394,10 @@ class PlotWidget(QWidget):
         self.update_figure()
 
     def start_plotting(self):
-        self.add_canvas()
-        self.parent.parent.content[self.parent.parent_layout].sig_start_plot.connect(self.update_figure)
-
-        if self.plot_typ in ('values', 'histogram'):
-            timer = QTimer(self)
-            timer.setInterval(1000)
-            timer.timeout.connect(self.update_figure)
-            timer.start()
+        if not self._is_started:
+            self.add_canvas()
+            self.parent.parent.content[self.parent.parent_layout].sig_start_plot.connect(self.update_figure)
+            self._is_started = True
 
     def add_canvas(self):
         layout_v = QVBoxLayout()
@@ -511,7 +513,7 @@ class PlotWidget(QWidget):
             diff_x = np.max(self._xdata) - np.min(self._xdata)
             diff_y = np.max(self._ydata) - np.min(self._ydata) * is_histogram
 
-            mult = 0.05
+            mult = 0.025
             boarder_x = max(diff_x * mult / 2, width * is_histogram)
             boarder_y = diff_y * mult / 2
 
@@ -542,13 +544,30 @@ class PlotWidget(QWidget):
 
     @pyqtSlot()
     def update_figure(self):
+
         is_active = self.parent.parent.content[self.parent.parent_layout] == self.parent.parent.content[self.parent.parent_layout].latest_active[0]
+
         overview_is_floating = self.twin_container.dock_widget.isFloating() if self.twin_canvas is not None else False
+
+        #print('self.label', self.label)
+        #print('self.plot_typ', self.plot_typ)
+        #print('self.dock_widget.isFloating()', self.dock_widget.isFloating())
+        #print('self.dock_widget.isVisible()', self.dock_widget.isVisible())
+        #print('is_active', is_active)
+        #print('overview_is_floating', overview_is_floating)
+        #print('self.isVisible()', self.isVisible())
+        #print('self.twin_container.dock_widget.isVisible()', self.twin_container.dock_widget.isVisible() if self.twin_container is not None else None)
+        #print('self.twin_container.dock_widget.widget().isVisible()', self.twin_container.dock_widget.widget().isVisible() if self.twin_container is not None else None)
+        #print('self.twin_container.isVisible()', self.twin_container.isVisible() if self.twin_container is not None else None)
+        #print('')
+
         if not self.dock_widget.isFloating() and not is_active and not overview_is_floating:
             return
 
         if not self._plot_ref:
             return
+
+        print('self.label', self.label)
 
         self.update_data(self._xdata_tmp, self._ydata_tmp)
         if self.plot_typ in ('values', 'histogram'):

@@ -16,6 +16,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
+import multiprocessing as mp
+import time
 try:
     from PyQt4.QtCore import pyqtSignal, QObject, pyqtSlot
 except ImportError:
@@ -38,6 +40,7 @@ class PlotWorker(QObject):
     sig_visible = pyqtSignal(bool, str)
     sig_calculate = pyqtSignal()
     sig_reset_list = pyqtSignal()
+    sig_new_round = pyqtSignal()
 
     def __init__(self, parent=None):
         """
@@ -53,14 +56,13 @@ class PlotWorker(QObject):
         self.settings = []
         self.sig_calculate.connect(self.calculate_array)
         self.sig_reset_list.connect(self.reset_list)
-        self.running = False
 
     @pyqtSlot()
     def reset_list(self):
         self.settings = []
 
-    @pyqtSlot(str, object, object, str)
-    def set_settings(self, name, directory_name, settings, current_name):
+    @pyqtSlot(object)
+    def set_settings(self, settings):
         """
         Set settings for the calculation of the arrays.
 
@@ -71,32 +73,26 @@ class PlotWorker(QObject):
         Returns:
         None
         """
-        if 'feedback' in name:
-            name_no_feedback = name[:-len(' feedback 1')]
-        else:
-            name_no_feedback = name
-
-        if name_no_feedback not in ('Later', 'False'):
-            if ' feedback 0' in name:
-                name = name_no_feedback
-
-            if name_no_feedback == current_name:
-                self.settings.append([name, name_no_feedback, directory_name, settings])
-
-            if os.path.isdir(directory_name):
-                self.calculate_array_now(
-                    name=name,
-                    name_no_feedback=name_no_feedback,
-                    directory_name=directory_name,
-                    settings=settings
-                    )
-                self.sig_visible.emit(True, name)
+        valid_entries = []
+        for name, directory_name, settings, current_name in settings:
+            if 'feedback' in name:
+                name_no_feedback = name[:-len(' feedback 1')]
             else:
-                self.sig_visible.emit(False, name)
+                name_no_feedback = name
 
-    @pyqtSlot()
-    def reset_running(self):
-        self.running = False
+            if name_no_feedback not in ('Later', 'False'):
+                if ' feedback 0' in name:
+                    name = name_no_feedback
+
+                if name_no_feedback == current_name:
+                    self.settings.append([name, name_no_feedback, directory_name, settings])
+
+        self.calculate_array()
+
+    def send_data(self, data):
+        for entry in data:
+            if entry is not None:
+                self.sig_data.emit(*entry)
 
     @pyqtSlot()
     def calculate_array(self):
@@ -106,32 +102,23 @@ class PlotWorker(QObject):
         Returns:
         None
         """
-        if not self.running:
-            for name, name_no_feedback, directory_name, settings in self.settings:
-                self.running = True
-                if os.path.isdir(directory_name):
-                    self.calculate_array_now(
-                        name=name,
-                        name_no_feedback=name_no_feedback,
-                        directory_name=directory_name,
-                        settings=settings
-                        )
-                    self.sig_visible.emit(True, name)
-                else:
-                    self.running = False
-                    self.sig_visible.emit(False, name)
+        valid_entries = []
+        for name, name_no_feedback, directory_name, settings in self.settings:
+            if os.path.isdir(directory_name):
+                valid_entries.append([name, name_no_feedback, directory_name, settings])
+                self.sig_visible.emit(True, name)
+            else:
+                self.sig_visible.emit(False, name)
 
-    def calculate_array_now(self, name, name_no_feedback, directory_name, settings):
-        return
+        if valid_entries:
+            with mp.Pool(min(len(valid_entries), len(valid_entries))) as p:
+                data = p.starmap(self.calculate_array_now, valid_entries)
+            self.send_data(data)
+        self.sig_new_round.emit()
+
+    @staticmethod
+    def calculate_array_now(name, name_no_feedback, directory_name, settings):
         try:
-            #recv_end, send_end = mp.Pipe(False)
-            #proc = mp.Process(
-            #    target=tu.get_function_dict()[name_no_feedback]['plot_data'],
-            #    args=(name, name_no_feedback, directory_name, '', send_end)
-            #    )
-            #proc.start()
-            #data, _ = recv_end.recv()
-            #proc.join()
             data, _ = tu.get_function_dict()[name_no_feedback]['plot_data'](
                 name=name,
                 name_no_feedback=name_no_feedback,
@@ -139,11 +126,9 @@ class PlotWorker(QObject):
                 directory_name=directory_name
                 )
         except KeyError:
-            self.running = False
+            pass
         else:
-            if data is None:
-                self.running = False
-            elif data.size == 0:
-                self.running = False
+            if data is None or data.size == 0:
+                return None
             else:
-                self.sig_data.emit(name, name_no_feedback, data, directory_name, settings)
+                return [name, name_no_feedback, data, directory_name, settings]
