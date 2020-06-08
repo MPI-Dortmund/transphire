@@ -549,18 +549,6 @@ class PlotWidget(QWidget):
 
         overview_is_floating = self.twin_container.dock_widget.isFloating() if self.twin_canvas is not None else False
 
-        #print('self.label', self.label)
-        #print('self.plot_typ', self.plot_typ)
-        #print('self.dock_widget.isFloating()', self.dock_widget.isFloating())
-        #print('self.dock_widget.isVisible()', self.dock_widget.isVisible())
-        #print('is_active', is_active)
-        #print('overview_is_floating', overview_is_floating)
-        #print('self.isVisible()', self.isVisible())
-        #print('self.twin_container.dock_widget.isVisible()', self.twin_container.dock_widget.isVisible() if self.twin_container is not None else None)
-        #print('self.twin_container.dock_widget.widget().isVisible()', self.twin_container.dock_widget.widget().isVisible() if self.twin_container is not None else None)
-        #print('self.twin_container.isVisible()', self.twin_container.isVisible() if self.twin_container is not None else None)
-        #print('')
-
         if not self.dock_widget.isFloating() and not is_active and not overview_is_floating:
             return
 
