@@ -349,6 +349,7 @@ class MainWindow(QMainWindow):
 
         self.workers['process'].sig_finished.connect(self._finished)
         self.workers['process'].signal_plot.connect(self.workers['plotting'].set_settings)
+        self.workers['plotting'].sig_set_visual.connect(self.set_visualisation)
 
         self.timers['plotting'] = QTimer(self)
         self.timers['plotting'].setInterval(20000)
@@ -383,6 +384,11 @@ class MainWindow(QMainWindow):
                 mount_calculator.calculate_get_quota
                 )
         self.content['Mount'].set_threadlist(thread_list=self.mount_thread_list)
+
+    @pyqtSlot()
+    def set_visualisation(self):
+        self.content['TAB1'].setCurrentIndex(0)
+        self.content['TAB1'].setCurrentIndex(2)
 
     @pyqtSlot()
     def new_round_plot(self):

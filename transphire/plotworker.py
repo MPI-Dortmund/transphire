@@ -41,6 +41,7 @@ class PlotWorker(QObject):
     sig_calculate = pyqtSignal()
     sig_reset_list = pyqtSignal()
     sig_new_round = pyqtSignal()
+    sig_set_visual = pyqtSignal()
 
     def __init__(self, parent=None):
         """
@@ -88,6 +89,7 @@ class PlotWorker(QObject):
                     self.settings.append([name, name_no_feedback, directory_name, settings])
 
         self.calculate_array()
+        self.sig_set_visual.emit()
 
     def send_data(self, data):
         for entry in data:

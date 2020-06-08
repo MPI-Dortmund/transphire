@@ -567,8 +567,6 @@ class PlotWidget(QWidget):
         if not self._plot_ref:
             return
 
-        print('self.label', self.label)
-
         self.update_data(self._xdata_tmp, self._ydata_tmp)
         if self.plot_typ in ('values', 'histogram'):
             try:

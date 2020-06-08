@@ -77,7 +77,6 @@ class TabDocker(QWidget):
             parent_content = False
 
         check_list = (parent_content, self.name, current_name)
-        print(check_list)
 
         latest_active = self
         for list_idx, entry in enumerate(check_list):
