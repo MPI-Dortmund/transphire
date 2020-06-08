@@ -40,6 +40,13 @@ class TwinContainer(QWidget):
             self.layout.insertLayout(idx, self.layouts[name])
         self.layouts[name].addWidget(widget)
 
+    def handle_show(self, name, widget, state):
+        widget.setVisible(state)
+        if state:
+            self.layouts[name].addWidget(widget)
+        else:
+            self.layouts[name].removeWidget(widget)
+
 
 class PlotContainer(QMainWindow):
     """

@@ -26,7 +26,7 @@ import matplotlib
 matplotlib.use('QT5Agg')
 from PyQt5.QtWidgets import QApplication
 
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QPushButton, QLineEdit, QLabel
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QPushButton, QLineEdit, QLabel, QCheckBox
 from PyQt5.QtCore import pyqtSlot, QTimer, pyqtSignal
 from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
@@ -160,6 +160,7 @@ class SelectWidget(QWidget):
 
 class TrimWidget(QWidget):
     sig_update = pyqtSignal()
+    sig_hide = pyqtSignal(int)
 
     def __init__(self, plot_typ, min_default_x, max_default_x, min_default_y, max_default_y, bin_default, parent=None):
         super(TrimWidget, self).__init__(parent=parent)
@@ -200,6 +201,11 @@ class TrimWidget(QWidget):
         self.btn_reset.setObjectName('frame')
         self.btn_reset.clicked.connect(self.reset_values)
         layout.addWidget(self.btn_reset)
+
+        check_hide = QCheckBox('Hide overview', self)
+        check_hide.setObjectName('frame')
+        check_hide.stateChanged.connect(self.sig_hide.emit)
+        layout.addWidget(check_hide)
         layout.addStretch(1)
 
     @pyqtSlot()
@@ -258,8 +264,23 @@ class MplCanvas(FigureCanvas):
         self.axes.get_xaxis().set_visible(not no_grid)
         self.axes.get_yaxis().set_visible(not no_grid)
         self.axes.autoscale(enable=False)
-        self.fig.tight_layout()
+        self.tight_layout()
         super(MplCanvas, self).__init__(self.fig)
+
+    def tight_layout(self):
+        try:
+            self.fig.tight_layout()
+        except np.linalg.linalg.LinAlgError as e:
+            print(e)
+
+
+class MplCanvasWidget(QWidget):
+    def __init__(self, no_grid, width=5, height=5, dpi=100, parent=None):
+        super(MplCanvasWidget, self).__init__(parent)
+        self.mpl_canvas = MplCanvas(no_grid=no_grid, width=width, height=height, dpi=dpi, parent=parent)
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.mpl_canvas)
 
 
 import random
@@ -339,6 +360,7 @@ class PlotWidget(QWidget):
                 self
                 )
             self.trim_widget.sig_update.connect(self.update_trim)
+            self.trim_widget.sig_hide.connect(self.hide_twin)
             layout_v.addWidget(self.trim_widget, stretch=0)
 
         elif plot_typ == 'image' and label == 'image':
@@ -354,6 +376,11 @@ class PlotWidget(QWidget):
             self.current_image_name = 'latest'
 
         layout_v.addLayout(self.layout_canvas, stretch=1)
+
+    @pyqtSlot(int)
+    def hide_twin(self, state):
+        if self.twin_canvas is not None:
+            self.twin_container.handle_show(self.plot_typ, self.twin_canvas, not state)
 
     @pyqtSlot(str)
     def set_current_image_name(self, text):
@@ -373,15 +400,15 @@ class PlotWidget(QWidget):
     def add_canvas(self):
         layout_v = QVBoxLayout()
         is_image = self.plot_typ == 'image'
-        self.canvas = MplCanvas(parent=self, no_grid=is_image)
+        self.canvas = MplCanvasWidget(parent=self, no_grid=is_image)
         self._plot_ref.append(None)
         if self.twin_container is not None and not is_image:
-            self.twin_canvas = MplCanvas(parent=self, no_grid=is_image)
+            self.twin_canvas = MplCanvasWidget(parent=self, no_grid=is_image)
             self.twin_container.add_to_layout(self.plot_typ, self.twin_canvas)
             self._plot_ref.append(None)
         else:
             self.twin_canvas = None
-        toolbar = NavigationToolbar(self.canvas, self)
+        toolbar = NavigationToolbar(self.canvas.mpl_canvas, self)
         toolbar.actions()[0].triggered.connect(self.force_update)
 
         layout_v.addWidget(toolbar)
@@ -473,8 +500,8 @@ class PlotWidget(QWidget):
                     self._cur_max_x < max(self._xdata) or \
                     self._cur_max_y < max(self._ydata)
                     ) and \
-                    self.canvas.axes.get_xlim() == (self._applied_min_x, self._applied_max_x) and \
-                    self.canvas.axes.get_ylim() == (self._applied_min_y, self._applied_max_y)
+                    self.canvas.mpl_canvas.axes.get_xlim() == (self._applied_min_x, self._applied_max_x) and \
+                    self.canvas.mpl_canvas.axes.get_ylim() == (self._applied_min_y, self._applied_max_y)
                 ) or \
                 update:
 
@@ -538,19 +565,29 @@ class PlotWidget(QWidget):
                     for entry in self._plot_ref[plot_idx]:
                         entry.remove()
 
-                if self.plot_typ == 'values':
-                    self.update_values(canvas, plot_idx, update)
-                elif self.plot_typ == 'histogram':
-                    self.update_histogram(canvas, plot_idx, update)
-
-                if update:
-                    canvas.axes.set_xlim(self._applied_min_x, self._applied_max_x)
-                    canvas.axes.set_ylim(self._applied_min_y, self._applied_max_y)
-                    canvas.fig.tight_layout()
-                    canvas.draw()
+                if plot_idx != 0:
+                    size = 5
                 else:
-                    canvas.update()
-                    canvas.flush_events()
+                    size = 10
+                matplotlib.rcParams.update({'font.size': size})
+                matplotlib.rcParams.update({'xtick.labelsize': size})
+                matplotlib.rcParams.update({'ytick.labelsize': size})
+                matplotlib.rcParams.update({'axes.labelsize': size})
+
+                if self.plot_typ == 'values':
+                    self.update_values(canvas.mpl_canvas, plot_idx, update)
+                elif self.plot_typ == 'histogram':
+                    self.update_histogram(canvas.mpl_canvas, plot_idx, update)
+
+                canvas.mpl_canvas.axes.set_title(self.label)
+                if update:
+                    canvas.mpl_canvas.axes.set_xlim(self._applied_min_x, self._applied_max_x)
+                    canvas.mpl_canvas.axes.set_ylim(self._applied_min_y, self._applied_max_y)
+                    canvas.mpl_canvas.tight_layout()
+                    canvas.mpl_canvas.draw()
+                else:
+                    canvas.mpl_canvas.update()
+                    canvas.mpl_canvas.flush_events()
 
         elif self.plot_typ in ('image'):
             self.update_image()
@@ -576,14 +613,14 @@ class PlotWidget(QWidget):
 
         for idx, data in enumerate(data_list):
             if self._plot_ref[idx] is None:
-                self._plot_ref[idx] = self._canvas_list[idx].axes.imshow(data)
+                self._plot_ref[idx] = self._canvas_list[idx].mpl_canvas.axes.imshow(data)
             else:
                 self._plot_ref[idx].set_data(data)
-            self._canvas_list[idx].axes.set_xlim(0, data.shape[0]-1)
-            self._canvas_list[idx].axes.set_ylim(0, data.shape[1]-1)
-            self._canvas_list[idx].axes.set_title(current_name)
-            self._canvas_list[idx].fig.tight_layout()
-            self._canvas_list[idx].draw()
+            self._canvas_list[idx].mpl_canvas.axes.set_xlim(0, data.shape[0]-1)
+            self._canvas_list[idx].mpl_canvas.axes.set_ylim(0, data.shape[1]-1)
+            self._canvas_list[idx].mpl_canvas.axes.set_title(current_name)
+            self._canvas_list[idx].mpl_canvas.tight_layout()
+            self._canvas_list[idx].mpl_canvas.draw()
 
     def update_histogram(self, canvas, plot_idx, update):
         width = self._xdata[1] - self._xdata[0]
