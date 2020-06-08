@@ -62,24 +62,7 @@ class TabDocker(QWidget):
         self.tab_widget = QTabWidget(self)
         layout.addWidget(self.tab_widget)
 
-        try:
-            self.parent.content[self.layout].establish_link()
-        except AttributeError:
-            pass
-        except TypeError:
-            pass
-        except KeyError:
-            pass
-
-    def establish_link(self):
-        self.disconnect_link()
         self.tab_widget.currentChanged.connect(self.assign_latest)
-
-    def disconnect_link(self):
-        try:
-            self.tab_widget.currentChanged.disconnect(self.assign_latest)
-        except TypeError:
-            pass
 
     @pyqtSlot(int)
     def assign_latest(self, idx):
@@ -145,7 +128,9 @@ class TabDocker(QWidget):
             widget.parent_widget.setObjectName('tab')
         else:
             pass
+        current_state = self.tab_widget.blockSignals(True)
         index = self.tab_widget.addTab(widget, name)
+        self.tab_widget.blockSignals(current_state)
         self.tab_widget.setTabToolTip(index, name)
 
     def count(self):
@@ -219,7 +204,10 @@ class TabDocker(QWidget):
         Returns:
         None
         """
-        return self.tab_widget.removeTab(idx)
+        current_state = self.tab_widget.blockSignals(True)
+        idx = self.tab_widget.removeTab(idx)
+        self.tab_widget.blockSignals(current_state)
+        return idx
 
     def indexOf(self, widget):
         """
@@ -252,12 +240,14 @@ class TabDocker(QWidget):
         self.tab_widget.setTabPosition(tab_position_dict[position])
 
     def order_tabs(self):
+        current_state = self.tab_widget.blockSignals(True)
         widget_tuple = tuple([(self.widget(idx).name, self.widget(idx)) for idx in range(self.count())])
         for idx in reversed(range(self.count())):
             self.removeTab(idx)
         for name, widget in sorted(widget_tuple):
             self.add_tab(widget, name)
         widget_tuple = tuple([(self.widget(idx).name, self.widget(idx)) for idx in range(self.count())])
+        self.tab_widget.blockSignals(current_state)
 
     def enable_tab(self, visible):
         """
@@ -271,14 +261,10 @@ class TabDocker(QWidget):
         Returns:
         None
         """
-        self.parent.content[self.layout].tab_widget.blockSignals(True)
         index = self.parent.content[self.layout].indexOf(self)
         if not visible:
             self.parent.content[self.layout].removeTab(index)
-            self.disconnect_link()
         else:
             self.parent.content[self.layout].add_tab(self, self.name)
             self.parent.content[self.layout].order_tabs()
-            self.establish_link()
-        self.parent.content[self.layout].tab_widget.blockSignals(False)
 

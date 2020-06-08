@@ -351,7 +351,7 @@ class MainWindow(QMainWindow):
         self.workers['process'].signal_plot.connect(self.workers['plotting'].set_settings)
 
         self.timers['plotting'] = QTimer(self)
-        self.timers['plotting'].setInterval(10000)
+        self.timers['plotting'].setInterval(20000)
         self.timers['plotting'].setSingleShot(True)
         self.timers['plotting'].timeout.connect(self.workers['plotting'].sig_calculate.emit)
         self.timers['plotting'].start()
