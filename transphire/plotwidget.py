@@ -484,7 +484,6 @@ class PlotWidget(QWidget):
         else:
             assert False, self.plot_typ
 
-
     @pyqtSlot()
     def force_update(self):
         for plot_line in self._plot_ref:
