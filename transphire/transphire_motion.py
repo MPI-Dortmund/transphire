@@ -814,8 +814,6 @@ def combine_motion_outputs(
     data_original = data_original[0]
     idx_x = 0
     idx_y = 1
-    offset_x = data_original[idx_x][0]
-    offset_y = data_original[idx_y][0]
 
     sum_total = 0
     sum_early = 0
@@ -840,8 +838,8 @@ def combine_motion_outputs(
         for idx in range(data_original.shape[1]):
             data_meta.extend(['{0}\t{1}\t{2}'.format(
                 idx+1,
-                data_original[idx_x][idx]-offset_x,
-                data_original[idx_y][idx]-offset_y
+                data_original[idx_x][idx],
+                data_original[idx_y][idx]
                 )])
 
     relion3_meta = os.path.join(
