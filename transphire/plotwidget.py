@@ -259,8 +259,9 @@ class TrimWidget(QWidget):
 
 
 class MplCanvas(FigureCanvas):
+    sig_twin = pyqtSignal(object)
     def __init__(self, no_grid, width=5, height=5, dpi=100, parent=None):
-        
+        self.parent = parent
         self.fig = matplotlib.figure.Figure(figsize=(width, height), dpi=dpi)
         self.axes = self.fig.add_subplot(111)
         self.axes.grid(not no_grid)
@@ -280,6 +281,7 @@ class MplCanvas(FigureCanvas):
 
 
 class MplCanvasWidget(QWidget):
+
     def __init__(self, no_grid, plot_type, is_twin=False, width=5, height=5, dpi=100, parent=None):
         super(MplCanvasWidget, self).__init__(parent)
         self.mpl_canvas = MplCanvas(no_grid=no_grid, width=width, height=height, dpi=dpi, parent=parent)
@@ -296,6 +298,8 @@ class MplCanvasWidget(QWidget):
         self.plot_type = plot_type
 
         self.mpl_canvas.axes.tick_params(axis='both', which='major', labelsize=self.font_size)
+        if is_twin:
+            self.mpl_canvas.mpl_connect('button_press_event', self.mpl_canvas.sig_twin.emit)
 
     def __del__(self):
         matplotlib.pyplot.close(self.mpl_canvas.fig)
@@ -772,13 +776,13 @@ class PlotWidget(QWidget):
                     median_x,
                     y_values,
                     color=LIGHTBLUE,
-                    linewidth=1,
+                    linewidth=0.8,
                     )
                 self._mean_ref[plot_idx] = canvas.axes.plot(
                     mean_x,
                     y_values,
                     color=LIGHTRED,
-                    linewidth=1,
+                    linewidth=0.8,
                     )
         else:
             if not self._hide_marker:
@@ -817,13 +821,13 @@ class PlotWidget(QWidget):
                     x_values,
                     mean_y,
                     color=LIGHTRED,
-                    linewidth=1,
+                    linewidth=0.8,
                     )
                 self._median_ref[plot_idx] = canvas.axes.plot(
                     x_values,
                     median_y,
                     color=LIGHTBLUE,
-                    linewidth=1,
+                    linewidth=0.8,
                     )
             self._plot_ref[plot_idx] = canvas.axes.plot(
                 self._xdata,

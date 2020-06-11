@@ -28,6 +28,7 @@ class TwinContainer(QWidget):
 
     def __init__(self, dock_widget, *args, parent=None, **kwargs):
         super(TwinContainer, self).__init__(parent)
+        self.parent = parent
         self.layout = QVBoxLayout(self)
         self.layouts = {}
         self.dock_widget = dock_widget
@@ -39,6 +40,11 @@ class TwinContainer(QWidget):
             self.layouts[name] = QHBoxLayout()
             self.layout.insertLayout(idx, self.layouts[name])
         self.layouts[name].addWidget(widget)
+        widget.mpl_canvas.sig_twin.connect(self.mouse_event)
+
+    @pyqtSlot(object)
+    def mouse_event(self, event):
+        self.parent.select_tab(self.sender())
 
     def handle_show(self, name, widget, state):
         widget.setVisible(state)
@@ -206,24 +212,49 @@ class PlotContainer(QMainWindow):
                         widget.start_plotting()
                 self._is_visible = visible
 
+    @pyqtSlot(object)
+    def select_tab(self, widget):
+        aim_docker = self.parent.content[self.parent_layout]
+
+        docker_to_activate = None
+        for idx in range(aim_docker.count()):
+            aim_container = aim_docker.widget(idx)
+            for entry in aim_container.dock_widgets:
+                if entry.widget() == widget.parent:
+                    docker_to_activate = entry
+                    break
+            else:
+                continue
+            break
+        self.synchronize_tabs(docker_to_activate)
+        aim_docker.setCurrentIndex(idx)
+
+    @pyqtSlot(QDockWidget)
     def synchronize_tabs(self, widget):
         compare_name = widget.windowTitle()
         aim_docker = self.parent.content[self.parent_layout]
-        aim_index = None
-
+        aim_indices = []
         for idx in range(aim_docker.count()):
             tab_text = aim_docker.tabText(idx)
-            if self.name == 'Plot per micrograph':
+            if self.name == 'Overview':
                 if tab_text == 'Plot histogram':
-                    aim_index = idx
+                    aim_indices.append(idx)
+                    continue
+                elif tab_text == 'Plot per micrograph':
+                    aim_indices.append(idx)
+                    continue
+            elif self.name == 'Plot per micrograph':
+                if tab_text == 'Plot histogram':
+                    aim_indices.append(idx)
                     break
             elif self.name == 'Plot histogram':
                 if tab_text == 'Plot per micrograph':
-                    aim_index = idx
+                    aim_indices.append(idx)
                     break
             else:
                 pass
 
-        assert aim_index is not None
-        aim_container = aim_docker.widget(aim_index)
-        aim_container.activate_tab(compare_name)
+        assert aim_indices is not None
+        for aim_idx in aim_indices:
+            aim_container = aim_docker.widget(aim_idx)
+            aim_container.activate_tab(compare_name)
