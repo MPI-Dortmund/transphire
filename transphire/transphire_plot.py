@@ -82,39 +82,31 @@ def update_ctf(data, settings, label):
     Return:
     x values, y values, label, title
     """
+    x_values = get_mic_number(data['file_name'], settings)
+    y_values = data[label]
     if label == 'defocus':
-        x_values = get_mic_number(data['file_name'], settings)
-        y_values = data['defocus']/10000
+        y_values /= 10000
         label = 'Defocus / mum'
         title = 'Mean defocus'
 
     elif label == 'defocus_diff':
-        x_values = get_mic_number(data['file_name'], settings)
-        y_values = data['defocus_diff'] / 10000
+        y_values /= 10000
         label = 'Defocus diff / mum'
         title = 'Defocus diff'
 
     elif label == 'astigmatism':
-        x_values = get_mic_number(data['file_name'], settings)
-        y_values = data['astigmatism']
         label = 'Angle / degree'
         title = 'Azimuth of astigmatism'
 
     elif label == 'phase_shift':
-        x_values = get_mic_number(data['file_name'], settings)
-        y_values = data['phase_shift']
         label = 'Phase shift / degree'
         title = 'Additional phase shift'
 
     elif label == 'cross_corr':
-        x_values = get_mic_number(data['file_name'], settings)
-        y_values = data['cross_corr']
         label = 'Cross correlation'
         title = 'Cross correlation'
 
     elif label == 'limit':
-        x_values = get_mic_number(data['file_name'], settings)
-        y_values = data['limit']
         y_values[y_values == np.inf] = 0
         label = 'Resolution limit / A'
         title = 'Resolution limit'
@@ -122,7 +114,7 @@ def update_ctf(data, settings, label):
     else:
         raise Exception('Plotwidget: Do not know what to do :O {0}'.format(label))
 
-    return x_values, y_values, 'Micrograph', label, title
+    return x_values, y_values, ['Micrograph', 'Nr. of Micrographs'], label, title
 
 
 def update_motion(data, settings, label):
@@ -139,27 +131,24 @@ def update_motion(data, settings, label):
     """
     x_values = get_mic_number(data['file_name'], settings)
     y_values = data[label]
+    label_y = 'Drift / px'
     if label == 'overall drift':
-        label = 'Drift / px'
         title = 'Overall drift'
 
     elif label == 'average drift per frame':
-        label = 'Drift / px'
         title = 'Average drift per frame'
 
     elif label == 'first frame drift':
-        label = 'Drift / px'
         title = 'First frame drift'
 
     elif label == 'average drift per frame without first':
-        label = 'Drift / px'
         title = 'Average drift per frame without first'
 
     else:
         print('Plotwidget: Do not know what to do :O', label)
         raise Exception
 
-    return x_values, y_values, 'Micrograph', label, title
+    return x_values, y_values, ['Micrograph', 'Nr. of Micrographs'], label_y, title
 
 
 def update_cryolo_v1_0_4(data, settings, label):
@@ -187,7 +176,7 @@ def update_cryolo_v1_0_4(data, settings, label):
     else:
         print('Plotwidget: Do not know what to do :O', label)
         raise Exception
-    return x_values, y_values, 'Micrograph', label, title
+    return x_values, y_values, ['Micrograph', 'Nr. of Micrographs'], label, title
 
 
 def update_with_sum(data, settings, label):
@@ -205,7 +194,7 @@ def update_with_sum(data, settings, label):
     x_values = get_mic_number(data['file_name'], settings)
     y_values = data[label]
     title ='Total {0}: {1}'.format(label, np.sum(data[label]))
-    return x_values, y_values, 'Micrograph', label, title
+    return x_values, y_values,['Micrograph', 'Nr. of Micrographs'], label, title
 
 def update_without_sum(data, settings, label):
     """
@@ -222,5 +211,5 @@ def update_without_sum(data, settings, label):
     x_values = get_mic_number(data['file_name'], settings)
     y_values = data[label]
     title = label
-    return x_values, y_values, 'Batch', label, title
+    return x_values, y_values, ['Batch', 'Nr. of Batches'], label, title
 

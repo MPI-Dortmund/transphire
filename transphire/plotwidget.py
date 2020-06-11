@@ -290,7 +290,7 @@ class MplCanvasWidget(QWidget):
         layout.addWidget(self.mpl_canvas)
 
         if is_twin:
-            self.font_size = 8
+            self.font_size = 6
         else:
             self.font_size = 10
 
@@ -307,11 +307,11 @@ class MplCanvasWidget(QWidget):
 
     def update_labels(self, title, label_x, label_y):
         title = tu.split_maximum(title, 20)
-        label_x = tu.split_maximum(label_x, 20)
         label_y = tu.split_maximum(label_y, 20)
 
         self.mpl_canvas.axes.set_title(title, fontsize=self.font_size)
         if self.plot_type == 'histogram':
+            label_x = tu.split_maximum(label_x[1], 20)
             self.mpl_canvas.axes.set_xlabel(
                 label_x,
                 fontsize=self.font_size
@@ -321,6 +321,7 @@ class MplCanvasWidget(QWidget):
                 fontsize=self.font_size
                 )
         elif self.plot_type == 'values':
+            label_x = tu.split_maximum(label_x[0], 20)
             self.mpl_canvas.axes.set_ylabel(
                 label_y,
                 fontsize=self.font_size
@@ -427,9 +428,8 @@ class PlotWidget(QWidget):
             self._applied_min_y = 0
             self._applied_max_y = 0
 
-            n_data = 50
-            self._xdata_raw = np.arange(n_data)
-            self._ydata_raw = np.array([random.randint(0, 10) for i in range(n_data)])
+            self._xdata_raw = np.array([])
+            self._ydata_raw = np.array([])
             self._xdata = np.array([])
             self._ydata = np.array([])
             self.mask = None
@@ -541,23 +541,19 @@ class PlotWidget(QWidget):
 
     @pyqtSlot(str, str, object, str, object)
     def set_settings(self, name, name_no_feedback, data, directory_name, settings):
-        self._name = name
-        self._name_no_feedback = name_no_feedback
-        self._data = data
-        self._directory_name = directory_name
-        self._settings = settings
-        if self._is_first:
-            self._is_first = False
-            label_x = 'Micrographs'
-            label_y = self.label
-            title = self.label
-
-            for canvas in self._canvas_list:
-                canvas.update_labels(title, label_x, label_y)
-
         if self.plot_typ in ('values', 'histogram'):
-            self._ydata_raw = np.array(self._ydata_raw.tolist() + [random.randint(0, 1000)])
-            self._xdata_raw = np.array(self._xdata_raw.tolist() + [self._xdata_raw[-1]+1])
+            self._xdata_raw, self._ydata_raw, labels_x, label_y, title = tu.get_function_dict()[name_no_feedback]['plot'](
+                data=data,
+                settings=settings,
+                label=self.label,
+                )
+            if self._is_first:
+                self._is_first = False
+                for canvas in self._canvas_list:
+                    canvas.update_labels(title, labels_x, label_y)
+                    canvas.mpl_canvas.tight_layout()
+                    canvas.mpl_canvas.draw()
+
         elif self.plot_typ == 'image':
             self._ydata_raw = np.array(self._ydata_raw.tolist()[1:] + [random.randint(0, 1000)])
             self._xdata_raw = self._xdata_raw
