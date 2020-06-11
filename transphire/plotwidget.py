@@ -313,11 +313,11 @@ class MplCanvasWidget(QWidget):
         if self.plot_type == 'histogram':
             label_x = tu.split_maximum(label_x[1], 20)
             self.mpl_canvas.axes.set_xlabel(
-                label_x,
+                label_y,
                 fontsize=self.font_size
                 )
             self.mpl_canvas.axes.set_ylabel(
-                label_y,
+                label_x,
                 fontsize=self.font_size
                 )
         elif self.plot_type == 'values':
@@ -551,8 +551,6 @@ class PlotWidget(QWidget):
                 self._is_first = False
                 for canvas in self._canvas_list:
                     canvas.update_labels(title, labels_x, label_y)
-                    canvas.mpl_canvas.tight_layout()
-                    canvas.mpl_canvas.draw()
 
         elif self.plot_typ == 'image':
             self._ydata_raw = np.array(self._ydata_raw.tolist()[1:] + [random.randint(0, 1000)])
