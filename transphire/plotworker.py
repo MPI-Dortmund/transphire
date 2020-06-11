@@ -109,7 +109,6 @@ class PlotWorker(QObject):
                 self.sig_visible.emit(True, name)
             else:
                 self.sig_visible.emit(False, name)
-            break
 
         if valid_entries:
             with mp.Pool(min(len(valid_entries), len(valid_entries))) as p:
