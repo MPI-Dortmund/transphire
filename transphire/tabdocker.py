@@ -90,8 +90,9 @@ class TabDocker(QWidget):
                 except:
                     latest_active = self
                 break
-        self.latest_active[0] = latest_active
-        latest_active.sig_start_plot.emit()
+        if self.latest_active[0] != latest_active:
+            self.latest_active[0] = latest_active
+            latest_active.sig_start_plot.emit()
 
     def setCurrentIndex(self, idx):
         """

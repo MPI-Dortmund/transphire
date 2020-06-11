@@ -17,7 +17,6 @@
 """
 import os
 import multiprocessing as mp
-import time
 try:
     from PyQt4.QtCore import pyqtSignal, QObject, pyqtSlot
 except ImportError:
@@ -74,7 +73,6 @@ class PlotWorker(QObject):
         Returns:
         None
         """
-        valid_entries = []
         for name, directory_name, settings, current_name in settings:
             if 'feedback' in name:
                 name_no_feedback = name[:-len(' feedback 1')]
@@ -111,6 +109,7 @@ class PlotWorker(QObject):
                 self.sig_visible.emit(True, name)
             else:
                 self.sig_visible.emit(False, name)
+            break
 
         if valid_entries:
             with mp.Pool(min(len(valid_entries), len(valid_entries))) as p:

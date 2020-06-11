@@ -542,13 +542,33 @@ def message(text):
     Return:
     None
     """
-    final_text = []
-    for line in text.splitlines():
-        final_text.append('\n'.join([line[i:i+80] for i in range(0, len(line), 80)]))
-
+    final_text = split_maximum(text, 80)
     dialog = MessageBox(is_question=False)
-    dialog.setText(None, '\n'.join(final_text))
+    dialog.setText(None, final_text)
     dialog.exec_()
+
+
+def split_maximum(text, max_char):
+    """
+    Split text into chunks of size max_char containing whole words.
+
+    Arguments:
+    text - Text to split
+    max_char - Maximum number of characters
+
+    Returns:
+    Splitted text
+    """
+    new_text = []
+    current_line = [text.split()[0]]
+    for entry in text.split()[1:]:
+        if sum(map(len, current_line)) + len(current_line) + len(entry) > max_char:
+            new_text.append(' '.join(current_line))
+            current_line = [entry]
+        else:
+            current_line.append(entry)
+    new_text.append(' '.join(current_line))
+    return '\n'.join(new_text)
 
 
 def question(head, text, parent):

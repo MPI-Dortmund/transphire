@@ -144,7 +144,6 @@ class PlotContainer(QMainWindow):
                     directory_name=directory_name,
                     settings=settings
                     )
-                entry.update_figure()
 
     def eventFilter(self, source, event):
         """
