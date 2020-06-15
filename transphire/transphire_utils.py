@@ -328,7 +328,7 @@ def get_function_dict():
     ### Extract programs
 
     function_dict['WINDOW >=v1.2'] = {
-            'plot': tp.update_with_sum,
+            'plot': tp.update_micrograph,
             'plot_data': ti.import_window_v1_2,
             'content': tc.default_window_1_2,
             'executable': True,
@@ -342,7 +342,7 @@ def get_function_dict():
     ### 2D classification programs
 
     function_dict['ISAC2 >=v1.2'] = {
-            'plot': tp.update_without_sum,
+            'plot': tp.update_batch,
             'plot_data': ti.import_isac_v1_2,
             'content': tc.default_isac2_1_2,
             'executable': True,
@@ -356,7 +356,7 @@ def get_function_dict():
     ### 2D selection programs
 
     function_dict['Cinderella >=v0.3.1'] = {
-            'plot': tp.update_without_sum,
+            'plot': tp.update_batch,
             'plot_data': ti.import_cinderella_v0_3_1,
             'content': tc.default_cinderella_v0_3_1,
             'executable': True,
@@ -385,7 +385,7 @@ def get_function_dict():
     ### auto processing programs
 
     function_dict['sp_auto >=v1.3'] = {
-            'plot': tp.update_without_sum,
+            'plot': tp.update_batch,
             'plot_data': ti.import_auto_sphire_v1_3,
             'content': tc.default_auto_sphire_v1_3,
             'executable': True,
@@ -548,7 +548,7 @@ def message(text):
     dialog.exec_()
 
 
-def split_maximum(text, max_char):
+def split_maximum(text, max_char, split_char=None):
     """
     Split text into chunks of size max_char containing whole words.
 
@@ -559,16 +559,25 @@ def split_maximum(text, max_char):
     Returns:
     Splitted text
     """
+    if split_char is None:
+        add_char = ' '
+    else:
+        add_char = split_char
     new_text = []
-    current_line = [text.split()[0]]
-    for entry in text.split()[1:]:
+    try:
+        current_line = [text.split(split_char)[0]]
+    except IndexError:
+        return text
+    except AttributeError:
+        print(text)
+    for entry in text.split(split_char)[1:]:
         if sum(map(len, current_line)) + len(current_line) + len(entry) > max_char:
-            new_text.append(' '.join(current_line))
+            new_text.append(add_char.join(current_line))
             current_line = [entry]
         else:
             current_line.append(entry)
-    new_text.append(' '.join(current_line))
-    return '\n'.join(new_text)
+    new_text.append(add_char.join(current_line))
+    return '\n{0}'.join(new_text).format(add_char if add_char.strip() else '')
 
 
 def question(head, text, parent):

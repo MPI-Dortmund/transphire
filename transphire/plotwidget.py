@@ -18,6 +18,7 @@
 import sys
 sys.setrecursionlimit(4*sys.getrecursionlimit())
 
+import json
 import os
 import warnings
 import imageio
@@ -27,7 +28,7 @@ matplotlib.use('QT5Agg')
 from PyQt5.QtWidgets import QApplication
 
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QPushButton, QLineEdit, QLabel, QCheckBox
-from PyQt5.QtCore import pyqtSlot, QTimer, pyqtSignal
+from PyQt5.QtCore import pyqtSlot, QTimer, pyqtSignal, Qt
 from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
     NavigationToolbar2QT as NavigationToolbar
@@ -86,7 +87,6 @@ class SelectWidget(QWidget):
         self.buttons['Image'].currentTextChanged.connect(lambda x: self.sig_update.emit(x))
         self.buttons['Image'].activated.connect(self.check_enable)
         self.buttons['Filter'].textEdited.connect(self.filter_combo)
-        self.set_values(list(map(str, range(1000))))
 
         layout.addStretch(1)
 
@@ -149,7 +149,7 @@ class SelectWidget(QWidget):
         return self.buttons['Image'].currentText()
 
     def set_values(self, value_list):
-        self._full_combo_list = value_list
+        self._full_combo_list = value_list.tolist()
         if self.buttons['Filter'].text() == '':
             self.buttons['Image'].blockSignals(True)
             current_value = self.buttons['Image'].currentText()
@@ -197,19 +197,18 @@ class TrimWidget(QWidget):
                 self.buttons[label][self.widget_idx].setVisible(False)
                 qt_label.setVisible(False)
             else:
-                layout.addWidget(qt_label)
-                layout.addWidget(self.buttons[label][self.widget_idx])
+                layout.addWidget(qt_label, stretch=0)
+                layout.addWidget(self.buttons[label][self.widget_idx], stretch=1)
 
         self.btn_reset = QPushButton('Reset', self)
         self.btn_reset.setObjectName('frame')
         self.btn_reset.clicked.connect(self.reset_values)
-        layout.addWidget(self.btn_reset)
+        layout.addWidget(self.btn_reset, stretch=0)
 
         check_hide = QCheckBox('Hide overview', self)
         check_hide.setObjectName('frame')
         check_hide.stateChanged.connect(self.sig_hide.emit)
-        layout.addWidget(check_hide)
-        layout.addStretch(1)
+        layout.addWidget(check_hide, stretch=0)
 
     @pyqtSlot()
     def reset_values(self):
@@ -251,7 +250,7 @@ class TrimWidget(QWidget):
         for key, value in return_dict.items():
             self.buttons[key][self.previous_idx] = str(value)
 
-        return return_dict.values()
+        return return_dict.values(), previous_dict
 
     def set_values(self, value_dict):
         for key, value in value_dict.items():
@@ -264,20 +263,11 @@ class MplCanvas(FigureCanvas):
         self.parent = parent
         self.fig = matplotlib.figure.Figure(figsize=(width, height), dpi=dpi)
         self.axes = self.fig.add_subplot(111)
-        self.axes.grid(not no_grid)
-        self.axes.get_xaxis().set_visible(not no_grid)
-        self.axes.get_yaxis().set_visible(not no_grid)
+        self.axes.grid(True)
         self.axes.autoscale(enable=False)
         self.axes.set_axisbelow(True)
-        self.tight_layout()
-
+        self.fig.set_tight_layout(True)
         super(MplCanvas, self).__init__(self.fig)
-
-    def tight_layout(self):
-        try:
-            self.fig.tight_layout()
-        except np.linalg.linalg.LinAlgError as e:
-            print(e)
 
 
 class MplCanvasWidget(QWidget):
@@ -298,6 +288,7 @@ class MplCanvasWidget(QWidget):
         self.plot_type = plot_type
 
         self.mpl_canvas.axes.tick_params(axis='both', which='major', labelsize=self.font_size)
+        self.mpl_canvas.axes.ticklabel_format(useOffset=False, style='plain')
         if is_twin:
             self.mpl_canvas.mpl_connect('button_press_event', self.mpl_canvas.sig_twin.emit)
 
@@ -307,11 +298,11 @@ class MplCanvasWidget(QWidget):
 
     def update_labels(self, title, label_x, label_y):
         title = tu.split_maximum(title, 20)
-        label_y = tu.split_maximum(label_y, 20)
 
         self.mpl_canvas.axes.set_title(title, fontsize=self.font_size)
         if self.plot_type == 'histogram':
             label_x = tu.split_maximum(label_x[1], 20)
+            label_y = tu.split_maximum(label_y[1], 20)
             self.mpl_canvas.axes.set_xlabel(
                 label_y,
                 fontsize=self.font_size
@@ -322,6 +313,18 @@ class MplCanvasWidget(QWidget):
                 )
         elif self.plot_type == 'values':
             label_x = tu.split_maximum(label_x[0], 20)
+            label_y = tu.split_maximum(label_y[1], 20)
+            self.mpl_canvas.axes.set_ylabel(
+                label_y,
+                fontsize=self.font_size
+                )
+            self.mpl_canvas.axes.set_xlabel(
+                label_x,
+                fontsize=self.font_size
+                )
+        elif self.plot_type == 'image':
+            label_x = tu.split_maximum(label_x, 20)
+            label_y = tu.split_maximum(label_y, 20)
             self.mpl_canvas.axes.set_ylabel(
                 label_y,
                 fontsize=self.font_size
@@ -338,29 +341,30 @@ class ViewWidget(QWidget):
     def __init__(self, parent=None):
         super(ViewWidget, self).__init__(parent)
         layout = QHBoxLayout(self)
-        entries = ['Min', 'Max', 'Mean', 'Median', 'In range', 'of']
+        entries = ['Min', 'Max', 'Mean', 'Median', 'Sum', 'In range', 'of']
         self.widgets = {}
         for entry in entries:
-            layout.addWidget(QLabel('{}:'.format(entry)))
+            layout.addWidget(QLabel('{}:'.format(entry)), stretch=0)
             label = QLineEdit('--')
+            label.setAlignment(Qt.AlignRight)
             label.setReadOnly(True)
-            label.setObjectName('frame')
-            layout.addWidget(label)
+            layout.addWidget(label, stretch=1)
             self.widgets[entry] = label
         check_hide = QCheckBox('Hide marker', self)
         check_hide.clicked.connect(self.sig_hide.emit)
-        layout.addWidget(check_hide)
-        layout.addStretch(1)
+        layout.addWidget(check_hide, stretch=0)
 
         self.widgets['Mean'].setStyleSheet('color: {}'.format(LIGHTRED))
         self.widgets['Median'].setStyleSheet('color: {}'.format(LIGHTBLUE))
 
     def update_label(self, label_dict):
         for key, value in label_dict.items():
-            self.widgets[key].setText('{0:10.2f}'.format(value))
+            try:
+                self.widgets[key].setText('{0:d}'.format(value))
+            except ValueError:
+                self.widgets[key].setText('{0:10.2f}'.format(value))
 
 
-import random
 class PlotWidget(QWidget):
     """
     PlotWidget widget.
@@ -400,10 +404,16 @@ class PlotWidget(QWidget):
         layout_v = QVBoxLayout(self)
         self.layout_canvas = QHBoxLayout()
         self._plot_ref = []
+        self._image_ref = []
         self._mean_ref = []
         self._median_ref = []
         self._canvas_list = []
         self._is_started = False
+        self._xdata = np.array([])
+        self._ydata = np.array([])
+        self._data = None
+        self._basenames = None
+        self._color = '#68a3c3'
 
         if self.plot_typ in ('values', 'histogram'):
             self._bins = 50
@@ -411,11 +421,11 @@ class PlotWidget(QWidget):
             self._maximum_x = float('inf')
             self._minimum_y = float('-inf')
             self._maximum_y = float('inf')
+            self._previous_dict = {}
             self.mean = None
             self.median = None
             self._hide_marker = False
 
-            self._color = '#68a3c3'
             self.markersize = 4
 
             self._cur_min_x = 0
@@ -430,9 +440,6 @@ class PlotWidget(QWidget):
 
             self._xdata_raw = np.array([])
             self._ydata_raw = np.array([])
-            self._xdata = np.array([])
-            self._ydata = np.array([])
-            self.mask = None
 
             self.trim_widget = TrimWidget(
                 self.plot_typ,
@@ -452,15 +459,10 @@ class PlotWidget(QWidget):
             layout_v.addWidget(self.view_widget, stretch=0)
 
         elif plot_typ == 'image' and label == 'image':
-            n_data = 50
-            self._xdata_raw = np.arange(n_data)
-            self._ydata_raw = np.array([random.randint(0, 10) for i in range(n_data)])
-
             self.select_widget = SelectWidget(self)
             self.select_widget.sig_update.connect(self.set_current_image_name)
             layout_v.addWidget(self.select_widget, stretch=0)
 
-            self._image_dict = {}
             self.current_image_name = 'latest'
 
         layout_v.addLayout(self.layout_canvas, stretch=1)
@@ -483,7 +485,9 @@ class PlotWidget(QWidget):
     def start_plotting(self):
         if not self._is_started:
             self.add_canvas()
-            self.parent.parent.content[self.parent.parent_layout].sig_start_plot.connect(self.update_figure)
+            self.parent.parent.content[self.parent.parent_layout].sig_start_plot.connect(
+                self.update_figure
+                )
             self._is_started = True
 
     def add_canvas(self):
@@ -541,6 +545,8 @@ class PlotWidget(QWidget):
 
     @pyqtSlot(str, str, object, str, object)
     def set_settings(self, name, name_no_feedback, data, directory_name, settings):
+        self._data = data
+        self._basenames = np.array([os.path.basename(entry) for entry in data['file_name']])
         if self.plot_typ in ('values', 'histogram'):
             self._xdata_raw, self._ydata_raw, labels_x, label_y, title = tu.get_function_dict()[name_no_feedback]['plot'](
                 data=data,
@@ -553,22 +559,12 @@ class PlotWidget(QWidget):
                     canvas.update_labels(title, labels_x, label_y)
 
         elif self.plot_typ == 'image':
-            self._ydata_raw = np.array(self._ydata_raw.tolist()[1:] + [random.randint(0, 1000)])
-            self._xdata_raw = self._xdata_raw
-
-            data1 = np.multiply.outer(self._xdata_raw, self._ydata_raw)
-            data2 = np.subtract.outer(self._xdata_raw, self._ydata_raw)
-
-            self._image_dict[str(np.sum(self._ydata_raw))] = [
-                data1,
-                data2
-                ]
-            self.select_widget.set_values(list(self._image_dict.keys()))
+            self.select_widget.set_values(self._basenames)
         self.update_figure()
 
     @pyqtSlot()
     def update_trim(self):
-        return_value = self.trim_widget.get_values()
+        return_value, self._previous_dict = self.trim_widget.get_values()
         if return_value is not None:
             self._minimum_x, self._maximum_x, self._minimum_y, self._maximum_y, self._bins = \
                 return_value
@@ -584,25 +580,31 @@ class PlotWidget(QWidget):
                 self._xdata_raw >= self._minimum_x,
                 self._xdata_raw <= self._maximum_x
                 )
-            self.mask = np.logical_and(mask_y, mask_x)
+            mask = np.logical_and(mask_y, mask_x)
 
-            self.mean = np.mean(self._ydata_raw[self.mask])
-            self.median = np.median(self._ydata_raw[self.mask])
-            self.view_widget.update_label({
-                'Min': np.min(self._ydata_raw[self.mask]),
-                'Max': np.max(self._ydata_raw[self.mask]),
-                'Mean': self.mean,
-                'Median': self.median,
-                'In range': np.count_nonzero(self.mask),
-                'of': self.mask.shape[0],
-                })
+            try:
+                self.mean = np.mean(self._ydata_raw[mask])
+                self.median = np.median(self._ydata_raw[mask])
+                self.view_widget.update_label({
+                    'Min': np.min(self._ydata_raw[mask]),
+                    'Max': np.max(self._ydata_raw[mask]),
+                    'Sum': np.sum(self._ydata_raw[mask]),
+                    'Mean': self.mean,
+                    'Median': self.median,
+                    'In range': np.count_nonzero(mask),
+                    'of': mask.shape[0],
+                    })
+            except ValueError:
+                self.trim_widget.set_values(self._previous_dict)
+                tu.message('Masking values do not contain any data points! Falling back to previous values!')
+                return
 
             if self.plot_typ == 'values':
-                self._xdata = self._xdata_raw[self.mask]
-                self._ydata = self._ydata_raw[self.mask]
+                self._xdata = self._xdata_raw[mask]
+                self._ydata = self._ydata_raw[mask]
             elif self.plot_typ == 'histogram':
                 self._ydata, self._xdata = np.histogram(
-                    self._ydata_raw[self.mask],
+                    self._ydata_raw[mask],
                     self._bins
                     )
 
@@ -628,10 +630,10 @@ class PlotWidget(QWidget):
     def prepare_axes(self, update):
         if (
                 (
-                    self._cur_min_x > min(self._xdata) or \
-                    self._cur_min_y > min(self._ydata) or \
-                    self._cur_max_x < max(self._xdata) or \
-                    self._cur_max_y < max(self._ydata)
+                    self._cur_min_x > np.min(self._xdata) or \
+                    self._cur_min_y > np.min(self._ydata) or \
+                    self._cur_max_x < np.max(self._xdata) or \
+                    self._cur_max_y < np.max(self._ydata)
                     ) and \
                     self.canvas.mpl_canvas.axes.get_xlim() == (self._applied_min_x, self._applied_max_x) and \
                     self.canvas.mpl_canvas.axes.get_ylim() == (self._applied_min_y, self._applied_max_y)
@@ -642,17 +644,17 @@ class PlotWidget(QWidget):
 
             width = self._xdata[1] - self._xdata[0]
             diff_x = np.max(self._xdata) - np.min(self._xdata)
-            diff_y = np.max(self._ydata) - np.min(self._ydata) * is_histogram
+            diff_y = np.max(self._ydata) - np.min(self._ydata) * bool(not is_histogram)
 
-            mult = 0.25
-            boarder_x = max(diff_x * mult / 2, width * is_histogram)
+            mult = 0.05
+            boarder_x = np.maximum(diff_x * mult / 2, width * is_histogram)
             boarder_y = diff_y * mult / 2
 
             if self.plot_typ == 'values':
-                self._cur_min_x = min(self._xdata) - boarder_x
-                self._cur_min_y = min(self._ydata) - boarder_y
-                self._cur_max_x = max(self._xdata) + boarder_x
-                self._cur_max_y = max(self._ydata) + boarder_y
+                self._cur_min_x = np.min(self._xdata) - boarder_x
+                self._cur_min_y = np.min(self._ydata) - boarder_y
+                self._cur_max_x = np.max(self._xdata) + boarder_x
+                self._cur_max_y = np.max(self._ydata) + boarder_y
 
                 self._applied_min_x = self._cur_min_x - boarder_x / 2
                 self._applied_min_y = self._cur_min_y - boarder_y / 2
@@ -660,10 +662,10 @@ class PlotWidget(QWidget):
                 self._applied_max_y = self._cur_max_y + boarder_y / 2
 
             elif self.plot_typ == 'histogram':
-                self._cur_min_x = min(self._xdata[:-1]) - boarder_x
+                self._cur_min_x = np.min(self._xdata[:-1]) - boarder_x
                 self._cur_min_y = 0
-                self._cur_max_x = max(self._xdata[:-1]) + boarder_x
-                self._cur_max_y = max(self._ydata) + boarder_y
+                self._cur_max_x = np.max(self._xdata[:-1]) + boarder_x
+                self._cur_max_y = np.max(self._ydata) + boarder_y
 
                 self._applied_min_x = self._cur_min_x
                 self._applied_min_y = self._cur_min_y
@@ -690,7 +692,8 @@ class PlotWidget(QWidget):
         if self.plot_typ in ('values', 'histogram'):
             try:
                 update = self.prepare_axes(update=self._plot_ref[0] is None)
-            except ValueError:
+            except ValueError as e:
+                print(e)
                 return
 
             for plot_idx, canvas in enumerate(self._canvas_list):
@@ -708,11 +711,11 @@ class PlotWidget(QWidget):
                     self.update_values(canvas.mpl_canvas, plot_idx, update)
                 elif self.plot_typ == 'histogram':
                     self.update_histogram(canvas.mpl_canvas, plot_idx, update)
+                self.update_helpers(canvas.mpl_canvas, plot_idx, update, self.plot_typ)
 
                 if update:
                     canvas.mpl_canvas.axes.set_xlim(self._applied_min_x, self._applied_max_x)
                     canvas.mpl_canvas.axes.set_ylim(self._applied_min_y, self._applied_max_y)
-                    canvas.mpl_canvas.tight_layout()
                     canvas.mpl_canvas.draw()
                 else:
                     canvas.mpl_canvas.update()
@@ -725,12 +728,12 @@ class PlotWidget(QWidget):
         current_name = self.current_image_name
         if current_name == 'latest':
             try:
-                current_name = list(self._image_dict.keys())[-1]
+                current_name = self._basenames[-1]
             except IndexError:
                 pass
 
         try:
-            data_list = self._image_dict[current_name]
+            data_list = self._data['image'][self._basenames == current_name][0].split(';;;')
         except KeyError:
             self.clear_canvas()
             return
@@ -740,23 +743,68 @@ class PlotWidget(QWidget):
             for _ in range(len(data_list)):
                 self.add_canvas()
 
-        for idx, data in enumerate(data_list):
-            if self._plot_ref[idx] is None:
-                self._plot_ref[idx] = self._canvas_list[idx].mpl_canvas.axes.imshow(data)
-            else:
-                self._plot_ref[idx].set_data(data)
-            self._canvas_list[idx].mpl_canvas.axes.set_title(current_name)
-            self._canvas_list[idx].mpl_canvas.axes.set_xlim(0, data.shape[0]-1)
-            self._canvas_list[idx].mpl_canvas.axes.set_ylim(0, data.shape[1]-1)
-            self._canvas_list[idx].mpl_canvas.tight_layout()
+        for idx, data_file in enumerate(data_list):
+            label_x = ''
+            label_y = ''
+            if data_file.endswith('.jpg'):
+                try:
+                    data = imageio.imread(data_file)
+                except Exception as e:
+                    print('Error reading image: {}.'.format(data_file))
+                    continue
+                if self._plot_ref[idx] is None:
+                    self._plot_ref[idx] = [self._canvas_list[idx].mpl_canvas.axes.imshow(data)]
+                else:
+                    self._plot_ref[idx][0].set_data(data)
+                self._canvas_list[idx].mpl_canvas.axes.set_xlim(
+                    0,
+                    data.shape[1]-1
+                    )
+                self._canvas_list[idx].mpl_canvas.axes.set_ylim(
+                    0,
+                    data.shape[0]-1
+                    )
+                self._canvas_list[idx].mpl_canvas.axes.grid(False)
+                self._canvas_list[idx].mpl_canvas.axes.get_xaxis().set_visible(False)
+                self._canvas_list[idx].mpl_canvas.axes.get_yaxis().set_visible(False)
+
+            elif data_file.endswith('.json'):
+                with open(data_file, 'r') as read:
+                    json_data = json.load(read)
+
+                for entry in self._image_ref:
+                    for plot_obj in entry:
+                        try:
+                            plot_obj.remove()
+                        except Exception as e:
+                            print(e, plot_obj)
+                self._image_ref = []
+
+                plot_idx = 0
+                label_x = json_data['label_x']
+                label_y = json_data['label_y']
+                for data_dict in json_data['data']:
+                    self.update_image_plot(
+                        self._canvas_list[idx].mpl_canvas,
+                        data_dict['values_x'],
+                        data_dict['values_y'],
+                        data_dict['is_high_res'],
+                        data_dict['label_plot'],
+                        data_dict['marker'],
+                        plot_idx,
+                        )
+                    plot_idx += 1
+
+            self._canvas_list[idx].mpl_canvas.axes.autoscale(enable=True)
+            self._canvas_list[idx].update_labels(
+                tu.split_maximum(current_name, 20, '_'),
+                label_x,
+                label_y,
+                )
             self._canvas_list[idx].mpl_canvas.draw()
 
     def update_histogram(self, canvas, plot_idx, update):
         width = self._xdata[1] - self._xdata[0]
-        max_y = np.max(np.abs(self._ydata))
-        y_values = [np.min(self._ydata)-max_y, np.max(self._ydata)+max_y]
-        mean_x = [self.mean, self.mean]
-        median_x = [self.median, self.median]
         if update:
             self._plot_ref[plot_idx] = canvas.axes.bar(
                     self._xdata[:-1],
@@ -765,23 +813,7 @@ class PlotWidget(QWidget):
                     facecolor=self._color,
                     edgecolor='k'
                     )
-            if not self._hide_marker:
-                self._median_ref[plot_idx] = canvas.axes.plot(
-                    median_x,
-                    y_values,
-                    color=LIGHTBLUE,
-                    linewidth=0.8,
-                    )
-                self._mean_ref[plot_idx] = canvas.axes.plot(
-                    mean_x,
-                    y_values,
-                    color=LIGHTRED,
-                    linewidth=0.8,
-                    )
         else:
-            if not self._hide_marker:
-                self._mean_ref[plot_idx][0].set_data(mean_x, y_values)
-                self._median_ref[plot_idx][0].set_data(median_x, y_values)
             try:
                 canvas.axes.draw_artist(canvas.axes.patch)
                 canvas.axes.draw_artist(canvas.axes.gridline)
@@ -797,32 +829,43 @@ class PlotWidget(QWidget):
                     except AttributeError:
                         canvas.draw()
 
-            if not self._hide_marker:
+    def update_helpers(self, canvas, plot_idx, update, plot_type):
+        if not self._hide_marker:
+            mean = [self.mean, self.mean]
+            median = [self.median, self.median]
+            if plot_type == 'values':
+                max_x = np.max(np.abs(self._xdata))
+                values_x = [np.min(self._xdata)-max_x, np.max(self._xdata)+max_x]
+                values = [
+                    [self._mean_ref, values_x, mean, LIGHTBLUE],
+                    [self._median_ref, values_x, median, LIGHTRED]
+                    ]
+            elif plot_type == 'histogram':
+                max_y = np.max(np.abs(self._ydata))
+                values_y = [np.min(self._ydata)-max_y, np.max(self._ydata)+max_y]
+                values = [
+                    [self._mean_ref, mean, values_y, LIGHTBLUE],
+                    [self._median_ref, median, values_y, LIGHTRED]
+                    ]
+
+            for aim_list, values_x, values_y, color in values:
+                if update:
+                    aim_list[plot_idx] = canvas.axes.plot(
+                        values_x,
+                        values_y,
+                        color=color,
+                        linewidth=0.8,
+                        )
+                else:
+                    aim_list[plot_idx][0].set_data(values_x, values_y)
+
                 try:
-                    canvas.axes.draw_artist(self._mean_ref[plot_idx][0])
-                    canvas.axes.draw_artist(self._median_ref[plot_idx][0])
+                    canvas.axes.draw_artist(aim_list[plot_idx][0])
                 except AttributeError:
                     canvas.draw()
 
     def update_values(self, canvas, plot_idx, update):
-        max_x = np.max(np.abs(self._xdata))
-        x_values = [np.min(self._xdata)-max_x, np.max(self._xdata)+max_x]
-        mean_y = [self.mean, self.mean]
-        median_y = [self.median, self.median]
         if update:
-            if not self._hide_marker:
-                self._mean_ref[plot_idx] = canvas.axes.plot(
-                    x_values,
-                    mean_y,
-                    color=LIGHTRED,
-                    linewidth=0.8,
-                    )
-                self._median_ref[plot_idx] = canvas.axes.plot(
-                    x_values,
-                    median_y,
-                    color=LIGHTBLUE,
-                    linewidth=0.8,
-                    )
             self._plot_ref[plot_idx] = canvas.axes.plot(
                 self._xdata,
                 self._ydata,
@@ -831,16 +874,58 @@ class PlotWidget(QWidget):
                 markersize=self.markersize / (plot_idx+1)
                 )
         else:
-            if not self._hide_marker:
-                self._mean_ref[plot_idx][0].set_data(x_values, mean_y)
-                self._median_ref[plot_idx][0].set_data(x_values, median_y)
             self._plot_ref[plot_idx][0].set_data(self._xdata, self._ydata)
             try:
                 canvas.axes.draw_artist(canvas.axes.patch)
                 canvas.axes.draw_artist(canvas.axes.gridline)
-                if not self._hide_marker:
-                    canvas.axes.draw_artist(self._mean_ref[plot_idx][0])
-                    canvas.axes.draw_artist(self._median_ref[plot_idx][0])
                 canvas.axes.draw_artist(self._plot_ref[plot_idx][0])
             except AttributeError:
                 canvas.draw()
+
+    @staticmethod
+    def high_res(x_data, y_data, splits):
+        cm = matplotlib.cm.get_cmap('viridis')
+        if splits != 1:
+            n_points = (len(x_data) - 1) * (splits - 1)
+            colors = [cm(1.*i/(n_points-1)) for i in range(n_points)]
+            new_values = []
+            for i in range(len(x_data)-1):
+                new_x = np.linspace(x_data[i], x_data[i+1], splits)
+                new_y = np.linspace(y_data[i], y_data[i+1], splits)
+                for i in range(splits-1):
+                    new_values.append([new_x[i:i+2], new_y[i:i+2]])
+        else:
+            n_points = len(x_data)
+            colors = [cm(1.*i/(n_points-1)) for i in range(n_points)]
+            new_values = np.array([x_data, y_data]).T
+        return colors, new_values
+
+    def update_image_plot(self, canvas, data_x, data_y, high_res, label, marker, idx):
+        if high_res:
+            color, vals = self.high_res(data_x, data_y, 30)
+            canvas.axes.set_prop_cycle('color', color)
+            for x, y in vals:
+                self._image_ref.append(canvas.axes.plot(
+                    x,
+                    y,
+                    '-',
+                    ))
+            color, vals = self.high_res(data_x, data_y, 1)
+            canvas.axes.set_prop_cycle('color', color)
+            for x, y in vals:
+                self._image_ref.append(canvas.axes.plot(
+                    x,
+                    y,
+                    'o',
+                    ))
+        else:
+            self._image_ref.append(canvas.axes.plot(
+                data_x,
+                data_y,
+                marker,
+                label=label,
+                color=self._color,
+                markeredgecolor='black',
+                markersize=10,
+                ))
+            self._image_ref.append([canvas.axes.legend(loc='best')])

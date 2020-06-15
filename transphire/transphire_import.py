@@ -92,6 +92,8 @@ def get_dtype_dict():
 
     dtype['Picking'] = [
         ('confidence', 'O'),
+        ('box_x', 'O'),
+        ('box_y', 'O'),
         ('particles', '<i8'),
         ('file_name', '|U1200'),
         ('image', '|U1200'),
@@ -846,10 +848,14 @@ def import_motion_cor_2_v1_0_0(name, name_no_feedback, settings, directory_name,
         tu.get_name(entry)
         for entry in glob.glob(os.path.join(directory_name, 'jpg*', '*.jpg'))
         ])
+    useable_files_json = set([
+        tu.get_name(entry)
+        for entry in glob.glob(os.path.join(directory_name, 'json*', '*.json'))
+        ])
     useable_files = [
         file_name
         for file_name in sorted(useable_files)
-        if tu.get_name(tu.get_name(file_name)) in useable_files_jpg
+        if tu.get_name(tu.get_name(file_name)) in useable_files_jpg | useable_files_json
         ]
 
     data = np.zeros(
@@ -899,7 +905,12 @@ def import_motion_cor_2_v1_0_0(name, name_no_feedback, settings, directory_name,
             'jpg*',
             '{0}.jpg'.format(tu.get_name(tu.get_name(file_name)))
             )
-        data[idx]['image'] = ';;;'.join(glob.glob(jpg_name))
+        json_name = os.path.join(
+            directory_name,
+            'json*',
+            '{0}.json'.format(tu.get_name(tu.get_name(file_name)))
+            )
+        data[idx]['image'] = ';;;'.join(glob.glob(jpg_name) + glob.glob(json_name))
 
     sort_idx = np.argsort(data, order='file_name')
     data = data[sort_idx]
@@ -972,19 +983,23 @@ def import_cryolo_v1_0_4(name, name_no_feedback, settings, directory_name, impor
             continue
         else:
             if file_name.endswith('.cbox') and data_imported.size != 0:
-                data_cbox = np.atleast_2d(data_imported)[:, -1]
+                data_cbox = np.atleast_2d(data_imported)[:, 4]
+                data_box_x = np.atleast_2d(data_imported)[:, 5]
+                data_box_y = np.atleast_2d(data_imported)[:, 6]
             else:
                 data_cbox = np.array([0])
-            useable_files.append([os.path.splitext(os.path.basename(file_name))[0], data_imported.shape[0], data_cbox])
+                data_box_x = np.array([0])
+                data_box_y = np.array([0])
+            useable_files.append([os.path.splitext(os.path.basename(file_name))[0], data_imported.shape[0], data_cbox, data_box_x, data_box_y])
 
     useable_files_jpg = [
         tu.get_name(entry)
         for entry in glob.glob(os.path.join(directory_name, 'jpg*', '*.jpg'))
         ]
     useable_files = [
-        [file_name, size, confidence]
-        for file_name, size, confidence in sorted(useable_files)
-        if tu.get_name(file_name) in useable_files_jpg
+        entry
+        for entry in sorted(useable_files)
+        if tu.get_name(entry[0]) in useable_files_jpg
         ]
 
     data = np.zeros(
@@ -997,6 +1012,8 @@ def import_cryolo_v1_0_4(name, name_no_feedback, settings, directory_name, impor
     jpg_names = [';;;'.join([os.path.join(directory_name, jpg_dir_name, '{0}.jpg'.format(entry)) for jpg_dir_name in jpgs]) for entry in file_names]
     data['file_name'] = file_names
     data['confidence'] = [entry[2] for entry in useable_files]
+    data['box_x'] = [entry[3] for entry in useable_files]
+    data['box_y'] = [entry[4] for entry in useable_files]
     data['particles'] = [entry[1] for entry in useable_files]
     data['image'] = jpg_names
 

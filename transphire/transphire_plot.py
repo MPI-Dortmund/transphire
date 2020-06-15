@@ -67,7 +67,7 @@ def get_mic_number(array, settings, as_int=True):
 
 
 def dummy(data, settings, label):
-    return '', '', '', '', ''
+    return '', '', ['', ''], ['', ''], ''
 
 
 def update_ctf(data, settings, label):
@@ -85,12 +85,12 @@ def update_ctf(data, settings, label):
     x_values = get_mic_number(data['file_name'], settings)
     y_values = data[label]
     if label == 'defocus':
-        y_values /= 10000
+        y_values = y_values / 10000
         label = 'Defocus / mum'
         title = 'Mean defocus'
 
     elif label == 'defocus_diff':
-        y_values /= 10000
+        y_values = y_values / 10000
         label = 'Defocus diff / mum'
         title = 'Defocus diff'
 
@@ -114,7 +114,7 @@ def update_ctf(data, settings, label):
     else:
         raise Exception('Plotwidget: Do not know what to do :O {0}'.format(label))
 
-    return x_values, y_values, ['Micrograph', 'Nr. of Micrographs'], label, title
+    return x_values, y_values, ['Micrograph', 'Nr. of Micrographs'], [label, label], title
 
 
 def update_motion(data, settings, label):
@@ -148,7 +148,7 @@ def update_motion(data, settings, label):
         print('Plotwidget: Do not know what to do :O', label)
         raise Exception
 
-    return x_values, y_values, ['Micrograph', 'Nr. of Micrographs'], label_y, title
+    return x_values, y_values, ['Micrograph', 'Nr. of Micrographs'], [label_y, label_y], title
 
 
 def update_cryolo_v1_0_4(data, settings, label):
@@ -163,40 +163,22 @@ def update_cryolo_v1_0_4(data, settings, label):
     Return:
     x values, y values, label, title
     """
-    if label == 'particles':
-        x_values = get_mic_number(data['file_name'], settings)
-        y_values = data[label]
-        title ='Total {0}: {1}'.format(label, np.sum(data[label]))
-        label = 'Nr. of {0}'.format(label)
-    elif label == 'confidence':
-        y_values = np.array([entry for row in data[label] for entry in row])
-        x_values = np.arange(y_values.shape[0])
-        title ='crYOLO confidence'
-        label = 'Confidence'
-    else:
-        print('Plotwidget: Do not know what to do :O', label)
-        raise Exception
-    return x_values, y_values, ['Micrograph', 'Nr. of Micrographs'], label, title
-
-
-def update_with_sum(data, settings, label):
-    """
-    Update the plot for crYOLO v1.0.4.
-
-    Arguments:
-    data - Data to plot
-    settings - User provided settings
-    label - Label of the plot
-
-    Return:
-    x values, y values, label, title
-    """
-    x_values = get_mic_number(data['file_name'], settings)
     y_values = data[label]
-    title ='Total {0}: {1}'.format(label, np.sum(data[label]))
-    return x_values, y_values,['Micrograph', 'Nr. of Micrographs'], label, title
+    x_values = get_mic_number(data['file_name'], settings)
+    if label == 'particles':
+        title = label
+        label_x = ['Micrograph', 'Nr. of Micrographs']
+        label_val = label
+        label_hist = label
+    else:
+        title = label
+        label_val = 'Mean {}'.format(label)
+        label_hist = label
+        y_values = np.array([np.mean(entry) for entry in y_values])
+        label_x = ['Micrograph', 'Nr. of Particles']
+    return x_values, y_values, label_x, [label_val, label_hist], title
 
-def update_without_sum(data, settings, label):
+def update_micrograph(data, settings, label):
     """
     Update the plot for crYOLO v1.0.4.
 
@@ -211,5 +193,22 @@ def update_without_sum(data, settings, label):
     x_values = get_mic_number(data['file_name'], settings)
     y_values = data[label]
     title = label
-    return x_values, y_values, ['Batch', 'Nr. of Batches'], label, title
+    return x_values, y_values, ['Micrograph', 'Nr. of Micrographs'], [label, label], title
+
+def update_batch(data, settings, label):
+    """
+    Update the plot for crYOLO v1.0.4.
+
+    Arguments:
+    data - Data to plot
+    settings - User provided settings
+    label - Label of the plot
+
+    Return:
+    x values, y values, label, title
+    """
+    x_values = get_mic_number(data['file_name'], settings)
+    y_values = data[label]
+    title = label
+    return x_values, y_values, ['Batch', 'Nr. of Batches'], [label, label], title
 
