@@ -748,7 +748,7 @@ class PlotWidget(QWidget):
             label_y = ''
             if data_file.endswith('.jpg'):
                 try:
-                    data = imageio.imread(data_file)
+                    data = imageio.imread(data_file)[::-1, ...]
                 except Exception as e:
                     print('Error reading image: {}.'.format(data_file))
                     continue
