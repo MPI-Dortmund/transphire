@@ -164,6 +164,7 @@ class SelectWidget(QWidget):
 class TrimWidget(QWidget):
     sig_update = pyqtSignal()
     sig_hide = pyqtSignal(int)
+    sig_set_state = pyqtSignal(bool)
 
     def __init__(self, plot_typ, min_default_x, max_default_x, min_default_y, max_default_y, bin_default, parent=None):
         super(TrimWidget, self).__init__(parent=parent)
@@ -205,10 +206,16 @@ class TrimWidget(QWidget):
         self.btn_reset.clicked.connect(self.reset_values)
         layout.addWidget(self.btn_reset, stretch=0)
 
-        check_hide = QCheckBox('Hide overview', self)
-        check_hide.setObjectName('frame')
-        check_hide.stateChanged.connect(self.sig_hide.emit)
-        layout.addWidget(check_hide, stretch=0)
+        self.check_hide = QCheckBox('Hide overview', self)
+        self.check_hide.setObjectName('frame')
+        self.check_hide.stateChanged.connect(self.sig_hide.emit)
+        layout.addWidget(self.check_hide, stretch=0)
+
+        self.sig_set_state.connect(self.set_state)
+
+    @pyqtSlot(bool)
+    def set_state(self, state):
+        self.check_hide.setChecked(state)
 
     @pyqtSlot()
     def reset_values(self):
@@ -269,6 +276,16 @@ class MplCanvas(FigureCanvas):
         self.fig.set_tight_layout(True)
         super(MplCanvas, self).__init__(self.fig)
 
+    @pyqtSlot(object)
+    def hover_twin(self, event):
+        vis = self.tooltip.get_visible()
+        if cont:
+            self.tooltip.set_visible(True)
+            self.draw_idle()
+        else:
+            if vis:
+                self.tooltip.set_visible(False)
+                self.draw_idle()
 
 class MplCanvasWidget(QWidget):
 
@@ -291,6 +308,11 @@ class MplCanvasWidget(QWidget):
         self.mpl_canvas.axes.ticklabel_format(useOffset=False, style='plain')
         if is_twin:
             self.mpl_canvas.mpl_connect('button_press_event', self.mpl_canvas.sig_twin.emit)
+            self.setToolTip(
+                "Left mouse button: Show larger version of the plot\n"
+                "Right mouse button: Hide plot from overview\n"
+                "(Can be re-enabled in the larger version)"
+                )
 
     def __del__(self):
         matplotlib.pyplot.close(self.mpl_canvas.fig)

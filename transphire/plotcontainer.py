@@ -40,11 +40,15 @@ class TwinContainer(QWidget):
             self.layouts[name] = QHBoxLayout()
             self.layout.insertLayout(idx, self.layouts[name])
         self.layouts[name].addWidget(widget)
-        widget.mpl_canvas.sig_twin.connect(self.mouse_event)
+        widget.mpl_canvas.sig_twin.connect(self.mouse_twin_event)
 
     @pyqtSlot(object)
-    def mouse_event(self, event):
-        self.parent.select_tab(self.sender())
+    def mouse_twin_event(self, event):
+        if event.button == 1:
+            self.parent.select_tab(self.sender())
+        elif event.button == 3:
+            plot_widget = self.sender().parent
+            plot_widget.trim_widget.sig_set_state.emit(True)
 
     def handle_show(self, name, widget, state):
         widget.setVisible(state)
