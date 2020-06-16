@@ -1304,6 +1304,7 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
 
     label_style = """
     QLabel#picture {{ background-color: transparent }}
+    QLabel#important {{ font-weight: bold; color: red; background-color: white; qproperty-alignment: AlignCenter }}
     QLabel#status_name {{ max-width: {1}; min-width: {1}; background-color: {0}; min-height: {5}; max-height: {5} }}
     QLabel#status_info {{ max-width: {2}; min-width: {2}; background-color: {0}; min-height: {5}; max-height: {5} }}
     QLabel#status_quota {{ max-width: {3}; min-width: {3}; background-color: {0}; min-height: {5}; max-height: {5} }}

@@ -19,7 +19,7 @@ try:
     from PyQt4.QtGui import QWidget, QHBoxLayout, QVBoxLayout, QScrollArea
     from PyQt4.QtCore import pyqtSlot
 except ImportError:
-    from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QScrollArea
+    from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QScrollArea, QLabel
     from PyQt5.QtCore import pyqtSlot
 from transphire.settingswidget import SettingsWidget
 from transphire.separator import Separator
@@ -59,20 +59,28 @@ class SettingsContainer(QWidget):
         my_tab_docker.setTabPosition('South')
         layout_main = QVBoxLayout(self)
         layout_main.setContentsMargins(0, 0, 0, 0)
-        layout_main.addWidget(my_tab_docker)
 
         self.layout_dict = {}
+        important_note = ''
         for entry in content:
             for widget in entry:
                 for key in widget:
                     if key == 'WIDGETS MAIN':
-                        self.layout_dict['Main_max'] = int(widget['WIDGETS MAIN'][0])
+                        self.layout_dict['Main_max'] = int(widget[key][0])
                     elif key == 'WIDGETS ADVANCED':
-                        self.layout_dict['Advanced_max'] = int(widget['WIDGETS ADVANCED'][0])
+                        self.layout_dict['Advanced_max'] = int(widget[key][0])
                     elif key == 'WIDGETS RARE':
-                        self.layout_dict['Rare_max'] = int(widget['WIDGETS RARE'][0])
+                        self.layout_dict['Rare_max'] = int(widget[key][0])
+                    elif key == 'IMPORTANT':
+                        important_note = widget[key][0]
                     else:
                         continue
+
+        if important_note:
+            important_widget = QLabel(important_note)
+            important_widget.setObjectName('important')
+            layout_main.addWidget(important_widget)
+        layout_main.addWidget(my_tab_docker)
 
         for dict_name in ['Main', 'Advanced', 'Rare']:
             widget = QWidget(self)
@@ -98,7 +106,7 @@ class SettingsContainer(QWidget):
         for entry in content:
             for widget in entry:
                 for key in widget:
-                    if key == 'WIDGETS MAIN' or key == 'WIDGETS ADVANCED' or key == 'WIDGETS RARE':
+                    if key == 'WIDGETS MAIN' or key == 'WIDGETS ADVANCED' or key == 'WIDGETS RARE' or key == 'IMPORTANT':
                         continue
                     layout_name = widget[key][1]['widget_2']
                     widget_name = widget[key][1]['name']

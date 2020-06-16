@@ -168,7 +168,7 @@ class LoadContent(QWidget):
                 'Others',
                 'Notification_widget',
                 ]
-            if self.typ not in exclude_typ_list and not entry[self.idx_name].startswith('WIDGETS'):
+            if self.typ not in exclude_typ_list and not entry[self.idx_name].startswith('WIDGETS') and not entry[self.idx_name] == 'IMPORTANT':
                 widget_2 = QComboBox(self)
                 widget_2.addItems(['Main', 'Advanced', 'Rare'])
                 combo_idx = widget_2.findText(entry[self.idx_priority])
