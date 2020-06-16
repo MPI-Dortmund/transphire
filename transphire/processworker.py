@@ -122,22 +122,21 @@ class ProcessWorker(QObject):
                     self.settings[new_name][entry] = folder_path
                     folder_list.append(folder_path)
 
-                    if monitor:
-                        try:
-                            settings_emit.append([
-                                '{0} feedback {1}'.format(entry, feedback_number),
-                                signal_folder,
-                                self.settings,
-                                self.settings['Copy'][name],
-                                ])
-                            self.signals['{0}_feedback_{1}'.format(name, feedback_number)].emit(
-                                '{0} feedback {1}'.format(entry, feedback_number),
-                                signal_folder,
-                                self.settings,
-                                self.settings['Copy'][name],
-                                )
-                        except KeyError:
-                            pass
+                    try:
+                        settings_emit.append([
+                            '{0} feedback {1}'.format(entry, feedback_number),
+                            signal_folder,
+                            self.settings,
+                            self.settings['Copy'][name],
+                            ])
+                        self.signals['{0}_feedback_{1}'.format(name, feedback_number)].emit(
+                            '{0} feedback {1}'.format(entry, feedback_number),
+                            signal_folder,
+                            self.settings,
+                            self.settings['Copy'][name],
+                            )
+                    except KeyError:
+                        pass
         self.signal_plot.emit(settings_emit)
 
     @pyqtSlot(object, str)
