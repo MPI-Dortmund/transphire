@@ -1008,6 +1008,12 @@ class MainWindow(QMainWindow):
             else:
                 pass
 
+        settings['motion_frames'] = [{
+            'first': 1,
+            'last': -1,
+            'dw': True,
+            'default': True
+            }]
         if error_list:
             tu.message('\n'.join(error_list))
             self.enable(True)

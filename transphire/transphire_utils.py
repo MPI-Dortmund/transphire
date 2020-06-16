@@ -934,12 +934,12 @@ def get_content_gui(content, template_name, n_feedbacks):
                         'plot_type': '{0}_feedback_{1}'.format(typ, index),
                         'layout': 'Plot {0}'.format(feedback_content),
                         })
-        if typ == 'Motion':
-            gui_content.append({
-                'name': 'Frames',
-                'widget': FrameContainer,
-                'layout': typ,
-                })
+        #if typ == 'Motion':
+        #    gui_content.append({
+        #        'name': 'Frames',
+        #        'widget': FrameContainer,
+        #        'layout': typ,
+        #        })
 
     return gui_content
 
