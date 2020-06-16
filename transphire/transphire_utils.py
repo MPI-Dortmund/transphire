@@ -1364,8 +1364,8 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
         }}
 
     QTabBar#vertical::tab {{
-        max-width: {6};
-        max-height: {5};
+        max-width: {5};
+        max-height: {4};
         }}
 
     QMessageBox {{

@@ -193,9 +193,9 @@ def default_cryolo_train_v1_5_8():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['Box size', '205', int, '', 'PLAIN', 'Main', 'Box size used for retraining. Should be quite narrow.'],
         ['--warmup', '5', int, '', 'PLAIN', 'Main', 'Number of warmup epochs. Set it to zero if you fine tune a model.'],
         ['--num_cpu', '-1', int, '', 'PLAIN', 'Main', 'Number of CPUs used during training. By default it will use half of the available CPUs.'],
@@ -253,9 +253,9 @@ def default_cryolo_v1_5_8():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['--conf', '', str, '', 'FILE', 'Main', '', 'Path to configuration file.'],
         ['--weights', '', str, '', 'FILE', 'Main', 'Path to pretrained weights.'],
         ['--threshold', '0.3', float, '', 'PLAIN', 'Main', 'Confidence threshold. Have to be between 0 and 1. The higher, the more conservative.'],
@@ -1052,9 +1052,9 @@ def default_unblur_v1_0_0():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['Pixel size of image (A)', '1.0', float, '', 'PLAIN', 'Main', 'Pixel size in A of input stack in angstrom.'],
         ['Output binning factor', '1', float, '', 'PLAIN', 'Advanced', 'Binning performed in Fourier space, default 1.0.'],
         ['Exposure per frame (e/A^2)', '0', float, '', 'PLAIN', 'Main', 'Frame dose in e/A^2. If not specified, dose weighting will be skipped.'],
@@ -1238,9 +1238,9 @@ def default_motion_cor_2_v1_3_0():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['-FmDose', '0', float, '', 'PLAIN', 'Main', 'Frame dose in e/A^2. If not specified, dose weighting will be skipped.'],
         ['-PixSize:Pixel size', '0', float, '', 'PLAIN', 'Main', 'Pixel size in A of input stack in angstrom. If not specified, dose weighting will be skipped.'],
         ['-kV:voltage', '300', float, '', 'PLAIN', 'Main', 'High tension in kV needed for dose weighting.  Default is 300.'],
