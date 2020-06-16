@@ -47,7 +47,7 @@ class TwinContainer(QWidget):
         if event.button == 1:
             self.parent.select_tab(self.sender())
         elif event.button == 3:
-            plot_widget = self.sender().parent
+            plot_widget = self.sender().my_parent
             plot_widget.trim_widget.sig_set_state.emit(True)
 
     def handle_show(self, name, widget, state):

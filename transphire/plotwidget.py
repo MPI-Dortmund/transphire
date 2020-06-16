@@ -267,7 +267,7 @@ class TrimWidget(QWidget):
 class MplCanvas(FigureCanvas):
     sig_twin = pyqtSignal(object)
     def __init__(self, no_grid, width=5, height=5, dpi=100, parent=None):
-        self.parent = parent
+        self.my_parent = parent
         self.fig = matplotlib.figure.Figure(figsize=(width, height), dpi=dpi)
         self.axes = self.fig.add_subplot(111)
         self.axes.grid(True)
