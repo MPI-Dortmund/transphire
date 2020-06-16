@@ -69,6 +69,7 @@ class SettingsWidget(QWidget):
         self.dtype = content[1]['dtype']
         self.name_global = content[1]['name_global']
         self.global_value = 'ON-THE-FLY'
+        self.widget_auto = None
 
         if self.name == 'Project name':
             pattern = None
@@ -120,7 +121,7 @@ class SettingsWidget(QWidget):
             self.edit.setText(self.default)
             self.edit.setPlaceholderText('Press shift+return')
             self.edit.returnPressed.connect(self._find_file)
-            self.tooltip = '{0}\n\nShortcuts:\Ctrl + Shift + Return -> Open file dialog\nCtrl + Return -> Open enlarged view'.format(self.tooltip)
+            self.tooltip = '{0}\n\nShortcuts:\nCtrl + Shift + Return -> Open file dialog\nCtrl + Return -> Open enlarged view'.format(self.tooltip)
 
         elif self.typ == 'FILE/CHOICE':
             self.edit = QLineEdit(self.name, self)
@@ -128,7 +129,7 @@ class SettingsWidget(QWidget):
             self.edit.setText(self.default)
             self.edit.setPlaceholderText('Press shift+return')
             self.edit.returnPressed.connect(self._find_file)
-            self.tooltip = '{0}\n\nShortcuts:\Ctrl + Shift + Return -> Open file dialog\nCtrl + Return -> Open enlarged view'.format(self.tooltip)
+            self.tooltip = '{0}\n\nShortcuts:\nCtrl + Shift + Return -> Open file dialog\nCtrl + Return -> Open enlarged view'.format(self.tooltip)
 
         elif self.typ == 'DIR':
             self.edit = QLineEdit(self.name, self)
@@ -136,7 +137,7 @@ class SettingsWidget(QWidget):
             self.edit.setText(self.default)
             self.edit.setPlaceholderText('Press shift+return')
             self.edit.returnPressed.connect(self._find_dir)
-            self.tooltip = '{0}\n\nShortcuts:\Ctrl + Shift + Return -> Open directory dialog\nCtrl + Return -> Open enlarged view'.format(self.tooltip)
+            self.tooltip = '{0}\n\nShortcuts:\nCtrl + Shift + Return -> Open directory dialog\nCtrl + Return -> Open enlarged view'.format(self.tooltip)
 
         elif self.typ == 'COMBO':
             self.edit = QComboBox(self)
@@ -183,6 +184,7 @@ class SettingsWidget(QWidget):
             self.pre_global = self.edit.text()
         except AttributeError:
             self.pre_global = self.edit.currentText()
+
         if content[1]['name_global'] is not None:
             self.edit.setObjectName('settinger')
             self.tooltip = '{0}\n\nGlobal value: {{global_value}}'.format(self.tooltip)
@@ -190,16 +192,18 @@ class SettingsWidget(QWidget):
             self.widget_auto = QPushButton('G', self)
             self.widget_auto.setObjectName('global')
             self.widget_auto.setToolTip('Use the global value specified in the "Global" settings tab')
-            self.widget_auto.setCheckable(True)
+            if self.key_name == 'Global': # TODO: DISABLE GLOBAL GLOBAL VALUES FOR NOW
+                state = False
+            else:
+                state = True
+            self.widget_auto.setCheckable(state)
             self.widget_auto.toggled.connect(self._toggle_change)
-            self.widget_auto.setChecked(True)
+            self.widget_auto.setChecked(state)
             layout_h.addWidget(self.widget_auto)
 
             if global_dict is not None and self.key_name != 'Global':
                 global_dict.setdefault(self.name_global, []).append(self)
 
-        else:
-            self.widget_auto = None
 
         layout_h.addStretch(1)
         layout.addLayout(layout_h)
@@ -267,6 +271,11 @@ class SettingsWidget(QWidget):
         Returns:
         None
         """
+        if self.widget_auto is not None:
+            if self.widget_auto.isChecked():
+                self.edit.setStyleSheet(tu.get_style(typ='global'))
+                return
+
         if self.edit.currentText() == 'False':
             self.edit.setStyleSheet(tu.get_style(typ='False'))
         else:
@@ -407,17 +416,6 @@ class SettingsWidget(QWidget):
         Returns:
         None
         """
-        if self.typ == 'COMBO':
-            index = self.edit.findText(text)
-            if index == -1:
-                index = 0
-            else:
-                pass
-            self.edit.setCurrentIndex(index-1)
-            self.edit.setCurrentIndex(index)
-        else:
-            self.edit.setText(text)
-
         if is_checked is not None:
             is_checked_type = is_checked.split(', ')[1][:-1]
             if is_checked_type == 'None':
@@ -431,3 +429,19 @@ class SettingsWidget(QWidget):
 
             if is_checked is not None:
                 self.widget_auto.setChecked(is_checked)
+
+        widget_auto_checked = self.widget_auto.isChecked() if self.widget_auto is not None else False
+
+        if is_checked or widget_auto_checked:
+            self.pre_global = text
+        else:
+            if self.typ == 'COMBO':
+                index = self.edit.findText(text)
+                if index == -1:
+                    index = 0
+                else:
+                    pass
+                self.edit.setCurrentIndex(index-1)
+                self.edit.setCurrentIndex(index)
+            else:
+                self.edit.setText(text)

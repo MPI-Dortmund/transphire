@@ -349,8 +349,10 @@ class SettingsContainer(QWidget):
 
             entry.global_value = text
             if not entry.edit.isEnabled():
+                cur_state = entry.edit.blockSignals(False)
                 try:
                     entry.edit.setText(text)
                 except AttributeError:
                     entry.edit.setCurrentText(text)
+                entry.edit.blockSignals(cur_state)
 
