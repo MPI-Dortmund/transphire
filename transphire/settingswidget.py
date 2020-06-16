@@ -418,15 +418,16 @@ class SettingsWidget(QWidget):
         else:
             self.edit.setText(text)
 
-        is_checked_type = is_checked.split(', ')[1][:-1]
-        if is_checked_type == 'None':
-            is_checked = None
-        elif is_checked_type == 'True':
-            is_checked = True
-        elif is_checked_type == 'False':
-            is_checked = False
-        else:
-            assert False, is_checked_type
-
         if is_checked is not None:
-            self.widget_auto.setChecked(is_checked)
+            is_checked_type = is_checked.split(', ')[1][:-1]
+            if is_checked_type == 'None':
+                is_checked = None
+            elif is_checked_type == 'True':
+                is_checked = True
+            elif is_checked_type == 'False':
+                is_checked = False
+            else:
+                assert False, is_checked_type
+
+            if is_checked is not None:
+                self.widget_auto.setChecked(is_checked)
