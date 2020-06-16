@@ -15,12 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-try:
-    from PyQt4.QtGui import QWidget, QCheckBox, QHBoxLayout, QComboBox, QLineEdit
-    from PyQt4.QtCore import pyqtSlot
-except ImportError:
-    from PyQt5.QtWidgets import QWidget, QCheckBox, QHBoxLayout, QComboBox, QLineEdit
-    from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtWidgets import QWidget, QCheckBox, QHBoxLayout, QComboBox, QLineEdit
+from PyQt5.QtCore import pyqtSlot
 
 
 class NotificationWidget(QWidget):
@@ -46,10 +42,12 @@ class NotificationWidget(QWidget):
         self.default_programs_dict = default_programs_dict
         if self.default == 'choose':
             self.edit = QComboBox(self)
+            self.edit.currentTextChanged.connect(self.change_tooltip)
         else:
             self.edit = QLineEdit(self.default, self)
             self.edit.setReadOnly(True)
         self.check_box = QCheckBox(self.name, self)
+        self.check_box.setToolTip('{0} : {1}'.format(self.check_box.isChecked(), self.name))
 
         # Event
         self.check_box.stateChanged.connect(self._change_state)
@@ -66,11 +64,16 @@ class NotificationWidget(QWidget):
             pass
         else:
             self.edit.setText(default)
+            self.edit.setToolTip(default)
 
         # Object name
         self.edit.setObjectName('noti_edit')
         self.check_box.setObjectName('noti_check')
         self.exceptions = []
+
+    @pyqtSlot(str)
+    def change_tooltip(self, text):
+        self.sender().setToolTip(text)
 
     @pyqtSlot()
     def _change_state(self):
@@ -84,6 +87,7 @@ class NotificationWidget(QWidget):
         None
         """
         self.edit.setEnabled(self.check_box.isChecked())
+        self.check_box.setToolTip('{0} : {1}'.format(self.check_box.isChecked(), self.name))
 
     def add_exceptions(self, name):
         """

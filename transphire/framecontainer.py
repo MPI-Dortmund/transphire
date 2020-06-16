@@ -16,26 +16,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-try:
-    from PyQt4.QtGui import (
-        QWidget,
-        QVBoxLayout,
-        QPushButton,
-        QLabel,
-        QHBoxLayout,
-        QLineEdit
-        )
-    from PyQt4.QtCore import pyqtSlot
-except ImportError:
-    from PyQt5.QtWidgets import (
-        QWidget,
-        QVBoxLayout,
-        QPushButton,
-        QLabel,
-        QHBoxLayout,
-        QLineEdit
-        )
-    from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QPushButton,
+    QLabel,
+    QHBoxLayout,
+    QLineEdit
+    )
+from PyQt5.QtCore import pyqtSlot
 from transphire.framewidget import FrameWidget
 from transphire.separator import Separator
 from transphire import transphire_utils as tu

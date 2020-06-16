@@ -17,15 +17,11 @@
 """
 import os
 import sys
-try:
-    QT_VERSION = 4
-    from PyQt4.QtGui import QWidget, QLabel, QFileDialog, QVBoxLayout, QComboBox, QLineEdit
-    from PyQt4.QtCore import pyqtSlot, pyqtSignal
-except ImportError:
-    QT_VERSION = 5
-    from PyQt5.QtWidgets import QWidget, QLabel, QFileDialog, QVBoxLayout, QComboBox, QLineEdit
-    from PyQt5.QtCore import pyqtSlot, pyqtSignal
+from PyQt5.QtWidgets import QWidget, QLabel, QFileDialog, QVBoxLayout, QComboBox, QLineEdit, QHBoxLayout, QPushButton, QAction
+from PyQt5.QtCore import pyqtSlot, pyqtSignal, Qt
+from PyQt5.QtGui import QKeySequence
 from transphire import transphire_utils as tu
+from transphire import inputbox
 
 
 class SettingsWidget(QWidget):
@@ -40,7 +36,7 @@ class SettingsWidget(QWidget):
     """
     sig_index_changed = pyqtSignal(str)
 
-    def __init__(self, name, content, content_others, parent=None):
+    def __init__(self, name, content, content_others, global_dict=None, parent=None):
         """
         Initialise the layout.
 
@@ -53,17 +49,26 @@ class SettingsWidget(QWidget):
         """
         super(SettingsWidget, self).__init__(parent)
 
+        self.action = QAction(self)
+        self.action.setShortcut(QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_Return))
+        self.action.setShortcutContext(Qt.WidgetWithChildrenShortcut)
+        self.action.triggered.connect(self.enlarge)
+        self.addAction(self.action)
+
         # Layout
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
 
         # Global content
         self.default = content[0]
+        self.key_name = name
         self.typ = content[1]['typ']
         self.values = content[1]['values']
         self.name = content[1]['name']
         self.tooltip = content[1]['tooltip']
         self.dtype = content[1]['dtype']
+        self.name_global = content[1]['name_global']
+        self.global_value = 'ON-THE-FLY'
 
         if self.name == 'Project name':
             pattern = None
@@ -107,33 +112,34 @@ class SettingsWidget(QWidget):
             if self.typ == 'PASSWORD':
                 self.edit.setEchoMode(self.edit.Password)
 
+            self.tooltip = '{0}\n\nShortcuts:\nCtrl + Shift + Return -> Open enlarged view'.format(self.tooltip)
+
         elif self.typ == 'FILE':
             self.edit = QLineEdit(self.name, self)
-            self.edit.setToolTip(self.tooltip)
             self.edit.textChanged.connect(self.change_tooltip)
             self.edit.setText(self.default)
             self.edit.setPlaceholderText('Press shift+return')
             self.edit.returnPressed.connect(self._find_file)
+            self.tooltip = '{0}\n\nShortcuts:\Ctrl + Shift + Return -> Open file dialog\nCtrl + Return -> Open enlarged view'.format(self.tooltip)
 
         elif self.typ == 'FILE/CHOICE':
             self.edit = QLineEdit(self.name, self)
-            self.edit.setToolTip(self.tooltip)
             self.edit.textChanged.connect(self.change_tooltip)
             self.edit.setText(self.default)
             self.edit.setPlaceholderText('Press shift+return')
             self.edit.returnPressed.connect(self._find_file)
+            self.tooltip = '{0}\n\nShortcuts:\Ctrl + Shift + Return -> Open file dialog\nCtrl + Return -> Open enlarged view'.format(self.tooltip)
 
         elif self.typ == 'DIR':
             self.edit = QLineEdit(self.name, self)
-            self.edit.setToolTip(self.tooltip)
             self.edit.textChanged.connect(self.change_tooltip)
             self.edit.setText(self.default)
             self.edit.setPlaceholderText('Press shift+return')
             self.edit.returnPressed.connect(self._find_dir)
+            self.tooltip = '{0}\n\nShortcuts:\Ctrl + Shift + Return -> Open directory dialog\nCtrl + Return -> Open enlarged view'.format(self.tooltip)
 
         elif self.typ == 'COMBO':
             self.edit = QComboBox(self)
-            self.edit.setToolTip(self.tooltip)
             self.edit.currentTextChanged.connect(self.change_tooltip)
             self.edit.currentIndexChanged.connect(lambda: self.sig_index_changed.emit(self.name))
             self.edit.addItems(self.values)
@@ -167,14 +173,90 @@ class SettingsWidget(QWidget):
         except AttributeError:
             pass
         layout.addWidget(self.label)
-        layout.addWidget(self.edit)
 
+        layout_h = QHBoxLayout()
+        layout_h.setContentsMargins(0, 0, 0, 0)
+        layout_h.setSpacing(0)
+        layout_h.addWidget(self.edit, stretch=1)
+
+        try:
+            self.pre_global = self.edit.text()
+        except AttributeError:
+            self.pre_global = self.edit.currentText()
+        if content[1]['name_global'] is not None:
+            self.edit.setObjectName('settinger')
+            self.tooltip = '{0}\n\nGlobal value: {{global_value}}'.format(self.tooltip)
+
+            self.widget_auto = QPushButton('G', self)
+            self.widget_auto.setObjectName('global')
+            self.widget_auto.setToolTip('Use the global value specified in the "Global" settings tab')
+            self.widget_auto.setCheckable(True)
+            self.widget_auto.toggled.connect(self._toggle_change)
+            self.widget_auto.setChecked(True)
+            layout_h.addWidget(self.widget_auto)
+
+            if global_dict is not None and self.key_name != 'Global':
+                global_dict.setdefault(self.name_global, []).append(self)
+
+        else:
+            self.widget_auto = None
+
+        layout_h.addStretch(1)
+        layout.addLayout(layout_h)
+
+        self.tooltip = '{0}\n\nCurrent Text: \'{{current_text}}\''.format(self.tooltip)
+        try:
+            self.edit.textChanged.emit(self.edit.text())
+        except AttributeError:
+            self.edit.currentTextChanged.emit(self.edit.currentText())
+
+
+    @pyqtSlot(bool)
+    def _toggle_change(self, state):
+        self.edit.setEnabled(not state)
+        self.action.setEnabled(not state)
+        if not state:
+            try:
+                self.edit.setText(self.pre_global)
+                self.edit.setStyleSheet(tu.get_style('unchanged'))
+            except AttributeError:
+                self.edit.removeItem(0)
+                self.edit.setCurrentText(self.pre_global)
+                self.change_color_if_true()
+            self.edit.blockSignals(False)
+        else:
+            self.edit.blockSignals(True)
+            try:
+                self.pre_global = self.edit.text()
+                self.edit.setText(self.global_value)
+            except AttributeError:
+                self.pre_global = self.edit.currentText()
+                self.edit.insertItem(0, self.global_value)
+                self.edit.setCurrentText(self.global_value)
+            self.edit.setStyleSheet(tu.get_style('global'))
+
+    @pyqtSlot(str)
     def change_tooltip(self, text):
         edit = self.sender()
         if self.typ != 'PASSWORD':
-            tooltip = '{0}\n\nCurrent Text:\n\n{1}'.format(self.tooltip, text)
+            tooltip = self.tooltip.format(current_text=text, global_value=self.global_value)
             edit.setToolTip(tooltip)
 
+    @pyqtSlot()
+    def enlarge(self):
+        if self.typ == 'COMBO':
+            return
+        else:
+            input_box = inputbox.InputBox(is_password=False, parent=self)
+            input_box.setText('Enlarged view', self.name)
+            input_box.setDefault(self.edit.text())
+            input_box.set_type(self.typ)
+            result = input_box.exec_()
+
+            if result:
+                self.edit.setText(input_box.getText())
+
+    @pyqtSlot()
     def change_color_if_true(self):
         """
         Change the color, if the types are all true.
@@ -207,12 +289,7 @@ class SettingsWidget(QWidget):
             options=QFileDialog.DontUseNativeDialog
             )
 
-        if QT_VERSION == 4:
-            in_file = in_file
-        elif QT_VERSION == 5:
-            in_file = in_file[0]
-        else:
-            raise ImportError('QT version unknown! Please contact the transphire authors!')
+        in_file = in_file[0]
 
         if in_file != '':
             self.sender().setText(in_file)
@@ -257,35 +334,52 @@ class SettingsWidget(QWidget):
 
         else:
             message = 'Unreachable code! Please contact the TranSPHIRE authors!'
-            print(message)
             tu.message(message)
             return None
 
-        if value:
+        if ' ' in value and (self.typ in ('FILE', 'DIR', 'FILE/CHOICE') or self.name in ('Rename prefix', 'Rename suffix', 'Project name')):
+            self.edit.setStyleSheet(tu.get_style(typ='error'))
+            message = '{0}: {1} needs to be {2}. To avoid problems later, file paths are not allowed to contain whitespaces. If this is the case, please rename the respective folders and files'.format(
+                self.label.text(),
+                value,
+                self.dtype
+                )
+
+            if not quiet:
+                tu.message(message)
+
+            return None
+
+        elif value:
 
             if tu.check_instance(value=value, typ=self.dtype):
                 pass
 
+            elif value == 'ON-THE-FLY' and self.widget_auto is not None:
+                pass
+
             else:
                 self.edit.setStyleSheet(tu.get_style(typ='error'))
-                message = '{0}: {1} needs to be {2}'.format(
+                message = '{0}: {1} needs to be {2}.'.format(
                     self.label.text(),
                     value,
                     self.dtype
                     )
 
                 if not quiet:
-                    print(message)
                     tu.message(message)
 
-                else:
-                    pass
                 return None
 
         else:
             pass
 
         settings[self.name] = value
+        if self.widget_auto is not None:
+            is_auto = self.widget_auto.isChecked()
+        else:
+            is_auto = None
+        settings['{0}_global'.format(self.name)] = [self.name_global, is_auto]
 
         return settings
 
@@ -304,7 +398,7 @@ class SettingsWidget(QWidget):
             entries_list.append(self.edit.itemText(idx))
         return entries_list
 
-    def set_settings(self, text):
+    def set_settings(self, text, is_checked):
         """
         Set settings
 
@@ -323,3 +417,16 @@ class SettingsWidget(QWidget):
             self.edit.setCurrentIndex(index)
         else:
             self.edit.setText(text)
+
+        is_checked_type = is_checked.split(', ')[1][:-1]
+        if is_checked_type == 'None':
+            is_checked = None
+        elif is_checked_type == 'True':
+            is_checked = True
+        elif is_checked_type == 'False':
+            is_checked = False
+        else:
+            assert False, is_checked_type
+
+        if is_checked is not None:
+            self.widget_auto.setChecked(is_checked)

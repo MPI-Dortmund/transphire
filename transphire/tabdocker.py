@@ -15,12 +15,41 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-try:
-    from PyQt4.QtGui import QWidget, QVBoxLayout, QTabWidget
-except ImportError:
-    from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTabWidget
-    from PyQt5.QtCore import pyqtSlot, pyqtSignal
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QTabBar, QStylePainter, QStyleOptionTab, QStyle
+from PyQt5.QtCore import QPoint, QRect, pyqtSlot, pyqtSignal
 
+
+class MyTabBar(QTabBar):
+
+    def __init__(self, parent):
+        super(MyTabBar, self).__init__(parent)
+
+    def tabSizeHint(self, index):
+        s = super(MyTabBar, self).tabSizeHint(index)
+        s.transpose()
+        return s
+
+    def paintEvent(self, event):
+        painter = QStylePainter(self)
+        opt = QStyleOptionTab()
+
+        for i in range(self.count()):
+            self.initStyleOption(opt, i)
+            painter.drawControl(QStyle.CE_TabBarTabShape, opt)
+            painter.save()
+
+            s = opt.rect.size()
+            s.transpose()
+            r = QRect(QPoint(), s)
+            r.moveCenter(opt.rect.center())
+            opt.rect = r
+
+            c = self.tabRect(i).center()
+            painter.translate(c)
+            painter.rotate(90)
+            painter.translate(-c)
+            painter.drawControl(QStyle.CE_TabBarTabLabel, opt)
+            painter.restore()
 
 class TabDocker(QWidget):
     """
@@ -59,7 +88,14 @@ class TabDocker(QWidget):
         layout_tmp.setContentsMargins(0, 0, 0, 0)
 
         layout = QVBoxLayout(self.parent_widget)
+        layout.setContentsMargins(0, 0, 0, 0)
         self.tab_widget = QTabWidget(self)
+        if self.layout in ('TAB1', 'Settings'):
+            tab_bar = MyTabBar(self.tab_widget)
+            tab_bar.setObjectName('vertical')
+            self.tab_widget.setObjectName('vertical')
+            self.tab_widget.setTabBar(tab_bar)
+            self.tab_widget.setTabPosition(QTabWidget.West)
         layout.addWidget(self.tab_widget)
 
         self.tab_widget.currentChanged.connect(self.assign_latest)

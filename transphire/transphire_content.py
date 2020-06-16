@@ -32,20 +32,20 @@ def default_auto_sphire_v1_3():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
 
         ['--mpi_procs', '24', int, '', 'PLAIN', 'Main', '', 'Number of processors to use.'],
         ['--mpi_submission_command', 'sbatch', str, '', 'PLAIN', 'Main', '', 'Submission command, e.g. sbatch, qsub, ...'],
         ['--mpi_submission_template', '', str, '', 'FILE', 'Main', '', 'Submission template.'],
 
-        ['--apix', '1.0', float, '', 'PLAIN', 'Main', '', 'Pixel size in A/pixel.'],
+        ['--apix:Pixel size', '1.0', float, '', 'PLAIN', 'Main', '', 'Pixel size in A/pixel.'],
         ['--mol_mass', '250.0', float, '', 'PLAIN', 'Main', '', 'Molecular mass of the protein in kDa. Used to calculate the masking density threshold.'],
         ['--radius', '-1', float, '', 'PLAIN', 'Main', '', 'Protein radius in pixels'],
         ['--symmetry', 'c1', str, '', 'PLAIN', 'Main', '', 'Symmetry of the particle.'],
         ['--mtf', '', str, '', 'FILE', 'Main', '', 'MTF file for the sharpening step'],
-        ['--phase_plate', ['False', 'True'], bool, '', 'COMBO', 'Main', '', 'Input is phase_plate.'],
+        ['--phase_plate:Phase Plate', ['False', 'True'], bool, '', 'COMBO', 'Main', '', 'Input is phase_plate.'],
         ['--memory_per_node', '100', int,  '', 'PLAIN', 'Main', '', 'Available memory per node.'],
         ['--filament_mode', ['False', 'True'], bool,  '', 'COMBO', 'Main', '', 'Filament mode'],
         ['--filament_width', '100', int,  '--filament_mode:True', 'PLAIN', 'Main', '', 'Filament width in pixel.'],
@@ -85,9 +85,9 @@ def default_compress_command_line():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['--command_compress_path', 'mrc2tif', str, '', 'FILE', 'Main', '', 'Program used to execute compression.'],
         ['--command_compress_option', '-s -c lzw ##INPUT## ##OUTPUT##', str, '', 'PLAIN', 'Main', '', 'Command options used to compress the data. Use ##INPUT## and ##OUTPUT## as variables for the respective files.'],
         ['--command_compress_extension', 'tiff', str, '', 'PLAIN', 'Main', '', 'Output extension for the compressed files.'],
@@ -109,9 +109,9 @@ def default_isac2_1_2():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['Nr. Particles', '20000', int, '', 'PLAIN', 'Main', 'NOT AN ISAC OPTION: Wait to accumulate this number of particles to process.'],
         ['MPI processes', '6', int, '', 'PLAIN', 'Main', 'NOT AN ISAC OPTION: Number of MPI processes to use with ISAC.'],
         ['--radius', '-1', int, '', 'PLAIN', 'Main', 'particle radius: there is no default, a sensible number has to be provided, units - pixels (default required int)'],
@@ -123,11 +123,12 @@ def default_isac2_1_2():
         ['--center_method', '0', int, '', 'PLAIN', 'Advanced', ' method for centering: of global 2D average during initial prealignment of data (0 : no centering; -1 : average shift method; please see center_2D in utilities.py for methods 1-7) (default 0)'],
 
         ['--CTF', ['False', 'True'], bool, '', 'COMBO', 'Main', 'apply phase-flip for CTF correction: if set the data will be phase-flipped using CTF information included in image headers (default False)'],
-        ['--VPP', ['False', 'True'], bool, '--CTF:False', 'COMBO', 'Main', 'Phase Plate data (default False)'],
-        ['--gpu_devices', '0', str, '', 'PLAIN', 'Advanced', 'Print detailed information about the selected GPUs, including the class limit which is relevant when using the --gpu_class_limit parameter. Use --gpu_devices to specify what GPUs you want to know about. NOTE: ISAC will stop after printing this information, so don\'t use this parameter if you intend to actually process any data. [Default: False]'],
-        ['--gpu_memory_use', '0.9', float, '', 'PLAIN', 'Advanced', 'Specify how much memory on the chosen GPUs ISAC is allowed to use. A value of 0.9 means 90% of the available memory (this is the default; higher percentages should be used with caution). [Default: -1.0]'],
-        ['GPU', '0', [int]*99, '', 'PLAIN', 'Advanced', 'NOT AN ISAC2 OPTION. Specifiy which gpu\'s should be used.'],
-        ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT AN ISAC2 OPTION. Split the gpu values specified in --gpu to be able to run mutliple ISAC2 jobs in parallel.'],
+        ['--VPP:Phase Plate', ['False', 'True'], bool, '--CTF:False', 'COMBO', 'Main', 'Phase Plate data (default False)'],
+        ['--gpu_devices:GPU', '0', str, '', 'PLAIN', 'Advanced', 'Print detailed information about the selected GPUs, including the class limit which is relevant when using the --gpu_class_limit parameter. Use --gpu_devices to specify what GPUs you want to know about. NOTE: ISAC will stop after printing this information, so don\'t use this parameter if you intend to actually process any data. [Default: False]'],
+        ['--gpu_class_limit', '-1', int, '', 'PLAIN', 'Advanced', 'By default ISAC will check how much data can fit on the available GPUs. This can take more than a minute, which is annoying for testing. To skip this check, use --gpu_info to get a class limit value to use for this parameter. [Default: -1]'],
+        ['--gpu_memory_use:Memory usage', '-1', float, '', 'PLAIN', 'Advanced', 'Specify how much memory on the chosen GPUs ISAC is allowed to use. A value of 0.9 means 90% of the available memory (this is the default; higher percentages should be used with caution). [Default: -1.0]'],
+        ['GPU SPLIT:GPU SPLIT', '1', int, '', 'PLAIN', 'Advanced', 'NOT AN ISAC2 OPTION. Specify how many jobs per GPU.'],
+        ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT AN ISAC2 OPTION. Split the gpu values specified in --gpu to be able to run mutliple crYOLO jobs in parallel.'],
         ]
     return items
 
@@ -143,9 +144,9 @@ def default_window_1_2():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['--box_size', '256', int, '', 'PLAIN', 'Main', 'Particle box size [Pixels]: The x and y dimensions of square area to be windowed. The box size after resampling is assumed when resample_ratio < 1.0. (default 256)'],
         ['--skip_invert', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Skip invert image contrast: Use this option for negative staining data. By default, the image contrast is inverted for cryo data. (default False)'],
         ['--limit_ctf', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Use CTF limit filter: Frequencies where CTF oscillations can not be properly modeled with the resampled pixel size will be discarded in the images with the appropriate low-pass filter. This has no effects when the CTER partres file is not specified by the CTF paramters source argument. (default False)'],
@@ -168,14 +169,15 @@ def default_cinderella_v0_3_1():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['--weights', '', str, '', 'FILE', 'Main', 'Path network weights.'],
         ['--confidence_threshold', '0.5', float, '', 'PLAIN', 'Main', 'Classes with a confidence higher as that threshold are classified as good.'],
         ['--batch_size', '32', int, '', 'PLAIN', 'Main', 'Classes with a confidence higher as that threshold are classified as good.'],
-        ['--gpu', '0', [int]*99, '', 'PLAIN', 'Advanced', 'Specifiy which gpu\'s should be used.'],
-        ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT A Cinderella OPTION. Split the gpu values specified in --gpu to be able to run mutliple Cinderella jobs in parallel.'],
+        ['--gpu:GPU', '0', [int]*99, '', 'PLAIN', 'Advanced', 'Specifiy which gpu\'s should be used.'],
+        ['GPU SPLIT:GPU SPLIT', '1', int, '', 'PLAIN', 'Advanced', 'NOT AN ISAC2 OPTION. Specify how many jobs per GPU.'],
+        ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT A CRYOLO OPTION. Split the gpu values specified in --gpu to be able to run mutliple crYOLO jobs in parallel.'],
         ]
     return items
 
@@ -221,20 +223,21 @@ def default_cryolo_train_v1_5_4():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['Box size', '205', int, '', 'PLAIN', 'Main', 'Box size used for retraining. Should be quite narrow.'],
         ['--warmup', '5', int, '', 'PLAIN', 'Main', 'Number of warmup epochs. Set it to zero if you fine tune a model.'],
         ['--num_cpu', '-1', int, '', 'PLAIN', 'Main', 'Number of CPUs used during training. By default it will use half of the available CPUs.'],
         ['--early', '10', int, '', 'PLAIN', 'Main', 'Number of CPUs used during training. By default it will use half of the available CPUs.'],
         ['--fine_tune', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Set it to true if you only want to use the fine tune mode. When using the fine tune mode, only the last layers of your network are trained and youhave to specify pretrained_weights (see action "config"->"Training options") You typically use a general model as pretrained weights.'],
         ['--layers_fine_tune', '2', int, '--fine_tune:True', 'PLAIN', 'Main', 'Layers to be trained when using fine tuning.'],
-        ['--gpu', '0', [int]*99, '', 'PLAIN', 'Advanced', 'Specifiy which gpu\'s should be used.'],
-        ['--gpu_fraction', '1.0', float, '', 'PLAIN', 'Advanced', 'Specify the fraction of memory per GPU used by crYOLO during prediction. Only values between 0.0 and 1.0 are allowed.'],
-        ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT A CRYOLO TRAIN OPTION. Split the gpu values specified in --gpu to be able to run mutliple crYOLO jobs in parallel.'],
+        ['--gpu:GPU', '0', [int]*99, '', 'PLAIN', 'Advanced', 'Specifiy which gpu\'s should be used.'],
+        ['--gpu_fraction:Memory usage', '1.0', float, '', 'PLAIN', 'Advanced', 'Specify the fraction of memory per GPU used by crYOLO during prediction. Only values between 0.0 and 1.0 are allowed.'],
         ['--train_times', '1', int, '', 'PLAIN', 'Main', 'How often each image is presented to the network during one epoch. The default should be kept until you have many training images.'],
         ['Maximum micrographs', '50', int, '', 'PLAIN', 'Advanced', 'NOT A CRYOLO TRAIN OPTION. Maximum number of randomly selected micrographs to consider for training.'],
+        ['GPU SPLIT:GPU SPLIT', '1', int, '', 'PLAIN', 'Advanced', 'NOT AN ISAC2 OPTION. Specify how many jobs per GPU.'],
+        ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT A CRYOLO TRAIN OPTION. Split the gpu values specified in --gpu to be able to run mutliple crYOLO jobs in parallel.'],
         ]
     return items
 
@@ -289,13 +292,13 @@ def default_cryolo_v1_4_1():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['--conf', '', str, '', 'FILE', 'Main', '', 'Path to configuration file.'],
         ['--weights', '', str, '', 'FILE', 'Main', 'Path to pretrained weights.'],
         ['--threshold', '0.3', float, '', 'PLAIN', 'Main', 'Confidence threshold. Have to be between 0 and 1. The higher, the more conservative.'],
-        ['Pixel size (A/px)', '1', float, 'Filter micrographs:True', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Pixel size value. Only used for visual representation.'],
+        ['Pixel size (A/px):Pixel size', '1', float, 'Filter micrographs:True', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Pixel size value. Only used for visual representation.'],
         ['Box size', '200', int, '', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Box size value. Only used for visual representation.'],
         ['--filament', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Activate filament mode'],
         ['--filament_width', '0', float, '--filament:True', 'PLAIN', 'Main', '(FILAMENT MODE) Filament width (in pixel)'],
@@ -314,8 +317,13 @@ def default_cryolo_v1_4_1():
         ['--prediction_batch_size', '3', int, '', 'PLAIN', 'Advanced', 'How many images should be predicted in one batch.  Smaller values might resolve memory issues.'],
         ['--num_cpu', '-1', int, '', 'PLAIN', 'Advanced', '(FILAMENT MODE) Number of CPUs used during filament tracing. By default it will use all of the available CPUs.'],
         ['--otf', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'On the fly filtering.'],
-        ['--gpu', '0', [int]*99, '', 'PLAIN', 'Advanced', 'Specifiy which gpu\'s should be used.'],
-        ['--gpu_fraction', '1.0', float, '', 'PLAIN', 'Advanced', 'Specify the fraction of memory per GPU used by crYOLO during prediction. Only values between 0.0 and 1.0 are allowed.'],
+        ['--gpu:GPU', '0', [int]*99, '', 'PLAIN', 'Advanced', 'Specifiy which gpu\'s should be used.'],
+        ['--gpu_fraction:Memory usage', '1.0', float, '', 'PLAIN', 'Advanced', 'Specify the fraction of memory per GPU used by crYOLO during prediction. Only values between 0.0 and 1.0 are allowed.'],
+        ['Lowest defocus percent', '0.5', float, '', 'PLAIN', 'Advanced', 'NOT A CRYOLO OPTION. Calculate the picking threshold on the lower "Lowest defocus percent" percent of the dataset'],
+        ['Minimum micrographs', '50', int, '', 'PLAIN', 'Advanced', 'NOT A CRYOLO OPTION. Minimum number of micrographs to check the picking threshold on.'],
+        ['Minimum particles', '20000', int, '', 'PLAIN', 'Advanced', 'NOT A CRYOLO OPTION. Minimum number of particles to check the picking threshold on.'],
+        ['Mean percent', '0.75', float, '', 'PLAIN', 'Advanced', 'NOT A CRYOLO OPTION. Percentage of the mean to use for particle picking.'],
+        ['GPU SPLIT:GPU SPLIT', '1', int, '', 'PLAIN', 'Advanced', 'NOT AN ISAC2 OPTION. Specify how many jobs per GPU.'],
         ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT A CRYOLO OPTION. Split the gpu values specified in --gpu to be able to run mutliple crYOLO jobs in parallel.'],
         ]
     return items
@@ -332,13 +340,13 @@ def default_cryolo_v1_2_1():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['--conf', '', str, '', 'FILE', 'Main', '', 'Path to configuration file.'],
         ['--weights', '', str, '', 'FILE', 'Main', 'Path to pretrained weights.'],
         ['--threshold', '0.3', float, '', 'PLAIN', 'Main', 'Confidence threshold. Have to be between 0 and 1. As higher, as more conservative.'],
-        ['Pixel size (A/px)', '1', float, 'Filter micrographs:True', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Pixel size value. Only used for visual representation.'],
+        ['Pixel size (A/px):Pixel size', '1', float, 'Filter micrographs:True', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Pixel size value. Only used for visual representation.'],
         ['Box size', '200', int, '', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Box size value. Only used for visual representation.'],
         ['--filament', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Activate filament mode'],
         ['--filament_width', '0', float, '--filament:True', 'PLAIN', 'Main', '(FILAMENT MODE) Filament width (in pixel)'],
@@ -348,7 +356,8 @@ def default_cryolo_v1_2_1():
         ['Filter value high pass (A)', '9999', float, 'Filter micrographs:True', 'PLAIN', 'Advanced', 'NOT A CRYOLO OPTION. High-pass filter value in angstrom before running crYOLO.'],
         ['Filter value low pass (A)', '10', float, 'Filter micrographs:True', 'PLAIN', 'Advanced', 'NOT A CRYOLO OPTION. Low-pass filter value in angstrom before running crYOLO.'],
         ['--patch', '-1', int, '', 'PLAIN', 'Advanced', 'Number of patches. (-1 uses the patch size specified in the configuration file.)'],
-        ['--gpu', '0', [int]*99, '', 'PLAIN', 'Advanced', 'Specifiy which gpu\'s should be used.'],
+        ['--gpu:GPU', '0', [int]*99, '', 'PLAIN', 'Advanced', 'Specifiy which gpu\'s should be used.'],
+        ['GPU SPLIT:GPU SPLIT', '1', int, '', 'PLAIN', 'Advanced', 'NOT AN ISAC2 OPTION. Specify how many jobs per GPU.'],
         ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT A CRYOLO OPTION. Split the gpu values specified in --gpu to be able to run mutliple crYOLO jobs in parallel.'],
         ]
     return items
@@ -365,13 +374,13 @@ def default_cryolo_v1_1_0():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['--conf', '', str, '', 'FILE', 'Main', '', 'Path to configuration file.'],
         ['--weights', '', str, '', 'FILE', 'Main', 'Path to pretrained weights.'],
         ['--threshold', '0.3', float, '', 'PLAIN', 'Main', 'Confidence threshold. Have to be between 0 and 1. As higher, as more conservative.'],
-        ['Pixel size (A/px)', '1', float, 'Filter micrographs:True', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Pixel size value. Only used for visual representation.'],
+        ['Pixel size (A/px):Pixel size', '1', float, 'Filter micrographs:True', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Pixel size value. Only used for visual representation.'],
         ['Box size', '200', int, '', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Box size value. Only used for visual representation.'],
         ['--filament', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Activate filament mode'],
         ['--filament_width', '0', float, '--filament:True', 'PLAIN', 'Main', '(FILAMENT MODE) Filament width (in pixel)'],
@@ -381,7 +390,8 @@ def default_cryolo_v1_1_0():
         ['Filter value high pass (A)', '9999', float, 'Filter micrographs:True', 'PLAIN', 'Advanced', 'NOT A CRYOLO OPTION. High-pass filter value in angstrom before running crYOLO.'],
         ['Filter value low pass (A)', '10', float, 'Filter micrographs:True', 'PLAIN', 'Advanced', 'NOT A CRYOLO OPTION. Low-pass filter value in angstrom before running crYOLO.'],
         ['--patch', '-1', int, '', 'PLAIN', 'Advanced', 'Number of patches. (-1 uses the patch size specified in the configuration file.)'],
-        ['--gpu', '0', [int]*99, '', 'PLAIN', 'Advanced', 'Specifiy which gpu\'s should be used.'],
+        ['--gpu:GPU', '0', [int]*99, '', 'PLAIN', 'Advanced', 'Specifiy which gpu\'s should be used.'],
+        ['GPU SPLIT:GPU SPLIT', '1', int, '', 'PLAIN', 'Advanced', 'NOT AN ISAC2 OPTION. Specify how many jobs per GPU.'],
         ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT A CRYOLO OPTION. Split the gpu values specified in --gpu to be able to run mutliple crYOLO jobs in parallel.'],
         ]
     return items
@@ -398,19 +408,20 @@ def default_cryolo_v1_0_4():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['--conf', '', str, '', 'FILE', 'Main', '', 'Path to configuration file.'],
         ['--weights', '', str, '', 'FILE', 'Main', 'Path to pretrained weights.'],
         ['--threshold', '0.3', float, '', 'PLAIN', 'Main', 'Confidence threshold. Have to be between 0 and 1. As higher, as more conservative.'],
-        ['Pixel size (A/px)', '1', float, 'Filter micrographs:True', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Pixel size value. Only used for visual representation.'],
+        ['Pixel size (A/px):Pixel size', '1', float, 'Filter micrographs:True', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Pixel size value. Only used for visual representation.'],
         ['Box size', '200', int, '', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Box size value. Only used for visual representation.'],
         ['Filter micrographs', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'NOT A CRYOLO OPTION. Filter option in case one does not want to use the internal filter of crYOLO.'],
         ['Filter value high pass (A)', '9999', float, 'Filter micrographs:True', 'PLAIN', 'Advanced', 'NOT A CRYOLO OPTION. High-pass filter value in angstrom before running crYOLO.'],
         ['Filter value low pass (A)', '10', float, 'Filter micrographs:True', 'PLAIN', 'Advanced', 'NOT A CRYOLO OPTION. Low-pass filter value in angstrom before running crYOLO.'],
         ['--patch', '-1', int, '', 'PLAIN', 'Advanced', 'Number of patches. (-1 uses the patch size specified in the configuration file.)'],
-        ['--gpu', '0', [int]*99, '', 'PLAIN', 'Advanced', 'Specifiy which gpu\'s should be used.'],
+        ['--gpu:GPU', '0', [int]*99, '', 'PLAIN', 'Advanced', 'Specifiy which gpu\'s should be used.'],
+        ['GPU SPLIT:GPU SPLIT', '1', int, '', 'PLAIN', 'Advanced', 'NOT AN ISAC2 OPTION. Specify how many jobs per GPU.'],
         ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT A CRYOLO OPTION. Split the gpu values specified in --gpu to be able to run mutliple crYOLO jobs in parallel.'],
         ]
     return items
@@ -427,16 +438,16 @@ def default_cter_v1_0():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '7', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '7', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '7', int, '', 'PLAIN', '', ''],
-        ['--apix', '1.0', float, '', 'PLAIN', 'Main', 'Pixel size [A/Pixels]: The pixel size of input micrograph(s) or images in input particle stack.'],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
+        ['--apix:Pixel size', '1.0', float, '', 'PLAIN', 'Main', 'Pixel size [A/Pixels]: The pixel size of input micrograph(s) or images in input particle stack.'],
         ['--Cs', '2.0', float, '', 'PLAIN', 'Main', 'Microscope spherical aberration (Cs) [mm]: The spherical aberration (Cs) of microscope used for imaging.'],
-        ['--voltage', '300', float, '', 'PLAIN', 'Main', 'Microscope voltage [kV]: The acceleration voltage of microscope used for imaging.'],
+        ['--voltage:voltage', '300', float, '', 'PLAIN', 'Main', 'Microscope voltage [kV]: The acceleration voltage of microscope used for imaging.'],
         ['--ac', '10', float, '', 'PLAIN', 'Main', 'Amplitude contrast [%]: The typical amplitude contrast is in the range of 7% - 14%. The value mainly depends on the thickness of the ice embedding the particles.'],
         ['--f_start', '-1', float, '', 'PLAIN', 'Main', 'Lowest resolution [A]: Lowest resolution to be considered in the CTF estimation. Determined automatically by default.'],
         ['--f_stop', '-1', float, '', 'PLAIN', 'Main', 'Highest resolution [A]: Highest resolution to be considered in the CTF estimation. Determined automatically by default.'],
-        ['Phase plate', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Volta Phase Plate - fit smplitude contrast.'],
+        ['Phase plate:Phase Plate', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Volta Phase Plate - fit smplitude contrast.'],
         ['--defocus_min', '0.3', float, 'Phase plate:True', 'PLAIN', 'Main', 'Minimum defocus search [um]'],
         ['--defocus_max', '9.0', float, 'Phase plate:True', 'PLAIN', 'Main', 'Maximum defocus search [um]'],
         ['--defocus_step', '0.1', float, 'Phase plate:True', 'PLAIN', 'Main', 'Step defocus search [um]'],
@@ -465,15 +476,15 @@ def default_gctf_v1_06():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '7', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '7', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '7', int, '', 'PLAIN', '', ''],
-        ['--apix', '1.34', float, '', 'PLAIN', 'Main', 'Pixel size'],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
+        ['--apix:Pixel size', '1.34', float, '', 'PLAIN', 'Main', 'Pixel size'],
         ['--dstep', '14.0', float, '', 'PLAIN', 'Main', 'Detector size in micrometer; don\'t worry if unknown; just use default.'],
-        ['--kV', '300', float, '', 'PLAIN', 'Main', 'High tension in Kilovolt, typically 300, 200 or 120'],
+        ['--kV:voltage', '300', float, '', 'PLAIN', 'Main', 'High tension in Kilovolt, typically 300, 200 or 120'],
         ['--cs', '2.7', float, '', 'PLAIN', 'Main', 'Spherical aberration, in  millimeter'],
         ['--ac', '0.1', float, '', 'PLAIN', 'Main', 'Amplitude contrast; normal range 0.04~0.1; pure ice 0.04, carbon 0.1; but doesn\'t matter too much if using wrong value'],
-        ['Phase plate', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Use phase plate options'],
+        ['Phase plate:Phase Plate', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Use phase plate options'],
         ['--phase_shift_L', '0.0', float, 'Phase plate:True', 'PLAIN', 'Main', 'User defined phase shift, lowest phase shift,  in degree; typically, ~90.0 for micrographs using phase plate '],
         ['--phase_shift_H', '180.0', float, 'Phase plate:True', 'PLAIN', 'Main', 'User defined phase shift, highest phase shift, final range will be (phase_shift_L, phase_shift_H)'],
         ['--phase_shift_S', '5.0', float, 'Phase plate:True', 'PLAIN', 'Main', 'User defined phase shift search step; don\'t worry about the accuracy; this is just the search step, Gctf will refine the phase shift anyway.'],
@@ -512,7 +523,8 @@ def default_gctf_v1_06():
         ['--ctfout_resL', '100.0', float, '', 'PLAIN', 'Advanced', 'Lowest resolution for CTF diagnosis file. NOTE this only affects the final output of .ctf file, nothing related to CTF determination.'],
         ['--ctfout_resH', '2.8', float, '', 'PLAIN', 'Advanced', 'Highest resolution for CTF diagnosis file, ~Nyqiust by default.'],
         ['--ctfout_bfac', '50', float, '', 'PLAIN', 'Advanced', 'Bfactor for CTF diagnosis file. NOTE this only affects the final output of .ctf file, nothing related to CTF determination.'],
-        ['--gid', '0', [int]*99, '', 'PLAIN', 'Advanced', 'GPU id, normally it\'s 0, use gpu_info to get information of all available GPUs.'],
+        ['--gid:GPU', '0', [int]*99, '', 'PLAIN', 'Advanced', 'GPU id, normally it\'s 0, use gpu_info to get information of all available GPUs.'],
+        ['GPU SPLIT:GPU SPLIT', '1', int, '', 'PLAIN', 'Advanced', 'NOT AN ISAC2 OPTION. Specify how many jobs per GPU.'],
         ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT A CRYOLO OPTION. Split the gpu values specified in --gpu to be able to run mutliple crYOLO jobs in parallel.'],
         ]
     return items
@@ -529,15 +541,15 @@ def default_gctf_v1_18():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '7', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '7', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '7', int, '', 'PLAIN', '', ''],
-        ['--apix', '1.34', float, '', 'PLAIN', 'Main', 'Pixel size'],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
+        ['--apix:Pixel size', '1.34', float, '', 'PLAIN', 'Main', 'Pixel size'],
         ['--dstep', '14.0', float, '', 'PLAIN', 'Main', 'Detector size in micrometer; don\'t worry if unknown; just use default.'],
-        ['--kV', '300', float, '', 'PLAIN', 'Main', 'High tension in Kilovolt, typically 300, 200 or 120'],
+        ['--kV:voltage', '300', float, '', 'PLAIN', 'Main', 'High tension in Kilovolt, typically 300, 200 or 120'],
         ['--cs', '2.7', float, '', 'PLAIN', 'Main', 'Spherical aberration, in  millimeter'],
         ['--ac', '0.1', float, '', 'PLAIN', 'Main', 'Amplitude contrast; normal range 0.04~0.1; pure ice 0.04, carbon 0.1; but doesn\'t matter too much if using wrong value'],
-        ['Phase plate', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Use phase plate options'],
+        ['Phase plate:Phase Plate', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Use phase plate options'],
         ['--phase_shift_L', '0.0', float, 'Phase plate:True', 'PLAIN', 'Main', 'User defined phase shift, lowest phase shift,  in degree; typically, ~90.0 for micrographs using phase plate '],
         ['--phase_shift_H', '180.0', float, 'Phase plate:True', 'PLAIN', 'Main', 'User defined phase shift, highest phase shift, final range will be (phase_shift_L, phase_shift_H)'],
         ['--phase_shift_S', '5.0', float, 'Phase plate:True', 'PLAIN', 'Main', 'User defined phase shift search step; don\'t worry about the accuracy; this is just the search step, Gctf will refine the phase shift anyway.'],
@@ -584,7 +596,7 @@ def default_gctf_v1_18():
         ['--ctfout_resL', '100.0', float, '', 'PLAIN', 'Advanced', 'Lowest resolution for CTF diagnosis file. NOTE this only affects the final output of .ctf file, nothing related to CTF determination.'],
         ['--ctfout_resH', '2.8', float, '', 'PLAIN', 'Advanced', 'Highest resolution for CTF diagnosis file, ~Nyqiust by default.'],
         ['--ctfout_bfac', '50', float, '', 'PLAIN', 'Advanced', 'Bfactor for CTF diagnosis file. NOTE this only affects the final output of .ctf file, nothing related to CTF determination.'],
-        ['--gid', '0', [int]*99, '', 'PLAIN', 'Advanced', 'GPU id, normally it\'s 0, use gpu_info to get information of all available GPUs.'],
+        ['--gid:GPU', '0', [int]*99, '', 'PLAIN', 'Advanced', 'GPU id, normally it\'s 0, use gpu_info to get information of all available GPUs.'],
         ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT A CRYOLO OPTION. Split the gpu values specified in --gid to be able to run mutliple crYOLO jobs in parallel.'],
         ]
     return items
@@ -601,9 +613,9 @@ def default_path():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '8', int, '', 'PLAIN', 'Main', ''],
-        ['WIDGETS ADVANCED', '8', int, '', 'PLAIN', 'Main', ''],
-        ['WIDGETS RARE', '8', int, '', 'PLAIN', 'Main', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', 'Main', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', 'Main', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', 'Main', ''],
         ['chimerax', 'chimerax', str, '', 'FILE', 'Main', ''],
         ['IMOD header', 'header', str, '', 'FILE', 'Main', ''],
         ['IMOD newstack', 'newstack', str, '', 'FILE', 'Main', ''],
@@ -616,15 +628,19 @@ def default_path():
         ['cryolo_gui.py', 'cryolo_gui.py', str, '', 'FILE', 'Main', ''],
         ['cryolo_evaluation.py', 'cryolo_evaluation.py', str, '', 'FILE', 'Main', ''],
         ]
+    items_old = []
+
     function_dict = tu.get_function_dict()
     for key in sorted(function_dict.keys()):
         if function_dict[key]['executable']:
-            if function_dict[key]['has_path']:
-                items.append([key, function_dict[key]['has_path'], str, '', 'FILE', 'Advanced', ''])
+            if function_dict[key]['has_path'] and not function_dict[key]['old']:
+                items.append([key, function_dict[key]['has_path'], str, '', 'FILE', 'Main', ''])
+            elif function_dict[key]['has_path'] and function_dict[key]['old']:
+                items_old.append([key, function_dict[key]['has_path'], str, '', 'FILE', 'Advanced', ''])
         else:
             pass
 
-    return items
+    return items, items_old
 
 
 def default_font():
@@ -649,13 +665,14 @@ def default_font():
         ['Frame entry', '5', float, '', 'PLAIN', '', ''],
         ['Frame button', '8', float, '', 'PLAIN', '', ''],
         ['Frame label', '8', float, '', 'PLAIN', '', ''],
-        ['Setting widget', '50', float, '', 'PLAIN', '', ''],
-        ['Setting widget large', '50', float, '', 'PLAIN', '', ''],
-        ['Status name', '12', float, '', 'PLAIN', '', ''],
-        ['Status info', '12', float, '', 'PLAIN', '', ''],
-        ['Status quota', '12', float, '', 'PLAIN', '', ''],
+        ['Setting widget', '30', float, '', 'PLAIN', '', ''],
+        ['Setting widget large', '60', float, '', 'PLAIN', '', ''],
+        ['Setting widget xlarge', '100', float, '', 'PLAIN', '', ''],
+        ['Status name', '15', float, '', 'PLAIN', '', ''],
+        ['Status info', '15', float, '', 'PLAIN', '', ''],
+        ['Status quota', '15', float, '', 'PLAIN', '', ''],
         ['Tab width', '50', float, '', 'PLAIN', '', ''],
-        ['Widget height', '3', float, '', 'PLAIN', '', ''],
+        ['Widget height', '4', float, '', 'PLAIN', '', ''],
         ['Tab height', '5', float, '', 'PLAIN', '', ''],
         ]
     return items
@@ -949,10 +966,10 @@ def default_ctffind_4_v4_1_8():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '7', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '7', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '7', int, '', 'PLAIN', '', ''],
-        ['Pixel size', '1.0', float, '', 'PLAIN', 'Main', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
+        ['Pixel size:Pixel size', '1.0', float, '', 'PLAIN', 'Main', ''],
         ['Acceleration voltage', '300.0', float, '', 'PLAIN', 'Main', ''],
         ['Spherical aberration', '2.7', float, '', 'PLAIN', 'Main', ''],
         ['Min resolution(A)', '30', float, '', 'PLAIN', 'Main', ''],
@@ -961,7 +978,7 @@ def default_ctffind_4_v4_1_8():
         ['Max defocus(A)', '50000', float, '', 'PLAIN', 'Main', ''],
         ['Step defocus(A)', '500', float, '', 'PLAIN', 'Main', ''],
         ['Amplitude contrast', '0.07', float, '', 'PLAIN', 'Main', ''],
-        ['Phase shift', ['False', 'True'], bool, '', 'COMBO', 'Main', ''],
+        ['Phase shift:Phase Plate', ['False', 'True'], bool, '', 'COMBO', 'Main', ''],
         ['Min phase(rad)', '0', float, 'Phase shift:True', 'PLAIN', 'Main', ''],
         ['Max phase(rad)', '3.15', float, 'Phase shift:True', 'PLAIN', 'Main', ''],
         ['Step phase(rad)', '0.5', float, 'Phase shift:True', 'PLAIN', 'Main', ''],
@@ -976,7 +993,7 @@ def default_ctffind_4_v4_1_8():
         ['Use movies', ['False', 'True'], bool, '', 'COMBO', 'Advanced', ''],
         ['Combine frames', '1', int, 'Use movies:True', 'PLAIN', 'Advanced', ''],
         ['Movie is gain-corrected?', ['True', 'False'], bool, 'Use movies:True', 'COMBO', 'Advanced', ''],
-        ['Gain file', '', str, 'Movie is gain-corrected?:False', 'FILE', 'Advanced', ''],
+        ['Gain file:Gain', '', str, 'Movie is gain-corrected?:False', 'FILE', 'Advanced', ''],
         ['Correct mag. distort.', ['False', 'True'], bool, 'Use movies:True', 'COMBO', 'Advanced', ''],
         ['Mag. dist. angle', '0.0', float, 'Correct mag. distort.:True', 'PLAIN', 'Advanced', ''],
         ['Mag. dist. major scale', '1.0', float, 'Correct mag. distort.:True', 'PLAIN', 'Advanced', ''],
@@ -1078,17 +1095,17 @@ def default_motion_cor_2_v1_0_0():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['-FmDose', '0', float, '', 'PLAIN', 'Main', 'Frame dose in e/A^2. If not specified, dose weighting will be skipped.'],
-        ['-PixSize', '0', float, '', 'PLAIN', 'Main', 'Pixel size in A of input stack in angstrom. If not specified, dose weighting will be skipped.'],
-        ['-kV', '300', float, '', 'PLAIN', 'Main', 'High tension in kV needed for dose weighting.  Default is 300.'],
+        ['-PixSize:Pixel size', '0', float, '', 'PLAIN', 'Main', 'Pixel size in A of input stack in angstrom. If not specified, dose weighting will be skipped.'],
+        ['-kV:voltage', '300', float, '', 'PLAIN', 'Main', 'High tension in kV needed for dose weighting.  Default is 300.'],
         ['-Patch', '0 0', [int, int], '', 'PLAIN', 'Main', 'Number of patches to be used for patch based alignment, default 0 0 corresponding full frame alignment.'],
         ['-Bft', '100', float, '', 'PLAIN', 'Main', 'B-Factor for alignment, default 100.'],
         ['-Throw', '0', int, '', 'PLAIN', 'Main', 'Throw initial number of frames, default is 0'],
         ['-Trunc', '0', int, '', 'PLAIN', 'Main', 'Truncate last number of frames, default is 0'],
-        ['-Gain', '', str, '', 'FILE', 'Main', 'MRC file that stores the gain reference. If not specified, MRC extended header will be visited to look for gain reference.'],
+        ['-Gain:Gain', '', str, '', 'FILE', 'Main', 'MRC file that stores the gain reference. If not specified, MRC extended header will be visited to look for gain reference.'],
         ['-RotGain', '0', int, '', 'PLAIN', 'Main', 'Rotate gain reference counter-clockwise.  0 - no rotation, default, 1 - rotate 90 degree, 2 - rotate 180 degree, 3 - rotate 270 degree.'],
         ['-FlipGain', '0', int, '', 'PLAIN', 'Main', 'Flip gain reference after gain rotation.  0 - no flipping, default, 1 - flip upside down, 2 - flip left right.'],
         ['-MaskCent', '0 0', [float, float], '', 'PLAIN', 'Advanced', 'Center of subarea that will be used for alignement, default 0 0 corresponding to the frame center.'],
@@ -1097,7 +1114,7 @@ def default_motion_cor_2_v1_0_0():
         ['-Tol', '0.5', float, '', 'PLAIN', 'Advanced', 'Tolerance for iterative alignment, default 0.5 pixel.'],
         ['-PhaseOnly', '0', int, '', 'PLAIN', 'Advanced', 'Only phase is used in cross correlation.  default is 0, i.e., false.'],
         ['-StackZ', '0', int, '', 'PLAIN', 'Advanced', 'Number of frames per stack. If not specified, it will be loaded from MRC header.'],
-        ['-FtBin', '1', float, '', 'PLAIN', 'Advanced', 'Binning performed in Fourier space, default 1.0.'],
+        ['-FtBin:Bin superres', '1', float, '', 'PLAIN', 'Advanced', 'Binning performed in Fourier space, default 1.0.'],
         ['-InitDose', '0', float, '', 'PLAIN', 'Advanced', 'Initial dose received before stack is acquired'],
         ['-Group', '1', int, '', 'PLAIN', 'Advanced', 'Group every specified number of frames by adding them together. The alignment is then performed on the summed frames. By default, no grouping is performed.'],
         ['-FmRef', '0', int, '', 'PLAIN', 'Advanced', 'Specify which frame to be the reference to which all other frames are aligned. MotionCor2 uses by default (-1), i.e. the central frame is chosen. The central frame is at N/2 based upon zero indexing where N is the number of frames that will be summed, i.e., not including the frames thrown away. For Particle polishing, a value of 0 is recommended (default)'],
@@ -1106,7 +1123,7 @@ def default_motion_cor_2_v1_0_0():
         ['-Mag', '1 1 0', [float, float, float], '', 'PLAIN', 'Advanced', '1. Correct anisotropic magnification by stretching image along the major axis, the axis where the lower magificantion is detected.  2. Three inputs are needed including magnifications along major and minor axes and the angle of the major axis relative to the image x-axis in degree.  3. By default no correction is performed.'],
         ['-InFmMotion', '0', int, '', 'PLAIN', 'Advanced', '1. 1 - Account for in-frame motion.  0 - Do not account for in-frame motion.'],
         ['-Crop', '0 0', [int, int], '', 'PLAIN', 'Advanced', '1. Crop the loaded frames to the given size.  2. By default the original size is loaded.'],
-        ['-Gpu', '0', [int]*99, '', 'PLAIN', 'Advanced', ' GPU IDs. Default 0.  For multiple GPUs, separate IDs by space.  For example, -Gpu 0 1 2 3 specifies 4 GPUs.'],
+        ['-Gpu:GPU', '0', [int]*99, '', 'PLAIN', 'Advanced', ' GPU IDs. Default 0.  For multiple GPUs, separate IDs by space.  For example, -Gpu 0 1 2 3 specifies 4 GPUs.'],
         ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT A CRYOLO OPTION. Split the gpu values specified in --Gpu to be able to run mutliple crYOLO jobs in parallel.'],
         ['dose cutoff', '4', float, '', 'PLAIN', 'Advanced', 'NOT A MOTIONCOR OPTION. Used to create the Relion3 bayesian polishing files.'],
         ]
@@ -1124,17 +1141,17 @@ def default_motion_cor_2_v1_0_5():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['-FmDose', '0', float, '', 'PLAIN', 'Main', 'Frame dose in e/A^2. If not specified, dose weighting will be skipped.'],
-        ['-PixSize', '0', float, '', 'PLAIN', 'Main', 'Pixel size in A of input stack in angstrom. If not specified, dose weighting will be skipped.'],
-        ['-kV', '300', float, '', 'PLAIN', 'Main', 'High tension in kV needed for dose weighting.  Default is 300.'],
+        ['-PixSize:Pixel size', '0', float, '', 'PLAIN', 'Main', 'Pixel size in A of input stack in angstrom. If not specified, dose weighting will be skipped.'],
+        ['-kV:voltage', '300', float, '', 'PLAIN', 'Main', 'High tension in kV needed for dose weighting.  Default is 300.'],
         ['-Patch', '0 0 0', [int, int, int], '', 'PLAIN', 'Main', '1. It follows by  number of patches in x and y dimensions, and overlapping in percentage of adjacent patches.  2. The default values are 0 0 0, meaning only full-frame based alignment is performed.'],
         ['-Bft', '100', float, '', 'PLAIN', 'Main', 'B-Factor for alignment, default 100.'],
         ['-Throw', '0', int, '', 'PLAIN', 'Main', 'Throw initial number of frames, default is 0'],
         ['-Trunc', '0', int, '', 'PLAIN', 'Main', 'Truncate last number of frames, default is 0'],
-        ['-Gain', '', str, '', 'FILE', 'Main', 'MRC file that stores the gain reference. If not specified, MRC extended header will be visited to look for gain reference.'],
+        ['-Gain:Gain', '', str, '', 'FILE', 'Main', 'MRC file that stores the gain reference. If not specified, MRC extended header will be visited to look for gain reference.'],
         ['-RotGain', '0', int, '', 'PLAIN', 'Main', 'Rotate gain reference counter-clockwise.  0 - no rotation, default, 1 - rotate 90 degree, 2 - rotate 180 degree, 3 - rotate 270 degree.'],
         ['-FlipGain', '0', int, '', 'PLAIN', 'Main', 'Flip gain reference after gain rotation.  0 - no flipping, default, 1 - flip upside down, 2 - flip left right.'],
         ['-MaskCent', '0 0', [float, float], '', 'PLAIN', 'Advanced', 'Center of subarea that will be used for alignement, default 0 0 corresponding to the frame center.'],
@@ -1143,7 +1160,7 @@ def default_motion_cor_2_v1_0_5():
         ['-Tol', '0.5', float, '', 'PLAIN', 'Advanced', 'Tolerance for iterative alignment, default 0.5 pixel.'],
         ['-PhaseOnly', '0', int, '', 'PLAIN', 'Advanced', 'Only phase is used in cross correlation.  default is 0, i.e., false.'],
         ['-StackZ', '0', int, '', 'PLAIN', 'Advanced', 'Number of frames per stack. If not specified, it will be loaded from MRC header.'],
-        ['-FtBin', '1', float, '', 'PLAIN', 'Advanced', 'Binning performed in Fourier space, default 1.0.'],
+        ['-FtBin:Bin superres', '1', float, '', 'PLAIN', 'Advanced', 'Binning performed in Fourier space, default 1.0.'],
         ['-InitDose', '0', float, '', 'PLAIN', 'Advanced', 'Initial dose received before stack is acquired'],
         ['-Group', '1', int, '', 'PLAIN', 'Advanced', 'Group every specified number of frames by adding them together. The alignment is then performed on the summed frames. By default, no grouping is performed.'],
         ['-FmRef', '-1', int, '', 'PLAIN', 'Advanced', 'Specify which frame to be the reference to which all other frames are aligned. By default (-1) the the central frame is chosen. The central frame is at N/2 based upon zero indexing where N is the number of frames that will be summed, i.e., not including the frames thrown away.'],
@@ -1154,7 +1171,8 @@ def default_motion_cor_2_v1_0_5():
         ['-InFmMotion', '0', int, '', 'PLAIN', 'Advanced', '1. 1 - Account for in-frame motion.  0 - Do not account for in-frame motion.'],
         ['-Crop', '0 0', [int, int], '', 'PLAIN', 'Advanced', '1. Crop the loaded frames to the given size.  2. By default the original size is loaded.'],
         ['-Gpu', '0', [int]*99, '', 'PLAIN', 'Advanced', ' GPU IDs. Default 0.  For multiple GPUs, separate IDs by space.  For example, -Gpu 0 1 2 3 specifies 4 GPUs.'],
-        ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT A MotionCor2 OPTION. Split the gpu values specified in --Gpu to be able to run mutliple MotionCor2 jobs in parallel.'],
+        ['GPU SPLIT:GPU SPLIT', '1', int, '', 'PLAIN', 'Advanced', 'NOT AN ISAC2 OPTION. Specify how many jobs per GPU.'],
+        ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT A CRYOLO OPTION. Split the gpu values specified in --Gpu to be able to run mutliple crYOLO jobs in parallel.'],
         ['dose cutoff', '4', float, '', 'PLAIN', 'Advanced', 'NOT A MOTIONCOR OPTION. Used to create the Relion3 bayesian polishing files.'],
         ]
     return items
@@ -1171,17 +1189,17 @@ def default_motion_cor_2_v1_1_0():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['-FmDose', '0', float, '', 'PLAIN', 'Main', 'Frame dose in e/A^2. If not specified, dose weighting will be skipped.'],
-        ['-PixSize', '0', float, '', 'PLAIN', 'Main', 'Pixel size in A of input stack in angstrom. If not specified, dose weighting will be skipped.'],
-        ['-kV', '300', float, '', 'PLAIN', 'Main', 'High tension in kV needed for dose weighting.  Default is 300.'],
+        ['-PixSize:Pixel size', '0', float, '', 'PLAIN', 'Main', 'Pixel size in A of input stack in angstrom. If not specified, dose weighting will be skipped.'],
+        ['-kV:voltage', '300', float, '', 'PLAIN', 'Main', 'High tension in kV needed for dose weighting.  Default is 300.'],
         ['-Patch', '0 0 0', [int, int, int], '', 'PLAIN', 'Main', '1. It follows by  number of patches in x and y dimensions, and overlapping in percentage of adjacent patches.  2. The default values are 0 0 0, meaning only full-frame based alignment is performed.'],
         ['-Bft', '500 150', [float, float], '', 'PLAIN', 'Main', 'B-Factor for alignment, default 100.'],
         ['-Throw', '0', int, '', 'PLAIN', 'Main', 'Throw initial number of frames, default is 0'],
         ['-Trunc', '0', int, '', 'PLAIN', 'Main', 'Truncate last number of frames, default is 0'],
-        ['-Gain', '', str, '', 'FILE', 'Main', 'MRC file that stores the gain reference. If not specified, MRC extended header will be visited to look for gain reference.'],
+        ['-Gain:Gain', '', str, '', 'FILE', 'Main', 'MRC file that stores the gain reference. If not specified, MRC extended header will be visited to look for gain reference.'],
         ['-RotGain', '0', int, '', 'PLAIN', 'Main', 'Rotate gain reference counter-clockwise.  0 - no rotation, default, 1 - rotate 90 degree, 2 - rotate 180 degree, 3 - rotate 270 degree.'],
         ['-FlipGain', '0', int, '', 'PLAIN', 'Main', 'Flip gain reference after gain rotation.  0 - no flipping, default, 1 - flip upside down, 2 - flip left right.'],
         ['-MaskCent', '0 0', [float, float], '', 'PLAIN', 'Advanced', 'Center of subarea that will be used for alignement, default 0 0 corresponding to the frame center.'],
@@ -1190,7 +1208,7 @@ def default_motion_cor_2_v1_1_0():
         ['-Tol', '0.5', float, '', 'PLAIN', 'Advanced', 'Tolerance for iterative alignment, default 0.5 pixel.'],
         ['-PhaseOnly', '0', int, '', 'PLAIN', 'Advanced', 'Only phase is used in cross correlation.  default is 0, i.e., false.'],
         ['-StackZ', '0', int, '', 'PLAIN', 'Advanced', 'Number of frames per stack. If not specified, it will be loaded from MRC header.'],
-        ['-FtBin', '1', float, '', 'PLAIN', 'Advanced', 'Binning performed in Fourier space, default 1.0.'],
+        ['-FtBin:Bin superres', '1', float, '', 'PLAIN', 'Advanced', 'Binning performed in Fourier space, default 1.0.'],
         ['-InitDose', '0', float, '', 'PLAIN', 'Advanced', 'Initial dose received before stack is acquired'],
         ['-Group', '1', int, '', 'PLAIN', 'Advanced', 'Group every specified number of frames by adding them together. The alignment is then performed on the summed frames. By default, no grouping is performed.'],
         ['-FmRef', '-1', int, '', 'PLAIN', 'Advanced', 'Specify which frame to be the reference to which all other frames are aligned. By default (-1) the the central frame is chosen. The central frame is at N/2 based upon zero indexing where N is the number of frames that will be summed, i.e., not including the frames thrown away.'],
@@ -1200,9 +1218,10 @@ def default_motion_cor_2_v1_1_0():
         ['-Mag', '1 1 0', [float, float, float], '', 'PLAIN', 'Advanced', '1. Correct anisotropic magnification by stretching image along the major axis, the axis where the lower magificantion is detected.  2. Three inputs are needed including magnifications along major and minor axes and the angle of the major axis relative to the image x-axis in degree.  3. By default no correction is performed.'],
         ['-InFmMotion', '0', int, '', 'PLAIN', 'Advanced', '1. 1 - Account for in-frame motion.  0 - Do not account for in-frame motion.'],
         ['-Crop', '0 0', [int, int], '', 'PLAIN', 'Advanced', '1. Crop the loaded frames to the given size.  2. By default the original size is loaded.'],
-        ['-Gpu', '0', [int]*99, '', 'PLAIN', 'Advanced', ' GPU IDs. Default 0.  For multiple GPUs, separate IDs by space.  For example, -Gpu 0 1 2 3 specifies 4 GPUs.'],
-        ['-GpuMemUsage', '0.5', float, '', 'PLAIN', 'Advanced', '1. GPU memory usage, default 0.5, meaning 50% of GPU memory will be used to buffer movie frames.  2. The value should be between 0 and 0.5. When 0 is given, all movie frames are buffered on CPU memory.'],
-        ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT A MotionCor2 OPTION. Split the gpu values specified in --Gpu to be able to run mutliple MotionCor2 jobs in parallel.'],
+        ['-Gpu:GPU', '0', [int]*99, '', 'PLAIN', 'Advanced', ' GPU IDs. Default 0.  For multiple GPUs, separate IDs by space.  For example, -Gpu 0 1 2 3 specifies 4 GPUs.'],
+        ['-GpuMemUsage:Memory usage', '0.5', float, '', 'PLAIN', 'Advanced', '1. GPU memory usage, default 0.5, meaning 50% of GPU memory will be used to buffer movie frames.  2. The value should be between 0 and 0.5. When 0 is given, all movie frames are buffered on CPU memory.'],
+        ['GPU SPLIT:GPU SPLIT', '1', int, '', 'PLAIN', 'Advanced', 'NOT AN ISAC2 OPTION. Specify how many jobs per GPU.'],
+        ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT A CRYOLO OPTION. Split the gpu values specified in --Gpu to be able to run mutliple crYOLO jobs in parallel.'],
         ['dose cutoff', '4', float, '', 'PLAIN', 'Advanced', 'NOT A MOTIONCOR OPTION. Used to create the Relion3 bayesian polishing files.'],
         ]
     return items
@@ -1223,13 +1242,13 @@ def default_motion_cor_2_v1_3_0():
         ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
         ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
         ['-FmDose', '0', float, '', 'PLAIN', 'Main', 'Frame dose in e/A^2. If not specified, dose weighting will be skipped.'],
-        ['-PixSize', '0', float, '', 'PLAIN', 'Main', 'Pixel size in A of input stack in angstrom. If not specified, dose weighting will be skipped.'],
-        ['-kV', '300', float, '', 'PLAIN', 'Main', 'High tension in kV needed for dose weighting.  Default is 300.'],
+        ['-PixSize:Pixel size', '0', float, '', 'PLAIN', 'Main', 'Pixel size in A of input stack in angstrom. If not specified, dose weighting will be skipped.'],
+        ['-kV:voltage', '300', float, '', 'PLAIN', 'Main', 'High tension in kV needed for dose weighting.  Default is 300.'],
         ['-Patch', '0 0 0', [int, int, int], '', 'PLAIN', 'Main', '1. It follows by  number of patches in x and y dimensions, and overlapping in percentage of adjacent patches.  2. The default values are 0 0 0, meaning only full-frame based alignment is performed.'],
         ['-Bft', '500 150', [float, float], '', 'PLAIN', 'Main', 'B-Factor for alignment, default 100.'],
         ['-Throw', '0', int, '', 'PLAIN', 'Main', 'Throw initial number of frames, default is 0'],
         ['-Trunc', '0', int, '', 'PLAIN', 'Main', 'Truncate last number of frames, default is 0'],
-        ['-Gain', '', str, '', 'FILE', 'Main', 'MRC file that stores the gain reference. If not specified, MRC extended header will be visited to look for gain reference.'],
+        ['-Gain:Gain', '', str, '', 'FILE', 'Main', 'MRC file that stores the gain reference. If not specified, MRC extended header will be visited to look for gain reference.'],
         ['-RotGain', '0', int, '', 'PLAIN', 'Main', 'Rotate gain reference counter-clockwise.  0 - no rotation, default, 1 - rotate 90 degree, 2 - rotate 180 degree, 3 - rotate 270 degree.'],
         ['-FlipGain', '0', int, '', 'PLAIN', 'Main', 'Flip gain reference after gain rotation.  0 - no flipping, default, 1 - flip upside down, 2 - flip left right.'],
         ['-MaskCent', '0 0', [float, float], '', 'PLAIN', 'Advanced', 'Center of subarea that will be used for alignement, default 0 0 corresponding to the frame center.'],
@@ -1238,7 +1257,7 @@ def default_motion_cor_2_v1_3_0():
         ['-Tol', '0.5', float, '', 'PLAIN', 'Advanced', 'Tolerance for iterative alignment, default 0.5 pixel.'],
         ['-PhaseOnly', '0', int, '', 'PLAIN', 'Advanced', 'Only phase is used in cross correlation.  default is 0, i.e., false.'],
         ['-StackZ', '0', int, '', 'PLAIN', 'Advanced', 'Number of frames per stack. If not specified, it will be loaded from MRC header.'],
-        ['-FtBin', '1', float, '', 'PLAIN', 'Advanced', 'Binning performed in Fourier space, default 1.0.'],
+        ['-FtBin:Bin superres', '1', float, '', 'PLAIN', 'Advanced', 'Binning performed in Fourier space, default 1.0.'],
         ['-InitDose', '0', float, '', 'PLAIN', 'Advanced', 'Initial dose received before stack is acquired'],
         ['-Group', '1', int, '', 'PLAIN', 'Advanced', 'Group every specified number of frames by adding them together. The alignment is then performed on the summed frames. By default, no grouping is performed.'],
         ['-FmRef', '-1', int, '', 'PLAIN', 'Advanced', 'Specify which frame to be the reference to which all other frames are aligned. By default (-1) the the central frame is chosen. The central frame is at N/2 based upon zero indexing where N is the number of frames that will be summed, i.e., not including the frames thrown away.'],
@@ -1248,10 +1267,10 @@ def default_motion_cor_2_v1_3_0():
         ['-Mag', '1 1 0', [float, float, float], '', 'PLAIN', 'Advanced', '1. Correct anisotropic magnification by stretching image along the major axis, the axis where the lower magificantion is detected.  2. Three inputs are needed including magnifications along major and minor axes and the angle of the major axis relative to the image x-axis in degree.  3. By default no correction is performed.'],
         ['-InFmMotion', '0', int, '', 'PLAIN', 'Advanced', '1. 1 - Account for in-frame motion.  0 - Do not account for in-frame motion.'],
         ['-Crop', '0 0', [int, int], '', 'PLAIN', 'Advanced', '1. Crop the loaded frames to the given size.  2. By default the original size is loaded.'],
-        ['-Gpu', '0', [int]*99, '', 'PLAIN', 'Advanced', ' GPU IDs. Default 0.  For multiple GPUs, separate IDs by space.  For example, -Gpu 0 1 2 3 specifies 4 GPUs.'],
-        ['-GpuMemUsage', '0.5', float, '', 'PLAIN', 'Advanced', '1. GPU memory usage, default 0.5, meaning 50% of GPU memory will be used to buffer movie frames.  2. The value should be between 0 and 0.5. When 0 is given, all movie frames are buffered on CPU memory.'],
         ['-SumRange', '0 0', str, '', 'PLAIN', 'Advanced', '1. Sum frames whose accumulated doses fall in the specified range. The first number is the minimum dose and the second is the maximum dose.  2. The default range is [0, 0] electrons per square angstrom, meaning that no SumRange files will be created.'],
-        ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT A MotionCor2 OPTION. Split the gpu values specified in --Gpu to be able to run mutliple MotionCor2 jobs in parallel.'],
+        ['-Gpu:GPU', '0', [int]*99, '', 'PLAIN', 'Advanced', ' GPU IDs. Default 0.  For multiple GPUs, separate IDs by space.  For example, -Gpu 0 1 2 3 specifies 4 GPUs.'],
+        ['-GpuMemUsage:Memory usage', '0.5', float, '', 'PLAIN', 'Advanced', '1. GPU memory usage, default 0.5, meaning 50% of GPU memory will be used to buffer movie frames.  2. The value should be between 0 and 0.5. When 0 is given, all movie frames are buffered on CPU memory.'],
+        ['GPU SPLIT:GPU SPLIT', '1', int, '', 'PLAIN', 'Advanced', 'NOT AN ISAC2 OPTION. Specify how many jobs per GPU.'],
         ['dose cutoff', '4', float, '', 'PLAIN', 'Advanced', 'NOT A MOTIONCOR OPTION. Used to create the Relion3 bayesian polishing files.'],
         ]
     return items
@@ -1268,9 +1287,9 @@ def default_general():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '7', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '7', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '7', int, '', 'PLAIN', '', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['Software', ['EPU >=1.9', 'EPU >=1.8', 'Latitude S', 'Just Stack'], str, '', 'COMBO', 'Main', 'Software used for data collection.'],
         ['Type', ['Stack', 'Frames'], str, '', 'COMBO', 'Main', 'Stack type used for data collection.'],
         ['Camera', ['K2', 'K3', 'Falcon3', 'Falcon2'], str, '', 'COMBO', 'Main', 'Camera used for data collection.'],
@@ -1287,7 +1306,7 @@ def default_general():
         ['Estimated mic number', '10000', int, 'Rename micrographs:True', 'PLAIN', 'Main', 'Estimated number of micrographs. This is used for the leading number of zeros in the renamed start number.'],
         ['Project directory', '', str, '', 'DIR', 'Advanced', 'TranSPHIRE project directory used to store all the project folders.'],
         ['Scratch directory', '', str, '', 'DIR', 'Advanced', 'TranSPHIRE scratch directory used for faster IO during the TranSPHIRE run.'],
-        ['Number of feedbacks', '1', int, '', 'PLAIN', 'Advanced', 'Number of iterations to re-train crYOLO in an ISAC feedback loop. The feedback loop will use the ISAC output and do a crYOLO retrain with sparse picking.'],
+        ['Number of feedbacks', '0', int, '', 'PLAIN', 'Main', 'Number of iterations to re-train crYOLO in an ISAC feedback loop. The feedback loop will use the ISAC output and do a crYOLO retrain with sparse picking. A value of 0 means no feedback.'],
         ]
     return items
 
@@ -1328,9 +1347,9 @@ def default_copy(settings_folder):
     valid_sub_items = tu.get_unique_types()
 
     items = [
-        ['WIDGETS MAIN', '8', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '8', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '8', int, '', 'PLAIN', '', '', ''],
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', '', ''],
         ['Copy to work', copy_to_work, bool, '', 'COMBO', 'Main', 'Copy data to the work drive.'],
         ['Copy to backup', copy_to_backup, bool, '', 'COMBO', 'Main', 'Copy data to the backup drive.'],
         ['Copy to HDD', copy_to_hdd, bool, '', 'COMBO', 'Main', 'Copy data to an external hard disc.'],
@@ -1341,28 +1360,45 @@ def default_copy(settings_folder):
 
     items.extend([
         ['Session to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the non-micrograph data (EPU session, ...) to the work drive if "Copy to work" is specified.'],
-        ['Session to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the non-micrograph data (EPU session, ...) to the backup drive if "Copy to backup" is specified.'],
-        ['Session to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the non-micrograph data (EPU session, ...) to the HDD drive if "Copy to HDD" is specified.'],
+        ['Session to backup', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Copy the non-micrograph data (EPU session, ...) to the backup drive if "Copy to backup" is specified.'],
+        ['Session to HDD', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Copy the non-micrograph data (EPU session, ...) to the HDD drive if "Copy to HDD" is specified.'],
         ['Frames to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the micograph movies to the work drive if "Copy to work" is specified.'],
         ['Frames to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the micograph movies to the backup drive if "Copy to backup" is specified.'],
         ['Frames to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the micograph movies to the HDD drive if "Copy to HDD" is specified.'],
-        ['Meta to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the micrograph meta data to the work drive if "Copy to work" is specified.'],
-        ['Meta to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the micrograph meta data to the backup drive if "Copy to backup" is specified.'],
-        ['Meta to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the micrograph meta data to the HDD drive if "Copy to HDD" is specified.'],
+        ['Meta to work', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Copy the micrograph meta data to the work drive if "Copy to work" is specified.'],
+        ['Meta to backup', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Copy the micrograph meta data to the backup drive if "Copy to backup" is specified.'],
+        ['Meta to HDD', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Copy the micrograph meta data to the HDD drive if "Copy to HDD" is specified.'],
         ])
 
     for entry in valid_sub_items:
-        items.append(['{0} to work'.format(entry), ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the {0} data to the work drive if "Copy to work" is specified.'.format(entry)])
-        items.append(['{0} to backup'.format(entry), ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the {0} data to the backup drive if "Copy to backup" is specified.'.format(entry)])
-        items.append(['{0} to HDD'.format(entry), ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the {0} data the HDD drive if "Copy to HDD" is specified.'.format(entry)])
+        items.append(['{0} to work'.format(entry), ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Copy the {0} data to the work drive if "Copy to work" is specified.'.format(entry)])
+        items.append(['{0} to backup'.format(entry), ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Copy the {0} data to the backup drive if "Copy to backup" is specified.'.format(entry)])
+        items.append(['{0} to HDD'.format(entry), ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Copy the {0} data the HDD drive if "Copy to HDD" is specified.'.format(entry)])
 
     items.extend([
-        ['Tar to work', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Copy the information to work drive in tar format if "Copy to work" is specified.'],
-        ['Tar to backup', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Copy the information to backup drive in tar format if "Copy to backup" is specified.'],
-        ['Tar to HDD', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Copy the information to HDD drive in tar format if "Copy to HDD" is specified.'],
+        ['Tar to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the information to work drive in tar format if "Copy to work" is specified.'],
+        ['Tar to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the information to backup drive in tar format if "Copy to backup" is specified.'],
+        ['Tar to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the information to HDD drive in tar format if "Copy to HDD" is specified.'],
         ['Tar size (Gb)', '2', float, '', 'PLAIN', 'Advanced', 'Size of the tar files before copying.'],
         ['Delete data after import?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Delete the data from the camera computer after the import.'],
         ['Delete stack after compression?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Delete the mrc stack after compression.'],
         ['Delete compressed stack after copy?', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Delete the compressed stack after copying to another location.'],
         ])
+    return items
+
+
+def default_global():
+    items = [
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
+        ['Bin superres', ['ON-THE-FLY', 'False'], bool, '', 'COMBO', 'Main', 'Bin superresolution datasets by a factor of 2 automatically.'],
+        ['Pixel size:Pixel size', '1.0', float, '', 'PLAIN', 'Main', '', 'Pixel size in A/pixel.'],
+        ['Phase Plate:Phase Plate', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Use phase plate options'],
+        ['Gain:Gain', '', str, '', 'FILE', 'Main', '', 'MRC file that stores the gain reference. If not specified, MRC extended header will be visited to look for gain reference.'],
+        ['voltage:voltage', '300.0', float, '', 'PLAIN', 'Main', 'High tension in kV needed for dose weighting.  Default is 300.'],
+        ['GPU:GPU', '0', [int]*99, '', 'PLAIN', 'Main', 'Specifiy which gpu\'s should be used.'],
+        ['GPU SPLIT:GPU SPLIT', '0', int, '', 'PLAIN', 'Main', 'Define the number of GPU splits.'],
+        ['Memory usage:Memory usage', '0.9', float, '', 'PLAIN', 'Main', 'Specifiy how much GPU memory should be used.'],
+        ]
     return items

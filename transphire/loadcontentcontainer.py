@@ -19,12 +19,8 @@
 import os
 import json
 import copy
-try:
-    from PyQt4.QtGui import QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QComboBox, QLabel
-    from PyQt4.QtCore import pyqtSlot
-except ImportError:
-    from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QComboBox, QLabel
-    from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QComboBox, QLabel
+from PyQt5.QtCore import pyqtSlot
 
 from transphire.tabdocker import TabDocker
 from transphire.loadcontent import LoadContent
@@ -172,9 +168,9 @@ class LoadContentContainer(QWidget):
             else:
                 self.tab_widget.add_tab(widget, name)
         else:
-            self.layout.addWidget(separator_1)
-            self.layout.addWidget(widget)
-            self.layout.addWidget(separator_2)
+            self.layout.addWidget(separator_1, stretch=0)
+            self.layout.addWidget(widget, stretch=1)
+            self.layout.addWidget(separator_2, stretch=0)
         self.default_settings = self.get_settings()
 
     @pyqtSlot(object)

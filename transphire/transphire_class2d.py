@@ -151,11 +151,11 @@ def create_isac2_1_2_command(class2d_name, stack_name, file_name, output_dir, se
         except ValueError:
             gpu_id = 0
         try:
-            gpu_raw = settings[class2d_name]['GPU'].split()[gpu_id]
+            gpu_raw = settings[class2d_name]['--gpu_devices'].split()[gpu_id]
         except IndexError:
             raise UserWarning('There are less gpus provided than threads available! Please restart with the same number of pipeline processors as GPUs provided and restart! Stopping this thread!')
     else:
-        gpu_raw = settings[class2d_name]['GPU']
+        gpu_raw = settings[class2d_name]['--gpu_devices']
 
     gpu = ' '.join(list(set([entry.split('_')[0] for entry in gpu_raw.split()])))
     if len(gpu.split()) != len(gpu_raw.split()) and settings[class2d_name]['Split Gpu?'] == 'False':
@@ -164,7 +164,7 @@ def create_isac2_1_2_command(class2d_name, stack_name, file_name, output_dir, se
     command = []
 
     command.append("PATH=$(dirname $(which {0})):${{PATH}}".format(settings['Path'][class2d_name]))
-    command.append('CUDA_VISIBLE_DEVICES={0}'.format(','.join(gpu)))
+    command.append('CUDA_VISIBLE_DEVICES={0}'.format(','.join(gpu.split())))
     command.append(settings['Path']['mpirun'])
     command.append('-np {0}'.format(settings[class2d_name]['MPI processes']))
     command.append(settings['Path'][class2d_name])
@@ -180,7 +180,8 @@ def create_isac2_1_2_command(class2d_name, stack_name, file_name, output_dir, se
     ignore_list.append('Nr. Particles')
     ignore_list.append('MPI processes')
     ignore_list.append('Split Gpu?')
-    ignore_list.append('GPU')
+    ignore_list.append('--gpu_devices')
+    command.append('--gpu_devices={0}'.format(','.join(gpu.split())))
 
     for key in settings[class2d_name]:
         if key in ignore_list:

@@ -49,6 +49,7 @@ def extract_time_and_grid_information(root_name, settings, queue_com, name):
         spot2 = 0
         date = 0
         time = 0
+
     elif settings['General']['Software'] == 'Latitude S':
         if settings['General']['Camera'] in ('Falcon2', 'Falcon3'):
             message = '\n'.join([
@@ -622,6 +623,24 @@ def find_frames(frames_root, compare_name, settings, queue_com, name, write_erro
     raise IOError(message)
 
 
+def get_x_dim(frames, settings):
+    command = "{0} '{1}'".format(
+        settings['Path']['IMOD header'],
+        frames[0]
+        )
+
+    child = pe.spawnu(command)
+    text = child.read()
+    child.interact()
+
+    x_dim = 0
+    for line in text.split('\n'):
+        if line.startswith(' Number of columns, rows, sections .....'):
+            x_dim = int(line.split()[-3])
+
+    return int(x_dim)
+
+
 def check_nr_frames(frames, settings, force=False):
     """
     Check if the nr of frames of the stack match the given nr of frames
@@ -632,6 +651,15 @@ def check_nr_frames(frames, settings, force=False):
     """
     if int(settings['General']['Number of frames']) == -1 and not force:
         return True, 0, 0, 0
+
+    if settings['is_superres'].value == 2:
+        settings['is_superres'].value = bool(get_x_dim(frames, settings) > 7000)
+
+    if not frames:
+        frames.append(None)
+        return False, 0
+    elif int(settings['General']['Number of frames']) == -1:
+        return True, 0
     else:
         command = "{0} '{1}'".format(
             settings['Path']['IMOD header'],
@@ -670,6 +698,7 @@ def find_related_frames_to_jpg(frames_root, root_name, settings, queue_com, name
             settings['General']['Input extension']
             ))
         return frames, compare_name_frames, compare_name_meta
+
     elif settings['General']['Software'] == 'Latitude S':
         if settings['General']['Type'] == 'Frames':
             message = '\n'.join([

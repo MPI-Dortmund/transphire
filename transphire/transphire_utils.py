@@ -25,13 +25,9 @@ import sys
 import shutil
 
 import numpy as np
+import pandas as pd
 
-try:
-    QT_VERSION = 4
-    from PyQt4.QtGui import QFont
-except ImportError:
-    QT_VERSION = 5
-    from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QFont
 
 from transphire.messagebox import MessageBox
 from transphire.mountcontainer import MountContainer
@@ -47,6 +43,125 @@ from transphire import transphire_plot as tp
 from transphire import transphire_import as ti
 
 VERSION_RE = re.compile('(.*) >=v([\d.]+)')
+
+
+def thread_safe(func):
+    def wrapper(self, *args, **kwargs):
+        self._DataFrame__get_df()
+        try:
+            return_value = func(self, *args, **kwargs)
+        except:
+            self._lock.release()
+            raise
+        else:
+            self._DataFrame__set_df()
+        return return_value
+    return wrapper
+
+
+class DataFrame(object):
+
+    def __init__(self, manager, file_path):
+        super(DataFrame, self).__init__()
+        self._lock = manager.RLock()
+        self._namespace = manager.Namespace()
+        self._file_path = file_path
+        self._data_frame = None
+        self._namespace.df = None
+        self._increment = 5
+
+        self.load_df()
+
+    def __get_df(self):
+        self._lock.acquire()
+        self._data_frame = self._namespace.df
+
+    def __set_df(self):
+        self._namespace.df = self._data_frame
+        self._data_frame = None
+        self._lock.release()
+
+    def __add_df_column(self, name):
+        self._data_frame[name] = np.nan
+        self._data_frame[name] = self._data_frame[name].astype(object)
+
+    def __add_df_rows(self, length):
+        columns = self._data_frame.columns
+        new_data_frame = pd.DataFrame(index=range(length), columns=columns)
+        self._data_frame = self._data_frame.append(new_data_frame, ignore_index=True)
+
+    def __save_df(self):
+        self._data_frame.to_csv(self._file_path)
+
+    def __check_df(self, index, columns):
+        if index not in self._data_frame.index:
+            rows_to_add = self._increment * (index // self._increment + 1) - self._data_frame.shape[0]
+            self.__add_df_rows(rows_to_add)
+
+        for column in columns:
+            try:
+                self._data_frame[column]
+            except KeyError:
+                self.__add_df_column(column)
+
+    @thread_safe
+    def get_df(self):
+        return self._data_frame
+
+    @thread_safe
+    def set_df(self, data_frame):
+        self._data_frame = data_frame
+        self.__save_df()
+
+    @thread_safe
+    def save_df(self):
+        self._data_frame.to_csv(self._file_path)
+
+    @thread_safe
+    def load_df(self):
+        if os.path.exists(self._file_path):
+            df = pd.read_csv(self._file_path, index_col=0, dtype=object)
+        else:
+            df = pd.DataFrame(dtype=object)
+        self._data_frame = df
+
+    @thread_safe
+    def get_values(self, index, columns):
+        if isinstance(columns, str):
+            columns = [columns]
+        self.__check_df(index, columns)
+
+        return self._data_frame.loc[index, list(columns)]
+
+    @thread_safe
+    def set_values(self, index, value_dict, do_save=True):
+        self.__check_df(index, value_dict.keys())
+
+        for column, value in value_dict.items():
+            self._data_frame.loc[index, column] = value
+        if do_save:
+            self.__save_df()
+
+    @thread_safe
+    def get_index_where(self, column, value, func_type):
+        try:
+            col = self._data_frame[column].astype(float)
+        except:
+            col = self._data_frame[column]
+
+        if func_type == 'eq':
+            return_value = self._data_frame.index[col == value]
+        elif func_type == 'gg':
+            return_value = self._data_frame.index[col > value]
+        elif func_type == 'll':
+            return_value = self._data_frame.index[col < value]
+        elif func_type == 'ge':
+            return_value = self._data_frame.index[col >= value]
+        elif func_type == 'le':
+            return_value = self._data_frame.index[col <= value]
+        else:
+            raise NameError
+        return return_value
 
 
 def get_unique_types():
@@ -223,6 +338,7 @@ def get_function_dict():
             'license': True,
             'category': 'External software',
             'allow_empty': ['-DefectFile', '-Gain', '-Dark'],
+            'old': True,
             }
     function_dict['MotionCor2 >=v1.0.5'] = copy_mod.deepcopy(function_dict['MotionCor2 >=v1.0.0'])
     function_dict['MotionCor2 >=v1.0.5']['content'] = tc.default_motion_cor_2_v1_0_5
@@ -245,6 +361,7 @@ def get_function_dict():
             'license': False,
             'category': 'External software',
             'allow_empty': [],
+            'old': True,
             }
 
     ### CTF Programs
@@ -259,9 +376,13 @@ def get_function_dict():
             'license': False,
             'category': 'External software',
             'allow_empty': ['Gain file'],
+            'old': True,
             }
+
     function_dict['CTFFIND4 >=v4.1.10'] = function_dict['CTFFIND4 >=v4.1.8']
-    function_dict['CTFFIND4 >=v4.1.13'] = function_dict['CTFFIND4 >=v4.1.8']
+
+    function_dict['CTFFIND4 >=v4.1.13'] = copy_mod.deepcopy(function_dict['CTFFIND4 >=v4.1.8'])
+    function_dict['CTFFIND4 >=v4.1.13']['old'] = True
 
     function_dict['Gctf >=v1.06'] = {
             'plot': tp.update_ctf,
@@ -273,17 +394,7 @@ def get_function_dict():
             'license': False,
             'category': 'External software',
             'allow_empty': [],
-            }
-    function_dict['Gctf >=v1.18'] = {
-            'plot': tp.update_ctf,
-            'plot_data': ti.import_gctf_v1_06,
-            'content': tc.default_gctf_v1_18,
-            'executable': True,
-            'has_path': 'Gctf_v1.18',
-            'typ': 'CTF',
-            'license': False,
-            'category': 'External software',
-            'allow_empty': [],
+            'old': True,
             }
     function_dict['Gctf >=v1.18'] = copy_mod.deepcopy(function_dict['Gctf >=v1.06'])
     function_dict['Gctf >=v1.18']['content'] = tc.default_gctf_v1_18
@@ -298,8 +409,10 @@ def get_function_dict():
             'license': False,
             'category': 'External software',
             'allow_empty': [],
+            'old': True,
             }
-    function_dict['CTER >=v1.3'] = function_dict['CTER >=v1.0']
+    function_dict['CTER >=v1.3'] = copy_mod.deepcopy(function_dict['CTER >=v1.0'])
+    function_dict['CTER >=v1.3']['old'] = True
 
     ### Picking programs
 
@@ -313,6 +426,7 @@ def get_function_dict():
             'license': True,
             'category': 'External software',
             'allow_empty': [],
+            'old': True,
             }
     function_dict['crYOLO >=v1.0.5'] = copy_mod.deepcopy(function_dict['crYOLO >=v1.0.4'])
 
@@ -327,6 +441,7 @@ def get_function_dict():
 
     function_dict['crYOLO >=v1.4.1'] = copy_mod.deepcopy(function_dict['crYOLO >=v1.2.2'])
     function_dict['crYOLO >=v1.4.1']['content'] = tc.default_cryolo_v1_4_1
+    function_dict['crYOLO >=v1.4.1']['old'] = True
 
     function_dict['crYOLO >=v1.5.8'] = copy_mod.deepcopy(function_dict['crYOLO >=v1.2.2'])
     function_dict['crYOLO >=v1.5.8']['content'] = tc.default_cryolo_v1_5_8
@@ -344,6 +459,7 @@ def get_function_dict():
             'license': False,
             'category': 'External software',
             'allow_empty': [''],
+            'old': True,
             }
 
 
@@ -359,6 +475,7 @@ def get_function_dict():
             'license': False,
             'category': 'External software',
             'allow_empty': [''],
+            'old': True,
             }
 
 
@@ -374,6 +491,7 @@ def get_function_dict():
             'license': False,
             'category': 'External software',
             'allow_empty': [],
+            'old': True,
             }
 
     ### 2D train programs
@@ -388,9 +506,11 @@ def get_function_dict():
             'license': True,
             'category': 'External software',
             'allow_empty': [],
+            'old': True,
             }
     function_dict['crYOLO_train >=v1.5.8'] = copy_mod.deepcopy(function_dict['crYOLO_train >=v1.5.4'])
     function_dict['crYOLO_train >=v1.5.8']['content'] = tc.default_cryolo_train_v1_5_8
+    function_dict['crYOLO_train >=v1.5.8']['old'] = True
 
 
     ### auto processing programs
@@ -416,6 +536,7 @@ def get_function_dict():
                 '--meridien_addition',
                 '--sharpening_meridien_addition',
                 ],
+            'old': True,
             }
 
     ### Compression programs
@@ -428,6 +549,7 @@ def get_function_dict():
             'license': False,
             'category': 'External software',
             'allow_empty': ['--command_uncompress'],
+            'old': True,
             }
 
     ### Other no executable stuff
@@ -442,6 +564,7 @@ def get_function_dict():
             'license': False,
             'category': 'Internal settings',
             'allow_empty': [],
+            'old': True,
             }
     function_dict['Pipeline'] = {
             'plot': None,
@@ -453,7 +576,22 @@ def get_function_dict():
             'license': False,
             'category': 'Internal settings',
             'allow_empty': [],
+            'old': True,
             }
+
+    function_dict['Global'] = {
+            'plot': None,
+            'plot_data': None,
+            'content': tc.default_global,
+            'executable': False,
+            'has_path': False,
+            'typ': None,
+            'license': False,
+            'category': 'Internal settings',
+            'allow_empty': ['-Gain'],
+            'old': True,
+            }
+
     function_dict['General'] = {
             'plot': None,
             'plot_data': None,
@@ -464,6 +602,7 @@ def get_function_dict():
             'license': False,
             'category': 'Internal settings',
             'allow_empty': ['Rename suffix', 'Rename prefix'],
+            'old': True,
             }
 
     function_dict['Mount'] = {
@@ -476,7 +615,9 @@ def get_function_dict():
             'license': False,
             'category': 'TranSPHIRE settings',
             'allow_empty': [],
+            'old': True,
             }
+
     function_dict['Notification'] = {
             'plot': None,
             'plot_data': None,
@@ -487,6 +628,7 @@ def get_function_dict():
             'license': False,
             'category': 'TranSPHIRE settings',
             'allow_empty': [],
+            'old': True,
             }
     function_dict['Notification_widget'] = {
             'plot': None,
@@ -498,6 +640,7 @@ def get_function_dict():
             'license': False,
             'category': 'TranSPHIRE settings',
             'allow_empty': [],
+            'old': True,
             }
     function_dict['Others'] = {
             'plot': None,
@@ -509,6 +652,7 @@ def get_function_dict():
             'license': False,
             'category': 'TranSPHIRE settings',
             'allow_empty': [],
+            'old': True,
             }
     function_dict['Font'] = {
             'plot': None,
@@ -520,6 +664,19 @@ def get_function_dict():
             'license': False,
             'category': 'TranSPHIRE settings',
             'allow_empty': [],
+            'old': True,
+            }
+    function_dict['Copy'] = {
+            'plot': None,
+            'plot_data': None,
+            'content': tc.default_copy,
+            'executable': False,
+            'has_path': False,
+            'typ': None,
+            'license': False,
+            'category': 'TranSPHIRE settings',
+            'allow_empty': [],
+            'old': True,
             }
     function_dict['Path'] = {
             'plot': None,
@@ -531,7 +688,15 @@ def get_function_dict():
             'license': False,
             'category': 'TranSPHIRE settings',
             'allow_empty': [],
+            'old': True,
             }
+    for key in function_dict:
+        try:
+            prog_name, _ = VERSION_RE.search(key).groups()
+            newest_key = find_latest_version(prog_name, function_dict)
+        except AttributeError:
+            newest_key = key
+        function_dict[newest_key]['old'] = False
     return function_dict
 
 
@@ -602,7 +767,7 @@ def split_maximum(text, max_char, split_char=None):
     return '\n{0}'.join(new_text).format(add_char if add_char.strip() else '')
 
 
-def question(head, text, parent):
+def question(head, text):
     """
     Show a questions message box dialog.
 
@@ -613,16 +778,9 @@ def question(head, text, parent):
     Return:
     True if No, False if Yes
     """
-    if QT_VERSION == 4:
-        message_box = MessageBox(is_question=True)
-        message_box.setText(head, text)
-        result = message_box.exec_()
-    elif QT_VERSION == 5:
-        message_box = MessageBox(is_question=True)
-        message_box.setText(head, text)
-        result = message_box.exec_()
-    else:
-        raise ImportError('QT version unknown! Please contact the transphire authors!')
+    message_box = MessageBox(is_question=True)
+    message_box.setText(head, text)
+    result = message_box.exec_()
     return result
 
 
@@ -844,6 +1002,12 @@ def get_content_gui(content, template_name, n_feedbacks):
             'layout': 'TAB1',
             },
         {
+            'name': 'Global',
+            'widget': SettingsContainer,
+            'content': content[template_name]['Global'],
+            'layout': 'Settings',
+            },
+        {
             'name': 'General',
             'widget': SettingsContainer,
             'content': content[template_name]['General'],
@@ -1017,11 +1181,20 @@ def look_and_feel_small(app, font=None):
         }}
 
     QLineEdit {{ background-color: white }}
+    QLineEdit:disabled {{ background-color: rgba(125, 125, 125) }}
     QComboBox {{ background-color: white }}
+    QComboBox:disabled {{ background-color: rgba(125, 125, 125) }}
     QPushButton {{
         background-color: qradialgradient(cx:0.5, cy:0.5, fx:0.5, fy:0.5, radius:1, stop:0 white, stop:1 #f9eeb4);
         border-width: 1px;
         border-style:inset;
+        padding: 1px;
+        border-radius: 5px
+        }}
+    QPushButton:checked {{
+        background-color: qradialgradient(cx:0.5, cy:0.5, fx:0.5, fy:0.5, radius:1, stop:0 white, stop:1 green);
+        border-width: 1px;
+        border-style:outset;
         padding: 1px;
         border-radius: 5px
         }}
@@ -1088,8 +1261,12 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
     frame_label_width = float(default[0][idx]['Frame label'][0])
     idx += 1
     setting_widget_width = float(default[0][idx]['Setting widget'][0])
+    settinger_widget_width = float(default[0][idx]['Setting widget'][0])
+    settinger2_widget_width = float(default[0][idx]['Setting widget'][0])
     idx += 1
     setting_widget_width_large = float(default[0][idx]['Setting widget large'][0])
+    idx += 1
+    setting_widget_width_xlarge = float(default[0][idx]['Setting widget xlarge'][0])
     idx += 1
     status_name_width = float(default[0][idx]['Status name'][0])
     idx += 1
@@ -1114,8 +1291,11 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
     frame_entry_width = '{0}px'.format(font * frame_entry_width * adjust_width)
     frame_button_width = '{0}px'.format(font * frame_button_width * adjust_width)
     frame_label_width = '{0}px'.format(font * frame_label_width * adjust_width)
-    setting_widget_width_large = '{0}px'.format(font * setting_widget_width_large * adjust_width)
     setting_widget_width = '{0}px'.format(font * setting_widget_width * adjust_width)
+    settinger_widget_width = '{0}px'.format(font * settinger_widget_width * adjust_width * 0.9)
+    settinger2_widget_width = '{0}px'.format(font * settinger2_widget_width * adjust_width * 0.1)
+    setting_widget_width_large = '{0}px'.format(font * setting_widget_width_large * adjust_width)
+    setting_widget_width_xlarge = '{0}px'.format(font * setting_widget_width_xlarge * adjust_width)
     status_name_width = '{0}px'.format(font * status_name_width * adjust_width)
     status_info_width = '{0}px'.format(font * status_info_width * adjust_width)
     status_quota_width = '{0}px'.format(font * status_quota_width * adjust_width)
@@ -1144,6 +1324,7 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
         background-color: {2};
         border-radius: 15px
         }}
+
     QTabWidget::tab-bar {{
         alignment: center;
         }}
@@ -1153,17 +1334,40 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
     QTabWidget::tab {{
         min-width: 120px;
         }}
+
+    QTabWidget#bot::pane {{
+        border-top: 0px solid #C2C7CB;
+        border-bottom: 2px solid #C2C7CB;
+        }}
+
+    QTabWidget#vertical::tab-bar {{
+        alignment: left;
+        }}
+    QTabWidget#vertical::pane {{
+        border-top: 0px solid #C2C7CB;
+        border-left: 2px solid #C2C7CB;
+        }}
+    QTabWidget#vertical::tab {{
+        min-width: 120px;
+        }}
+
     QTabBar {{
         alignment: center;
         background-color: #C2C7CB
         }}
     QTabBar::pane {{
-        border-top: 2px solid #C2C7CB;
+        border-right: 2px solid #C2C7CB;
         }}
     QTabBar::tab {{
         max-width: {4};
         max-height: {5};
         }}
+
+    QTabBar#vertical::tab {{
+        max-width: {6};
+        max-height: {5};
+        }}
+
     QMessageBox {{
         background-image: url("{0}");
         color: white;
@@ -1200,6 +1404,21 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
         padding: 1px;
         border-radius: 5px
         }}
+    QPushButton#global:checked {{
+        background-color: qradialgradient(
+            cx:0.5,
+            cy:0.5,
+            fx:0.5,
+            fy:0.5,
+            radius:1,
+            stop:0 white,
+            stop:1 green
+            );
+        border-width: 1px;
+        border-style: outset;
+        padding: 1px;
+        border-radius: 5px
+        }}
     QPushButton:pressed {{
         background-color: qradialgradient(
             cx:0.5,
@@ -1214,6 +1433,11 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
         border-style: outset;
         padding: 1px;
         border-radius: 5px
+        }}
+    QPushButton#global {{
+        min-width: {6};
+        max-width: {6};
+        max-height: {5}
         }}
     QPushButton#start {{
         background-color: qradialgradient(
@@ -1257,7 +1481,7 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
         max-width: {1};
         min-width: {1}
         }}
-    QPushButton#button_entry {{
+    QPushButton#button_entry:enabled {{
         background-color: qradialgradient(
             cx:0.5,
             cy:0.5,
@@ -1309,7 +1533,7 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
     QPushButton#sep:checked {{
         color: white;
         background-color: black;
-        border-color: red;
+        border-color: #e34234;
         border-width: 1px;
         border-style: outset;
         padding: 0px;
@@ -1322,6 +1546,7 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
         mount_button_width,
         notification_button_width,
         widget_height,
+        settinger2_widget_width,
         )
 
     label_style = """
@@ -1332,6 +1557,7 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
     QLabel#status_quota {{ max-width: {3}; min-width: {3}; background-color: {0}; min-height: {5}; max-height: {5} }}
     QLabel#setting {{ max-width: {4}; min-width: {4}; background-color: {0}; min-height: {5}; max-height: {5} }}
     QLabel#setting_large {{ max-width: {6}; min-width: {6}; background-color: {0}; min-height: {5}; max-height: {5} }}
+    QLabel#setting_xlarge {{ max-width: {7}; min-width: {7}; background-color: {0}; min-height: {5}; max-height: {5} }}
     """.format(
         'transparent',
         status_name_width,
@@ -1340,17 +1566,30 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
         setting_widget_width,
         widget_height,
         setting_widget_width_large,
+        setting_widget_width_xlarge,
         )
 
     edit_style = """
     QLineEdit {{ max-height: {7}; min-height: {7}; background-color: white }}
     QLineEdit#default_settings {{ min-width: {1}; max-width: 9999; background-color: white }}
     QLineEdit:disabled {{ background-color: {6} }}
+    QLineEdit#settinger:enabled {{
+        max-width: {9}; min-width: {9}; background-color: {0}; min-height: {7}; max-height: {7}
+        }}
     QLineEdit#setting:enabled {{
         max-width: {1}; min-width: {1}; background-color: {0}; min-height: {7}; max-height: {7}
         }}
+    QLineEdit#setting_large {{
+        max-width: {8}; min-width: {8}
+        }}
+    QLineEdit#setting_xlarge {{
+        max-width: {10}; min-width: {10}
+        }}
     QLineEdit#setting_large:enabled {{
         max-width: {8}; min-width: {8}; background-color: {0}; min-height: {7}; max-height: {7}
+        }}
+    QLineEdit#setting_xlarge:enabled {{
+        max-width: {10}; min-width: {10}; background-color: {0}; min-height: {7}; max-height: {7}
         }}
     QLineEdit#noti_edit:enabled {{
         max-width: {2}; min-width: {2}; background-color: {5}; min-height: {7}; max-height: {7}
@@ -1371,6 +1610,8 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
         'rgba(150,150,150)',
         widget_height,
         setting_widget_width_large,
+        settinger_widget_width,
+        setting_widget_width_xlarge,
         )
 
     check_style = """
@@ -1380,22 +1621,41 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
 
     combo_style = """
     QComboBox {{ min-width: {4}; max-width: {4}; min-height: {3}; max-height: {3}; background-color: white }}
+    QComboBox#settinger {{ min-width: {5}; max-width: {5}; min-height: {3}; max-height: {3}; background-color: white }}
+    QComboBox#default_settings {{ min-width: {1}; max-width: 9999; background-color: white }}
+
+    QComboBox:disabled {{ background-color: {2} }}
+    QComboBox#settinger:disabled {{ background-color: {2} }}
+    QComboBox#default_settings:disabled {{ background-color: {2} }}
+
     QComboBox QAbstractItemView {{
         background-color: white; selection-color: black; selection-background-color: lightgray
         }}
-    QComboBox#default_settings {{ min-width: {1}; max-width: 9999; background-color: white }}
-    QComboBox:disabled {{ background-color: {2} }}
     QComboBox#noti_edit:enabled {{ max-width: {1}; min-width: {1}; background-color: {0} }}
     """.format(
         '#5d995d',
         notification_edit_width,
         'rgba(150,150,150,200)',
         widget_height,
-        setting_widget_width
+        setting_widget_width,
+        settinger_widget_width,
         )
 
-    style = '\n'.join([style_widgets, button_style, label_style, edit_style, check_style, combo_style])
+    tool_style = """
+    QToolTip {0}
+    """.format(tooltip_style())
+
+    plain_style = """
+    QPlainTextEdit#status { background-color: rgba(229, 229, 229, 50); color: white }
+    QPlainTextEdit#dialog { background-color: rgba(229, 229, 229, 50); color: black }
+    """
+
+
+    style = '\n'.join([style_widgets, button_style, label_style, edit_style, check_style, combo_style, tool_style, plain_style])
     return style
+
+def tooltip_style():
+    return '{ color: black; background-color: white }'
 
 
 def check_instance(value, typ):
@@ -1439,7 +1699,11 @@ def get_style(typ):
     Color string
     """
     if typ == 'error':
-        color = 'red'
+        color = '#e34234'
+    elif typ == 'global':
+        color = 'yellow'
+    elif typ == 'white':
+        color = 'white'
     elif typ == 'unchanged':
         color = 'black'
     elif typ == 'changed':
@@ -1450,11 +1714,11 @@ def get_style(typ):
         color = '#c3a368'
     else:
         msg = 'Style not known! Go for black!'
-        print(msg)
+        print(msg, ":", typ)
         message(msg)
         color = 'black'
 
-    return 'color: {0}'.format(color)
+    return 'QPushButton {{color: {0}}} QLabel {{color: {0}}} QLineEdit {{color: {0}}} QComboBox {{color: {0}}}'.format(color)
 
 
 def rebin(arr, new_shape):

@@ -18,12 +18,9 @@
 import os
 import glob
 import json
-try:
-    from PyQt4.QtGui import QDialog, QVBoxLayout, QPushButton, QWidget, QComboBox, QLineEdit, QLabel, QHBoxLayout
-    from PyQt4.QtCore import pyqtSlot
-except ImportError:
-    from PyQt5.QtWidgets import QDialog, QVBoxLayout, QPushButton, QWidget, QComboBox, QLineEdit, QLabel, QHBoxLayout
-    from PyQt5.QtCore import pyqtSlot
+import copy
+from PyQt5.QtWidgets import QDialog, QVBoxLayout, QPushButton, QWidget, QComboBox, QLineEdit, QLabel, QHBoxLayout
+from PyQt5.QtCore import pyqtSlot
 
 from transphire.loadcontentcontainer import LoadContentContainer
 from transphire.separator import Separator
@@ -87,6 +84,12 @@ class DefaultSettings(QDialog):
         self.default_tabs = {}
 
         self.fill_default_dict()
+
+        self.default_tabs['OLD'] = {
+            'sub_content': copy.deepcopy(self.default_tabs),
+            'content': [],
+            }
+
         self.create_initial_tabs(self.default_tabs, self.tab_widget)
 
         # Variables
@@ -139,19 +142,28 @@ class DefaultSettings(QDialog):
                 self.default_tabs[category]['sub_content'][typ]['sub_content'][name]['sub_content'] = {}
 
 
-    def create_initial_tabs(self, tab_dict, parent_widget):
+    def create_initial_tabs(self, tab_dict, parent_widget, is_old=False):
         for tab_name in tab_dict:
-            self.tab_content[tab_name] = TabDocker(self)
-            self.tab_content[tab_name].setObjectName('tab')
-            parent_widget.add_tab(self.tab_content[tab_name], tab_name)
+            if is_old:
+                cur_tab_name = 'OLD {0}'.format(tab_name)
+                tab_dict[tab_name]['content'] = ['OLD {0}'.format(entry) for entry in tab_dict[tab_name]['content']]
+            else:
+                cur_tab_name = tab_name
 
-            self.create_initial_tabs(tab_dict[tab_name]['sub_content'], self.tab_content[tab_name])
+            if tab_name == 'OLD':
+                is_old = True
+
+            self.tab_content[cur_tab_name] = TabDocker(self)
+            self.tab_content[cur_tab_name].setObjectName('tab')
+            parent_widget.add_tab(self.tab_content[cur_tab_name], tab_name)
+
+            self.create_initial_tabs(tab_dict[tab_name]['sub_content'], self.tab_content[cur_tab_name], is_old)
 
     def is_in_content(self, tab_dict, name):
         for tab_name in tab_dict:
             for entry in tab_dict[tab_name]['content']: 
                 if name.split(' >=')[0] == entry:
-                    return tab_name
+                    return tab_name if not name.startswith('OLD') else 'OLD {0}'.format(tab_name)
 
             found = self.is_in_content(tab_dict[tab_name]['sub_content'], name)
             if found:
@@ -190,7 +202,6 @@ class DefaultSettings(QDialog):
             result = tu.question(
                 head='Unsaved changes',
                 text='You do have unsaved changes!\nDo you really want to continue?.\nThose changes will not be saved or applied.',
-                parent=self
                 )
         else:
             result = True
@@ -275,7 +286,7 @@ class DefaultSettings(QDialog):
         else:
             pass
 
-        self.tab_content[inside_name].add_tab(widget, name)
+        self.tab_content[inside_name].add_tab(widget, name.split('OLD ')[-1])
 
     def recursive_clear(self, tab_widget):
         count = tab_widget.count()
@@ -358,7 +369,11 @@ class DefaultSettings(QDialog):
                     content_temp[template_name][name].set_settings(settings)
 
                 if template_name == self.current_template:
-                    self.add_tab(widget=content_temp[template_name][name], name=name)
+                    if tu.get_function_dict()[name]['old']:
+                        current_name = 'OLD {0}'.format(name)
+                    else:
+                        current_name = name
+                    self.add_tab(widget=content_temp[template_name][name], name=current_name)
                 else:
                     content_temp[template_name][name].setVisible(False)
         return content_temp

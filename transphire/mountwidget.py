@@ -16,12 +16,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
-try:
-    from PyQt4.QtGui import QWidget, QHBoxLayout, QPushButton, QLabel
-    from PyQt4.QtCore import pyqtSlot
-except ImportError:
-    from PyQt5.QtWidgets import QWidget, QHBoxLayout, QPushButton, QLabel
-    from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QPushButton, QLabel
+from PyQt5.QtCore import pyqtSlot
+
+from transphire import mountworker
 from transphire.inputbox import InputBox
 from transphire.passworddialog import PasswordDialog
 from transphire import transphire_utils as tu
@@ -87,8 +85,10 @@ class MountWidget(QWidget):
         # Content
         self.mount_button = QPushButton('Mount {0}'.format(self.name), self)
         self.mount_button.setObjectName('mount')
+        self.mount_button.setToolTip('Mount {0}'.format(self.name))
         self.umount_button = QPushButton('Unmount {0}'.format(self.name), self)
         self.umount_button.setObjectName('unmount')
+        self.umount_button.setToolTip('Unmount {0}'.format(self.name))
 
         # Layout
         layout = QHBoxLayout(self)
@@ -151,6 +151,18 @@ class MountWidget(QWidget):
         None
         """
         # Mount external hdd
+        if mountworker.check_existence(
+            self.mount_worker.mount_directory,
+            os.path.join(
+                self.mount_worker.mount_directory,
+                self.mount_folder
+                )
+            ):
+            self.mount_worker.sig_info.emit(
+                'First unmount {0}'.format(self.mount_folder)
+                )
+            return None
+
         if self.typ == 'Copy_to_hdd':
             self.mount_worker.sig_mount_hdd.emit(self.mount_folder)
         else:

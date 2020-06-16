@@ -18,34 +18,21 @@
 import sys
 import os
 import copy
-try:
-    QT_VERSION = 4
-    from PyQt4.QtGui import (
-        QWidget,
-        QVBoxLayout,
-        QLabel,
-        QPushButton,
-        QLineEdit,
-        QHBoxLayout,
-        QComboBox,
-        QFileDialog
-        )
-    from PyQt4.QtCore import pyqtSignal, pyqtSlot
-except ImportError:
-    QT_VERSION = 5
-    from PyQt5.QtWidgets import (
-        QWidget,
-        QVBoxLayout,
-        QLabel,
-        QPushButton,
-        QLineEdit,
-        QHBoxLayout,
-        QComboBox,
-        QFileDialog
-        )
-    from PyQt5.QtCore import pyqtSignal, pyqtSlot
+from PyQt5.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QLabel,
+    QPushButton,
+    QLineEdit,
+    QHBoxLayout,
+    QComboBox,
+    QFileDialog
+    )
+from PyQt5.QtCore import pyqtSignal, pyqtSlot
 from transphire.separator import Separator
 from transphire import transphire_utils as tu
+from transphire import transphire_content as tc
+from transphire import tabdocker
 
 
 class LoadContent(QWidget):
@@ -79,6 +66,7 @@ class LoadContent(QWidget):
         self.separator = separator
         self.typ = typ
         self.layout = QVBoxLayout(self)
+        self.layout_old = None
         self.content = []
         self.layout.setContentsMargins(0, 0, 0, 0)
 
@@ -89,10 +77,18 @@ class LoadContent(QWidget):
         self.idx_type = 4
         self.idx_priority = 5
         self.idx_tooltip = 6
+        self.idx_toggle = 7
+
+        self.idx_name_name = 0
+        self.idx_name_global = 1
+
+        self.idx_type_type = 0
+        self.idx_type_toggle = 1
 
         # Fill content based on typ
         content_function = tu.get_function_dict()[typ]['content']
         is_license = tu.get_function_dict()[typ]['license']
+        items_old = None
         if typ == 'Mount':
             button = QPushButton('Delete', self)
             button.clicked.connect(self._button_clicked)
@@ -104,6 +100,18 @@ class LoadContent(QWidget):
                 self.setEnabled(False)
         elif typ in ('Copy', 'Others'):
             items = content_function(settings_folder=settings_folder)
+        elif typ in ('Path'):
+            items, items_old = content_function()
+            tab_widget = tabdocker.TabDocker(self)
+            self.layout.addWidget(tab_widget)
+            widget = QWidget(self)
+            self.layout = QVBoxLayout(widget)
+            self.layout.setContentsMargins(0, 0, 0, 0)
+            tab_widget.add_tab(widget, 'Current')
+            widget = QWidget(self)
+            self.layout_old = QVBoxLayout(widget)
+            self.layout_old.setContentsMargins(0, 0, 0, 0)
+            tab_widget.add_tab(widget, 'Old')
         else:
             items = content_function()
 
@@ -114,9 +122,9 @@ class LoadContent(QWidget):
 
 
         # Fill widget with content items
-        self._fill_default(items)
+        self._fill_default(items, items_old)
 
-    def _fill_default(self, items):
+    def _fill_default(self, items, items_old):
         """
         Fill the widget with content.
 
@@ -127,88 +135,129 @@ class LoadContent(QWidget):
         None
         """
         # Layout
-        layout_h = QHBoxLayout()
-        self.layout.addLayout(layout_h)
-        layout_v = None
-        for idx, entry in enumerate(items):
-            if idx % 11 == 0:
-                if layout_v is not None:
-                    layout_v.addStretch(1)
-                else:
-                    pass
-                if layout_v is not None:
-                    layout_h.addWidget(Separator(typ='vertical', color='white'))
-                layout_v = QVBoxLayout()
-                layout_h.addLayout(layout_v)
-            layout_v.addWidget(QLabel(entry[self.idx_name], self))
-
-            # Behaviour based on typ
-            if entry[self.idx_type] == 'COMBO':
-                widget = QComboBox(self)
-                widget.addItems(entry[self.idx_values])
-                widget.setCurrentIndex(0)
-                widget.currentIndexChanged.connect(self._change_color_to_changed)
-            elif entry[self.idx_type] == 'DIR':
-                widget = QLineEdit(entry[self.idx_values], self)
-                widget.textChanged.connect(self._change_color_to_changed)
-                widget.returnPressed.connect(self._find_dir)
-                widget.setPlaceholderText('Press shift+return')
-            elif entry[self.idx_type] == 'FILE':
-                widget = QLineEdit(entry[self.idx_values], self)
-                widget.textChanged.connect(self._change_color_to_changed)
-                widget.returnPressed.connect(self._find_file)
-                widget.setPlaceholderText('Press shift+return')
-            elif entry[self.idx_type] == 'PLAIN':
-                widget = QLineEdit(entry[self.idx_values], self)
-                widget.textChanged.connect(self._change_color_to_changed)
-            elif entry[self.idx_type] == 'PASSWORD':
-                widget = QLineEdit(entry[self.idx_values], self)
-                widget.textChanged.connect(self._change_color_to_changed)
-                widget.setEnabled(False)
-            else:
-                raise IOError('{0}: {1} not known!'.format(entry[self.idx_name], entry[self.idx_type]))
-            widget.setObjectName('setting')
-
-            exclude_typ_list = [
-                'Mount',
-                'Font',
-                'Others',
-                'Notification_widget',
-                ]
-            if self.typ not in exclude_typ_list and not entry[self.idx_name].startswith('WIDGETS') and not entry[self.idx_name] == 'IMPORTANT':
-                widget_2 = QComboBox(self)
-                widget_2.addItems(['Main', 'Advanced', 'Rare'])
-                combo_idx = widget_2.findText(entry[self.idx_priority])
-                assert combo_idx >= 0, entry
-                widget_2.setCurrentIndex(combo_idx)
-                widget_2.currentIndexChanged.connect(self._change_color_to_changed)
-            else:
-                widget_2 = None
-
-            widget.setObjectName('default_settings')
-            layout_h_2 = QHBoxLayout()
-            layout_h_2.addWidget(widget, stretch=1)
-            for test_widget in [widget_2]:
-                if test_widget is None:
+        for current_layout, items in zip([self.layout, self.layout_old], [items, items_old]):
+            if current_layout is None:
+                continue
+            global_items = set([entry[0].split(':')[0] for entry in tc.default_global()])
+            layout_h = QHBoxLayout()
+            current_layout.addLayout(layout_h)
+            layout_v = None
+            for idx, entry in enumerate(items):
+                if entry[self.idx_name] == 'IMPORTANT':
                     continue
-                else:
-                    test_widget.setObjectName('default_settings')
-                    layout_h_2.addWidget(test_widget, stretch=0)
+                if idx % 11 == 0:
+                    if layout_v is not None:
+                        layout_v.addStretch(1)
+                    else:
+                        pass
+                    if layout_v is not None:
+                        layout_h.addWidget(Separator(typ='vertical', color='white'), stretch=0)
+                    layout_v = QVBoxLayout()
+                    layout_h.addLayout(layout_v, stretch=1)
+                layout_v.addWidget(QLabel(entry[self.idx_name].split(':')[self.idx_name_name], self), stretch=0)
 
-            layout_v.addLayout(layout_h_2)
-            self.content.append({
-                'widget': widget,
-                'widget_2': widget_2,
-                'settings': {
-                    'typ': entry[self.idx_type],
-                    'name': entry[self.idx_name],
-                    'values': entry[self.idx_values],
-                    'dtype': entry[self.idx_dtype],
-                    'group': entry[self.idx_group],
-                    'tooltip': entry[self.idx_tooltip],
-                    }
-                })
-        layout_v.addStretch(1)
+                # Behaviour based on typ
+
+                if entry[self.idx_type] == 'COMBO':
+                    widget = QComboBox(self)
+                    widget.addItems(entry[self.idx_values])
+                    widget.setCurrentIndex(0)
+                    widget.currentIndexChanged.connect(self._change_color_to_changed)
+                elif entry[self.idx_type] == 'DIR':
+                    widget = QLineEdit(entry[self.idx_values], self)
+                    widget.textChanged.connect(self._change_color_to_changed)
+                    widget.returnPressed.connect(self._find_dir)
+                    widget.setPlaceholderText('Press shift+return')
+                elif entry[self.idx_type] == 'FILE':
+                    widget = QLineEdit(entry[self.idx_values], self)
+                    widget.textChanged.connect(self._change_color_to_changed)
+                    widget.returnPressed.connect(self._find_file)
+                    widget.setPlaceholderText('Press shift+return')
+                elif entry[self.idx_type] == 'PLAIN':
+                    widget = QLineEdit(entry[self.idx_values], self)
+                    widget.textChanged.connect(self._change_color_to_changed)
+                elif entry[self.idx_type] == 'PASSWORD':
+                    widget = QLineEdit(entry[self.idx_values], self)
+                    widget.textChanged.connect(self._change_color_to_changed)
+                    widget.setEnabled(False)
+                else:
+                    raise IOError('{0}: {1} not known!'.format(entry[self.idx_name], entry[self.idx_type]))
+                widget.setObjectName('setting')
+
+                exclude_typ_list = [
+                    'Mount',
+                    'Font',
+                    'Others',
+                    'Notification_widget',
+                    ]
+                if self.typ not in exclude_typ_list and not entry[self.idx_name].startswith('WIDGETS') :
+                    widget_2 = QComboBox(self)
+                    widget_2.addItems(['Main', 'Advanced', 'Rare'])
+                    combo_idx = widget_2.findText(entry[self.idx_priority])
+                    assert combo_idx >= 0, entry
+                    widget_2.setCurrentIndex(combo_idx)
+                    widget_2.currentIndexChanged.connect(self._change_color_to_changed)
+                else:
+                    widget_2 = None
+
+                try:
+                    global_name = entry[self.idx_name].split(':')[self.idx_name_global]
+                except IndexError:
+                    global_name = None
+                    widget_3 = None
+                else:
+                    if global_name not in global_items:
+                        assert False, (global_name, 'not in ', global_items)
+                    widget_3 = QPushButton(self)
+                    widget_3.setCheckable(True)
+                    widget_3.setText('GLOBAL')
+                    widget_3.toggled.connect(self._toggle_change)
+
+                widget.setObjectName('default_settings')
+                layout_h_2 = QHBoxLayout()
+                layout_h_2.setContentsMargins(0, 0, 0, 0)
+                layout_h_2.addWidget(widget, stretch=1)
+                for test_widget in [widget_2, widget_3]:
+                    if test_widget is None:
+                        continue
+                    else:
+                        test_widget.setObjectName('default_settings')
+                        layout_h_2.addWidget(test_widget, stretch=0)
+
+                layout_v.addLayout(layout_h_2, stretch=1)
+                self.content.append({
+                    'widget': widget,
+                    'widget_2': widget_2,
+                    'widget_3': widget_3,
+                    'settings': {
+                        'typ': entry[self.idx_type],
+                        'name': entry[self.idx_name].split(':')[self.idx_name_name],
+                        'name_global': global_name,
+                        'values': entry[self.idx_values],
+                        'dtype': entry[self.idx_dtype],
+                        'group': entry[self.idx_group],
+                        'tooltip': entry[self.idx_tooltip],
+                        }
+                    })
+
+                if widget_3 is not None:
+                    widget_3.setChecked(True)
+            layout_v.addStretch(1)
+
+    @pyqtSlot(bool)
+    def _toggle_change(self, state):
+        """
+        Change the color of the entry to color changed.
+
+        Arguments:
+        None
+
+        Return:
+        None
+        """
+        for entry in self.content:
+            if entry['widget_3'] == self.sender():
+                entry['widget'].setEnabled(not state)
 
     @pyqtSlot()
     def _change_color_to_changed(self):
@@ -265,10 +314,12 @@ class LoadContent(QWidget):
                 tu.message(message)
                 sys.exit()
 
-            for number in ['2']:
+            for number in ['2', '3']:
                 temp_widget = entry['widget_{0}'.format(number)]
                 if isinstance(temp_widget, QComboBox):
                     settings['widget_{0}'.format(number)] = temp_widget.currentText()
+                elif isinstance(temp_widget, QPushButton):
+                    settings['widget_{0}'.format(number)] = temp_widget.isChecked()
                 else:
                     assert temp_widget is None
                     settings['widget_{0}'.format(number)] = temp_widget
@@ -411,6 +462,25 @@ class LoadContent(QWidget):
                 else:
                     pass
 
+                try:
+                    widget_3 = self.content[idx]['widget_3']
+                except KeyError:
+                    continue
+                else:
+                    pass
+
+                if isinstance(widget_3, QPushButton):
+                    try:
+                        widget_3.setChecked(entry[key][1]['widget_3'])
+                    except KeyError:
+                        widget_3.setChecked(True)
+                    except TypeError:
+                        widget_3.setChecked(True)
+                elif widget_3 is None:
+                    pass
+                else:
+                    pass
+
     @pyqtSlot()
     def _find_file(self):
         """
@@ -428,12 +498,7 @@ class LoadContent(QWidget):
             options=QFileDialog.DontUseNativeDialog
             )
 
-        if QT_VERSION == 4:
-            in_file = in_file
-        elif QT_VERSION == 5:
-            in_file = in_file[0]
-        else:
-            raise ImportError('QT version unknown! Please contact the transphire authors!')
+        in_file = in_file[0]
 
         if in_file != '':
             self.sender().setText(in_file)

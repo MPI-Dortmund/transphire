@@ -16,16 +16,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
-try:
-    from PyQt4.QtGui import QHBoxLayout, QVBoxLayout, QWidget, QLabel, QImage
-    from PyQt4.QtCore import pyqtSlot, pyqtSignal
-except ImportError:
-    from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QWidget, QLabel
-    from PyQt5.QtGui import QImage
-    from PyQt5.QtCore import pyqtSlot, pyqtSignal
+from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QWidget, QLabel
+from PyQt5.QtGui import QImage
+from PyQt5.QtCore import pyqtSlot, pyqtSignal
 from transphire.statuswidget import StatusWidget
 from transphire.separator import Separator
 from transphire import transphire_utils as tu
+from transphire import logviewer as lv
 
 
 class StatusContainer(QWidget):
@@ -85,11 +82,11 @@ class StatusContainer(QWidget):
 
         content_temp = []
         for entry in content_mount:
-            content = {}
+            my_content = {}
             for widget in entry:
                 for key in widget:
-                    content[key] = widget[key]
-            content_temp.append(content)
+                    my_content[key] = widget[key]
+            content_temp.append(my_content)
 
         # Content
         for entry in content_temp:
@@ -119,6 +116,7 @@ class StatusContainer(QWidget):
                 self.content[key_device] = StatusWidget(
                     name=key_name, default_name='Not connected', default_quota='-- / --'
                     )
+                self.content[key_device].setVisible(False)
                 layout_v1.addWidget(self.content[key_device])
 
         # Add a visual separator
@@ -136,6 +134,15 @@ class StatusContainer(QWidget):
                 self.content[name] = StatusWidget(name=name, default_name='00|00', default_quota='Not running')
                 layout_v1.addWidget(self.content[name])
 
+        layout_v1.addWidget(Separator(typ='horizontal', color='grey', parent=self))
+
+        self.log_viewer = lv.LogViewer(
+            show_indicators=True,
+            file_name='',
+            parent=self
+            )
+        layout_v1.addWidget(self.log_viewer)
+
         # Add picture
         if image and os.path.exists(image):
             pass
@@ -148,6 +155,7 @@ class StatusContainer(QWidget):
             image_width = image_height * qimage.width() / qimage.height()
         except ZeroDivisionError:
             tu.message('Chosen picture: "{0}" - No longer available!'.format(image))
+            self.log_viewer.appendPlainText('Chosen picture: "{0}" - No longer available!'.format(image))
         else:
             pic_label = QLabel(self)
             pic_label.setObjectName('picture')
@@ -175,6 +183,7 @@ class StatusContainer(QWidget):
         mount_worker.sig_quota.connect(self.refresh_quota)
 
         process_worker.sig_status.connect(self._process_success)
+        process_worker.sig_set_project_directory.connect(self.log_viewer.set_project_path)
         process_worker.sig_error.connect(self._process_error)
 
         self.sig_refresh_quota.connect(mount_worker.refresh_quota)
@@ -193,8 +202,15 @@ class StatusContainer(QWidget):
         None
         """
         self.content[device].sig_change_info_name.emit(text, color)
+        if color == 'white':
+            mount_type = 'Unmount'
+            self.content[device].setVisible(False)
+        else:
+            mount_type = 'Mount'
+            self.content[device].setVisible(True)
         if device != 'scratch' and device != 'project':
-            tu.message('{0} Mount/Unmount successfull!'.format(device))
+            self.log_viewer.appendPlainText('{0} {1} successfull!'.format(device, mount_type))
+            #tu.message('{0} Mount/Unmount successfull!'.format(device))
         else:
             pass
 
@@ -212,11 +228,11 @@ class StatusContainer(QWidget):
         """
         if device != 'None':
             self.content[device].sig_change_info_name.emit('Not connected', 'red')
-        tu.message(text)
+        self.log_viewer.appendPlainText(text)
+        #tu.message(text)
 
-    @staticmethod
     @pyqtSlot(str)
-    def _mount_info(text):
+    def _mount_info(self, text):
         """
         Information for the user
 
@@ -226,7 +242,8 @@ class StatusContainer(QWidget):
         Returns:
         None
         """
-        tu.message(text)
+        self.log_viewer.appendPlainText(text)
+        #tu.message(text)
 
     @pyqtSlot(str, object, str, str)
     def _process_success(self, text, numbers, device, color):
@@ -265,7 +282,7 @@ class StatusContainer(QWidget):
         Returns:
         None
         """
-        tu.message(text)
+        self.log_viewer.appendPlainText(text)
         self.sig_refresh_quota.emit()
 
     @pyqtSlot(str, str, str)

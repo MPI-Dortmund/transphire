@@ -19,26 +19,15 @@ import sys
 import os
 import re
 import pexpect as pe
-try:
-    QT_VERSION = 4
-    from PyQt4.QtGui import (
-        QMainWindow,
-        QHBoxLayout,
-        QVBoxLayout,
-        QWidget,
-        QFileDialog,
-        )
-    from PyQt4.QtCore import QThread, pyqtSlot, QCoreApplication, QTimer, pyqtSignal
-except ImportError:
-    QT_VERSION = 5
-    from PyQt5.QtWidgets import (
-        QMainWindow,
-        QHBoxLayout,
-        QVBoxLayout,
-        QWidget,
-        QFileDialog,
-        )
-    from PyQt5.QtCore import QThread, pyqtSlot, QCoreApplication, QTimer, pyqtSignal
+import subprocess
+from PyQt5.QtWidgets import (
+    QMainWindow,
+    QHBoxLayout,
+    QVBoxLayout,
+    QWidget,
+    QFileDialog,
+    )
+from PyQt5.QtCore import QThread, pyqtSlot, QCoreApplication, QTimer, pyqtSignal
 
 # Objects
 from transphire.mountworker import MountWorker
@@ -307,7 +296,6 @@ class MainWindow(QMainWindow):
             result = tu.question(
                 head='Restore default values.',
                 text='Restore default values?',
-                parent=self
                 )
             if not result:
                 self.load(file_name=self.temp_save)
@@ -525,6 +513,7 @@ class MainWindow(QMainWindow):
                 tu.reduce_copy_entries(exclude_set=exclude_set, content=entry['content'])
         error_list = []
         tab_list = []
+        global_dict = {}
         for entry in content_gui:
             key = entry['name']
 
@@ -569,6 +558,7 @@ class MainWindow(QMainWindow):
                 plot_labels=plot_labels,
                 plot_name=plot_name,
                 parent=self,
+                global_dict=global_dict,
                 **entry
                 )
 
@@ -620,6 +610,8 @@ class MainWindow(QMainWindow):
             else:
                 pass
 
+        self.content['Global'].set_global(global_dict)
+
         return error_list
 
     def check_quota(self):
@@ -657,12 +649,7 @@ class MainWindow(QMainWindow):
                 options=QFileDialog.DontUseNativeDialog
                 )
 
-            if QT_VERSION == 4:
-                file_name = file_name
-            elif QT_VERSION == 5:
-                file_name = file_name[0]
-            else:
-                raise ImportError('QT version unknown! Please contact the transphire authors!')
+            file_name = file_name[0]
 
             if not file_name:
                 return
@@ -803,12 +790,7 @@ class MainWindow(QMainWindow):
                 filter="Text files (*.txt)"
                 )
 
-            if QT_VERSION == 4:
-                file_name = file_name
-            elif QT_VERSION == 5:
-                file_name = file_name[0]
-            else:
-                raise ImportError('QT version unknown! Please contact the transphire authors!')
+            file_name = file_name[0]
 
             if not file_name:
                 return None
@@ -929,6 +911,88 @@ class MainWindow(QMainWindow):
         else:
             pass
 
+    def _extract_settings(self, key, settings, error_list, check_list):
+        try:
+            settings_widget = self.content[key].get_settings()
+        except AttributeError:
+            return
+        else:
+            settings[key] = {}
+
+        if settings_widget is None:
+            self.enable(True)
+            error_list.append('{0} needs to have problems fixed!'.format(key))
+            return None
+        elif key == 'Frames':
+            settings_motion = {}
+        else:
+            pass
+
+        if key == 'Frames':
+            skip_name_list = []
+        else:
+            skip_name_list = tu.get_function_dict()[key]['allow_empty']
+
+        for entry in settings_widget:
+            for name in sorted(list(entry.keys())):
+                if name.endswith('_global'):
+                    if entry[name][0] is not None and entry[name][1]:
+                        if key != 'Global':
+                            entry[name.split('_global')[0]] = settings['Global'][entry[name][0]]
+                        elif key == 'Global':
+                            if entry[name][0] == 'GPU':
+                                nvidia_output = subprocess.check_output(['nvidia-smi', '-L'])
+                                gpu_devices = re.findall(
+                                    '^GPU \d+: ([\w\d ]+) \(UUID: GPU-.*\)$',
+                                    nvidia_output.decode('utf-8'),
+                                    re.MULTILINE
+                                    )
+                                if len(set(gpu_devices)) != 1:
+                                    error_list.append('{0}:{1} does have different types of GPUs available! In order to not make any mistakes, please specify the GPU IDs manually')
+                                entry[name.split('_global')[0]] = ' '.join([str(entry) for entry in range(len(gpu_devices))])
+                            elif entry[name][0] == 'GPU SPLIT':
+                                entry[name.split('_global')[0]] = '1'
+                            elif entry[name][0] == 'Memory usage':
+                                entry[name.split('_global')[0]] = 0.9 / int(entry['GPU SPLIT'])
+
+                        else:
+                            assert False, key
+
+                    del entry[name]
+                    continue
+
+                if key in check_list:
+                    if name == 'Number of feedbacks' and int(entry[name]) > self.n_feedbacks:
+                        error_list.append(
+                            '{0}:{1} is not allowed to be larger than the specified number: {2}!\nCheck the start settings of TranSPHIRE in case you want more feedbacks!'.format(
+                                key,
+                                name,
+                                self.n_feedbacks
+                                )
+                            )
+                    if not entry[name] and name not in skip_name_list:
+                        error_list.append(
+                            '{0}:{1} is not allowed to be empty!'.format(
+                                key,
+                                name
+                                )
+                            )
+                    else:
+                        pass
+            else:
+                pass
+
+        for idx, entry in enumerate(settings_widget):
+            if key == 'Frames':
+                settings_motion[idx] = entry
+            else:
+                settings[key].update(entry)
+
+        if key == 'Frames':
+            settings['motion_frames'] = settings_motion
+        else:
+            pass
+
     @pyqtSlot()
     def get_start_settings(self, monitor=False):
         """
@@ -949,64 +1013,18 @@ class MainWindow(QMainWindow):
             'General',
             'Notification'
             ]
+        first_round = ['Global']
         for setting in self.content['Copy'].get_settings():
             for value in setting.values():
                 if isinstance(value, str) and value not in ('False', 'Later', 'True'):
                     check_list.append(value)
+
+        for key in first_round:
+            self._extract_settings('Global', settings, error_list, check_list)
         for key in self.content:
-            try:
-                settings_widget = self.content[key].get_settings()
-            except AttributeError:
+            if key in first_round:
                 continue
-            else:
-                settings[key] = {}
-
-            if settings_widget is None:
-                self.enable(True)
-                return None
-            elif key == 'Frames':
-                settings_motion = {}
-            else:
-                pass
-
-            if key == 'Frames':
-                skip_name_list = []
-            else:
-                skip_name_list = tu.get_function_dict()[key]['allow_empty']
-
-            for entry in settings_widget:
-                if key in check_list:
-                    for name in entry:
-                        if name == 'Number of feedbacks' and int(entry[name]) > self.n_feedbacks:
-                            error_list.append(
-                                '{0}:{1} is not allowed to be larger than the specified number: {2}!\nCheck the start settings of TranSPHIRE in case you want more feedbacks!'.format(
-                                    key,
-                                    name,
-                                    self.n_feedbacks
-                                    )
-                                )
-                        if not entry[name] and name not in skip_name_list:
-                            error_list.append(
-                                '{0}:{1} is not allowed to be empty!'.format(
-                                    key,
-                                    name
-                                    )
-                                )
-                        else:
-                            pass
-                else:
-                    pass
-
-            for idx, entry in enumerate(settings_widget):
-                if key == 'Frames':
-                    settings_motion[idx] = entry
-                else:
-                    settings[key].update(entry)
-
-            if key == 'Frames':
-                settings['motion_frames'] = settings_motion
-            else:
-                pass
+            self._extract_settings(key, settings, error_list, check_list)
 
         settings['motion_frames'] = [{
             'first': 1,
@@ -1014,7 +1032,7 @@ class MainWindow(QMainWindow):
             'dw': True,
             'default': True
             }]
-        if error_list:
+        if error_list and not monitor:
             tu.message('\n'.join(error_list))
             self.enable(True)
             return None
@@ -1038,7 +1056,7 @@ class MainWindow(QMainWindow):
         if not re.match(
                 self.project_name_pattern,
                 settings['General']['Project name']
-                ):
+                ) and not monitor:
             self.enable(True)
             tu.message(
                 'Project name needs to match pattern:\n{0}\n For example: {1}'.format(
@@ -1055,6 +1073,11 @@ class MainWindow(QMainWindow):
             settings['General']['Project directory'],
             settings['General']['Project name']
             )
+        if not os.path.exists(settings['project_folder']) and monitor:
+            self.enable(True)
+            tu.message('Project needs to exists in order to start Monitor mode')
+            return None
+
         settings['scratch_folder'] = os.path.join(
             settings['General']['Scratch directory'],
             settings['General']['Project name']
@@ -1080,12 +1103,16 @@ class MainWindow(QMainWindow):
         settings['meta_folder'] = os.path.join(
             settings['project_folder'], 'Meta'
             )
+        settings['gain_folder'] = os.path.join(
+            settings['project_folder'], 'Gain_files'
+            )
         settings['software_meta_folder'] = os.path.join(
             settings['project_folder'], 'Software_meta'
             )
 
         settings['do_feedback_loop'] = int(settings['General']['Number of feedbacks'])
         settings['feedback_file'] = os.path.join(settings['project_folder'], 'do_feedback')
+        settings['data_frame'] = os.path.join(settings['project_folder'], 'data_frame.csv')
 
         names = [
             entry.replace('_entries', '')
@@ -1135,12 +1162,11 @@ class MainWindow(QMainWindow):
 
         # Check for continue mode
         if settings is None:
-            tu.message('Please fill non emtpy entries.')
-            result = False
+            return None
         elif os.path.exists(settings['project_folder']):
             result = self.continue_dialog(
                 text1='Output project folder already exists!',
-                text2='Do you really want to continue the old run?\nType: "YES"!'
+                text2='Do you really want to continue the old run?\nType: "YES!"'
                 )
             #if result:
             #    result_session = self.continue_dialog(
@@ -1228,7 +1254,7 @@ class MainWindow(QMainWindow):
         """
         result = self.continue_dialog(
             text1='Do you really want to stop?',
-            text2='Do you really want to stop!\nType: "YES"!'
+            text2='Do you really want to stop!\nType: "YES!"'
             )
         if result:
             self.stop()

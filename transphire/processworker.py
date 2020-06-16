@@ -22,10 +22,7 @@ import shutil
 import re
 import glob
 import copy as cp
-try:
-    from PyQt4.QtCore import QObject, pyqtSignal, pyqtSlot
-except ImportError:
-    from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 from transphire.processthread import ProcessThread
 from transphire import transphire_utils as tu
 import multiprocessing as mp
@@ -52,6 +49,7 @@ class ProcessWorker(QObject):
     sig_plot_picking - Emitted to plot picking information (picking_name|str, picking_settings|str, settings|object)
     """
     sig_start = pyqtSignal(object, str)
+    sig_set_project_directory = pyqtSignal(str)
     sig_finished = pyqtSignal()
     sig_error = pyqtSignal(str)
     sig_status = pyqtSignal(str, object, str, str)
@@ -171,6 +169,7 @@ class ProcessWorker(QObject):
             settings[settings['Copy']['Picking']]['--weights_old'] = settings[settings['Copy']['Picking']]['--weights']
 
         self.settings = settings
+        self.sig_set_project_directory.emit(self.settings['project_folder'])
 
         manager = mp.Manager()
         typ_dict = {}
@@ -367,6 +366,8 @@ class ProcessWorker(QObject):
         folder_list = ['stack_folder', 'meta_folder']
         use_threads_list = ['Meta', 'Find', 'Import']
 
+        data_frame = tu.DataFrame(manager, self.settings['data_frame'])
+
         # Decide if one will use copy to HDD
         self.settings['Copy']['Copy_to_hdd'] = self.settings['Copy']['Copy to HDD']
         if self.settings['Copy']['Copy to HDD'] != 'False':
@@ -525,6 +526,7 @@ class ProcessWorker(QObject):
             'motion_txt_lock': manager.Lock(),
             'gpu_lock': gpu_mutex_dict,
             'gpu_lock_lock': manager.Lock(),
+            'data_frame_lock': manager.Lock(),
             'typ': typ_dict,
             }
 
@@ -535,6 +537,7 @@ class ProcessWorker(QObject):
         except FileNotFoundError:
             pass
 
+        self.settings['is_superres'] = mp.Value('i', 2)
         self.settings['do_feedback_loop'] = mp.Value('i', self.settings['do_feedback_loop'])
         if self.settings['do_feedback_loop'].value == 0:
             queue_com['status'].put([
@@ -660,7 +663,8 @@ class ProcessWorker(QObject):
                     use_threads_set=use_threads_set,
                     stop=mp.Value('i', self.stop),
                     has_finished=mp.Value('i', 0),
-                    parent=self
+                    data_frame=data_frame,
+                    parent=self,
                     )
                 thread = mp.Process(target=self.run_in_parallel, args=(thread_obj,))
                 thread.start()
@@ -700,7 +704,7 @@ class ProcessWorker(QObject):
             thread_obj.stop.value = True
 
         for _, name, _, thread_obj in thread_list:
-            print('Waiting for', name, 'to finish!')
+            queue_com['log'].put('Waiting for {0} to finish!'.format(name))
             while not thread_obj.has_finished.value:
                 time.sleep(1)
                 self.check_queue(queue_com=queue_com)
@@ -725,8 +729,8 @@ class ProcessWorker(QObject):
                 'Feedbacks',
                 'white'
                 ])
+        queue_com['log'].put('All done!')
         self.check_queue(queue_com=queue_com)
-        print('All done!')
 
         final_sizes = []
         for key, settings_content in full_content:
@@ -872,11 +876,11 @@ class ProcessWorker(QObject):
                 error = True
 
             if self.settings[auto3d_name]['Use SSH'] == 'True':
-                device_name = [
-                    entry
-                    for entry in self.settings['Mount'][self.settings['Copy']['Copy to work']]['IP'].split('/') if entry.strip()
-                    ][0]
                 if self.settings['Copy']['Copy to work'] != 'False' and self.settings['Copy']['Copy to work'] != 'Later':
+                    device_name = [
+                        entry
+                        for entry in self.settings['Mount'][self.settings['Copy']['Copy to work']]['IP'].split('/') if entry.strip()
+                        ][0]
                     ssh_command = 'ssh -o "StrictHostKeyChecking no" {0}@{1} ls'.format(
                         self.settings[auto3d_name]['SSH username'],
                         device_name
@@ -930,7 +934,7 @@ class ProcessWorker(QObject):
                 elif key == 'log':
                     log = queue_com['log'].get()
                     try:
-                        with open(os.path.join(self.settings['project_folder'], 'log.txt'), 'a+') as write:
+                        with open(os.path.join(self.settings['project_folder'], 'sys_log.txt'), 'a+') as write:
                             write.write('{0}\n'.format(log))
                     except FileNotFoundError:
                         pass

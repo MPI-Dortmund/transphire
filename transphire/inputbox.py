@@ -15,10 +15,9 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-try:
-    from PyQt4.QtGui import QDialog, QVBoxLayout, QLabel, QPushButton, QDialogButtonBox, QWidget, QLineEdit
-except ImportError:
-    from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QDialogButtonBox, QWidget, QLineEdit
+import os
+from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QDialogButtonBox, QWidget, QLineEdit, QFileDialog
+from PyQt5.QtCore import pyqtSlot
 
 
 class InputBox(QDialog):
@@ -58,6 +57,8 @@ class InputBox(QDialog):
         layout = QVBoxLayout(central_widget)
         self.label = QLabel(self)
         self.edit = QLineEdit('', self)
+        self.edit.setObjectName('setting_xlarge')
+
         if is_password:
             self.edit.setEchoMode(QLineEdit.Password)
         else:
@@ -105,3 +106,67 @@ class InputBox(QDialog):
         Text content
         """
         return self.edit.text()
+
+    def setDefault(self, text):
+        """
+        Set the default values for the QLineEdit.
+
+        text - Text to put
+
+        Returns:
+        None
+        """
+        self.edit.setText(text)
+
+    def set_type(self, this_type):
+        if this_type in ('FILE', 'FILE/CHOICE'):
+            self.edit.returnPressed.connect(self._find_file)
+            self.edit.setToolTip(self.edit.toolTip() + '\n Shortcut: Shift + Return -> Open file dialog')
+        elif this_type in ('DIR'):
+            self.edit.returnPressed.connect(self._find_dir)
+            self.edit.setToolTip(self.edit.toolTip() + '\n Shortcut: Shift + Return -> Open directory dialog')
+        else:
+            pass
+
+    @pyqtSlot()
+    def _find_file(self):
+        """
+        Find file with an open file dialog.
+
+        Arguments:
+        None
+
+        Returns:
+        None
+        """
+        in_file = QFileDialog.getOpenFileName(
+            caption='Find file: {0}'.format(self.label.text()),
+            directory=os.getcwd(),
+            options=QFileDialog.DontUseNativeDialog
+            )
+
+        in_file = in_file[0]
+
+        if in_file != '':
+            self.sender().setText(in_file)
+
+
+    @pyqtSlot()
+    def _find_dir(self):
+        """
+        Find directory with an open directory dialog
+
+        Arguments:
+        None
+
+        Returns:
+        None
+        """
+        in_dir = QFileDialog.getExistingDirectory(
+            caption='Find directory: {0}'.format(self.label.text()),
+            directory=os.getcwd(),
+            options=QFileDialog.DontUseNativeDialog
+            )
+        if in_dir != '':
+            self.sender().setText(in_dir)
+
