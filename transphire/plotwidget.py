@@ -235,24 +235,24 @@ class TrimWidget(QWidget):
         except ValueError:
             tu.message('Non-float value detected! Falling back to previous values!')
             self.set_values(previous_dict)
-            return
+            return None, None
 
         if return_dict[self._name_min_x] > return_dict[self._name_max_x] or return_dict[self._name_min_y] > return_dict[self._name_max_y]:
             tu.message('Minimum cannot be greater than maximum! Falling back to previous values!')
             self.set_values(previous_dict)
-            return
+            return None, None
 
         try:
             return_dict[self._name_bins] = int(return_dict[self._name_bins])
         except ValueError:
             tu.message('Bins need to be an integer! Falling back to previous values!')
             self.set_values(previous_dict)
-            return
+            return None, None
 
         if return_dict[self._name_bins] <= 0:
             tu.message('Bins need to be a positive integer > 0! Falling back to previous values!')
             self.set_values(previous_dict)
-            return
+            return None, None
 
         for key, value in return_dict.items():
             self.buttons[key][self.previous_idx] = str(value)
