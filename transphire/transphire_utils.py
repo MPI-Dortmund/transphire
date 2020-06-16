@@ -220,6 +220,7 @@ def get_function_dict():
             'executable': True,
             'has_path': 'MotionCor2',
             'typ': 'Motion',
+            'license': True,
             'category': 'External software',
             'allow_empty': ['-DefectFile', '-Gain', '-Dark'],
             }
@@ -241,6 +242,7 @@ def get_function_dict():
             'executable': True,
             'has_path': 'unblur',
             'typ': 'Motion',
+            'license': False,
             'category': 'External software',
             'allow_empty': [],
             }
@@ -254,6 +256,7 @@ def get_function_dict():
             'executable': True,
             'has_path': 'ctffind',
             'typ': 'CTF',
+            'license': False,
             'category': 'External software',
             'allow_empty': ['Gain file'],
             }
@@ -267,6 +270,7 @@ def get_function_dict():
             'executable': True,
             'has_path': 'Gctf',
             'typ': 'CTF',
+            'license': False,
             'category': 'External software',
             'allow_empty': [],
             }
@@ -277,6 +281,7 @@ def get_function_dict():
             'executable': True,
             'has_path': 'Gctf_v1.18',
             'typ': 'CTF',
+            'license': False,
             'category': 'External software',
             'allow_empty': [],
             }
@@ -290,6 +295,7 @@ def get_function_dict():
             'executable': True,
             'has_path': 'sp_cter.py',
             'typ': 'CTF',
+            'license': False,
             'category': 'External software',
             'allow_empty': [],
             }
@@ -304,6 +310,7 @@ def get_function_dict():
             'executable': True,
             'has_path': 'cryolo_predict.py',
             'typ': 'Picking',
+            'license': True,
             'category': 'External software',
             'allow_empty': [],
             }
@@ -334,6 +341,7 @@ def get_function_dict():
             'executable': True,
             'has_path': 'sp_window.py',
             'typ': 'Extract',
+            'license': False,
             'category': 'External software',
             'allow_empty': [''],
             }
@@ -348,6 +356,7 @@ def get_function_dict():
             'executable': True,
             'has_path': 'sp_isac2_gpu.py',
             'typ': 'Class2d',
+            'license': False,
             'category': 'External software',
             'allow_empty': [''],
             }
@@ -362,6 +371,7 @@ def get_function_dict():
             'executable': True,
             'has_path': 'sp_cinderella_predict.py',
             'typ': 'Select2d',
+            'license': False,
             'category': 'External software',
             'allow_empty': [],
             }
@@ -375,6 +385,7 @@ def get_function_dict():
             'executable': True,
             'has_path': 'cryolo_train.py',
             'typ': 'Train2d',
+            'license': True,
             'category': 'External software',
             'allow_empty': [],
             }
@@ -391,6 +402,7 @@ def get_function_dict():
             'executable': True,
             'has_path': 'sp_auto.py',
             'typ': 'Auto3d',
+            'license': False,
             'category': 'External software',
             'allow_empty': [
                 'SSH username',
@@ -413,6 +425,7 @@ def get_function_dict():
             'executable': True,
             'has_path': False,
             'typ': 'Compress',
+            'license': False,
             'category': 'External software',
             'allow_empty': ['--command_uncompress'],
             }
@@ -426,6 +439,7 @@ def get_function_dict():
             'executable': False,
             'has_path': False,
             'typ': None,
+            'license': False,
             'category': 'Internal settings',
             'allow_empty': [],
             }
@@ -436,6 +450,7 @@ def get_function_dict():
             'executable': False,
             'has_path': False,
             'typ': None,
+            'license': False,
             'category': 'Internal settings',
             'allow_empty': [],
             }
@@ -446,6 +461,7 @@ def get_function_dict():
             'executable': False,
             'has_path': False,
             'typ': None,
+            'license': False,
             'category': 'Internal settings',
             'allow_empty': ['Rename suffix', 'Rename prefix'],
             }
@@ -457,6 +473,7 @@ def get_function_dict():
             'executable': False,
             'has_path': False,
             'typ': None,
+            'license': False,
             'category': 'TranSPHIRE settings',
             'allow_empty': [],
             }
@@ -467,6 +484,7 @@ def get_function_dict():
             'executable': False,
             'has_path': False,
             'typ': None,
+            'license': False,
             'category': 'TranSPHIRE settings',
             'allow_empty': [],
             }
@@ -477,6 +495,7 @@ def get_function_dict():
             'executable': False,
             'has_path': False,
             'typ': None,
+            'license': False,
             'category': 'TranSPHIRE settings',
             'allow_empty': [],
             }
@@ -487,6 +506,7 @@ def get_function_dict():
             'executable': False,
             'has_path': False,
             'typ': None,
+            'license': False,
             'category': 'TranSPHIRE settings',
             'allow_empty': [],
             }
@@ -497,6 +517,7 @@ def get_function_dict():
             'executable': False,
             'has_path': False,
             'typ': None,
+            'license': False,
             'category': 'TranSPHIRE settings',
             'allow_empty': [],
             }
@@ -507,6 +528,7 @@ def get_function_dict():
             'executable': False,
             'has_path': False,
             'typ': None,
+            'license': False,
             'category': 'TranSPHIRE settings',
             'allow_empty': [],
             }

@@ -822,11 +822,6 @@ class ProcessWorker(QObject):
         else:
             pass
 
-        if len(self.settings['motion_frames']) > 1:
-            check_files.append(['Path', 'SumMovie v1.0.2'])
-        else:
-            pass
-
         for typ, name in check_files:
             if name != 'False' and name != 'Later':
                 try:

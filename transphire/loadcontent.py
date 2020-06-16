@@ -92,6 +92,7 @@ class LoadContent(QWidget):
 
         # Fill content based on typ
         content_function = tu.get_function_dict()[typ]['content']
+        is_license = tu.get_function_dict()[typ]['license']
         if typ == 'Mount':
             button = QPushButton('Delete', self)
             button.clicked.connect(self._button_clicked)
@@ -105,6 +106,12 @@ class LoadContent(QWidget):
             items = content_function(settings_folder=settings_folder)
         else:
             items = content_function()
+
+        if is_license:
+            items.append(
+                ['IMPORTANT', 'THIS SOFTWARE IS NOT UNDER AN OPEN-SOURCE LICENSE. PLEASE CHECK IF YOU NEED/OWN A LICENSE BEFORE USING THIS APPLICATION.', str, '', 'PLAIN', '', ''],
+                )
+
 
         # Fill widget with content items
         self._fill_default(items)

@@ -21,8 +21,6 @@ import os
 from transphire import transphire_utils as tu
 from transphire import transphire_import as ti
 
-INDUSTRY_TEXT = 'THIS SOFTWARE IS NOT UNDER AN OPEN-SOURCE LICENSE. PLEASE CHECK IF YOU NEED/OWN A LICENSE BEFORE USING THIS APPLICATION.'
-
 def default_auto_sphire_v1_3():
     """
     Content for auto sphire
@@ -196,7 +194,6 @@ def default_cryolo_train_v1_5_8():
         ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
         ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
         ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
-        ['IMPORTANT', INDUSTRY_TEXT, str, '', 'PLAIN', '', ''],
         ['Box size', '205', int, '', 'PLAIN', 'Main', 'Box size used for retraining. Should be quite narrow.'],
         ['--warmup', '5', int, '', 'PLAIN', 'Main', 'Number of warmup epochs. Set it to zero if you fine tune a model.'],
         ['--num_cpu', '-1', int, '', 'PLAIN', 'Main', 'Number of CPUs used during training. By default it will use half of the available CPUs.'],
@@ -227,7 +224,6 @@ def default_cryolo_train_v1_5_4():
         ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
         ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
         ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
-        ['IMPORTANT', INDUSTRY_TEXT, str, '', 'PLAIN', '', ''],
         ['Box size', '205', int, '', 'PLAIN', 'Main', 'Box size used for retraining. Should be quite narrow.'],
         ['--warmup', '5', int, '', 'PLAIN', 'Main', 'Number of warmup epochs. Set it to zero if you fine tune a model.'],
         ['--num_cpu', '-1', int, '', 'PLAIN', 'Main', 'Number of CPUs used during training. By default it will use half of the available CPUs.'],
@@ -257,7 +253,6 @@ def default_cryolo_v1_5_8():
         ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
         ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
         ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
-        ['IMPORTANT', INDUSTRY_TEXT, str, '', 'PLAIN', '', ''],
         ['--conf', '', str, '', 'FILE', 'Main', '', 'Path to configuration file.'],
         ['--weights', '', str, '', 'FILE', 'Main', 'Path to pretrained weights.'],
         ['--threshold', '0.3', float, '', 'PLAIN', 'Main', 'Confidence threshold. Have to be between 0 and 1. The higher, the more conservative.'],
@@ -297,7 +292,6 @@ def default_cryolo_v1_4_1():
         ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
         ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
         ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
-        ['IMPORTANT', INDUSTRY_TEXT, str, '', 'PLAIN', '', ''],
         ['--conf', '', str, '', 'FILE', 'Main', '', 'Path to configuration file.'],
         ['--weights', '', str, '', 'FILE', 'Main', 'Path to pretrained weights.'],
         ['--threshold', '0.3', float, '', 'PLAIN', 'Main', 'Confidence threshold. Have to be between 0 and 1. The higher, the more conservative.'],
@@ -341,7 +335,6 @@ def default_cryolo_v1_2_1():
         ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
         ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
         ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
-        ['IMPORTANT', INDUSTRY_TEXT, str, '', 'PLAIN', '', ''],
         ['--conf', '', str, '', 'FILE', 'Main', '', 'Path to configuration file.'],
         ['--weights', '', str, '', 'FILE', 'Main', 'Path to pretrained weights.'],
         ['--threshold', '0.3', float, '', 'PLAIN', 'Main', 'Confidence threshold. Have to be between 0 and 1. As higher, as more conservative.'],
@@ -375,7 +368,6 @@ def default_cryolo_v1_1_0():
         ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
         ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
         ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
-        ['IMPORTANT', INDUSTRY_TEXT, str, '', 'PLAIN', '', ''],
         ['--conf', '', str, '', 'FILE', 'Main', '', 'Path to configuration file.'],
         ['--weights', '', str, '', 'FILE', 'Main', 'Path to pretrained weights.'],
         ['--threshold', '0.3', float, '', 'PLAIN', 'Main', 'Confidence threshold. Have to be between 0 and 1. As higher, as more conservative.'],
@@ -409,7 +401,6 @@ def default_cryolo_v1_0_4():
         ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
         ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
         ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
-        ['IMPORTANT', INDUSTRY_TEXT, str, '', 'PLAIN', '', ''],
         ['--conf', '', str, '', 'FILE', 'Main', '', 'Path to configuration file.'],
         ['--weights', '', str, '', 'FILE', 'Main', 'Path to pretrained weights.'],
         ['--threshold', '0.3', float, '', 'PLAIN', 'Main', 'Confidence threshold. Have to be between 0 and 1. As higher, as more conservative.'],
@@ -622,7 +613,6 @@ def default_path():
         ['sp_pipe.py', 'sp_pipe.py', str, '', 'FILE', 'Main', ''],
         ['e2bdb.py', 'e2bdb.py', str, '', 'FILE', 'Main', ''],
         ['mpirun', 'mpirun', str, '', 'FILE', 'Main', ''],
-        ['SumMovie v1.0.2', 'summovie', str, '', 'FILE', 'Main', ''],
         ['cryolo_gui.py', 'cryolo_gui.py', str, '', 'FILE', 'Main', ''],
         ['cryolo_evaluation.py', 'cryolo_evaluation.py', str, '', 'FILE', 'Main', ''],
         ]
@@ -1091,7 +1081,6 @@ def default_motion_cor_2_v1_0_0():
         ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
         ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
         ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
-        ['IMPORTANT', INDUSTRY_TEXT, str, '', 'PLAIN', '', ''],
         ['-FmDose', '0', float, '', 'PLAIN', 'Main', 'Frame dose in e/A^2. If not specified, dose weighting will be skipped.'],
         ['-PixSize', '0', float, '', 'PLAIN', 'Main', 'Pixel size in A of input stack in angstrom. If not specified, dose weighting will be skipped.'],
         ['-kV', '300', float, '', 'PLAIN', 'Main', 'High tension in kV needed for dose weighting.  Default is 300.'],
@@ -1138,7 +1127,6 @@ def default_motion_cor_2_v1_0_5():
         ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
         ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
         ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
-        ['IMPORTANT', INDUSTRY_TEXT, str, '', 'PLAIN', '', ''],
         ['-FmDose', '0', float, '', 'PLAIN', 'Main', 'Frame dose in e/A^2. If not specified, dose weighting will be skipped.'],
         ['-PixSize', '0', float, '', 'PLAIN', 'Main', 'Pixel size in A of input stack in angstrom. If not specified, dose weighting will be skipped.'],
         ['-kV', '300', float, '', 'PLAIN', 'Main', 'High tension in kV needed for dose weighting.  Default is 300.'],
@@ -1186,7 +1174,6 @@ def default_motion_cor_2_v1_1_0():
         ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
         ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
         ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
-        ['IMPORTANT', INDUSTRY_TEXT, str, '', 'PLAIN', '', ''],
         ['-FmDose', '0', float, '', 'PLAIN', 'Main', 'Frame dose in e/A^2. If not specified, dose weighting will be skipped.'],
         ['-PixSize', '0', float, '', 'PLAIN', 'Main', 'Pixel size in A of input stack in angstrom. If not specified, dose weighting will be skipped.'],
         ['-kV', '300', float, '', 'PLAIN', 'Main', 'High tension in kV needed for dose weighting.  Default is 300.'],
@@ -1235,7 +1222,6 @@ def default_motion_cor_2_v1_3_0():
         ['WIDGETS MAIN', '5', int, '', 'PLAIN', '', ''],
         ['WIDGETS ADVANCED', '5', int, '', 'PLAIN', '', ''],
         ['WIDGETS RARE', '5', int, '', 'PLAIN', '', ''],
-        ['IMPORTANT', INDUSTRY_TEXT, str, '', 'PLAIN', '', ''],
         ['-FmDose', '0', float, '', 'PLAIN', 'Main', 'Frame dose in e/A^2. If not specified, dose weighting will be skipped.'],
         ['-PixSize', '0', float, '', 'PLAIN', 'Main', 'Pixel size in A of input stack in angstrom. If not specified, dose weighting will be skipped.'],
         ['-kV', '300', float, '', 'PLAIN', 'Main', 'High tension in kV needed for dose weighting.  Default is 300.'],
