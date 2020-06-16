@@ -273,7 +273,7 @@ class MplCanvas(FigureCanvas):
         self.axes.grid(True)
         self.axes.autoscale(enable=False)
         self.axes.set_axisbelow(True)
-        self.fig.set_tight_layout(True)
+        self.fig.set_tight_layout({'pad': 0.2})
         super(MplCanvas, self).__init__(self.fig)
 
     @pyqtSlot(object)
@@ -298,8 +298,10 @@ class MplCanvasWidget(QWidget):
 
         if is_twin:
             self.font_size = 6
+            self.labelpad = 0
         else:
             self.font_size = 10
+            self.labelpad = 10
 
         self.no_grid = no_grid
         self.plot_type = plot_type
@@ -321,40 +323,27 @@ class MplCanvasWidget(QWidget):
     def update_labels(self, title, label_x, label_y):
         title = tu.split_maximum(title, 20)
 
-        self.mpl_canvas.axes.set_title(title, fontsize=self.font_size)
+        self.mpl_canvas.axes.set_title(title, fontsize=self.font_size, pad=self.labelpad)
         if self.plot_type == 'histogram':
-            label_x = tu.split_maximum(label_x[1], 20)
-            label_y = tu.split_maximum(label_y[1], 20)
-            self.mpl_canvas.axes.set_xlabel(
-                label_y,
-                fontsize=self.font_size
-                )
-            self.mpl_canvas.axes.set_ylabel(
-                label_x,
-                fontsize=self.font_size
-                )
+            final_label_y = tu.split_maximum(label_x[1], 20)
+            final_label_x = tu.split_maximum(label_y[1], 20)
         elif self.plot_type == 'values':
-            label_x = tu.split_maximum(label_x[0], 20)
-            label_y = tu.split_maximum(label_y[1], 20)
-            self.mpl_canvas.axes.set_ylabel(
-                label_y,
-                fontsize=self.font_size
-                )
-            self.mpl_canvas.axes.set_xlabel(
-                label_x,
-                fontsize=self.font_size
-                )
+            final_label_x = tu.split_maximum(label_x[0], 20)
+            final_label_y = tu.split_maximum(label_y[1], 20)
         elif self.plot_type == 'image':
-            label_x = tu.split_maximum(label_x, 20)
-            label_y = tu.split_maximum(label_y, 20)
-            self.mpl_canvas.axes.set_ylabel(
-                label_y,
-                fontsize=self.font_size
-                )
-            self.mpl_canvas.axes.set_xlabel(
-                label_x,
-                fontsize=self.font_size
-                )
+            final_label_x = tu.split_maximum(label_x, 20)
+            final_label_y = tu.split_maximum(label_y, 20)
+
+        self.mpl_canvas.axes.set_ylabel(
+            final_label_y,
+            fontsize=self.font_size,
+            labelpad=self.labelpad
+            )
+        self.mpl_canvas.axes.set_xlabel(
+            final_label_x,
+            fontsize=self.font_size,
+            labelpad=self.labelpad
+            )
 
 
 class ViewWidget(QWidget):
