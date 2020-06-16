@@ -20,7 +20,7 @@ try:
     from PyQt4.QtGui import QMainWindow, QDockWidget, QTabWidget, QWidget
 except ImportError:
     from PyQt5.QtCore import pyqtSlot, Qt, QEvent, pyqtSignal
-    from PyQt5.QtWidgets import QMainWindow, QDockWidget, QTabWidget, QWidget, QHBoxLayout, QVBoxLayout
+    from PyQt5.QtWidgets import QMainWindow, QDockWidget, QTabWidget, QWidget, QHBoxLayout, QVBoxLayout, QLabel
 from transphire.plotwidget import PlotWidget, MplCanvas
 
 
@@ -109,6 +109,7 @@ class PlotContainer(QMainWindow):
                 pass
 
             dock_widget = QDockWidget(label, self)
+            dock_widget.setTitleBarWidget(QLabel('{} - {}'.format(self.plot_name, label), self))
 
             if label == 'overview':
                 widget = TwinContainer(dock_widget=dock_widget, parent=self)
