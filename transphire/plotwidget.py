@@ -92,7 +92,7 @@ class SelectWidget(QWidget):
 
     @pyqtSlot(int)
     def check_enable(self, idx):
-        if idx == 0 and idx == self.buttons['Image'].count() + 1:
+        if idx == 0 and idx == self.buttons['Image'].count() - 1:
             self.buttons[self.prev_text].setEnabled(False)
             self.buttons[self.next_text].setEnabled(False)
         elif idx == 0:
