@@ -72,16 +72,14 @@ class PlotWorker(QObject):
         """
         for name, directory_name, settings, current_name in settings:
             if 'feedback' in name:
-                name_no_feedback = name[:-len(' feedback 1')]
+                name_no_feedback = ' '.join(name.rsplit()[:-2])
             else:
                 name_no_feedback = name
 
             if name_no_feedback not in ('Later', 'False'):
                 if ' feedback 0' in name:
                     name = name_no_feedback
-
-                if name_no_feedback == current_name:
-                    self.settings.append([name, name_no_feedback, directory_name, settings])
+                self.settings.append([name, name_no_feedback, directory_name, settings])
 
         self.calculate_array()
         self.sig_set_visual.emit()

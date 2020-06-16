@@ -70,9 +70,6 @@ class ProcessWorker(QObject):
         None
         """
         super(ProcessWorker, self).__init__(parent)
-        # Signals
-        self.signals = {}
-
         # Variables
         self.password = password
         self.content_process = content_process
@@ -129,12 +126,6 @@ class ProcessWorker(QObject):
                             self.settings,
                             self.settings['Copy'][name],
                             ])
-                        self.signals['{0}_feedback_{1}'.format(name, feedback_number)].emit(
-                            '{0} feedback {1}'.format(entry, feedback_number),
-                            signal_folder,
-                            self.settings,
-                            self.settings['Copy'][name],
-                            )
                     except KeyError:
                         pass
         self.signal_plot.emit(settings_emit)

@@ -246,12 +246,13 @@ class PlotContainer(QMainWindow):
         for idx in range(aim_docker.count()):
             aim_container = aim_docker.widget(idx)
             for entry in aim_container.dock_widgets:
-                if entry.widget() == widget.parent:
+                if entry.widget() == widget.my_parent:
                     docker_to_activate = entry
                     break
             else:
                 continue
             break
+        assert docker_to_activate is not None, (entry, widget, widget.my_parent)
         self.synchronize_tabs(docker_to_activate)
         aim_docker.setCurrentIndex(idx)
 
