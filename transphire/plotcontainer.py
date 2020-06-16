@@ -20,7 +20,7 @@ try:
     from PyQt4.QtGui import QMainWindow, QDockWidget, QTabWidget, QWidget
 except ImportError:
     from PyQt5.QtCore import pyqtSlot, Qt, QEvent, pyqtSignal
-    from PyQt5.QtWidgets import QMainWindow, QDockWidget, QTabWidget, QWidget, QHBoxLayout, QVBoxLayout, QLabel
+    from PyQt5.QtWidgets import QMainWindow, QDockWidget, QTabWidget, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QStyle, QPushButton
 from transphire.plotwidget import PlotWidget, MplCanvas
 
 
@@ -109,7 +109,23 @@ class PlotContainer(QMainWindow):
                 pass
 
             dock_widget = QDockWidget(label, self)
-            dock_widget.setTitleBarWidget(QLabel('{} - {}'.format(self.plot_name, label), self))
+
+            custom_title = QWidget(dock_widget)
+            layout_custom_title = QHBoxLayout(custom_title)
+            layout_custom_title.setContentsMargins(0, 0, 0, 0)
+            layout_custom_title.addWidget(QLabel('{} - {}'.format(self.plot_name, label), dock_widget))
+
+            layout_custom_title.addStretch(1)
+
+            button = QPushButton(dock_widget)
+            button.my_docker = dock_widget
+            button.setStyleSheet('color: rgba(0, 0, 0 ,0); background-color: rgba(0, 0, 0, 0)')
+            icon = dock_widget.style().standardIcon(QStyle.SP_TitleBarNormalButton)
+            button.setIcon(icon)
+            button.clicked.connect(self.set_floating)
+            layout_custom_title.addWidget(button)
+
+            dock_widget.setTitleBarWidget(custom_title)
 
             if label == 'overview':
                 widget = TwinContainer(dock_widget=dock_widget, parent=self)
@@ -132,6 +148,10 @@ class PlotContainer(QMainWindow):
         self.tabifiedDockWidgetActivated.connect(self.synchronize_tabs)
         self.parent.content[self.parent_layout].enable_tab(False)
         self._is_visible = False
+
+    @pyqtSlot()
+    def set_floating(self):
+        self.sender().my_docker.setFloating(not self.sender().my_docker.isFloating())
 
     @pyqtSlot(str, str, object, str, object)
     def update_figure(self, name, name_no_feedback, data, directory_name, settings):
@@ -220,6 +240,11 @@ class PlotContainer(QMainWindow):
     @pyqtSlot(object)
     def select_tab(self, widget):
         aim_docker = self.parent.content[self.parent_layout]
+        cur_docker = aim_docker
+        for _ in range(3):
+            tmp_docker = self.parent.content[cur_docker.layout]
+            tmp_docker.setCurrentWidget(cur_docker)
+            cur_docker = tmp_docker
 
         docker_to_activate = None
         for idx in range(aim_docker.count()):

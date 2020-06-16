@@ -363,6 +363,7 @@ class ViewWidget(QWidget):
     def __init__(self, parent=None):
         super(ViewWidget, self).__init__(parent)
         layout = QHBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
         entries = ['Min', 'Max', 'Mean', 'Median', 'Sum', 'In range', 'of']
         self.widgets = {}
         for entry in entries:

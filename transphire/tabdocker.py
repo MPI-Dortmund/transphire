@@ -96,7 +96,7 @@ class TabDocker(QWidget):
 
     def setCurrentIndex(self, idx):
         """
-        Get the current Index of the tab_widget.
+        Set the current Index of the tab_widget.
 
         Arguments:
         idx - Index to set
@@ -104,6 +104,17 @@ class TabDocker(QWidget):
         Returns: Current index of self.tab_widget
         """
         return self.tab_widget.setCurrentIndex(idx)
+
+    def setCurrentWidget(self, widget):
+        """
+        Set the current widget of the tab_widget.
+
+        Arguments:
+        idx - Widget to set
+
+        Returns: Current index of self.tab_widget
+        """
+        return self.tab_widget.setCurrentWidget(widget)
 
     def currentIndex(self):
         """
