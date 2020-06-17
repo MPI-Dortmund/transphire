@@ -1,4 +1,5 @@
 import sys
+session = None # Will be overriden by the chimerax.core.commands import!
 import chimerax.core.commands as ccc
 
 print(sys.argv)

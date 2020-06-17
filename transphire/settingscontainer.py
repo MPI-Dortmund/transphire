@@ -310,7 +310,7 @@ class SettingsContainer(QWidget):
                 key_global = '{0}_global'.format(key)
                 global_settings = settings[key_global] if key_global in settings else None
                 content.set_settings(settings[key], global_settings)
-            except KeyError as e:
+            except KeyError:
                 if self.name == 'Copy' and key.endswith('_entries'):
                     continue
                 else:

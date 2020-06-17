@@ -116,7 +116,6 @@ class LoadContentContainer(QWidget):
         result = tu.question(
             head='Change template.',
             text='Changing the template will overwrite all unsaved changes!\nDo you really want to continue?.',
-            parent=self
             )
         if result:
             default_file = os.path.join(self.settings_folder, template, os.path.basename(self.file))

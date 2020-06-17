@@ -15,9 +15,9 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-from PyQt5.QtCore import pyqtSlot, Qt, QEvent, pyqtSignal
+from PyQt5.QtCore import pyqtSlot, Qt, QEvent
 from PyQt5.QtWidgets import QMainWindow, QDockWidget, QTabWidget, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QStyle, QPushButton
-from transphire.plotwidget import PlotWidget, MplCanvas
+from transphire.plotwidget import PlotWidget
 
 
 class TwinContainer(QWidget):

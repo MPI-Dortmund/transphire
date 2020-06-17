@@ -246,7 +246,6 @@ class ButtonContainer(QWidget):
                 head='Keep current values',
                 text='Do you want to keep your current settings?\n' +
                 'Otherwhise they will be overwritten by the default values.',
-                parent=self
                 )
             app = QApplication.instance()
             app.setStyleSheet(

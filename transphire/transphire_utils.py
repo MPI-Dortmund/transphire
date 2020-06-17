@@ -33,10 +33,9 @@ from transphire.messagebox import MessageBox
 from transphire.mountcontainer import MountContainer
 from transphire.statuscontainer import StatusContainer
 from transphire.settingscontainer import SettingsContainer
-from transphire.framecontainer import FrameContainer
 from transphire.buttoncontainer import ButtonContainer
 from transphire.notificationcontainer import NotificationContainer
-from transphire.plotcontainer import PlotContainer, TwinContainer
+from transphire.plotcontainer import PlotContainer
 from transphire.tabdocker import TabDocker
 from transphire import transphire_content as tc
 from transphire import transphire_plot as tp

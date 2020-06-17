@@ -25,10 +25,9 @@ import imageio
 import numpy as np
 import matplotlib
 matplotlib.use('QT5Agg')
-from PyQt5.QtWidgets import QApplication
 
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QPushButton, QLineEdit, QLabel, QCheckBox
-from PyQt5.QtCore import pyqtSlot, QTimer, pyqtSignal, Qt
+from PyQt5.QtCore import pyqtSlot, pyqtSignal, Qt
 from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
     NavigationToolbar2QT as NavigationToolbar
@@ -276,16 +275,16 @@ class MplCanvas(FigureCanvas):
         self.fig.set_tight_layout({'pad': 0.2})
         super(MplCanvas, self).__init__(self.fig)
 
-    @pyqtSlot(object)
-    def hover_twin(self, event):
-        vis = self.tooltip.get_visible()
-        if cont:
-            self.tooltip.set_visible(True)
-            self.draw_idle()
-        else:
-            if vis:
-                self.tooltip.set_visible(False)
-                self.draw_idle()
+    #@pyqtSlot(object)
+    #def hover_twin(self, event):
+    #    vis = self.tooltip.get_visible()
+    #    if cont:
+    #        self.tooltip.set_visible(True)
+    #        self.draw_idle()
+    #    else:
+    #        if vis:
+    #            self.tooltip.set_visible(False)
+    #            self.draw_idle()
 
 class MplCanvasWidget(QWidget):
 
@@ -762,7 +761,7 @@ class PlotWidget(QWidget):
                 try:
                     data = imageio.imread(data_file)[::-1, ...]
                 except Exception as e:
-                    print('Error reading image: {}.'.format(data_file))
+                    print('Error reading image: {}. - {}'.format(data_file, str(e)))
                     continue
                 if self._plot_ref[idx] is None:
                     self._plot_ref[idx] = [self._canvas_list[idx].mpl_canvas.axes.imshow(data)]
