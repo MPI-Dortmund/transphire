@@ -48,8 +48,8 @@ class ProcessWorker(QObject):
     sig_plot_motion - Emitted to plot motion information (motion_name|str, motion_settings|object, settings|object)
     sig_plot_picking - Emitted to plot picking information (picking_name|str, picking_settings|str, settings|object)
     """
+    sig_set_project_directory = pyqtSignal(str, str, str)
     sig_start = pyqtSignal(object, str)
-    sig_set_project_directory = pyqtSignal(str)
     sig_finished = pyqtSignal()
     sig_error = pyqtSignal(str)
     sig_status = pyqtSignal(str, object, str, str)
@@ -144,10 +144,10 @@ class ProcessWorker(QObject):
         # Set settings
         content_process = cp.deepcopy(self.content_process)
         settings['copy_software_meta'] = True
-        if settings['General']['Input extension'] in ('dm4'):
+        if settings['Input']['Input frames extension'] in ('dm4'):
             settings['Output extension'] = 'mrc'
         else:
-            settings['Output extension'] = settings['General']['Input extension']
+            settings['Output extension'] = settings['Input']['Input frames extension']
 
         # Set paths
         settings['software_meta_tar'] = os.path.join(
@@ -159,7 +159,7 @@ class ProcessWorker(QObject):
             settings[settings['Copy']['Picking']]['--weights_old'] = settings[settings['Copy']['Picking']]['--weights']
 
         self.settings = settings
-        self.sig_set_project_directory.emit(self.settings['project_folder'])
+        self.sig_set_project_directory.emit(self.settings['project_folder'], self.settings['log_folder'], self.settings['error_folder'])
 
         manager = mp.Manager()
         typ_dict = {}
@@ -209,11 +209,11 @@ class ProcessWorker(QObject):
                         'write_lock': manager.Lock(),
                         'spot_dict': manager.dict(self.fill_spot_dict()),
                         'settings_file': '{0}/updated_settings_{1}.txt'.format(
-                            self.settings['project_folder'],
+                            self.settings['log_folder'],
                             key
                             ),
                         'number_file': '{0}/last_filenumber_{1}.txt'.format(
-                            self.settings['project_folder'],
+                            self.settings['log_folder'],
                             key
                             ),
                         'save_file': '{0}/Queue_{1}'.format(
@@ -241,6 +241,7 @@ class ProcessWorker(QObject):
             'status': manager.Queue(),
             'notification': manager.Queue(),
             'error': manager.Queue(),
+            'info': manager.Queue(),
             }
 
         # Set stop variable to the return value of the pre_check
@@ -563,6 +564,8 @@ class ProcessWorker(QObject):
                         entry=process[key][1],
                         settings_file=settings_file,
                         )
+        queue_com['info'].put('Current settings saved to: {0}'.format(settings_file))
+        self.check_queue(queue_com=queue_com)
 
         # Unlock the Class2d queue in case of a TranSPHIRE crash during 2D classification
         try:
@@ -921,10 +924,13 @@ class ProcessWorker(QObject):
                 elif key == 'error':
                     error = queue_com['error'].get()
                     self.sig_error.emit(error)
+                elif key == 'info':
+                    error = queue_com['info'].get()
+                    self.sig_error.emit(error)
                 elif key == 'log':
                     log = queue_com['log'].get()
                     try:
-                        with open(os.path.join(self.settings['project_folder'], 'sys_log.txt'), 'a+') as write:
+                        with open(os.path.join(self.settings['log_folder'], 'sys_log.txt'), 'a+') as write:
                             write.write('{0}\n'.format(log))
                     except FileNotFoundError:
                         pass
@@ -948,7 +954,7 @@ class ProcessWorker(QObject):
         Spot dictionary
         """
         dictionary = {}
-        spot_file = os.path.join(self.settings['project_folder'], '.spot_dict')
+        spot_file = os.path.join(self.settings['log_folder'], 'spot_dict.txt')
         try:
             with open(spot_file, 'r') as read:
                 lines = [line.rstrip() for line in read.readlines()]
@@ -981,7 +987,7 @@ class ProcessWorker(QObject):
         queue = shared_dict['queue'][key]
         queue_list = shared_dict_typ['queue_list']
 
-        if self.settings["General"]["Software"] == "Just Stack":
+        if self.settings["Input"]["Software"] == "Just Stack":
             self.settings['copy_software_meta'] = False
 
         if key.startswith('Copy_to'):
