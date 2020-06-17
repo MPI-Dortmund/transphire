@@ -629,7 +629,8 @@ def combine_ctf_outputs(
     ctf_name = settings['Copy']['CTF']
     ctf_settings = settings[ctf_name]
     ctf_folder = settings['ctf_folder_feedback_0']
-    project_folder = '{0}/'.format(settings['project_folder'])
+    project_folder = '{0}/'.format(settings['project_folder'].rstrip('/'))
+    project_base = '{0}/'.format(settings['project_base'].rstrip('/'))
 
     try:
         if ctf_settings['Use movies'] == 'True':
@@ -650,7 +651,7 @@ def combine_ctf_outputs(
         data=np.copy(data_star),
         ctf_name=ctf_name,
         ctf_settings=ctf_settings,
-        project_folder=project_folder,
+        project_folder=project_base,
         ctf_folder=ctf_folder,
         sum_file=sum_file,
         dw_file=dw_file,
@@ -668,7 +669,7 @@ def combine_ctf_outputs(
         data=np.copy(data_orig),
         ctf_name=ctf_name,
         ctf_settings=ctf_settings,
-        project_folder=project_folder,
+        project_folder=project_base,
         ctf_folder=ctf_folder,
         sum_file=sum_file,
         pixel_size_adjust=pixel_size_adjust,

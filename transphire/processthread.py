@@ -211,7 +211,7 @@ class ProcessThread(object):
                     'Quota Error',
                     [self.queue.qsize()],
                     self.typ,
-                    '#ff5c33'
+                    '#e34234'
                     ])
                 time.sleep(10)
                 continue
@@ -223,7 +223,7 @@ class ProcessThread(object):
                     'Connection Error',
                     [self.queue.qsize()],
                     self.typ,
-                    '#ff5c33'
+                    '#e34234'
                     ])
                 time.sleep(10)
                 continue
@@ -235,7 +235,7 @@ class ProcessThread(object):
                     'No space Error',
                     [self.queue.qsize()],
                     self.typ,
-                    '#ff5c33'
+                    '#e34234'
                     ])
                 time.sleep(10)
                 continue
@@ -252,7 +252,7 @@ class ProcessThread(object):
                         'Unknown Error',
                         ['{0:.1f} min'.format(time_diff / 60)],
                         self.typ,
-                        '#ff5c33'
+                        '#e34234'
                         ])
                 else:
                     self.queue_com['status'].put([
@@ -263,7 +263,7 @@ class ProcessThread(object):
                             '{0:.1f} min'.format(time_diff / 60)
                             ],
                         self.typ,
-                        '#ff5c33'
+                        '#e34234'
                         ])
                 i = 0
                 while i < 6:
@@ -307,7 +307,7 @@ class ProcessThread(object):
                 ),
             [],
             self.typ,
-            '#ff5c33'
+            '#e34234'
             ])
         self.queue_com['log'].put(tu.create_log('Stopped', self.name))
         print(self.name, ': Stopped')
@@ -411,8 +411,8 @@ class ProcessThread(object):
         """
         # List of processes and related folder names
         processes = [
-            ['lost_input_frames', 'Search path frames'],
-            ['lost_input_meta', 'Search path meta'],
+            ['lost_input_frames', 'Input project path for frames'],
+            ['lost_input_meta', 'Input project path for jpg'],
             ['lost_work', 'copy_to_work_folder_feedback_0'],
             ['lost_backup', 'copy_to_backup_folder_feedback_0'],
             ['lost_hdd', 'copy_to_hdd_folder_feedback_0']
@@ -420,8 +420,8 @@ class ProcessThread(object):
         for process, folder in processes:
             if self.shared_dict_typ[process]:
                 time_diff = time.time() - self.time_last
-                if folder == 'Search path frames' or \
-                        folder == 'Search path meta':
+                if folder == 'Input project path for frames' or \
+                        folder == 'Input project path for jpg':
                     output_folder = self.settings['General'][folder]
                 else:
                     output_folder = self.settings[folder]
@@ -430,7 +430,7 @@ class ProcessThread(object):
                     'Lost connection',
                     ['{0:.1f} min'.format(time_diff / 60)],
                     self.typ,
-                    '#ff5c33'
+                    '#e34234'
                     ])
                 if self.typ == 'Motion' or \
                         self.typ == 'CTF' or \
@@ -579,7 +579,7 @@ class ProcessThread(object):
             return None
         else:
             pass
-        folder = self.settings['General']['Search path meta']
+        folder = self.settings['Input']['Input project path for jpg']
         if folder:
             self.queue_com['status'].put([
                 'Copy Metadata',
@@ -903,11 +903,12 @@ class ProcessThread(object):
             if not dummy:
                 self.add_to_queue(aim=self.typ, root_name=root_name)
             self.write_error(msg=tb.format_exc(), root_name=root_name)
-            self.lost_connection(
-                typ=method_dict[self.typ]['lost_connect']
-                )
-            self.shared_dict_typ['delay_error'] = True
-            self.shared_dict_typ['is_error'] = True
+            if self.typ != 'Import':
+                self.lost_connection(
+                    typ=method_dict[self.typ]['lost_connect']
+                    )
+                self.shared_dict_typ['delay_error'] = True
+                self.shared_dict_typ['is_error'] = True
         except UserWarning:
             if not dummy:
                 self.add_to_queue(aim=self.typ, root_name=root_name)
@@ -990,16 +991,16 @@ class ProcessThread(object):
             self.queue_lock.release()
 
     def check_queue_files(self, root_name):
-        if self.settings['Copy']['Compress'] == 'False':
+        if self.settings['Copy']['Compress'] in ('False', 'Later'):
             return
 
         basename = os.path.basename(os.path.splitext(root_name)[0])
-        if self.settings['General']['Input extension'] in ('dm4',):
+        if self.settings['Input']['Input frames extension'] in ('dm4',):
             stack_extension = 'mrc'
-        elif self.settings['General']['Input extension'] in ('tiff', 'tif'):
+        elif self.settings['Input']['Input frames extension'] in ('tiff', 'tif'):
             return
         else:
-            stack_extension = self.settings['General']['Input extension']
+            stack_extension = self.settings['Input']['Input frames extension']
 
         stack_file = os.path.join(
             self.settings['stack_folder'],
@@ -1353,7 +1354,7 @@ class ProcessThread(object):
         file_list = []
         try:
             file_list = self.recursive_search(
-                directory=self.settings['General']['Search path meta'],
+                directory=self.settings['Input']['Input project path for jpg'],
                 file_list=file_list,
                 find_meta=False
                 )
@@ -1389,7 +1390,7 @@ class ProcessThread(object):
                     self.shared_dict_typ['file_number'] += 1
 
                     if self.settings['General']['Rename micrographs'] == 'True':
-                        new_name_meta = '{0}/{1}{2:0{3}d}{4}'.format(
+                        new_name_meta = '{0}/{1}{2:0{3}.0f}{4}'.format(
                             self.settings['meta_folder'],
                             self.settings['General']['Rename prefix'],
                             self.shared_dict_typ['file_number'],
@@ -1476,7 +1477,9 @@ class ProcessThread(object):
                     file_list=file_list,
                     find_meta=find_meta
                     )
-            elif self.settings["General"]["Software"] == "Just Stack":
+            elif self.settings["Input"]["Software"] == "Just Stack":
+                if not entry_dir.endswith(self.settings['Input']['Input frames extension']):
+                    continue
                 root_name = os.path.splitext(entry_dir)[0]
                 frames_root = root_name
                 compare_name = frames_root
@@ -1488,6 +1491,7 @@ class ProcessThread(object):
                     name=self.name,
                     write_error=self.write_error
                     )
+
                 if frames is None:
                     self.shared_dict_typ['bad_lock'].acquire()
                     try:
@@ -1556,8 +1560,8 @@ class ProcessThread(object):
 
                 if entry_dir.endswith('.jpg'):
                     frames_root = root_name.replace(
-                        self.settings['General']['Search path meta'],
-                        self.settings['General']['Search path frames'],
+                        self.settings['Input']['Input project path for jpg'],
+                        self.settings['Input']['Input project path for frames'],
                         )
                     compare_name = frames_root[:-len('_19911213_2019')]
                 elif entry_dir.endswith('.gtg'):
@@ -1643,8 +1647,8 @@ class ProcessThread(object):
         number, root_name = root_name_raw.split('|||')
         number = int(number)
         frames_root = root_name.replace(
-            self.settings['General']['Search path meta'],
-            self.settings['General']['Search path frames'],
+            self.settings['Input']['Input project path for jpg'],
+            self.settings['Input']['Input project path for frames'],
             )
         frames, compare_name_frames, compare_name_meta = tus.find_related_frames_to_jpg(
             frames_root=frames_root,
@@ -1689,14 +1693,14 @@ class ProcessThread(object):
         self.shared_dict_typ['count_lock'].acquire()
         try:
             if self.settings['General']['Rename micrographs'] == 'True':
-                new_name_stack = '{0}/{1}{2:0{3}d}{4}'.format(
+                new_name_stack = '{0}/{1}{2:0{3}.0f}{4}'.format(
                     self.settings['stack_folder'],
                     self.settings['General']['Rename prefix'],
                     number,
                     len(self.settings['General']['Estimated mic number']),
                     self.settings['General']['Rename suffix']
                     )
-                new_name_meta = '{0}/{1}{2:0{3}d}{4}'.format(
+                new_name_meta = '{0}/{1}{2:0{3}.0f}{4}'.format(
                     self.settings['meta_folder'],
                     self.settings['General']['Rename prefix'],
                     number,
@@ -1749,9 +1753,9 @@ class ProcessThread(object):
             name=self.name
             )
 
-        command = '{0} {1} {2}'.format(
+        command = "{0} '{1}' {2}".format(
             command_raw,
-            ' '.join(frames),
+            "' '".join(frames),
             new_stack
             )
 
@@ -1761,7 +1765,7 @@ class ProcessThread(object):
             log_prefix=new_name_stack,
             block_gpu=False,
             gpu_list=[],
-            shell=False
+            shell=True
             )
 
         tus.check_outputs(
@@ -1818,8 +1822,8 @@ class ProcessThread(object):
 
         tus.check_outputs(
             zero_list=[],
-            non_zero_list=log_files,
-            exists_list=[],
+            non_zero_list=[],
+            exists_list=log_files,
             folder=self.settings['meta_folder'],
             command='copy'
             )
@@ -1898,14 +1902,11 @@ class ProcessThread(object):
         """
         check_list = []
         try:
-            for name in ('Translation_file.txt', 'Translation_file_bad.txt'):
+            for name in ('translation_file', 'translation_file_bad'):
                 self.shared_dict['translate_lock'].acquire()
                 try:
                     content_translation_file = np.genfromtxt(
-                        os.path.join(
-                            self.settings['project_folder'],
-                            name
-                            ),
+                        self.settings[name],
                         usecols=0,
                         dtype=str
                         )
@@ -1926,14 +1927,8 @@ class ProcessThread(object):
         Returns:
         None
         """
-        file_name = os.path.join(
-            self.settings['project_folder'],
-            'Translation_file.txt'
-            )
-        file_name_bad = os.path.join(
-            self.settings['project_folder'],
-            'Translation_file_bad.txt'
-            )
+        file_name = self.settings['translation_file']
+        file_name_bad = self.settings['translation_file_bad']
         self.shared_dict['translate_lock'].acquire()
         try:
             with open(file_name, 'r') as read:
@@ -2019,9 +2014,12 @@ class ProcessThread(object):
                 '_pipeCoordX': [r'.*<X>(.*?)</X>.*'],
                 '_pipeCoordY': [r'.*<Y>(.*?)</Y>.*'],
                 '_pipeCoordZ': [r'.*<Z>(.*?)</Z>.*'],
+                '_pipeVoltage': [r'.*<AccelerationVoltage>(.*?)</AccelerationVoltage>.*'],
                 '_pipeDefocusMicroscope': [r'.*<Defocus>(.*?)</Defocus>.*'],
                 '_pipeAppliedDefocusMicroscope': [r'.*<a:Key>AppliedDefocus</a:Key><a:Value .*?>(.*?)</a:Value>.*'],
                 '_pipeDose': [r'.*<a:Key>Dose</a:Key><a:Value .*?>(.*?)</a:Value>.*'],
+                '_pipePhasePlate': [r'.*<a:Key>PhasePlateUsed</a:Key><a:Value .*?>(.*?)</a:Value>.*'],
+                '_pipeSuperResolutionFactor': [r'.*<a:Key>SuperResolutionFactor</a:Key><a:Value .*?>(.*?)</a:Value>.*'],
                 '_pipePixelSize': [r'.*<pixelSize><x><numericValue>(.*?)</numericValue>.*'],
                 '_pipeNrFractions': [r'.*<b:NumberOffractions>(.*?)</b:NumberOffractions>.*', r'<b:StartFrameNumber>'],
                 '_pipeExposureTime': [r'.*<camera>.*?<ExposureTime>(.*?)</ExposureTime>.*'],
@@ -2072,14 +2070,8 @@ class ProcessThread(object):
         Returns:
         None
         """
-        file_name = os.path.join(
-            self.settings['project_folder'],
-            'Translation_file.txt'
-            )
-        file_name_bad = os.path.join(
-            self.settings['project_folder'],
-            'Translation_file_bad.txt'
-            )
+        file_name = self.settings['translation_file']
+        file_name_bad = self.settings['translation_file_bad']
 
         if os.path.exists(file_name):
             first_entry = []

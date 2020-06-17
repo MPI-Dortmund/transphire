@@ -954,7 +954,7 @@ class ProcessWorker(QObject):
         Spot dictionary
         """
         dictionary = {}
-        spot_file = os.path.join(self.settings['log_folder'], 'spot_dict.txt')
+        spot_file = self.settings['spot_file']
         try:
             with open(spot_file, 'r') as read:
                 lines = [line.rstrip() for line in read.readlines()]

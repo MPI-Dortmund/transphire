@@ -16,6 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import pwd
 import sys
 import os
 import json
@@ -29,7 +30,7 @@ from transphire.mainwindow import MainWindow
 from transphire.loadwindow import DefaultSettings
 
 
-def main(font, root_directory, settings_directory, mount_directory, adjust_width, adjust_height, edit_settings, n_feedbacks):
+def main(font, root_directory, settings_directory, mount_directory, adjust_width, adjust_height, edit_settings, n_feedbacks, version):
     """
     Run the GUI.
 
@@ -42,6 +43,10 @@ def main(font, root_directory, settings_directory, mount_directory, adjust_width
     Return:
     None
     """
+    if version:
+        print(transphire.__version__)
+        return
+
     # Start the GUI from the users home directory.
     os.chdir(root_directory)
 
@@ -190,9 +195,8 @@ def parse_args():
         )
     parser.add_argument(
         '--edit_settings',
-        const='edit_settings',
         default=False,
-        action='store_const',
+        action='store_true',
         help='Show settings dialog (default False)'
         )
     parser.add_argument(
@@ -200,6 +204,12 @@ def parse_args():
         default=5,
         type=int,
         help='Maximum number of allowed feedbacks, do not change unless you want to do more feedbacks which is not recommended at this point. (default 5)'
+        )
+    parser.add_argument(
+        '--version',
+        default=False,
+        action='store_true',
+        help='Show the current TranSPHIRE version.'
         )
 
     return vars(parser.parse_args())
@@ -209,9 +219,11 @@ def run_package():
     """
     Entry point for the transphire package
     """
-    check_running()
-    check_update()
-    main(**parse_args())
+    args = parse_args()
+    if not args['version']:
+        check_running()
+        check_update()
+    main(**args)
 
 
 def check_update():
@@ -290,16 +302,19 @@ def check_running():
     None
     """
     pids = [pid for pid in os.listdir('/proc') if pid.isdigit()]
+    users = []
     running_instances = 0
 
     for pid in pids:
+        cmdline_file = os.path.join('/proc', pid, 'cmdline')
         try:
-            with open(os.path.join('/proc', pid, 'cmdline'), 'rb') as read:
+            with open(cmdline_file, 'rb') as read:
                 file_read = read.read()
         except IOError: # proc has already terminated
             continue
         else:
             if b'/bin/transphire' in file_read:
+                users.append(pwd.getpwuid(os.stat(cmdline_file).st_uid).pw_name)
                 running_instances += 1
             else:
                 pass
@@ -308,8 +323,8 @@ def check_running():
         while True:
             answer = input(
                 '\n'.join([
-                    'Another TranSPHIRE instance is already opened!',
-                    'Please double check if another job is running, as running multiple instances will crash the jobs',
+                    'Another TranSPHIRE instance is already opened by: {0}!'.format(', '.join(sorted(set(users)))),
+                    'Please double check if another job is running, as running multiple instances will crash the jobs!',
                     'Do you want to continue? [y/n]\n'
                     ])
                 )

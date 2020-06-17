@@ -72,9 +72,9 @@ class Separator(QWidget):
             NameError('Typ not known {0}'.format(typ))
 
         layout_2.setContentsMargins(0, 0, 0, 0)
-        layout_2.addStretch(1)
+        #layout_2.addStretch(1)
         layout_2.addWidget(label)
-        layout_2.addStretch(1)
+        #layout_2.addStretch(1)
 
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addLayout(layout_2, stretch=1)

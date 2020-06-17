@@ -611,10 +611,11 @@ def combine_motion_outputs(
     log_folder = os.path.dirname(log_file)
     stack_folder = settings['stack_folder']
     compress_folder = settings['compress_folder_feedback_0']
-    project_folder = '{0}/'.format(settings['project_folder'])
-    sum_file = sum_file.replace(project_folder, '')
+    project_folder = '{0}/'.format(settings['project_folder'].rstrip('/'))
+    project_base = '{0}/'.format(settings['project_base'].rstrip('/'))
+    sum_file = sum_file.replace(project_base, '')
     if dw_file:
-        dw_file = dw_file.replace(project_folder, '')
+        dw_file = dw_file.replace(project_base, '')
     else:
         pass
 
@@ -726,12 +727,12 @@ def combine_motion_outputs(
     assert dark_var is not None
 
     compress_name = settings['Copy']['Compress']
-    if compress_name == 'False' or settings['General']['Input extension'] in ('tiff', 'tif'):
+    if compress_name == 'False' or settings['General']['Input frames extension'] in ('tiff', 'tif'):
         pass
     elif compress_name == 'Compress cmd':
         movie_name = movie_name.replace(stack_folder, compress_folder)
         movie_name = movie_name.replace(
-            '.' + settings['General']['Input extension'],
+            '.' + settings['General']['Input frames extension'],
             '.' + settings[compress_name]['--command_compress_extension']
             )
     else:
@@ -744,7 +745,7 @@ def combine_motion_outputs(
         '_rlnImageSizeX {0}'.format(size_x),
         '_rlnImageSizeY {0}'.format(size_y),
         '_rlnImageSizeZ {0}'.format(size_z),
-        '_rlnMicrographMovieName {0}'.format(movie_name.replace(project_folder, '')),
+        '_rlnMicrographMovieName {0}'.format(movie_name.replace(project_base, '')),
         ]
     if gain_var:
         new_gain = os.path.join(
@@ -754,11 +755,11 @@ def combine_motion_outputs(
         if not os.path.exists(new_gain):
             tu.copy(gain_var, new_gain)
             data_meta.extend([
-                '_rlnMicrographGainName {0}'.format(new_gain.replace(project_folder, '')),
+                '_rlnMicrographGainName {0}'.format(new_gain.replace(project_base, '')),
                 ])
         else:
             data_meta.extend([
-                '_rlnMicrographGainName {0}'.format(new_gain.replace(project_folder, '')),
+                '_rlnMicrographGainName {0}'.format(new_gain.replace(project_base, '')),
                 ])
             new_gain = None
     else:
@@ -772,11 +773,11 @@ def combine_motion_outputs(
         if not os.path.exists(new_defect):
             tu.copy(defect_var, new_defect)
             data_meta.extend([
-                '_rlnMicrographDefectFile {0}'.format(new_defect.replace(project_folder, '')),
+                '_rlnMicrographDefectFile {0}'.format(new_defect.replace(project_base, '')),
                 ])
         else:
             data_meta.extend([
-                '_rlnMicrographDefectFile {0}'.format(new_defect.replace(project_folder, '')),
+                '_rlnMicrographDefectFile {0}'.format(new_defect.replace(project_base, '')),
                 ])
             new_defect = None
     else:
@@ -851,11 +852,11 @@ def combine_motion_outputs(
 
     header_star_relion3 = co.OrderedDict()
     if dw_file:
-        header_star_relion3['_rlnMicrographNameNoDW'] = sum_file.replace(project_folder, '')
-        header_star_relion3['_rlnMicrographName'] = dw_file.replace(project_folder, '')
+        header_star_relion3['_rlnMicrographNameNoDW'] = sum_file.replace(project_base, '')
+        header_star_relion3['_rlnMicrographName'] = dw_file.replace(project_base, '')
     else:
-        header_star_relion3['_rlnMicrographName'] = sum_file.replace(project_folder, '')
-    header_star_relion3['_rlnMicrographMetadata'] = relion3_meta.replace(project_folder, '')
+        header_star_relion3['_rlnMicrographName'] = sum_file.replace(project_base, '')
+    header_star_relion3['_rlnMicrographMetadata'] = relion3_meta.replace(project_base, '')
     if sum_total:
         header_star_relion3['_rlnAccumMotionTotal'] = sum_total
         header_star_relion3['_rlnAccumMotionEarly'] = sum_early

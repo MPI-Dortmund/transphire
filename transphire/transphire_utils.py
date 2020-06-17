@@ -1012,16 +1012,16 @@ def get_content_gui(content, template_name, n_feedbacks):
             'layout': 'TAB1',
             },
         {
-            'name': 'Global',
-            'widget': SettingsContainer,
-            'content': content[template_name]['Global'],
-            'layout': 'Settings',
-            },
-        {
             'name': 'Input',
             'widget': SettingsContainer,
             'content': content[template_name]['Input'],
             'content_mount': content[template_name]['Mount'],
+            'layout': 'Settings',
+            },
+        {
+            'name': 'Global',
+            'widget': SettingsContainer,
+            'content': content[template_name]['Global'],
             'layout': 'Settings',
             },
         {

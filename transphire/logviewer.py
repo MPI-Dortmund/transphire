@@ -23,6 +23,8 @@ class LogViewer(QWidget):
         layout = QVBoxLayout(widget)
 
         self.project_path = ''
+        self.log_path = ''
+        self.error_path = ''
         self.indicator_names = ('log', 'error', 'sys_log', 'notes')
         self.indicator = indicator
 
@@ -103,7 +105,7 @@ class LogViewer(QWidget):
             with open(self.file_name, 'a+') as write:
                 write.write(text)
                 write.write('\n')
-        except IOError as e:
+        except IOError:
             pass
         self.text.appendPlainText(text + '\n')
         cursor = self.text.textCursor()
@@ -144,6 +146,7 @@ class LogViewer(QWidget):
         sender = self.sender()
         sender_text = sender.text().split(':')[0].strip()
         is_notes = False
+        file_path = self.log_path
         if sender_text == 'log':
             file_names = ['log.txt']
         elif sender_text == 'notes':
@@ -152,7 +155,8 @@ class LogViewer(QWidget):
         elif sender_text == 'sys_log':
             file_names = ['sys_log.txt']
         elif sender_text == 'error':
-            file_names = [os.path.join('error', os.path.basename(entry)) for entry in glob.glob(os.path.join(self.project_path, 'error', '*'))]
+            file_names = [os.path.join('error', os.path.basename(entry)) for entry in glob.glob(os.path.join(self.error_path, 'error', '*'))]
+            file_path = self.error_path
         else:
             assert False, sender.text()
 
@@ -165,20 +169,23 @@ class LogViewer(QWidget):
         dialog = logviewerdialog.LogViewerDialog(self)
         for file_name in file_names:
             dialog.add_tab(
-                LogViewer(file_name=os.path.join(self.project_path, file_name), indicator=sender_text, parent=self),
+                LogViewer(file_name=os.path.join(file_path, file_name), indicator=sender_text, parent=self),
                 os.path.basename(file_name),
                 )
         dialog.show()
 
-    @pyqtSlot(str)
-    def set_project_path(self, project_path):
+    @pyqtSlot(str, str, str)
+    def set_project_path(self, project_path, log_path, error_path):
+        self.project_path = project_path
+        self.log_path = log_path
+        self.error_path = error_path
         self.project_path = project_path
         state = True
         if not self.project_path:
             state = False
             self.file_name = ''
         elif not self.file_name:
-            self.file_name = os.path.join(self.project_path, 'log.txt')
+            self.file_name = os.path.join(self.log_path, 'log.txt')
             self.update_plain_text(force=True)
         self.change_state(state)
 

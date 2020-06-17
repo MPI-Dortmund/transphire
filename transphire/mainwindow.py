@@ -1110,6 +1110,7 @@ class MainWindow(QMainWindow):
 
         settings['do_feedback_loop'] = int(settings['General']['Number of feedbacks'])
         settings['feedback_file'] = os.path.join(settings['log_folder'], 'do_feedback')
+        settings['spot_file'] = os.path.join(settings['log_folder'], 'spot_dict.txt')
         settings['data_frame'] = os.path.join(settings['project_folder'], 'data_frame.csv')
         settings['data_frame_gain'] = os.path.join(settings['gain_folder'], 'gain_data_frame.csv')
         settings['translation_file'] = os.path.join(settings['project_folder'], 'Valid_micrographs_info.txt')
