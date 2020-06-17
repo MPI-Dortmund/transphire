@@ -810,7 +810,7 @@ class MainWindow(QMainWindow):
         else:
             old_filename, old_ext = os.path.splitext(file_name)
             for number in range(9999):
-                file_name = '{0}_{1:03d}{2}'.format(old_filename, number, old_ext)
+                file_name = '{0}_{1:05d}{2}'.format(old_filename, number, old_ext)
                 if os.path.exists(file_name):
                     continue
                 else:
@@ -886,7 +886,7 @@ class MainWindow(QMainWindow):
         self.workers['plotting'].sig_reset_list.emit()
 
         if start:
-            settings = self.get_start_settings(monitor=True)
+            settings, _ = self.get_start_settings(monitor=True)
             if settings is None:
                 tu.message('Please fill non emtpy entries.')
                 self.enable(True)
@@ -941,14 +941,17 @@ class MainWindow(QMainWindow):
                             entry[name.split('_global')[0]] = settings['Global'][entry[name][0]]
                         elif key == 'Global':
                             if entry[name][0] == 'GPU':
-                                nvidia_output = subprocess.check_output(['nvidia-smi', '-L'])
-                                gpu_devices = re.findall(
-                                    '^GPU \d+: ([\w\d ]+) \(UUID: GPU-.*\)$',
-                                    nvidia_output.decode('utf-8'),
-                                    re.MULTILINE
-                                    )
+                                try:
+                                    nvidia_output = subprocess.check_output(['nvidia-smi', '-L'])
+                                    gpu_devices = re.findall(
+                                        '^GPU \d+: ([\w\d ]+) \(UUID: GPU-.*\)$',
+                                        nvidia_output.decode('utf-8'),
+                                        re.MULTILINE
+                                        )
+                                except subprocess.CalledProcessError:
+                                    gpu_devices = []
                                 if len(set(gpu_devices)) != 1:
-                                    error_list.append('{0}:{1} does have different types of GPUs available! In order to not make any mistakes, please specify the GPU IDs manually')
+                                    error_list.append('The computer does have different types of GPUs available! In order to not make any mistakes, please specify the GPU IDs manually')
                                 entry[name.split('_global')[0]] = ' '.join([str(entry) for entry in range(len(gpu_devices))])
                             elif entry[name][0] == 'GPU SPLIT':
                                 entry[name.split('_global')[0]] = '1'
@@ -1069,50 +1072,48 @@ class MainWindow(QMainWindow):
             pass
 
         # Project folder names
-        settings['project_folder'] = os.path.join(
+        settings['project_base'] = os.path.join(
             settings['General']['Project directory'],
             settings['General']['Project name']
             )
-        if not os.path.exists(settings['project_folder']) and monitor:
+        if not os.path.exists(settings['project_base']) and monitor:
             self.enable(True)
             tu.message('Project needs to exists in order to start Monitor mode')
             return None
 
-        settings['scratch_folder'] = os.path.join(
-            settings['General']['Scratch directory'],
-            settings['General']['Project name']
-            )
-        settings['settings_folder'] = os.path.join(
-            settings['project_folder'],
-            'settings'
-            )
-        settings['queue_folder'] = os.path.join(
-            settings['project_folder'],
-            'queue'
-            )
-        settings['error_folder'] = os.path.join(
-            settings['project_folder'],
-            'error'
-            )
-        settings['tar_folder'] = os.path.join(
-            settings['project_folder'], 'tar_folder'
-            )
-        settings['stack_folder'] = os.path.join(
-            settings['project_folder'], 'Stack'
-            )
-        settings['meta_folder'] = os.path.join(
-            settings['project_folder'], 'Meta'
-            )
-        settings['gain_folder'] = os.path.join(
-            settings['project_folder'], 'Gain_files'
-            )
-        settings['software_meta_folder'] = os.path.join(
-            settings['project_folder'], 'Software_meta'
+        settings['project_folder'] = os.path.join(
+            settings['project_base'],
+            'TranSPHIRE_results'
             )
 
+        settings['scratch_folder'] = os.path.join(
+            settings['General']['Scratch directory'],
+            settings['General']['Project name'],
+            'TranSPHIRE_results'
+            )
+        folder_dict = {
+            'settings_folder': 'XX_TranSPHIRE_settings',
+            'log_folder': 'XX_Log_files',
+            'queue_folder': 'XX_Queue_files',
+            'error_folder': 'XX_Error_files',
+            'tar_folder': 'XX_Tar_file_folder',
+            'stack_folder': '00_Import',
+            'meta_folder': '00_Import_meta',
+            'gain_folder': '00_Gain_files',
+            'software_meta_folder': '00_Session_meta',
+            }
+        for key, value in folder_dict.items():
+            settings[key] = os.path.join(
+                settings['project_folder'],
+                value
+                )
+
         settings['do_feedback_loop'] = int(settings['General']['Number of feedbacks'])
-        settings['feedback_file'] = os.path.join(settings['project_folder'], 'do_feedback')
+        settings['feedback_file'] = os.path.join(settings['log_folder'], 'do_feedback')
         settings['data_frame'] = os.path.join(settings['project_folder'], 'data_frame.csv')
+        settings['data_frame_gain'] = os.path.join(settings['gain_folder'], 'gain_data_frame.csv')
+        settings['translation_file'] = os.path.join(settings['project_folder'], 'Valid_micrographs_info.txt')
+        settings['translation_file_bad'] = os.path.join(settings['project_folder'], 'Discarded_micrographs_info.txt')
 
         names = [
             entry.replace('_entries', '')
@@ -1121,7 +1122,7 @@ class MainWindow(QMainWindow):
             entry.replace('_entries', '').replace('_', ' ') in settings['Copy']
             ]
         names.append('Copy_to_hdd')
-        for entry in names:
+        for idx, entry in enumerate(names, 1):
             base_dir2 = None
             no_feedback = False
             if 'copy_to_hdd' in entry.lower():
@@ -1130,12 +1131,12 @@ class MainWindow(QMainWindow):
                 no_feedback = True
             elif 'copy_to_' in entry.lower():
                 base_dir = self.mount_directory
-                folder_name = settings['Copy'][entry.replace('_', ' ')].replace(' ', '_').replace('>=', '')
+                folder_name = '{0:02d}_{1}'.format(idx, settings['Copy'][entry].replace(' ', '_').replace('>=', ''))
                 no_feedback = True
             else:
                 base_dir = settings['project_folder']
                 base_dir2 = settings['scratch_folder']
-                folder_name = settings['Copy'][entry].replace(' ', '_').replace('>=', '')
+                folder_name = '{0:02d}_{1}'.format(idx, settings['Copy'][entry].replace(' ', '_').replace('>=', ''))
 
             for index in range(int(settings['General']['Number of feedbacks']) + 1):
                 if index == 0:
@@ -1154,11 +1155,11 @@ class MainWindow(QMainWindow):
                         folder_name_tmp
                         )
 
-        return settings
+        return settings, folder_dict
 
     @pyqtSlot()
     def start(self):
-        settings = self.get_start_settings()
+        settings, folder_dict = self.get_start_settings()
 
         # Check for continue mode
         if settings is None:
@@ -1168,25 +1169,15 @@ class MainWindow(QMainWindow):
                 text1='Output project folder already exists!',
                 text2='Do you really want to continue the old run?\nType: "YES!"'
                 )
-            #if result:
-            #    result_session = self.continue_dialog(
-            #        text1='Software metafiles',
-            #        text2='Software metafiles (Atlas, ...) might be already copied!\n' + \
-            #            'Do you want to copy them again?\nType: YES!'
-            #        )
-            #    settings['Copy_software_meta'] = bool(result_session)
-            #else:
-            #    settings['Copy_software_meta'] = True
         else:
             result = True
 
         # Start or stop procedure
         if result:
             # Create project and settings folder
-            for name in [
-                    'project_folder', 'settings_folder',
-                    'scratch_folder', 'queue_folder', 'error_folder', 'tar_folder',
-                    ]:
+            folder_names = ['project_folder', 'scratch_folder']
+            folder_names.extend(list(folder_dict.keys()))
+            for name in folder_names:
                 try:
                     tu.mkdir_p(settings[name])
                 except PermissionError:
