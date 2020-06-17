@@ -66,6 +66,7 @@ class ProcessThread(object):
             use_threads_set,
             stop,
             has_finished,
+            data_frame,
             parent=None
             ):
         """
@@ -106,6 +107,7 @@ class ProcessThread(object):
         self.notification_send = None
         self.notification_time = float(self.settings['Notification']['Time until notification'])
         self.is_running = False
+        self.data_frame = data_frame
 
         self.queue = shared_dict['queue'][self.content_settings['name']]
         self.shared_dict_typ = shared_dict['typ'][self.content_settings['name']]
