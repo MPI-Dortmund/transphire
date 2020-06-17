@@ -2101,12 +2101,7 @@ class ProcessThread(object):
                 self.shared_dict_typ['spot'] += 1
                 self.shared_dict_typ['spot_dict'][key] = \
                     self.shared_dict_typ['spot']
-                with open(
-                        '{0}/.spot_dict'.format(
-                            self.settings['project_folder']
-                            ),
-                        'a'
-                        ) as append:
+                with open(self.settings['spot_file'], 'a') as append:
                     append.write('{0}\t{1}\n'.format(
                         key,
                         self.shared_dict_typ['spot']
@@ -2213,12 +2208,12 @@ class ProcessThread(object):
             queue_dict[motion_idx] = {'log': [], 'sum': [], 'sum_dw': [], 'sum_dws': []}
 
             # Abort if frames out of range
-            if int(self.settings['General']['Number of frames']) == -1:
+            if int(self.settings['Input']['Number of frames']) == -1:
                 pass
             elif motion_frames['first'] > \
-                    int(self.settings['General']['Number of frames']) or \
+                    int(self.settings['Input']['Number of frames']) or \
                     motion_frames['last'] > \
-                    int(self.settings['General']['Number of frames']):
+                    int(self.settings['Input']['Number of frames']):
                 print('First:{0} Last:{1} not valid! Skip!\n'.format(
                     motion_frames['first'],
                     motion_frames['last']
@@ -4107,7 +4102,7 @@ class ProcessThread(object):
                 command='just check'
                 )
 
-        elif self.settings['General']['Input extension'] in ('tiff', 'tif'):
+        elif self.settings['Input']['Input frames extension'] in ('tiff', 'tif'):
             log_prefix = os.path.join(
                     self.settings['stack_folder'],
                     new_root_name
