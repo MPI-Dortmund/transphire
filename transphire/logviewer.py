@@ -1,14 +1,15 @@
-from PyQt5.QtWidgets import QPlainTextEdit, QWidget, QHBoxLayout, QVBoxLayout, QPushButton
+from PyQt5.QtWidgets import QPlainTextEdit, QWidget, QHBoxLayout, QVBoxLayout, QPushButton, QLineEdit
 from PyQt5.QtGui import QTextOption, QTextCursor
 from PyQt5.QtCore import pyqtSlot, QTimer
 from transphire import transphire_utils as tu
 from transphire import logviewerdialog
 import glob
 import os
+import getpass
 
 class LogViewer(QWidget):
 
-    def __init__(self, show_indicators=False, file_name='', parent=None):
+    def __init__(self, show_indicators=False, indicator='', file_name='', parent=None):
         super(LogViewer, self).__init__(parent)
 
         # Setup layout
@@ -22,7 +23,8 @@ class LogViewer(QWidget):
         layout = QVBoxLayout(widget)
 
         self.project_path = ''
-        self.indicator_names = ('log', 'error', 'sys_log')
+        self.indicator_names = ('log', 'error', 'sys_log', 'notes')
+        self.indicator = indicator
 
         self.text = QPlainTextEdit(widget)
         if file_name:
@@ -33,7 +35,7 @@ class LogViewer(QWidget):
         self.text.setToolTip('Double click after starting TranSPHIRE in order to show more information')
         self.text.setReadOnly(True)
         self.text.setWordWrapMode(QTextOption.WrapAnywhere)
-        layout.addWidget(self.text)
+        layout.addWidget(self.text, stretch=1)
 
         self.file_name = file_name
 
@@ -53,21 +55,55 @@ class LogViewer(QWidget):
 
             layout_h1.addStretch(1)
             layout.addLayout(layout_h1)
+
             self.change_state(False)
 
+        self.update_plain_text(force=True)
+        self.timer = QTimer(self)
+        self.timer.setInterval(1000)
+        self.timer.timeout.connect(self.update_plain_text)
+        self.timer.start()
+
+        if self.indicator == 'notes':
+            layout_h = QHBoxLayout()
+            layout_h.setContentsMargins(0, 0, 0, 0)
+            self.input_edit = QLineEdit('', self)
+            submit_button = QPushButton('Submit', self)
+            submit_button.clicked.connect(self.submit_text)
+            layout_h.addWidget(self.input_edit, stretch=1)
+            layout_h.addWidget(submit_button)
+            layout.addLayout(layout_h)
+
+    @pyqtSlot()
+    def update_plain_text(self, force=False):
         if self.file_name and os.path.exists(self.file_name):
             with open(self.file_name, 'r') as read:
-                self.text.setPlainText(read.read())
-            cursor = self.text.textCursor()
-            cursor.movePosition(QTextCursor.End)
-            self.text.setTextCursor(cursor)
+                text = read.read()
+            if force:
+                self.reset_plain_text(text)
+            elif text.replace('\n', '').replace(' ', '') != self.text.toPlainText().replace('\n', '').replace(' ', ''):
+                self.reset_plain_text(text)
 
-    def appendPlainText(self, text):
+    def reset_plain_text(self, text):
+        self.text.setPlainText(text)
+        cursor = self.text.textCursor()
+        cursor.movePosition(QTextCursor.End)
+        self.text.setTextCursor(cursor)
+
+    @pyqtSlot()
+    def submit_text(self):
+        text = tu.create_log(self.input_edit.text())
+        prefix, suffix = text.split(' => ')
+        text = '{}\n{}: {}'.format(prefix, getpass.getuser(), suffix)
+        self.appendPlainText(text, indicator='notes')
+        self.input_edit.setText('')
+
+    def appendPlainText(self, text, indicator='log'):
         try:
-            with open(self.file_name, 'a') as write:
+            with open(self.file_name, 'a+') as write:
                 write.write(text)
                 write.write('\n')
-        except IOError:
+        except IOError as e:
             pass
         self.text.appendPlainText(text + '\n')
         cursor = self.text.textCursor()
@@ -75,7 +111,7 @@ class LogViewer(QWidget):
         self.text.setTextCursor(cursor)
         print(text)
         if self.project_path:
-            self.increment_indicator('log')
+            self.increment_indicator(indicator)
 
     def increment_indicator(self, indicator, text=''):
         if indicator in self.indicator_names:
@@ -107,8 +143,12 @@ class LogViewer(QWidget):
 
         sender = self.sender()
         sender_text = sender.text().split(':')[0].strip()
+        is_notes = False
         if sender_text == 'log':
             file_names = ['log.txt']
+        elif sender_text == 'notes':
+            is_notes = True
+            file_names = ['notes.txt']
         elif sender_text == 'sys_log':
             file_names = ['sys_log.txt']
         elif sender_text == 'error':
@@ -116,7 +156,8 @@ class LogViewer(QWidget):
         else:
             assert False, sender.text()
 
-        self.increment_indicator(sender_text, '0')
+        if not is_notes:
+            self.increment_indicator(sender_text, '0')
 
         sender.setEnabled(False)
         QTimer.singleShot(5000, lambda: sender.setEnabled(True))
@@ -124,7 +165,7 @@ class LogViewer(QWidget):
         dialog = logviewerdialog.LogViewerDialog(self)
         for file_name in file_names:
             dialog.add_tab(
-                LogViewer(file_name=os.path.join(self.project_path, file_name), parent=self),
+                LogViewer(file_name=os.path.join(self.project_path, file_name), indicator=sender_text, parent=self),
                 os.path.basename(file_name),
                 )
         dialog.show()
@@ -138,12 +179,7 @@ class LogViewer(QWidget):
             self.file_name = ''
         elif not self.file_name:
             self.file_name = os.path.join(self.project_path, 'log.txt')
-            if os.path.exists(self.file_name):
-                with open(self.file_name, 'r') as read:
-                    self.text.setPlainText(read.read())
-                cursor = self.text.textCursor()
-                cursor.movePosition(QTextCursor.End)
-                self.text.setTextCursor(cursor)
+            self.update_plain_text(force=True)
         self.change_state(state)
 
     def change_state(self, state):

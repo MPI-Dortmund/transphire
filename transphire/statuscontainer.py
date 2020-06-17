@@ -141,7 +141,7 @@ class StatusContainer(QWidget):
             file_name='',
             parent=self
             )
-        layout_v1.addWidget(self.log_viewer)
+        layout_v1.addWidget(self.log_viewer, stretch=1)
 
         # Add picture
         if image and os.path.exists(image):
@@ -170,7 +170,6 @@ class StatusContainer(QWidget):
             layout_image.addWidget(pic_label)
             layout_image.addStretch(1)
 
-            layout_v1.addStretch(1)
             layout_v1.addLayout(layout_image)
 
         # Reset quota warning

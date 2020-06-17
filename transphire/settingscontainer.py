@@ -346,13 +346,13 @@ class SettingsContainer(QWidget):
 
             if self.sender().parent().name == 'Bin superres' and text == 'False':
                 text = '1'
+            elif self.sender().parent().name == 'Bin superres' and text == 'True':
+                text = '2'
 
             entry.global_value = text
             if not entry.edit.isEnabled():
-                cur_state = entry.edit.blockSignals(False)
                 try:
                     entry.edit.setText(text)
                 except AttributeError:
                     entry.edit.setCurrentText(text)
-                entry.edit.blockSignals(cur_state)
 

@@ -227,9 +227,9 @@ class SettingsWidget(QWidget):
                 self.edit.removeItem(0)
                 self.edit.setCurrentText(self.pre_global)
                 self.change_color_if_true()
-            self.edit.blockSignals(False)
+            #self.edit.blockSignals(False)
         else:
-            self.edit.blockSignals(True)
+            #self.edit.blockSignals(True)
             try:
                 self.pre_global = self.edit.text()
                 self.edit.setText(self.global_value)

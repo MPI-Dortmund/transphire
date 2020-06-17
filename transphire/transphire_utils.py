@@ -1300,6 +1300,7 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
     status_info_width = '{0}px'.format(font * status_info_width * adjust_width)
     status_quota_width = '{0}px'.format(font * status_quota_width * adjust_width)
     tab_width = '{0}px'.format(font * tab_width * adjust_width)
+    widget_height_label = '{0}px'.format(font * widget_height * adjust_height / 2)
     widget_height = '{0}px'.format(font * widget_height * adjust_height)
     tab_height = '{0}px'.format(font * tab_height * adjust_height)
 
@@ -1564,7 +1565,7 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
         status_info_width,
         status_quota_width,
         setting_widget_width,
-        widget_height,
+        widget_height_label,
         setting_widget_width_large,
         setting_widget_width_xlarge,
         )

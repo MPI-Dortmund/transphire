@@ -917,7 +917,7 @@ def default_pipeline():
             ],
         [
             'Motion',
-            '1',
+            '12',
             int,
             'Motion;' +
             'CTF_sum:CTF,' +
@@ -933,7 +933,7 @@ def default_pipeline():
             ],
         [
             'CTF',
-            '1',
+            '10',
             int,
             'CTF;' +
             'Extract:Extract,' +
@@ -946,7 +946,7 @@ def default_pipeline():
             ],
         [
             'Picking',
-            '1',
+            '12',
             int,
             'Picking;' +
             'Extract:Extract,' +
@@ -959,7 +959,7 @@ def default_pipeline():
             ],
         [
             'Extract',
-            '1',
+            '12',
             int,
             'Extract;' +
             'Class2d:Class2d,' +
@@ -1025,7 +1025,7 @@ def default_pipeline():
             ],
         [
             'Compress',
-            '1',
+            '10',
             int,
             'Compress;' +
             'Compress to work:Copy to work:Copy_to_work,' +
@@ -1035,9 +1035,9 @@ def default_pipeline():
             'Main',
             ''
             ],
-        ['Copy_to_work', '1', int, 'Copy_to_work;', 'PLAIN', 'Main', ''],
-        ['Copy_to_hdd', '1', int, 'Copy_to_hdd;', 'PLAIN', 'Main', ''],
-        ['Copy_to_backup', '1', int, 'Copy_to_backup;', 'PLAIN', 'Main', ''],
+        ['Copy_to_work', '6', int, 'Copy_to_work;', 'PLAIN', 'Main', ''],
+        ['Copy_to_hdd', '6', int, 'Copy_to_hdd;', 'PLAIN', 'Main', ''],
+        ['Copy_to_backup', '6', int, 'Copy_to_backup;', 'PLAIN', 'Main', ''],
         ]
     return items
 
@@ -1511,7 +1511,7 @@ def default_copy(settings_folder):
         ['Tar to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the information to backup drive in tar format if "Copy to backup" is specified.'],
         ['Tar to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the information to HDD drive in tar format if "Copy to HDD" is specified.'],
         ['Tar size (Gb)', '2', float, '', 'PLAIN', 'Advanced', 'Size of the tar files before copying.'],
-        ['Delete data after import?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Delete the data from the camera computer after the import.'],
+        ['Delete data after import?', ['True', 'False'], bool, '', 'COMBO', 'Main', 'Delete the data from the camera computer after the import.'],
         ['Delete stack after compression?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Delete the mrc stack after compression.'],
         ['Delete compressed stack after copy?', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Delete the compressed stack after copying to another location.'],
         ])
@@ -1523,7 +1523,7 @@ def default_global():
         ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
         ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
         ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
-        ['Bin superres', ['ON-THE-FLY', 'False'], bool, '', 'COMBO', 'Main', 'Bin superresolution datasets by a factor of 2 automatically.'],
+        ['Bin superres', ['True', 'False'], bool, '', 'COMBO', 'Main', 'Bin superresolution datasets by a factor of 2 automatically.'],
         ['Pixel size:Pixel size', '1.0', float, '', 'PLAIN', 'Main', '', 'Pixel size in A/pixel.'],
         ['Phase Plate:Phase Plate', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Use phase plate options'],
         ['Filament mode:Filament mode', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Input is filamentous data.'],
@@ -1531,7 +1531,7 @@ def default_global():
         ['Gain:Gain', '', str, '', 'FILE', 'Main', '', 'MRC file that stores the gain reference. If not specified, MRC extended header will be visited to look for gain reference.'],
         ['voltage:voltage', '300.0', float, '', 'PLAIN', 'Main', 'High tension in kV needed for dose weighting.  Default is 300.'],
         ['Protein radius:Protein radius', '-1', int, '', 'PLAIN', 'Main', 'particle radius: there is no default, a sensible number has to be provided, units - pixels (default required int)'],
-        ['GPU:GPU', '0', [int]*99, '', 'PLAIN', 'Main', 'Specifiy which gpu\'s should be used.'],
+        ['GPU:GPU', 'ON-THE-FLY', str, '', 'PLAIN', 'Main', 'Specifiy which gpu\'s should be used. ON-THE-FLY finds the number of GPU\'s dynaically.'],
         ['GPU SPLIT:GPU SPLIT', '2', int, '', 'PLAIN', 'Main', 'Define the number of GPU splits.'],
         ['GPU SPLIT LARGE:GPU SPLIT LARGE', '0', int, '', 'PLAIN', 'Main', 'Define the number of GPU splits.'],
         ['Memory usage:Memory usage', '0.4', float, '', 'PLAIN', 'Main', 'Specifiy how much GPU memory should be used.'],
