@@ -126,6 +126,10 @@ class DataFrame(object):
         self._data_frame = df
 
     @thread_safe
+    def value_in_column(self, value, column):
+        return value in self._data_frame[column].values
+
+    @thread_safe
     def get_values(self, index, columns):
         if isinstance(columns, str):
             columns = [columns]
@@ -141,6 +145,11 @@ class DataFrame(object):
             self._data_frame.loc[index, column] = value
         if do_save:
             self.__save_df()
+
+    @thread_safe
+    def append_values(self, value_dict, do_save=True):
+        index = self._data_frame[next(iter(value_dict))].last_valid_index() + 1
+        self.set_values(index, value_dict, do_save)
 
     @thread_safe
     def get_index_where(self, column, value, func_type):
@@ -554,18 +563,6 @@ def get_function_dict():
 
     ### Other no executable stuff
 
-    function_dict['Copy'] = {
-            'plot': None,
-            'plot_data': None,
-            'content': tc.default_copy,
-            'executable': False,
-            'has_path': False,
-            'typ': None,
-            'license': False,
-            'category': 'Internal settings',
-            'allow_empty': [],
-            'old': True,
-            }
     function_dict['Pipeline'] = {
             'plot': None,
             'plot_data': None,
@@ -589,6 +586,19 @@ def get_function_dict():
             'license': False,
             'category': 'Internal settings',
             'allow_empty': ['-Gain'],
+            'old': True,
+            }
+
+    function_dict['Input'] = {
+            'plot': None,
+            'plot_data': None,
+            'content': tc.default_input,
+            'executable': False,
+            'has_path': False,
+            'typ': None,
+            'license': False,
+            'category': 'Internal settings',
+            'allow_empty': [],
             'old': True,
             }
 
@@ -1005,6 +1015,13 @@ def get_content_gui(content, template_name, n_feedbacks):
             'name': 'Global',
             'widget': SettingsContainer,
             'content': content[template_name]['Global'],
+            'layout': 'Settings',
+            },
+        {
+            'name': 'Input',
+            'widget': SettingsContainer,
+            'content': content[template_name]['Input'],
+            'content_mount': content[template_name]['Mount'],
             'layout': 'Settings',
             },
         {

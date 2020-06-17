@@ -443,6 +443,26 @@ class SettingsContainer(QWidget):
             else:
                 self.content['Input frames extension'].set_settings(extension[0], '[None, None]')
                 tu.message('Input project path for frames:\n{0}\n\nInput project path for jpg:\n{1}\n\nInput frames extension:\n{2}'.format(is_frames[0], is_meta[0], extension[0]))
+
+        elif text.startswith('Just Stack'):
+            self.content['Input project path for frames'].set_settings(project_dir, '[None, None]')
+            self.content['Input project path for jpg'].set_settings(project_dir, '[None, None]')
+            self.content['Number of frames'].set_settings('-1', '[None, None]')
+
+            possible_extensions = self.content['Input frames extension'].get_combo_entries()
+            extension = []
+            for file_name in glob.iglob(os.path.join(project_dir, '*')):
+                extension.extend(list(filter(
+                    lambda x: file_name.endswith(x),
+                    possible_extensions
+                    )))
+
+            if len(set(extension)) != 1:
+                tu.message('Input project path for frames:\n{0}\n\nInput project path for jpg:\n{1}\n\nNumber of frames:\n-1\n\nInput frames extension:\nFOUND SEVERAL - Please provide manually!'.format(project_dir, project_dir))
+            else:
+                self.content['Input frames extension'].set_settings(extension[0], '[None, None]')
+                tu.message('Input project path for frames:\n{0}\n\nInput project path for jpg:\n{1}\n\nNumber of frames:\n-1\n\nInput frames extension:\n{2}'.format(project_dir, project_dir, extension[0]))
+
         else:
             tu.message('Automatic folder detection is currently only supported for the EPU software. Please provide the "Input project path for frames", "Input project path for jpg" and "Input frames extension" manually.')
 

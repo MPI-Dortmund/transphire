@@ -1426,6 +1426,7 @@ def default_input():
         ['Input frames extension', ['mrc', 'dm4', 'tif', 'tiff'], str, '', 'COMBO', 'Main', 'Extension of the original micrograph movies.'],
         ['Number of frames', '0', int, '', 'PLAIN', 'Main', 'Expected number of frames of the input micrograph movies. This is used to verify that the micrograph movie is not corrupted.'],
         ]
+    return items
 
 
 def default_general():

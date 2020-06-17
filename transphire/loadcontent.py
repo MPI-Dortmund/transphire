@@ -163,12 +163,12 @@ class LoadContent(QWidget):
                     widget.addItems(entry[self.idx_values])
                     widget.setCurrentIndex(0)
                     widget.currentIndexChanged.connect(self._change_color_to_changed)
-                elif entry[self.idx_type] == 'DIR':
+                elif entry[self.idx_type] in ('DIR', 'DIR/SEARCH'):
                     widget = QLineEdit(entry[self.idx_values], self)
                     widget.textChanged.connect(self._change_color_to_changed)
                     widget.returnPressed.connect(self._find_dir)
                     widget.setPlaceholderText('Press shift+return')
-                elif entry[self.idx_type] == 'FILE':
+                elif entry[self.idx_type] in ('FILE', 'FILE/SEARCH'):
                     widget = QLineEdit(entry[self.idx_values], self)
                     widget.textChanged.connect(self._change_color_to_changed)
                     widget.returnPressed.connect(self._find_file)
