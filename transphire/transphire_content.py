@@ -1080,7 +1080,7 @@ def default_ctffind_4_v4_1_8():
         ['Use movies', ['False', 'True'], bool, '', 'COMBO', category, ''],
         ['Combine frames', '1', int, 'Use movies:True', 'PLAIN', category, ''],
         ['Movie is gain-corrected?', ['True', 'False'], bool, 'Use movies:True', 'COMBO', category, ''],
-        ['Gain file:Gain', '', str, 'Movie is gain-corrected?:False', 'FILE', category, ''],
+        ['Gain file:Gain', '', str, 'Movie is gain-corrected?:False', 'FILE/SEARCH', category, ''],
         ])
 
         #Rare
@@ -1138,7 +1138,7 @@ def default_mount(hdd=None):
         ['Quota command', '', str, '', 'PLAIN', '', ''],
         ['Quota / TB', '', float, '', 'PLAIN', '', ''],
         ['Typ', ['Import', 'Copy_to_work', 'Copy_to_backup'], str, '', 'COMBO', '', ''],
-        ['Fixed folder', '', str, '', 'DIR', '', 'Provide a fixed folder in case you do not want/can remount in every session.'],
+        ['Fixed folder', '', str, '', 'DIR/SEARCH', '', 'Provide a fixed folder in case you do not want/can remount in every session.'],
         ]
     return items
 
@@ -1173,7 +1173,7 @@ def default_unblur_v1_0_0():
         ['Termination shift threshold (A)', '1', float, '', 'PLAIN', 'Rare', 'Termination shift threshold (A)'],
         ['Maximum number of iterations', '20', int, '', 'PLAIN', 'Rare', 'Maximum number of iterations'],
         ['Restore Noise Power?', ['True', 'False'], bool, '', 'COMBO', 'Rare', 'Restore Noise Power?'],
-        ['Gain image filename:Gain', '', str, '', 'FILE', 'Rare', 'Gain image filename'],
+        ['Gain image filename:Gain', '', str, '', 'FILE/SEARCH', 'Rare', 'Gain image filename'],
         ['First frame to use for sum', '1', int, '', 'PLAIN', 'Advanced', 'First frame to use for sum'],
         ['Last frame to use for sum', '0', int, '', 'PLAIN', 'Advanced', 'Last frame to use for sum. (0 for last frame)'],
 
@@ -1216,7 +1216,7 @@ def default_motion_cor_2_v1_0_0():
         #Main
         ['-PixSize:Pixel size', '0', float, '', 'PLAIN', 'Main', 'Pixel size in A of input stack in angstrom. If not specified, dose weighting will be skipped.'],
         ['-kV:voltage', '300', float, '', 'PLAIN', 'Main', 'High tension in kV needed for dose weighting.  Default is 300.'],
-        ['-Gain:Gain', '', str, '', 'FILE', 'Main', 'MRC file that stores the gain reference. If not specified, MRC extended header will be visited to look for gain reference.'],
+        ['-Gain:Gain', '', str, '', 'FILE/SEARCH', 'Main', 'MRC file that stores the gain reference. If not specified, MRC extended header will be visited to look for gain reference.'],
         ['-FtBin:Bin superres', '1', float, '', 'PLAIN', 'Advanced', 'Binning performed in Fourier space, default 1.0.'],
         ['-Bft', '100', float, '', 'PLAIN', 'Main', 'B-Factor for alignment, default 100.'],
         ['-MaskCent', '0 0', [float, float], '', 'PLAIN', 'Advanced', 'Center of subarea that will be used for alignement, default 0 0 corresponding to the frame center.'],
@@ -1228,7 +1228,7 @@ def default_motion_cor_2_v1_0_0():
         ['-InitDose', '0', float, '', 'PLAIN', 'Advanced', 'Initial dose received before stack is acquired'],
         ['-Group', '1', int, '', 'PLAIN', 'Advanced', 'Group every specified number of frames by adding them together. The alignment is then performed on the summed frames. By default, no grouping is performed.'],
         ['-FmRef', '0', int, '', 'PLAIN', 'Advanced', 'Specify which frame to be the reference to which all other frames are aligned. MotionCor2 uses by default (-1), i.e. the central frame is chosen. The central frame is at N/2 based upon zero indexing where N is the number of frames that will be summed, i.e., not including the frames thrown away. For Particle polishing, a value of 0 is recommended (default)'],
-        ['-DefectFile', '', str, '', 'FILE', 'Advanced', '1. Defect file that stores entries of defects on camera.  2. Each entry corresponds to a rectangular region in image.  The pixels in such a region are replaced by neighboring good pixel values.  3. Each entry contains 4 integers x, y, w, h representing the x, y coordinates, width, and heights, respectively.'],
+        ['-DefectFile', '', str, '', 'FILE/SEARCH', 'Advanced', '1. Defect file that stores entries of defects on camera.  2. Each entry corresponds to a rectangular region in image.  The pixels in such a region are replaced by neighboring good pixel values.  3. Each entry contains 4 integers x, y, w, h representing the x, y coordinates, width, and heights, respectively.'],
         ['-Tilt', '0 0', [float, float], '', 'PLAIN', 'Advanced', 'Specify the starting angle and the step angle of tilt series. They are required for dose weighting. If not given, dose weighting will be disabled.'],
         ['-Mag', '1 1 0', [float, float, float], '', 'PLAIN', 'Advanced', '1. Correct anisotropic magnification by stretching image along the major axis, the axis where the lower magificantion is detected.  2. Three inputs are needed including magnifications along major and minor axes and the angle of the major axis relative to the image x-axis in degree.  3. By default no correction is performed.'],
         ['-InFmMotion', '0', int, '', 'PLAIN', 'Advanced', '1. 1 - Account for in-frame motion.  0 - Do not account for in-frame motion.'],
@@ -1263,7 +1263,7 @@ def default_motion_cor_2_v1_0_5():
         ['-Bft', '100', float, '', 'PLAIN', 'Main', 'B-Factor for alignment, default 100.'],
         ['-Throw', '0', int, '', 'PLAIN', 'Main', 'Throw initial number of frames, default is 0'],
         ['-Trunc', '0', int, '', 'PLAIN', 'Main', 'Truncate last number of frames, default is 0'],
-        ['-Gain:Gain', '', str, '', 'FILE', 'Main', 'MRC file that stores the gain reference. If not specified, MRC extended header will be visited to look for gain reference.'],
+        ['-Gain:Gain', '', str, '', 'FILE/SEARCH', 'Main', 'MRC file that stores the gain reference. If not specified, MRC extended header will be visited to look for gain reference.'],
         ['-RotGain', '0', int, '', 'PLAIN', 'Main', 'Rotate gain reference counter-clockwise.  0 - no rotation, default, 1 - rotate 90 degree, 2 - rotate 180 degree, 3 - rotate 270 degree.'],
         ['-FlipGain', '0', int, '', 'PLAIN', 'Main', 'Flip gain reference after gain rotation.  0 - no flipping, default, 1 - flip upside down, 2 - flip left right.'],
         ['-MaskCent', '0 0', [float, float], '', 'PLAIN', 'Advanced', 'Center of subarea that will be used for alignement, default 0 0 corresponding to the frame center.'],
@@ -1276,15 +1276,15 @@ def default_motion_cor_2_v1_0_5():
         ['-InitDose', '0', float, '', 'PLAIN', 'Advanced', 'Initial dose received before stack is acquired'],
         ['-Group', '1', int, '', 'PLAIN', 'Advanced', 'Group every specified number of frames by adding them together. The alignment is then performed on the summed frames. By default, no grouping is performed.'],
         ['-FmRef', '-1', int, '', 'PLAIN', 'Advanced', 'Specify which frame to be the reference to which all other frames are aligned. By default (-1) the the central frame is chosen. The central frame is at N/2 based upon zero indexing where N is the number of frames that will be summed, i.e., not including the frames thrown away.'],
-        ['-DefectFile', '', str, '', 'FILE', 'Advanced', '1. Defect file that stores entries of defects on camera.  2. Each entry corresponds to a rectangular region in image.  The pixels in such a region are replaced by neighboring good pixel values.  3. Each entry contains 4 integers x, y, w, h representing the x, y coordinates, width, and heights, respectively.'],
-        ['-Dark', '', str, '', 'FILE', 'Advanced', '1. MRC file that stores the dark reference. If not specified, dark subtraction will be skipped.  2. If -RotGain and/or -FlipGain is specified, the dark reference will also be rotated and/or flipped.'],
+        ['-DefectFile', '', str, '', 'FILE/SEARCH', 'Advanced', '1. Defect file that stores entries of defects on camera.  2. Each entry corresponds to a rectangular region in image.  The pixels in such a region are replaced by neighboring good pixel values.  3. Each entry contains 4 integers x, y, w, h representing the x, y coordinates, width, and heights, respectively.'],
+        ['-Dark', '', str, '', 'FILE/SEARCH', 'Advanced', '1. MRC file that stores the dark reference. If not specified, dark subtraction will be skipped.  2. If -RotGain and/or -FlipGain is specified, the dark reference will also be rotated and/or flipped.'],
         ['-Tilt', '0 0', [float, float], '', 'PLAIN', 'Advanced', 'Specify the starting angle and the step angle of tilt series. They are required for dose weighting. If not given, dose weighting will be disabled.'],
         ['-Mag', '1 1 0', [float, float, float], '', 'PLAIN', 'Advanced', '1. Correct anisotropic magnification by stretching image along the major axis, the axis where the lower magificantion is detected.  2. Three inputs are needed including magnifications along major and minor axes and the angle of the major axis relative to the image x-axis in degree.  3. By default no correction is performed.'],
         ['-InFmMotion', '0', int, '', 'PLAIN', 'Advanced', '1. 1 - Account for in-frame motion.  0 - Do not account for in-frame motion.'],
         ['-Crop', '0 0', [int, int], '', 'PLAIN', 'Advanced', '1. Crop the loaded frames to the given size.  2. By default the original size is loaded.'],
         ['-Gpu', '0', [int]*99, '', 'PLAIN', 'Advanced', ' GPU IDs. Default 0.  For multiple GPUs, separate IDs by space.  For example, -Gpu 0 1 2 3 specifies 4 GPUs.'],
         ['GPU SPLIT:GPU SPLIT', '1', int, '', 'PLAIN', 'Advanced', 'NOT AN ISAC2 OPTION. Specify how many jobs per GPU.'],
-        ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT A CRYOLO OPTION. Split the gpu values specified in --Gpu to be able to run mutliple crYOLO jobs in parallel.'],
+        ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT A MotionCor2 OPTION. Split the gpu values specified in --Gpu to be able to run mutliple MotionCor2 jobs in parallel.'],
         ['dose cutoff', '4', float, '', 'PLAIN', 'Advanced', 'NOT A MOTIONCOR OPTION. Used to create the Relion3 bayesian polishing files.'],
         ]
     return items
@@ -1312,7 +1312,7 @@ def default_motion_cor_2_v1_1_0():
         ['-Bft', '500 150', [float, float], '', 'PLAIN', 'Main', 'B-Factor for alignment, default 100.'],
         ['-Throw', '0', int, '', 'PLAIN', 'Main', 'Throw initial number of frames, default is 0'],
         ['-Trunc', '0', int, '', 'PLAIN', 'Main', 'Truncate last number of frames, default is 0'],
-        ['-Gain:Gain', '', str, '', 'FILE', 'Main', 'MRC file that stores the gain reference. If not specified, MRC extended header will be visited to look for gain reference.'],
+        ['-Gain:Gain', '', str, '', 'FILE/SEARCH', 'Main', 'MRC file that stores the gain reference. If not specified, MRC extended header will be visited to look for gain reference.'],
         ['-RotGain', '0', int, '', 'PLAIN', 'Main', 'Rotate gain reference counter-clockwise.  0 - no rotation, default, 1 - rotate 90 degree, 2 - rotate 180 degree, 3 - rotate 270 degree.'],
         ['-FlipGain', '0', int, '', 'PLAIN', 'Main', 'Flip gain reference after gain rotation.  0 - no flipping, default, 1 - flip upside down, 2 - flip left right.'],
         ['-MaskCent', '0 0', [float, float], '', 'PLAIN', 'Advanced', 'Center of subarea that will be used for alignement, default 0 0 corresponding to the frame center.'],
@@ -1325,8 +1325,8 @@ def default_motion_cor_2_v1_1_0():
         ['-InitDose', '0', float, '', 'PLAIN', 'Advanced', 'Initial dose received before stack is acquired'],
         ['-Group', '1', int, '', 'PLAIN', 'Advanced', 'Group every specified number of frames by adding them together. The alignment is then performed on the summed frames. By default, no grouping is performed.'],
         ['-FmRef', '-1', int, '', 'PLAIN', 'Advanced', 'Specify which frame to be the reference to which all other frames are aligned. By default (-1) the the central frame is chosen. The central frame is at N/2 based upon zero indexing where N is the number of frames that will be summed, i.e., not including the frames thrown away.'],
-        ['-DefectFile', '', str, '', 'FILE', 'Advanced', '1. Defect file that stores entries of defects on camera.  2. Each entry corresponds to a rectangular region in image.  The pixels in such a region are replaced by neighboring good pixel values.  3. Each entry contains 4 integers x, y, w, h representing the x, y coordinates, width, and heights, respectively.'],
-        ['-Dark', '', str, '', 'FILE', 'Advanced', '1. MRC file that stores the dark reference. If not specified, dark subtraction will be skipped.  2. If -RotGain and/or -FlipGain is specified, the dark reference will also be rotated and/or flipped.'],
+        ['-DefectFile', '', str, '', 'FILE/SEARCH', 'Advanced', '1. Defect file that stores entries of defects on camera.  2. Each entry corresponds to a rectangular region in image.  The pixels in such a region are replaced by neighboring good pixel values.  3. Each entry contains 4 integers x, y, w, h representing the x, y coordinates, width, and heights, respectively.'],
+        ['-Dark', '', str, '', 'FILE/SEARCH', 'Advanced', '1. MRC file that stores the dark reference. If not specified, dark subtraction will be skipped.  2. If -RotGain and/or -FlipGain is specified, the dark reference will also be rotated and/or flipped.'],
         ['-Tilt', '0 0', [float, float], '', 'PLAIN', 'Advanced', 'Specify the starting angle and the step angle of tilt series. They are required for dose weighting. If not given, dose weighting will be disabled.'],
         ['-Mag', '1 1 0', [float, float, float], '', 'PLAIN', 'Advanced', '1. Correct anisotropic magnification by stretching image along the major axis, the axis where the lower magificantion is detected.  2. Three inputs are needed including magnifications along major and minor axes and the angle of the major axis relative to the image x-axis in degree.  3. By default no correction is performed.'],
         ['-InFmMotion', '0', int, '', 'PLAIN', 'Advanced', '1. 1 - Account for in-frame motion.  0 - Do not account for in-frame motion.'],
@@ -1380,7 +1380,7 @@ def default_motion_cor_2_v1_3_0():
         ['-kV:voltage', '300', float, '', 'PLAIN', category, 'High tension in kV needed for dose weighting.  Default is 300.'],
         ['-FtBin:Bin superres', '1', float, '', 'PLAIN', category, 'Binning performed in Fourier space, default 1.0.'],
         ['-Bft', '500 150', [float, float], '', 'PLAIN', category, 'B-Factor for alignment, default 100.'],
-        ['-Gain:Gain', '', str, '', 'FILE', category, 'MRC file that stores the gain reference. If not specified, MRC extended header will be visited to look for gain reference.'],
+        ['-Gain:Gain', '', str, '', 'FILE/SEARCH', category, 'MRC file that stores the gain reference. If not specified, MRC extended header will be visited to look for gain reference.'],
         ['-MaskCent', '0 0', [float, float], '', 'PLAIN', category, 'Center of subarea that will be used for alignement, default 0 0 corresponding to the frame center.'],
         ['-MaskSize', '1 1', [float, float], '', 'PLAIN', category, 'The size of subarea that will be used for alignment, default 1.0 1.0 corresponding full size.'],
         ['-Iter', '7', int, '', 'PLAIN', category, 'Maximum iterations for iterative alignment, default 5 iterations.'],
@@ -1389,8 +1389,8 @@ def default_motion_cor_2_v1_3_0():
         ['-StackZ', '0', int, '', 'PLAIN', category, 'Number of frames per stack. If not specified, it will be loaded from MRC header.'],
         ['-InitDose', '0', float, '', 'PLAIN', category, 'Initial dose received before stack is acquired'],
         ['-FmRef', '0', int, '', 'PLAIN', category, 'Specify which frame to be the reference to which all other frames are aligned. By default (-1) the the central frame is chosen. The central frame is at N/2 based upon zero indexing where N is the number of frames that will be summed, i.e., not including the frames thrown away. Keep a value of 0 in order to make the most out of polishing.'],
-        ['-DefectFile', '', str, '', 'FILE', category, '1. Defect file that stores entries of defects on camera.  2. Each entry corresponds to a rectangular region in image.  The pixels in such a region are replaced by neighboring good pixel values.  3. Each entry contains 4 integers x, y, w, h representing the x, y coordinates, width, and heights, respectively.'],
-        ['-Dark', '', str, '', 'FILE', category, '1. MRC file that stores the dark reference. If not specified, dark subtraction will be skipped.  2. If -RotGain and/or -FlipGain is specified, the dark reference will also be rotated and/or flipped.'],
+        ['-DefectFile', '', str, '', 'FILE/SEARCH', category, '1. Defect file that stores entries of defects on camera.  2. Each entry corresponds to a rectangular region in image.  The pixels in such a region are replaced by neighboring good pixel values.  3. Each entry contains 4 integers x, y, w, h representing the x, y coordinates, width, and heights, respectively.'],
+        ['-Dark', '', str, '', 'FILE/SEARCH', category, '1. MRC file that stores the dark reference. If not specified, dark subtraction will be skipped.  2. If -RotGain and/or -FlipGain is specified, the dark reference will also be rotated and/or flipped.'],
         ['-Tilt', '0 0', [float, float], '', 'PLAIN', category, 'Specify the starting angle and the step angle of tilt series. They are required for dose weighting. If not given, dose weighting will be disabled.'],
         ['-Mag', '1 1 0', [float, float, float], '', 'PLAIN', category, '1. Correct anisotropic magnification by stretching image along the major axis, the axis where the lower magificantion is detected.  2. Three inputs are needed including magnifications along major and minor axes and the angle of the major axis relative to the image x-axis in degree.  3. By default no correction is performed.'],
         ['-InFmMotion', '0', int, '', 'PLAIN', category, '1. 1 - Account for in-frame motion.  0 - Do not account for in-frame motion.'],
@@ -1402,6 +1402,30 @@ def default_motion_cor_2_v1_3_0():
         ['dose cutoff', '4', float, '', 'PLAIN', category, 'NOT A MOTIONCOR OPTION. Used to create the Relion3 bayesian polishing files.'],
         ])
     return items
+
+
+def default_input():
+    """
+    Content of General tab.
+
+    Arguments:
+    None
+
+    Return:
+    Content items as list
+    """
+    items = [
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
+        ['Software', ['EPU >=1.9', 'EPU >=1.8', 'Latitude S', 'Just Stack'], str, '', 'COMBO', 'Main', 'Software used for data collection.'],
+        ['Type', ['Stack', 'Frames'], str, '', 'COMBO', 'Main', 'Stack type used for data collection.'],
+        ['Camera', ['K2', 'K3', 'Falcon3', 'Falcon2'], str, '', 'COMBO', 'Main', 'Camera used for data collection.'],
+        ['Input project path for frames', '', str, '', 'DIR/SEARCH', 'Main', 'Project directory path (containing the Images-Discs1 folder in case of an EPU session) containing the micrograph movie files of the data collection (mrc, tif, tiff, ...)'],
+        ['Input project path for jpg', '', str, '', 'DIR/SEARCH', 'Main', 'Project directory path (containing the Images-Discs1 folder in case of an EPU session) containing the Meta files of the data collection (jpg, xml, ... files). Can be the same as "Input project path for frames".'],
+        ['Input frames extension', ['mrc', 'dm4', 'tif', 'tiff'], str, '', 'COMBO', 'Main', 'Extension of the original micrograph movies.'],
+        ['Number of frames', '0', int, '', 'PLAIN', 'Main', 'Expected number of frames of the input micrograph movies. This is used to verify that the micrograph movie is not corrupted.'],
+        ]
 
 
 def default_general():
@@ -1418,15 +1442,7 @@ def default_general():
         ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
         ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
         ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
-
-        ['Software', ['EPU >=1.9', 'EPU >=1.8', 'Latitude S', 'Just Stack'], str, '', 'COMBO', 'Main', 'Software used for data collection.'],
-        ['Type', ['Stack', 'Frames'], str, '', 'COMBO', 'Main', 'Stack type used for data collection.'],
-        ['Camera', ['K2', 'K3', 'Falcon3', 'Falcon2'], str, '', 'COMBO', 'Main', 'Camera used for data collection.'],
-        ['Search path frames', '', str, '', 'DIR', 'Main', 'Directory path containing the micrograph movie files of the data collection (mrc, tif, tiff, ...)'],
-        ['Search path meta', '', str, '', 'DIR', 'Main', 'Directory path containing the Meta files of the data collection (jpg, xml, ... files). Can be the same as Serach path frames.'],
-        ['Input extension', ['mrc', 'dm4', 'tif', 'tiff'], str, '', 'COMBO', 'Main', 'Extension of the original micrograph movies.'],
         ['Project name', '', str, '', 'PLAIN', 'Main', 'Project name.'],
-        ['Number of frames', '0', int, '', 'PLAIN', 'Main', 'Expected number of frames of the input micrograph movies. This is used to verify that the micrograph movie is not corrupted.'],
         ['Rename prefix', '', str, 'Rename micrographs:True', 'PLAIN', 'Main', 'prefix for the renamed micrographs prefix_number_suffix.extension; The separator between prefix and number needs to be specified, too.'],
         ['Rename suffix', '', str, 'Rename micrographs:True', 'PLAIN', 'Main', 'Suffix for the renamed micrographs prefix_number_suffix.extension; The separator between number and suffix needs to be specified, too.'],
 
@@ -1528,7 +1544,7 @@ def default_global():
         ['Phase Plate:Phase Plate', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Use phase plate options'],
         ['Filament mode:Filament mode', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Input is filamentous data.'],
         ['Filament width:Filament width', '-1', bool, '', 'PLAIN', 'Main', 'Input is filamentous data.'],
-        ['Gain:Gain', '', str, '', 'FILE', 'Main', '', 'MRC file that stores the gain reference. If not specified, MRC extended header will be visited to look for gain reference.'],
+        ['Gain:Gain', '', str, '', 'FILE/SEARCH', 'Main', '', 'MRC file that stores the gain reference. If not specified, MRC extended header will be visited to look for gain reference.'],
         ['voltage:voltage', '300.0', float, '', 'PLAIN', 'Main', 'High tension in kV needed for dose weighting.  Default is 300.'],
         ['Protein radius:Protein radius', '-1', int, '', 'PLAIN', 'Main', 'particle radius: there is no default, a sensible number has to be provided, units - pixels (default required int)'],
         ['GPU:GPU', 'ON-THE-FLY', str, '', 'PLAIN', 'Main', 'Specifiy which gpu\'s should be used. ON-THE-FLY finds the number of GPU\'s dynaically.'],

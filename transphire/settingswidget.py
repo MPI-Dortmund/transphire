@@ -36,7 +36,7 @@ class SettingsWidget(QWidget):
     """
     sig_index_changed = pyqtSignal(str)
 
-    def __init__(self, name, content, content_others, global_dict=None, parent=None):
+    def __init__(self, name, content, content_others, mount_directory, global_dict=None, parent=None):
         """
         Initialise the layout.
 
@@ -47,7 +47,7 @@ class SettingsWidget(QWidget):
         Returns:
         None
         """
-        super(SettingsWidget, self).__init__(parent)
+        super(SettingsWidget, self).__init__(parent=parent)
 
         self.action = QAction(self)
         self.action.setShortcut(QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_Return))
@@ -60,6 +60,7 @@ class SettingsWidget(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
 
         # Global content
+        self.parent = parent
         self.default = content[0]
         self.key_name = name
         self.typ = content[1]['typ']
@@ -70,6 +71,7 @@ class SettingsWidget(QWidget):
         self.name_global = content[1]['name_global']
         self.global_value = 'ON-THE-FLY'
         self.widget_auto = None
+        self.mount_directory = mount_directory
 
         if self.name == 'Project name':
             pattern = None
@@ -115,7 +117,7 @@ class SettingsWidget(QWidget):
 
             self.tooltip = '{0}\n\nShortcuts:\nCtrl + Shift + Return -> Open enlarged view'.format(self.tooltip)
 
-        elif self.typ == 'FILE':
+        elif self.typ == 'FILE' or self.typ == 'FILE/SEARCH':
             self.edit = QLineEdit(self.name, self)
             self.edit.textChanged.connect(self.change_tooltip)
             self.edit.setText(self.default)
@@ -123,15 +125,7 @@ class SettingsWidget(QWidget):
             self.edit.returnPressed.connect(self._find_file)
             self.tooltip = '{0}\n\nShortcuts:\nCtrl + Shift + Return -> Open file dialog\nCtrl + Return -> Open enlarged view'.format(self.tooltip)
 
-        elif self.typ == 'FILE/CHOICE':
-            self.edit = QLineEdit(self.name, self)
-            self.edit.textChanged.connect(self.change_tooltip)
-            self.edit.setText(self.default)
-            self.edit.setPlaceholderText('Press shift+return')
-            self.edit.returnPressed.connect(self._find_file)
-            self.tooltip = '{0}\n\nShortcuts:\nCtrl + Shift + Return -> Open file dialog\nCtrl + Return -> Open enlarged view'.format(self.tooltip)
-
-        elif self.typ == 'DIR':
+        elif self.typ == 'DIR' or self.typ == 'DIR/SEARCH':
             self.edit = QLineEdit(self.name, self)
             self.edit.textChanged.connect(self.change_tooltip)
             self.edit.setText(self.default)
@@ -227,9 +221,8 @@ class SettingsWidget(QWidget):
                 self.edit.removeItem(0)
                 self.edit.setCurrentText(self.pre_global)
                 self.change_color_if_true()
-            #self.edit.blockSignals(False)
+
         else:
-            #self.edit.blockSignals(True)
             try:
                 self.pre_global = self.edit.text()
                 self.edit.setText(self.global_value)
@@ -251,7 +244,7 @@ class SettingsWidget(QWidget):
         if self.typ == 'COMBO':
             return
         else:
-            input_box = inputbox.InputBox(is_password=False, parent=self)
+            input_box = inputbox.InputBox(is_password=bool(self.typ == 'PASSWORD'), parent=self)
             input_box.setText('Enlarged view', self.name)
             input_box.setDefault(self.edit.text())
             input_box.set_type(self.typ)
@@ -292,9 +285,14 @@ class SettingsWidget(QWidget):
         Returns:
         None
         """
+        if '/SEARCH' in self.typ:
+            current_dir = self.mount_directory
+        else:
+            current_dir = os.getcwd()
+
         in_file = QFileDialog.getOpenFileName(
             caption='Find file: {0}'.format(self.name),
-            directory=os.getcwd(),
+            directory=current_dir,
             options=QFileDialog.DontUseNativeDialog
             )
 
@@ -314,13 +312,21 @@ class SettingsWidget(QWidget):
         Returns:
         None
         """
+        if '/SEARCH' in self.typ:
+            current_dir = self.mount_directory
+        else:
+            current_dir = os.getcwd()
+
         in_dir = QFileDialog.getExistingDirectory(
             caption='Find directory: {0}'.format(self.name),
-            directory=os.getcwd(),
+            directory=current_dir,
             options=QFileDialog.DontUseNativeDialog
             )
         if in_dir != '':
             self.sender().setText(in_dir)
+
+            if '/SEARCH' in self.typ:
+                self.parent.search_for_projects(in_dir)
 
     def get_settings(self, quiet=False):
         """

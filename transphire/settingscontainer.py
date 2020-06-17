@@ -15,11 +15,14 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import glob
+import os
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QScrollArea, QLabel
 from PyQt5.QtCore import pyqtSlot
 from transphire.settingswidget import SettingsWidget
 from transphire.separator import Separator
 from transphire.tabdocker import TabDocker
+from transphire import transphire_utils as tu
 
 
 class SettingsContainer(QWidget):
@@ -30,7 +33,7 @@ class SettingsContainer(QWidget):
     QWidget
     """
 
-    def __init__(self, content, name, global_dict, parent=None, **kwargs):
+    def __init__(self, content, name, global_dict, settings_folder, mount_worker, parent=None, **kwargs):
         """
         Initialise layout of the widget.
 
@@ -50,6 +53,20 @@ class SettingsContainer(QWidget):
             content_others = kwargs['content_others']
         except KeyError:
             content_others = None
+        try:
+            content_mount = kwargs['content_mount']
+            self.content_mount = {}
+            for entry in content_mount:
+                for widget in entry:
+                    for key in widget:
+                        if key == 'Mount name':
+                            current_name = widget[key][0]
+                        if key == 'Typ':
+                            if widget[key][0] == 'Import':
+                                self.content_mount[current_name] = os.path.join(settings_folder, current_name).replace(' ', '_')
+ 
+        except KeyError:
+            self.content_mount = None
 
         # TabDocker widget for Main and Advanced
         my_tab_docker = TabDocker(self)
@@ -120,7 +137,7 @@ class SettingsContainer(QWidget):
                         self.layout_dict['{0}_v'.format(layout_name)].setContentsMargins(0, 0, 0, 0)
                         self.layout_dict[layout_name].addLayout(self.layout_dict['{0}_v'.format(layout_name)])
 
-                    widget = SettingsWidget(content=widget[key], name=name, content_others=content_others, global_dict=global_dict, parent=self)
+                    widget = SettingsWidget(content=widget[key], name=name, content_others=content_others, mount_directory=mount_worker.mount_directory, global_dict=global_dict, parent=self)
                     if group and name not in ('Pipeline'):
                         group, state = group.split(':')
                         self.group.setdefault(group, [])
@@ -355,4 +372,92 @@ class SettingsContainer(QWidget):
                     entry.edit.setText(text)
                 except AttributeError:
                     entry.edit.setCurrentText(text)
+
+            state = entry.widget_auto.isChecked()
+            entry.widget_auto.setChecked(not state)
+            entry.widget_auto.setChecked(state)
+
+    def search_for_projects(self, project_dir):
+        text = self.content['Software'].get_settings()['Software']
+        project_dir = os.path.realpath(project_dir)
+
+        if text.startswith('EPU'):
+            if not [entry for entry in os.listdir(project_dir) if entry.startswith('Images-Disc')]:
+                tu.message('Could not find "Images-Disc" folder in the specified directory! Please check if you specified the correct project directory created by EPU or your EPU version is correct.')
+                return
+
+
+            mount_path = None
+            for key in self.content_mount:
+                if os.stat(self.content_mount[key]).st_size == 0:
+                    continue
+                with open(self.content_mount[key], 'r') as read:
+                    current_mount_path = os.path.realpath(read.readline().split('\t')[2])
+                if project_dir.startswith(current_mount_path):
+                    mount_path = current_mount_path
+                    break
+
+            if mount_path is None:
+                tu.message('Could not identify related mounted mount point. Please provide the "Input project path for frames", "Input project path for jpg" and "Input frames extension" manually.')
+                return
+
+            matches = []
+            self.recursive_search(mount_path, os.path.basename(project_dir), matches)
+
+            if len(matches) in (1, 2):
+                pass
+            elif not matches:
+                tu.message('Could not find project {0} in specified mount directory {1}. Please provide the "Input project path for frames", "Input project path for jpg" and "Input frames extension" manually.'.format(project_dir, mount_path))
+                return
+            else:
+                tu.message('Found more than 2 folders with the name {0} in specified mount directory {1}. Please provide the "Input project path for frames", "Input project path for jpg" and "Input frames extension" manually.'.format(project_dir, mount_path))
+                return
+
+            is_meta = []
+            is_frames = []
+            extension = []
+            possible_extensions = self.content['Input frames extension'].get_combo_entries()
+            for entry in matches:
+                files = glob.glob(os.path.join(entry, 'Images-Disc*', '*', 'Data', '*'))
+
+                for file_name in files:
+                    if file_name.endswith('.jpg'):
+                        is_meta.append(entry)
+
+                    if 'ractions.' in file_name:
+                        is_frames.append(entry)
+                        extension.extend(list(filter(
+                            lambda x: file_name.endswith(x),
+                            possible_extensions
+                            )))
+
+            if len(set(is_meta)) != 1 or len(set(is_frames)) != 1:
+                tu.message('Could not identify meta and frames folder, yet. Did the data collection already start? If not, try again afterwards :)')
+                return
+
+            self.content['Input project path for frames'].set_settings(is_frames[0], '[None, None]')
+            self.content['Input project path for jpg'].set_settings(is_meta[0], '[None, None]')
+
+            if len(set(extension)) != 1:
+                tu.message('Input project path for frames:\n{0}\n\nInput project path for jpg:\n{1}\n\Input frames extension:\nFOUND SEVERAL - Please provide manually!'.format(is_frames[0], is_meta[0]))
+            else:
+                self.content['Input frames extension'].set_settings(extension[0], '[None, None]')
+                tu.message('Input project path for frames:\n{0}\n\nInput project path for jpg:\n{1}\n\nInput frames extension:\n{2}'.format(is_frames[0], is_meta[0], extension[0]))
+        else:
+            tu.message('Automatic folder detection is currently only supported for the EPU software. Please provide the "Input project path for frames", "Input project path for jpg" and "Input frames extension" manually.')
+
+    @staticmethod
+    def recursive_search(folder, match, matches):
+        folders = sorted([entry for entry in glob.glob(os.path.join(folder, '*')) if os.path.isdir(entry)])
+        for folder_name in folders:
+            if os.path.basename(folder_name) == match:
+                matches.append(folder_name)
+                continue
+            elif list(filter(
+                    lambda x: os.path.basename(folder_name).startswith(x),
+                    ('Images-Disc', 'Metadata', 'Sample', 'Atlas')
+                    )):
+                continue
+            else:
+                SettingsContainer.recursive_search(folder_name, match, matches)
 
