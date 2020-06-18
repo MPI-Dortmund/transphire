@@ -46,7 +46,7 @@ def get_motion_default(settings, motion_frames, queue_com, name):
         if tu.is_higher_version(motion_name, '1.0.0'):
             if motion_frames is not None:
                 motion_frames['last'] = \
-                    int(settings['General']['Number of frames']) - \
+                    int(settings['Input']['Number of frames']) - \
                     int(settings[motion_name]['-Trunc'])
                 motion_frames['first'] = \
                     int(settings[motion_name]['-Throw']) + 1
@@ -526,7 +526,7 @@ def create_sum_movie_v1_0_2_command(
     motion_name = settings['Copy']['Motion']
     if tu.is_higher_version(motion_name, '1.0.0'):
         sum_movie_command.append('{0}'.format(
-            int(settings['General']['Number of frames']) -
+            int(settings['Input']['Number of frames']) -
             int(settings[motion_name]['-Trunc']) -
             int(settings[motion_name]['-Throw'])
             ))
@@ -727,12 +727,12 @@ def combine_motion_outputs(
     assert dark_var is not None
 
     compress_name = settings['Copy']['Compress']
-    if compress_name == 'False' or settings['General']['Input frames extension'] in ('tiff', 'tif'):
+    if compress_name == 'False' or settings['Input']['Input frames extension'] in ('tiff', 'tif'):
         pass
     elif compress_name == 'Compress cmd':
         movie_name = movie_name.replace(stack_folder, compress_folder)
         movie_name = movie_name.replace(
-            '.' + settings['General']['Input frames extension'],
+            '.' + settings['Input']['Input frames extension'],
             '.' + settings[compress_name]['--command_compress_extension']
             )
     else:

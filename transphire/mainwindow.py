@@ -1050,12 +1050,14 @@ class MainWindow(QMainWindow):
                 continue
             self._extract_settings(key, settings, error_list, check_list)
 
-        settings['motion_frames'] = [{
-            'first': 1,
-            'last': -1,
-            'dw': True,
-            'default': True
-            }]
+        settings['motion_frames'] = {
+            '0': {
+                'first': 1,
+                'last': -1,
+                'dw': True,
+                'default': True
+                }
+            }
         if error_list and not monitor:
             tu.message('\n'.join(error_list))
             self.enable(True)
