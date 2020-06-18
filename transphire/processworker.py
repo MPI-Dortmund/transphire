@@ -297,10 +297,10 @@ class ProcessWorker(QObject):
         while True:
             if self.stop:
                 text = 'Not monitoring'
-                color = 'white'
+                color = tu.get_color('white')
             else:
                 text = 'Monitoring'
-                color = 'lightgreen'
+                color = tu.get_color('Running')
             for entry in full_content:
                 name = entry[0]
                 key = '_'.join([key for key in name.split('_') if not check_int(key)])
@@ -539,7 +539,7 @@ class ProcessWorker(QObject):
                     ),
                 ['Done'],
                 'Feedbacks',
-                '#d9d9d9'
+                tu.get_color('Finished')
                 ])
         else:
             queue_com['status'].put([
@@ -549,7 +549,7 @@ class ProcessWorker(QObject):
                     ),
                 ['Running'],
                 'Feedbacks',
-                'lightgreen'
+                tu.get_color('Running')
                 ])
         with open(self.settings['feedback_file'], 'w') as write:
             write.write(str(self.settings['do_feedback_loop'].value))
@@ -689,7 +689,7 @@ class ProcessWorker(QObject):
                 'Stopping',
                 [size, shared_dict['typ'][typ]['file_number']],
                 key,
-                '#ff5c33'
+                tu.get_color('Stopped')
                 )
         self.check_queue(queue_com=queue_com)
 

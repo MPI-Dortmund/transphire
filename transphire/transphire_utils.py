@@ -1705,6 +1705,53 @@ def check_instance(value, typ):
     return True
 
 
+def get_color(typ):
+    """
+    Color defined for the type
+
+    Arguments:
+    typ - Typ of color
+
+    Return:
+    Color string
+    """
+    # Color table: https://davidmathlogic.com/colorblind/#%23E34234-%23FFFF00-%23FFFFFF-%23000000-%23B200FF-%2368A3C3-%23C3A368-%23D9D9D9-%23E34234-%2390EE90-%23FF336D-%23FF5C33
+    if typ == 'error':
+        color = '#e34234'
+    elif typ == 'global':
+        color = '#FFFF00'
+    elif typ == 'white':
+        color = '#FFFFFF'
+    elif typ == 'unchanged':
+        color = '#000000'
+    elif typ == 'changed':
+        color = 'B200FF'
+    elif typ == 'True':
+        color = '#68a3c3'
+    elif typ == 'False':
+        color = '#c3a368'
+    elif typ == 'Finished':
+        color = '#d9d9d9'
+    elif typ == 'Skipped':
+        color = '#d9d9d9'
+    elif typ == 'Later':
+        color = '#d9d9d9'
+    elif typ == 'Error':
+        color = '#FF5C33'
+    elif typ == 'Running':
+        color = '#90EE90'
+    elif typ == 'Waiting':
+        color = '#FFC14D'
+    elif typ == 'Stopped':
+        color = '#ff5c33'
+    else:
+        msg = 'Style not known! Go for black!'
+        print(msg, ":", typ)
+        message(msg)
+        color = '#000000'
+    return color
+
+
 def get_style(typ):
     """
     Style colores for the content of widgets.
@@ -1715,25 +1762,7 @@ def get_style(typ):
     Return:
     Color string
     """
-    if typ == 'error':
-        color = '#e34234'
-    elif typ == 'global':
-        color = 'yellow'
-    elif typ == 'white':
-        color = 'white'
-    elif typ == 'unchanged':
-        color = 'black'
-    elif typ == 'changed':
-        color = 'purple'
-    elif typ == 'True':
-        color = '#68a3c3'
-    elif typ == 'False':
-        color = '#c3a368'
-    else:
-        msg = 'Style not known! Go for black!'
-        print(msg, ":", typ)
-        message(msg)
-        color = 'black'
+    color = get_color(typ)
 
     return 'QPushButton {{color: {0}}} QLabel {{color: {0}}} QLineEdit {{color: {0}}} QComboBox {{color: {0}}}'.format(color)
 

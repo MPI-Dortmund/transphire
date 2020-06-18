@@ -171,7 +171,7 @@ class ProcessThread(object):
                         'Finished',
                         [],
                         self.typ,
-                        '#d9d9d9'
+                        tu.get_color('Finished')
                         ])
                     time.sleep(10)
                 continue
@@ -184,7 +184,7 @@ class ProcessThread(object):
                         'Skipped',
                         [self.queue.qsize()],
                         self.typ,
-                        '#d9d9d9'
+                        tu.get_color('Skipped')
                         ])
                     time.sleep(10)
                 continue
@@ -197,7 +197,7 @@ class ProcessThread(object):
                         'Later',
                         [self.queue.qsize()],
                         self.typ,
-                        '#d9d9d9'
+                        tu.get_color('Later')
                         ])
                     time.sleep(10)
                 continue
@@ -211,7 +211,7 @@ class ProcessThread(object):
                     'Quota Error',
                     [self.queue.qsize()],
                     self.typ,
-                    '#e34234'
+                    tu.get_color('Error')
                     ])
                 time.sleep(10)
                 continue
@@ -223,7 +223,7 @@ class ProcessThread(object):
                     'Connection Error',
                     [self.queue.qsize()],
                     self.typ,
-                    '#e34234'
+                    tu.get_color('Error')
                     ])
                 time.sleep(10)
                 continue
@@ -235,7 +235,7 @@ class ProcessThread(object):
                     'No space Error',
                     [self.queue.qsize()],
                     self.typ,
-                    '#e34234'
+                    tu.get_color('Error')
                     ])
                 time.sleep(10)
                 continue
@@ -252,7 +252,7 @@ class ProcessThread(object):
                         'Unknown Error',
                         ['{0:.1f} min'.format(time_diff / 60)],
                         self.typ,
-                        '#e34234'
+                        tu.get_color('Error')
                         ])
                 else:
                     self.queue_com['status'].put([
@@ -263,7 +263,7 @@ class ProcessThread(object):
                             '{0:.1f} min'.format(time_diff / 60)
                             ],
                         self.typ,
-                        '#e34234'
+                        tu.get_color('Error')
                         ])
                 i = 0
                 while i < 6:
@@ -307,7 +307,7 @@ class ProcessThread(object):
                 ),
             [],
             self.typ,
-            '#e34234'
+            tu.get_color('Error')
             ])
         self.queue_com['log'].put(tu.create_log('Stopped', self.name))
         print(self.name, ': Stopped')
@@ -430,7 +430,7 @@ class ProcessThread(object):
                     'Lost connection',
                     ['{0:.1f} min'.format(time_diff / 60)],
                     self.typ,
-                    '#e34234'
+                    tu.get_color('Error')
                     ])
                 if self.typ == 'Motion' or \
                         self.typ == 'CTF' or \
@@ -585,7 +585,7 @@ class ProcessThread(object):
                 'Copy Metadata',
                 [],
                 self.typ,
-                'lightgreen'
+                tu.get_color('Running')
                 ])
             try:
                 self.run_software_meta(directory=folder)
@@ -626,7 +626,7 @@ class ProcessThread(object):
             'Run',
             ['{0:.1f} min'.format(time_diff / 60)],
             self.typ,
-            'lightgreen'
+            tu.get_color('Running')
             ])
         try:
             self.run_find()
@@ -707,7 +707,7 @@ class ProcessThread(object):
                         self.shared_dict_typ['file_number']
                         ],
                     self.typ,
-                    '#ffc14d',
+                    tu.get_color('Waiting')
                     ])
             elif clear_list:
                 dummy = True
@@ -718,9 +718,9 @@ class ProcessThread(object):
                         error = True
                     else:
                         if self.shared_dict_typ['running'] == 0:
-                            color = '#ffc14d'
+                            color = tu.get_color('Waiting')
                         else:
-                            color = 'lightgreen'
+                            color = tu.get_color('Running')
                         self.queue_com['status'].put([
                             '{0:02d}|{1:02d}'.format(
                                 self.shared_dict_typ['running'],
@@ -757,9 +757,9 @@ class ProcessThread(object):
         try:
             self.shared_dict_typ['running'] += 1
             if self.shared_dict_typ['running'] == 0:
-                color = '#ffc14d'
+                color = tu.get_color('Waiting')
             else:
-                color = 'lightgreen'
+                color = tu.get_color('Running')
             self.queue_com['status'].put([
                 '{0:02d}|{1:02d}'.format(
                     self.shared_dict_typ['running'],
@@ -779,9 +779,9 @@ class ProcessThread(object):
         except Exception:
             self.shared_dict_typ['running'] -= 1
             if self.shared_dict_typ['running'] == 0:
-                color = '#ffc14d'
+                color = tu.get_color('Waiting')
             else:
-                color = 'lightgreen'
+                color = tu.get_color('Running')
             self.queue_com['status'].put([
                 '{0:02d}|{1:02d}'.format(
                     self.shared_dict_typ['running'],
@@ -972,9 +972,9 @@ class ProcessThread(object):
             self.shared_dict_typ['running'] -= 1
             if not self.shared_dict_typ['is_error']:
                 if self.shared_dict_typ['running'] == 0:
-                    color = '#ffc14d'
+                    color = tu.get_color('Waiting')
                 else:
-                    color = 'lightgreen'
+                    color = tu.get_color('Running')
                 self.queue_com['status'].put([
                     '{0:02d}|{1:02d}'.format(
                         self.shared_dict_typ['running'],
@@ -3416,7 +3416,7 @@ class ProcessThread(object):
                         ),
                     ['Done'],
                     'Feedbacks',
-                    '#d9d9d9'
+                    tu.get_color('Finished')
                     ])
             else:
                 self.queue_com['status'].put([
@@ -3426,7 +3426,7 @@ class ProcessThread(object):
                         ),
                     ['Running'],
                     'Feedbacks',
-                    'lightgreen'
+                    tu.get_color('Running')
                     ])
         finally:
             self.shared_dict['global_update_lock'].release()
