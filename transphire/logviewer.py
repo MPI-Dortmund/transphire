@@ -94,16 +94,19 @@ class LogViewer(QWidget):
 
     @pyqtSlot()
     def submit_text(self):
-        text = tu.create_log(self.input_edit.text())
-        prefix, suffix = text.split(' => ')
-        text = '{}\n{}: {}'.format(prefix, getpass.getuser(), suffix)
-        self.appendPlainText(text, indicator='notes')
+        self.appendPlainText(self.input_edit.text(), indicator='notes', user=True)
         self.input_edit.setText('')
 
-    def appendPlainText(self, text, indicator='log'):
+    def appendPlainText(self, text, indicator='log', user=False):
+        text_raw = tu.create_log(text)
+        prefix, suffix = text_raw.split(' => ', 1)
+        if user:
+            text = '{}\n{}: {}'.format(prefix, getpass.getuser(), suffix)
+        else:
+            text = '{}\n{}'.format(prefix, suffix)
         try:
             with open(self.file_name, 'a+') as write:
-                write.write(text)
+                write.write(text_raw)
                 write.write('\n')
         except IOError:
             pass
@@ -147,16 +150,21 @@ class LogViewer(QWidget):
         sender_text = sender.text().split(':')[0].strip()
         is_notes = False
         file_path = self.log_path
+
         if sender_text == 'log':
             file_names = ['log.txt']
+
         elif sender_text == 'notes':
             is_notes = True
             file_names = ['notes.txt']
+
         elif sender_text == 'sys_log':
             file_names = ['sys_log.txt']
+
         elif sender_text == 'error':
-            file_names = [os.path.join('error', os.path.basename(entry)) for entry in glob.glob(os.path.join(self.error_path, 'error', '*'))]
+            file_names = [os.path.basename(entry) for entry in glob.glob(os.path.join(self.error_path, '*'))]
             file_path = self.error_path
+
         else:
             assert False, sender.text()
 
@@ -179,7 +187,6 @@ class LogViewer(QWidget):
         self.project_path = project_path
         self.log_path = log_path
         self.error_path = error_path
-        self.project_path = project_path
         state = True
         if not self.project_path:
             state = False

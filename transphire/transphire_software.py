@@ -649,7 +649,7 @@ def check_nr_frames(frames, settings, force=False):
     frames - List of found frames
     settings - TranSPHIRE settings
     """
-    if int(settings['General']['Number of frames']) == -1 and not force:
+    if int(settings['Input']['Number of frames']) == -1 and not force:
         return True, 0, 0, 0
 
     if settings['is_superres'].value == 2:
@@ -675,7 +675,7 @@ def check_nr_frames(frames, settings, force=False):
             if line.startswith(' Number of columns, rows, sections .....'):
                 x_dim, y_dim, z_dim = line.split()[-3:]
 
-        return bool(nr_frames == int(settings['General']['Number of frames'])), x_dim, y_dim, z_dim
+        return bool(nr_frames == int(settings['Input']['Number of frames'])), x_dim, y_dim, z_dim
 
 
 def find_related_frames_to_jpg(frames_root, root_name, settings, queue_com, name):

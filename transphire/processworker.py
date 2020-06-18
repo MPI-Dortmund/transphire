@@ -243,6 +243,7 @@ class ProcessWorker(QObject):
             'error': manager.Queue(),
             'info': manager.Queue(),
             }
+        error = queue_com['info'].put('NEW SESSION\n')
 
         # Set stop variable to the return value of the pre_check
         if settings['Monitor']:
@@ -889,24 +890,24 @@ class ProcessWorker(QObject):
                             timeout=4
                             )
                     except pe.exceptions.TIMEOUT:
-                        self.sig_error.emit('TIMEOUT: SSH ls command failed! Username or Password in Auto3d might be wrong or Copy to work is not consistent!!')
+                        self.sig_error.emit('TIMEOUT: SSH "ls" command failed! Username or Password in Auto3d might be wrong or Copy to work is not consistent!!')
                         error = True
 
                     if error:
                         pass
-                    elif expect_idx == 0 and self.settings['Need SSH password'] == 'True':
+                    elif expect_idx == 0 and self.settings[auto3d_name]['Need SSH password'] == 'True':
                         child.sendline(self.settings[auto3d_name]['SSH password'])
-                    elif expect_idx == 1 and self.settings['Need SSH password'] == 'True':
+                    elif expect_idx == 1 and self.settings[auto3d_name]['Need SSH password'] == 'True':
                         self.sig_error.emit('SSH password provided, but not needed. Please check if passwordless authentification is enabled for this mount point.')
                         error = True
-                    elif expect_idx == 0 and self.settings['Need SSH password'] == 'False':
+                    elif expect_idx == 0 and self.settings[auto3d_name]['Need SSH password'] == 'False':
                         self.sig_error.emit('SSH password expected, but none provided!')
                         error = True
-                    elif expect_idx == 1 and self.settings['Need SSH password'] == 'False':
+                    elif expect_idx == 1 and self.settings[auto3d_name]['Need SSH password'] == 'False':
                         pass
 
                     try:
-                        child.expect(pe.EOF, timeout=4)
+                        child.expect(pe.EOF, timeout=10)
                     except pe.exceptions.TIMEOUT:
                         self.sig_error.emit('TIMEOUT Password: SSH ls command failed! Username or Password in Auto3d might be wrong or Copy to work is not consistent!!')
                         error = True

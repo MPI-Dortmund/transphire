@@ -1144,7 +1144,8 @@ class MainWindow(QMainWindow):
             entry.replace('_entries', '').replace('_', ' ') in settings['Copy']
             ]
         names.append('Copy_to_hdd')
-        for idx, entry in enumerate(names, 1):
+        idx = 0
+        for entry in names:
             base_dir2 = None
             no_feedback = False
             if 'copy_to_hdd' in entry.lower():
@@ -1153,12 +1154,13 @@ class MainWindow(QMainWindow):
                 no_feedback = True
             elif 'copy_to_' in entry.lower():
                 base_dir = self.mount_directory
-                folder_name = '{0:02d}_{1}'.format(idx, settings['Copy'][entry.replace('_', ' ')].replace(' ', '_').replace('>=', ''))
+                folder_name = settings['Copy'][entry.replace('_', ' ')].replace(' ', '_').replace('>=', '')
                 no_feedback = True
             else:
+                idx += 1
                 base_dir = settings['project_folder']
                 base_dir2 = settings['scratch_folder']
-                folder_name = '{0:02d}_{1}'.format(idx, settings['Copy'][entry].replace(' ', '_').replace('>=', ''))
+                folder_name = '{0:03d}_{1}'.format(idx, settings['Copy'][entry].replace(' ', '_').replace('>=', ''))
 
             for index in range(int(settings['General']['Number of feedbacks']) + 1):
                 if index == 0:
