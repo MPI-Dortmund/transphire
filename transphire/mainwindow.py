@@ -933,11 +933,14 @@ class MainWindow(QMainWindow):
         else:
             skip_name_list = tu.get_function_dict()[key]['allow_empty']
 
+        gpu_name = None
         for entry in settings_widget:
             for name in sorted(list(entry.keys())):
                 if name.endswith('_global'):
                     if entry[name][0] is not None and entry[name][1]:
                         if key != 'Global':
+                            if entry[name][0] == 'GPU':
+                                gpu_name = name.split('_global')[0]
                             entry[name.split('_global')[0]] = settings['Global'][entry[name][0]]
                         elif key == 'Global':
                             if entry[name][0] == 'GPU':
@@ -953,10 +956,10 @@ class MainWindow(QMainWindow):
                                 if len(set(gpu_devices)) != 1:
                                     error_list.append('The computer does have different types of GPUs available! In order to not make any mistakes, please specify the GPU IDs manually')
                                 entry[name.split('_global')[0]] = ' '.join([str(entry) for entry in range(len(gpu_devices))])
-                            elif entry[name][0] == 'GPU SPLIT':
-                                entry[name.split('_global')[0]] = '1'
-                            elif entry[name][0] == 'Memory usage':
-                                entry[name.split('_global')[0]] = 0.9 / int(entry['GPU SPLIT'])
+                            #elif entry[name][0] == 'GPU SPLIT':
+                            #    entry[name.split('_global')[0]] = '1'
+                            #elif entry[name][0] == 'Memory usage':
+                            #    entry[name.split('_global')[0]] = 0.9 / int(entry['GPU SPLIT'])
 
                         else:
                             assert False, key
@@ -984,6 +987,24 @@ class MainWindow(QMainWindow):
                         pass
             else:
                 pass
+
+        if gpu_name is not None:
+            for entry in settings_widget:
+                try:
+                    gpu_splits = int(entry['GPU SPLIT'][0])
+                except KeyError:
+                    gpu_splits = 0
+
+                if gpu_splits != 0:
+                    new_gpu = []
+                    for gpu_idx in entry[gpu_name].split():
+                        for i in range(gpu_splits):
+                            new_gpu.append('{}_{}'.format(gpu_idx, i))
+                    entry[gpu_name] = ' '.join(new_gpu)
+                try:
+                    del entry['GPU SPLIT']
+                except KeyError:
+                    pass
 
         for idx, entry in enumerate(settings_widget):
             if key == 'Frames':
@@ -1038,7 +1059,7 @@ class MainWindow(QMainWindow):
         if error_list and not monitor:
             tu.message('\n'.join(error_list))
             self.enable(True)
-            return None
+            return None, None
         else:
             pass
 
@@ -1067,7 +1088,7 @@ class MainWindow(QMainWindow):
                     self.project_name_pattern_example
                     )
                 )
-            return None
+            return None, None
         else:
             pass
 
@@ -1079,7 +1100,7 @@ class MainWindow(QMainWindow):
         if not os.path.exists(settings['project_base']) and monitor:
             self.enable(True)
             tu.message('Project needs to exists in order to start Monitor mode')
-            return None
+            return None, None
 
         settings['project_folder'] = os.path.join(
             settings['project_base'],
@@ -1132,7 +1153,7 @@ class MainWindow(QMainWindow):
                 no_feedback = True
             elif 'copy_to_' in entry.lower():
                 base_dir = self.mount_directory
-                folder_name = '{0:02d}_{1}'.format(idx, settings['Copy'][entry].replace(' ', '_').replace('>=', ''))
+                folder_name = '{0:02d}_{1}'.format(idx, settings['Copy'][entry.replace('_', ' ')].replace(' ', '_').replace('>=', ''))
                 no_feedback = True
             else:
                 base_dir = settings['project_folder']

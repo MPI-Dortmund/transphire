@@ -53,6 +53,11 @@ def default_auto_sphire_v1_3():
 
         ['input_volume', '', str,  '', 'FILE', category, '', 'Available memory per node.'],
         ['input_mask', '', str,  '', 'FILE', category, '', 'Available memory per node.'],
+
+        ['Use SSH', ['True', 'False'], bool,  '', 'COMBO', category, '', 'Use SSH to submit a job.'],
+        ['SSH username', '', str,  'Use SSH:True', 'PLAIN', category, '', 'Username on the work directory'],
+        ['Need SSH password', ['False', 'True'], bool, 'Use SSH:True', 'COMBO', category, '', 'Set to true if no ssh key authentification is set up.'],
+        ['SSH password', '', str, 'Need SSH password:True', 'PASSWORD', category, '', 'Password of the user (Will not be saved anywhere)'],
         ])
 
         #Advanced
@@ -80,11 +85,6 @@ def default_auto_sphire_v1_3():
         ['--adjust_rviper_addition', '', str,  '', 'PLAIN', category, '', 'Available memory per node.'],
         ['--meridien_addition', '', str,  '', 'PLAIN', category, '', 'Available memory per node.'],
         ['--sharpening_meridien_addition', '', str,  '', 'PLAIN', category, '', 'Available memory per node.'],
-
-        ['Use SSH', ['True', 'False'], bool,  '', 'COMBO', category, '', 'Use SSH to submit a job.'],
-        ['SSH username', '', str,  'Use SSH:True', 'PLAIN', category, '', 'Username on the work directory'],
-        ['Need SSH password', ['False', 'True'], bool, 'Use SSH:True', 'COMBO', category, '', 'Set to true if no ssh key authentification is set up.'],
-        ['SSH password', '', str, 'Need SSH password:True', 'PASSWORD', category, '', 'Password of the user (Will not be saved anywhere)'],
         ])
     return items
 
@@ -238,7 +238,7 @@ def default_cryolo_train_v1_5_8():
         ['--use_multithreading', ['True', 'False'], bool, '', 'COMBO', 'Rare', 'If python multiprocessing leads to problems during training (e.g. freezing, dying workers) use multithreading instead of multiprocessing.'],
         ['--layers_fine_tune', '2', int, '--fine_tune:True', 'PLAIN', 'Rare', 'Layers to be trained when using fine tuning.'],
         ['--gpu:GPU', '0', [int]*99, '', 'PLAIN', 'Rare', 'Specifiy which gpu\'s should be used.'],
-        ['--GPU SPLIT:GPU SPLIT LARGE', '1', float, '', 'PLAIN', 'Rare', 'Specify the fraction of memory per GPU used by crYOLO during prediction. Only values between 0.0 and 1.0 are allowed.'],
+        ['GPU SPLIT:GPU SPLIT LARGE', '1', float, '', 'PLAIN', 'Rare', 'Specify the fraction of memory per GPU used by crYOLO during prediction. Only values between 0.0 and 1.0 are allowed.'],
         ['--gpu_fraction:GPU SPLIT LARGE', '0.9', float, '', 'PLAIN', 'Rare', 'Specify the fraction of memory per GPU used by crYOLO during prediction. Only values between 0.0 and 1.0 are allowed.'],
         ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Rare', 'NOT A CRYOLO TRAIN OPTION. Split the gpu values specified in --gpu to be able to run mutliple crYOLO jobs in parallel.'],
         ['--train_times', '10', int, '', 'PLAIN', 'Rare', 'How often each image is presented to the network during one epoch. The default should be kept until you have many training images.'],
@@ -1542,17 +1542,17 @@ def default_global():
         ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
         ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['Bin superres', ['True', 'False'], bool, '', 'COMBO', 'Main', 'Bin superresolution datasets by a factor of 2 automatically.'],
-        ['Pixel size:Pixel size', '1.0', float, '', 'PLAIN', 'Main', '', 'Pixel size in A/pixel.'],
-        ['Phase Plate:Phase Plate', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Use phase plate options'],
-        ['Filament mode:Filament mode', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Input is filamentous data.'],
-        ['Filament width:Filament width', '-1', bool, '', 'PLAIN', 'Main', 'Input is filamentous data.'],
-        ['Gain:Gain', '', str, '', 'FILE/SEARCH', 'Main', '', 'MRC file that stores the gain reference. If not specified, MRC extended header will be visited to look for gain reference.'],
-        ['voltage:voltage', '300.0', float, '', 'PLAIN', 'Main', 'High tension in kV needed for dose weighting.  Default is 300.'],
-        ['Protein radius:Protein radius', '-1', int, '', 'PLAIN', 'Main', 'particle radius: there is no default, a sensible number has to be provided, units - pixels (default required int)'],
-        ['GPU:GPU', 'ON-THE-FLY', str, '', 'PLAIN', 'Main', 'Specifiy which gpu\'s should be used. ON-THE-FLY finds the number of GPU\'s dynaically.'],
-        ['GPU SPLIT:GPU SPLIT', '2', int, '', 'PLAIN', 'Main', 'Define the number of GPU splits.'],
-        ['GPU SPLIT LARGE:GPU SPLIT LARGE', '0', int, '', 'PLAIN', 'Main', 'Define the number of GPU splits.'],
-        ['Memory usage:Memory usage', '0.4', float, '', 'PLAIN', 'Main', 'Specifiy how much GPU memory should be used.'],
-        ['Memory usage large:Memory usage large', '0.9', float, '', 'PLAIN', 'Main', 'Specifiy how much GPU memory should be used.'],
+        ['Pixel size', '1.0', float, '', 'PLAIN', 'Main', '', 'Pixel size in A/pixel.'],
+        ['Phase Plate', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Use phase plate options'],
+        ['Filament mode', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Input is filamentous data.'],
+        ['Filament width', '-1', bool, '', 'PLAIN', 'Main', 'Input is filamentous data.'],
+        ['Gain', '', str, '', 'FILE/SEARCH', 'Main', '', 'MRC file that stores the gain reference. If not specified, MRC extended header will be visited to look for gain reference.'],
+        ['voltage', '300.0', float, '', 'PLAIN', 'Main', 'High tension in kV needed for dose weighting.  Default is 300.'],
+        ['Protein radius', '-1', int, '', 'PLAIN', 'Main', 'particle radius: there is no default, a sensible number has to be provided, units - pixels (default required int)'],
+        ['GPU:GPU', '0', str, '', 'PLAIN', 'Main', 'Specifiy which gpu\'s should be used. ON-THE-FLY finds the number of GPU\'s dynaically.'],
+        ['GPU SPLIT', '2', int, '', 'PLAIN', 'Main', 'Define the number of GPU splits.'],
+        ['GPU SPLIT LARGE', '0', int, '', 'PLAIN', 'Main', 'Define the number of GPU splits.'],
+        ['Memory usage', '0.4', float, '', 'PLAIN', 'Main', 'Specifiy how much GPU memory should be used.'],
+        ['Memory usage large', '0.9', float, '', 'PLAIN', 'Main', 'Specifiy how much GPU memory should be used.'],
         ]
     return items

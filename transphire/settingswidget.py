@@ -186,10 +186,7 @@ class SettingsWidget(QWidget):
             self.widget_auto = QPushButton('G', self)
             self.widget_auto.setObjectName('global')
             self.widget_auto.setToolTip('Use the global value specified in the "Global" settings tab')
-            if self.key_name == 'Global': # TODO: DISABLE GLOBAL GLOBAL VALUES FOR NOW
-                state = False
-            else:
-                state = True
+            state = True
             self.widget_auto.setCheckable(state)
             self.widget_auto.toggled.connect(self._toggle_change)
             self.widget_auto.setChecked(state)
@@ -434,7 +431,10 @@ class SettingsWidget(QWidget):
                 assert False, is_checked_type
 
             if is_checked is not None:
-                self.widget_auto.setChecked(is_checked)
+                try:
+                    self.widget_auto.setChecked(is_checked)
+                except AttributeError:
+                    pass
 
         widget_auto_checked = self.widget_auto.isChecked() if self.widget_auto is not None else False
 
