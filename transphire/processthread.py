@@ -4548,6 +4548,7 @@ class ProcessThread(object):
             ignore_list.append('--phase_plate')
             ignore_list.append('--rviper_use_final')
             ignore_list.append('Use SSH')
+            ignore_list.append('Need SSH password')
             ignore_list.append('--mtf')
             ignore_list.append('input_volume')
             ignore_list.append('Viper filter frequency')
@@ -4687,11 +4688,12 @@ class ProcessThread(object):
                 log.append(child.before)
                 log.append(child.after)
 
-                child.sendline(self.settings[self.prog_name]['SSH password'])
-                log.append(child.before)
-                log.append(child.after)
+                if self.settings[self.prog_name]['Need SSH password']:
+                    child.sendline(self.settings[self.prog_name]['SSH password'])
+                    log.append(child.before)
+                    log.append(child.after)
                 log.append(cmd)
-                child.expect(pe.EOF)
+                child.expect(pe.EOF, timeout=10)
 
                 stop_time = time.time()
                 with open(log_file, 'w') as write:

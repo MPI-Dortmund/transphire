@@ -881,22 +881,34 @@ class ProcessWorker(QObject):
 
                     child = pe.spawnu(ssh_command)
                     try:
-                        child.expect(
-                            "{0}@{1}'s password:".format(self.settings[auto3d_name]['SSH username'], device_name),
+                        expect_idx = child.expect(
+                            [
+                                "{0}@{1}'s password:".format(self.settings[auto3d_name]['SSH username'], device_name),
+                                pe.EOF
+                                ],
                             timeout=4
                             )
                     except pe.exceptions.TIMEOUT:
-                        self.sig_error.emit('SSH ls command failed! Username or Password in Auto3d might be wrong or Copy to work is not consistent!!')
+                        self.sig_error.emit('TIMEOUT: SSH ls command failed! Username or Password in Auto3d might be wrong or Copy to work is not consistent!!')
                         error = True
-                    except pe.exceptions.EOF:
-                        self.sig_error.emit('SSH ls command failed! Username or Password in Auto3d might be wrong or Copy to work is not consistent!!')
-                        error = True
-                    else:
+
+                    if error:
+                        pass
+                    elif expect_idx == 0 and self.settings['Need SSH password'] == 'True':
                         child.sendline(self.settings[auto3d_name]['SSH password'])
+                    elif expect_idx == 1 and self.settings['Need SSH password'] == 'True':
+                        self.sig_error.emit('SSH password provided, but not needed. Please check if passwordless authentification is enabled for this mount point.')
+                        error = True
+                    elif expect_idx == 0 and self.settings['Need SSH password'] == 'False':
+                        self.sig_error.emit('SSH password expected, but none provided!')
+                        error = True
+                    elif expect_idx == 1 and self.settings['Need SSH password'] == 'False':
+                        pass
+
                     try:
-                        child.expect(pe.EOF)
+                        child.expect(pe.EOF, timeout=4)
                     except pe.exceptions.TIMEOUT:
-                        self.sig_error.emit('SSH ls command failed! Username or Password in Auto3d might be wrong or Copy to work is not consistent!!')
+                        self.sig_error.emit('TIMEOUT Password: SSH ls command failed! Username or Password in Auto3d might be wrong or Copy to work is not consistent!!')
                         error = True
                 else:
                     self.sig_error.emit('"Copy to work" not specified for Auto3d ssh command.')
