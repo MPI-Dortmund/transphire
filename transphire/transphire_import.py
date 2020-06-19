@@ -815,9 +815,6 @@ def import_motion_cor_2_v1_0_0(name, name_no_feedback, settings, directory_name,
     Return:
     Imported data
     """
-    print(name)
-    print(name_no_feedback)
-    print(directory_name)
     dtype_import_dict_name = tu.find_best_match(name_no_feedback, get_dtype_import_dict())
 
     directory_names = glob.glob('{0}/*_with*_DW_log'.format(directory_name))
@@ -882,7 +879,7 @@ def import_motion_cor_2_v1_0_0(name, name_no_feedback, settings, directory_name,
                 pass
 
         data_original.append([data_name['shift_x'], data_name['shift_y']])
-        data[idx]['file_name'] = file_name
+        data[idx]['file_name'] = file_name.rsplit('0-', 1)[0]
         shift_x = np.array([
             data_name['shift_x'][i+1] - data_name['shift_x'][i] \
             for i in range(0, int(data_name['frame_number'][-1]-1))

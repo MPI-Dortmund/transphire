@@ -95,7 +95,6 @@ class PlotWorker(QObject):
             name, name_no_feedback, directory_name, settings, current_name = entry
             if os.path.isdir(directory_name):
                 valid_entries.append([name, name_no_feedback, directory_name, settings])
-                print('SET VISIBLE TRUE', name)
                 self.sig_visible.emit(True, name)
             else:
                 self.sig_visible.emit(False, name)

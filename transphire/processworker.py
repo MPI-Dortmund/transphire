@@ -83,56 +83,6 @@ class ProcessWorker(QObject):
         self.sig_start.connect(self.run)
 
     def emit_plot_signals(self, folder_list, monitor):
-        # Set CTF settings
-        #names = [
-        #    entry.replace('_entries', '')
-        #    for entry in self.settings['Copy']
-        #    if entry.endswith('_entries') and
-        #    entry.replace('_entries', '').replace('_', ' ') in self.settings['Copy']
-        #    ]
-
-        #settings_emit = []
-        #for name in names:
-        #    for feedback_number in range(int(self.settings['General']['Number of feedbacks'])+1):
-        #        new_name = '{0}_folder_feedback_{1}'.format(name, feedback_number)
-        #        self.settings[new_name] = {}
-
-        #        for entry in self.settings['Copy']['{0}_entries'.format(name)]:
-        #            program_name = entry.replace(' ', '_').replace('>=', '')
-        #            try:
-        #                print(entry, program_name, self.settings[program_name])
-        #            except KeyError:
-        #                print(entry, program_name)
-        #            print('')
-        #            if feedback_number == 0:
-        #                folder_path = os.path.join(
-        #                    self.settings['project_folder'],
-        #                    program_name
-        #                    )
-        #                signal_folder = folder_path
-        #            else:
-        #                folder_path = os.path.join(
-        #                    self.settings['project_folder'],
-        #                    'Feedback_results',
-        #                    '{0}_feedback_{1}'.format(program_name, int(self.settings['General']['Number of feedbacks']) - feedback_number + 1 )
-        #                    )
-        #                signal_folder = os.path.join(
-        #                    self.settings['project_folder'],
-        #                    'Feedback_results',
-        #                    '{0}_feedback_{1}'.format(program_name, feedback_number)
-        #                    )
-        #            self.settings[new_name][entry] = folder_path
-        #            folder_list.append(folder_path)
-
-        #            try:
-        #                settings_emit.append([
-        #                    '{0} feedback {1}'.format(entry, feedback_number),
-        #                    signal_folder,
-        #                    self.settings,
-        #                    self.settings['Copy'][name],
-        #                    ])
-        #            except KeyError:
-        #                pass
         settings_emit = []
         for name_no_feedback, name, prog_type, folder in self.settings['plot_emit']:
             try:
