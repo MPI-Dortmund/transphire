@@ -1305,7 +1305,7 @@ def check_for_outlier(dict_name, data, file_name, settings):
         mask = vmatch(data['file_name'])
     except ValueError:
         print('ERROR with file!')
-        print('dict_name', data)
+        print('data', data)
         print('dict_name', dict_name)
         print('file_name', file_name)
         raise

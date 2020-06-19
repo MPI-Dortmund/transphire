@@ -1115,15 +1115,15 @@ class MainWindow(QMainWindow):
             'TranSPHIRE_results'
             )
         folder_dict = {
-            'settings_folder': 'XX_TranSPHIRE_settings',
-            'log_folder': 'XX_Log_files',
-            'queue_folder': 'XX_Queue_files',
-            'error_folder': 'XX_Error_files',
-            'tar_folder': 'XX_Tar_file_folder',
-            'stack_folder': '00_Import',
-            'meta_folder': '00_Import_meta',
-            'gain_folder': '00_Gain_files',
-            'software_meta_folder': '00_Session_meta',
+            'settings_folder': 'XXX_TranSPHIRE_settings',
+            'log_folder': 'XXX_Log_files',
+            'queue_folder': 'XXX_Queue_files',
+            'error_folder': 'XXX_Error_files',
+            'tar_folder': 'XXX_Tar_file_folder',
+            'stack_folder': '000_Import',
+            'meta_folder': '000_Import_meta',
+            'gain_folder': '000_Gain_files',
+            'software_meta_folder': '000_Session_meta',
             }
         for key, value in folder_dict.items():
             settings[key] = os.path.join(

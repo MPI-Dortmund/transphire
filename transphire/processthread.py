@@ -2527,37 +2527,14 @@ class ProcessThread(object):
         except IndexError:
             file_for_jpg = queue_dict[0]['sum'][0]
 
-        tum.create_jpg_file(
-            file_for_jpg,
-            self.settings,
-            )
-
         import_name = tu.get_name(file_for_jpg)
-        data, data_original = tu.get_function_dict()[self.settings['Copy']['Motion']]['plot_data'](
-            self.settings['Copy']['Motion'],
-            self.settings['Copy']['Motion'],
+        data, data_original = tu.get_function_dict()[self.prog_name]['plot_data'](
+            self.prog_name,
+            self.prog_name,
             self.settings,
-            self.settings['Motion_folder_feedback_0'][self.settings['Copy']['Motion']],
+            self.settings['motion_folder_feedback_0'],
             import_name
             )
-
-        warnings, skip_list = tus.check_for_outlier(
-            dict_name='Motion',
-            data=data,
-            file_name=queue_dict[0]['sum'][0],
-            settings=self.settings
-            )
-
-        if skip_list:
-            self.remove_from_translate(os.path.basename(root_name))
-        else:
-            pass
-
-        for warning in skip_list:
-            self.send_out_of_range_error(warning, root_name, 'skip')
-
-        for warning in warnings:
-            self.send_out_of_range_error(warning, root_name, 'warning')
 
         mask = np.in1d(
             np.array(
@@ -2585,6 +2562,31 @@ class ProcessThread(object):
                 1
                 ).tolist()[-1], '.', 1).tolist()[0]
             )
+
+        tum.create_jpg_file(
+            file_for_jpg,
+            data_original[mask],
+            self.settings,
+            )
+
+        warnings, skip_list = tus.check_for_outlier(
+            dict_name='Motion',
+            data=data,
+            file_name=queue_dict[0]['sum'][0],
+            settings=self.settings
+            )
+
+        if skip_list:
+            self.remove_from_translate(os.path.basename(root_name))
+        else:
+            pass
+
+        for warning in skip_list:
+            self.send_out_of_range_error(warning, root_name, 'skip')
+
+        for warning in warnings:
+            self.send_out_of_range_error(warning, root_name, 'warning')
+
         data = data[mask]
         data_original = data_original[mask]
 
@@ -2594,6 +2596,7 @@ class ProcessThread(object):
                 dw_file = queue_dict[0]['sum_dw'][0]
             except IndexError:
                 dw_file = None
+
             output_combine = tum.combine_motion_outputs(
                 data=data,
                 data_original=data_original,
@@ -2848,10 +2851,9 @@ class ProcessThread(object):
             )
 
         import_name = tu.get_name(file_sum)
-        data, data_orig = tu.get_function_dict()[self.settings['Copy']['CTF']]['plot_data'](
-            self.settings['Copy']['CTF'],
-            self.settings['Copy']['CTF'],
-            self.settings['copy_to_work_folder_feedback_0'],
+        data, data_orig = tu.get_function_dict()[self.prog_name]['plot_data'](
+            self.prog_name,
+            self.prog_name,
             self.settings,
             self.settings['ctf_folder_folder_feedback_0'],
             import_name
@@ -3859,7 +3861,7 @@ class ProcessThread(object):
             self.shared_dict['typ']['Picking']['queue_list_lock'].release()
 
         folder_name = 'picking_folder_feedback_{0}'.format(self.settings['do_feedback_loop'].value)
-        entry_name = 'Picking_folder_feedback_{0}'.format(self.settings['do_feedback_loop'].value)
+        entry_name = 'picking_folder_feedback_{0}'.format(self.settings['do_feedback_loop'].value)
 
         if root_name == 'None':
             pass
@@ -4008,11 +4010,11 @@ class ProcessThread(object):
             export_log_files = []
             for file_use, file_name, file_log in zip(file_use_list, file_name_list, file_logs):
                 import_name = tu.get_name(file_use)
-                data, data_orig = tu.get_function_dict()[self.settings['Copy']['Picking']]['plot_data'](
-                    self.settings['Copy']['Picking'],
-                    self.settings['Copy']['Picking'],
+                data, data_orig = tu.get_function_dict()[self.prog_name]['plot_data'](
+                    self.prog_name,
+                    self.prog_name,
                     self.settings,
-                    self.settings[entry_name][self.settings['Copy']['Picking']],
+                    self.settings[entry_name],
                     import_name
                     )
 

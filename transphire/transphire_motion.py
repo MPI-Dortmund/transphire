@@ -22,6 +22,7 @@ import collections as co
 import numpy as np
 import mrcfile as mrc
 import matplotlib
+import json
 matplotlib.use('QT5Agg')
 import matplotlib.image as mi
 from transphire import transphire_utils as tu
@@ -922,14 +923,46 @@ def create_export_data(export_data, lines):
     lines.append('{0}\n'.format('\t'.join(row_string)))
 
 
-def create_jpg_file(input_file, settings):
+def create_jpg_file(input_file, data, settings):
     file_name = tu.get_name(input_file)
 
     tu.mkdir_p(os.path.join(settings['motion_folder_feedback_0'], 'jpg'))
     tu.mkdir_p(os.path.join(settings['motion_folder_feedback_0'], 'jpg_2'))
+    tu.mkdir_p(os.path.join(settings['motion_folder_feedback_0'], 'json'))
 
     jpg_file_1 = os.path.join(settings['motion_folder_feedback_0'], 'jpg', '{0}.jpg'.format(file_name))
     jpg_file_2 = os.path.join(settings['motion_folder_feedback_0'], 'jpg_2', '{0}.jpg'.format(file_name))
+    json_file = os.path.join(settings['motion_folder_feedback_0'], 'json', '{0}.json'.format(file_name))
+
+    json_dict = {
+        'label_x': 'Drift x / px',
+        'label_y': 'Drift y / px',
+        'data': [
+            {
+                'values_x': data[0],
+                'values_y': data[1],
+                'is_high_res': True,
+                'label_plot': '',
+                'marker': '',
+                },
+            {
+                'values_x': [data[0][0]],
+                'values_y': [data[1][0]],
+                'is_high_res': False,
+                'label_plot': 'First',
+                'marker': 'p',
+                },
+            {
+                'values_x': [data[0][-1]],
+                'values_y': [data[1][-1]],
+                'is_high_res': False,
+                'label_plot': 'Last',
+                'marker': 'd',
+                },
+            ]
+        }
+    with open(json_file, 'r') as read:
+        json.dump(json_dict, read)
 
     arr_1 = None
     arr_2 = None

@@ -742,6 +742,8 @@ class PlotWidget(QWidget):
                 current_name = self._basenames[-1]
             except IndexError:
                 pass
+            except TypeError:
+                return
 
         try:
             data_list = self._data['image'][self._basenames == current_name][0].split(';;;')

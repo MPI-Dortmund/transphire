@@ -102,9 +102,13 @@ class PlotWorker(QObject):
                 self.settings.remove(entry)
 
         if valid_entries:
-            with mp.Pool(min(len(valid_entries), len(valid_entries))) as p:
-                data = p.starmap(self.calculate_array_now, valid_entries)
-            self.send_data(data)
+            try:
+                with mp.Pool(min(len(valid_entries), len(valid_entries))) as p:
+                    data = p.starmap(self.calculate_array_now, valid_entries)
+            except RuntimeError:
+                pass
+            else:
+                self.send_data(data)
         self.sig_new_round.emit()
 
     @staticmethod
