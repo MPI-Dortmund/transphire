@@ -947,7 +947,7 @@ class MainWindow(QMainWindow):
                                 try:
                                     nvidia_output = subprocess.check_output(['nvidia-smi', '-L'])
                                     gpu_devices = re.findall(
-                                        '^GPU \d+: ([\w\d ]+) \(UUID: GPU-.*\)$',
+                                        '^GPU \d+: (.+) \(UUID: GPU-.*\)$',
                                         nvidia_output.decode('utf-8'),
                                         re.MULTILINE
                                         )

@@ -934,7 +934,9 @@ def get_copy_command_for_frames(settings, queue_com, name):
     Command to use for copy.
     """
     message = None
-    if settings['Input']['Software'] == 'Just Stack':
+    if settings['Copy']['Delete data after import?'] == 'Symlink':
+        return "ln -rs"
+    elif settings['Input']['Software'] == 'Just Stack':
         return "rsync --copy-links"
     elif settings['Input']['Software'] == 'Latitude S':
         if settings['Input']['Type'] == 'Frames':

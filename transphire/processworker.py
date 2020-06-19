@@ -110,6 +110,8 @@ class ProcessWorker(QObject):
         None
         """
         # Set settings
+        self.sig_error.emit('NEW SESSION: {}'.format('Monitor' if settings['Monitor'] else 'Start'))
+
         content_process = cp.deepcopy(self.content_process)
         settings['copy_software_meta'] = True
         if settings['Input']['Input frames extension'] in ('dm4'):
@@ -211,7 +213,6 @@ class ProcessWorker(QObject):
             'error': manager.Queue(),
             'info': manager.Queue(),
             }
-        error = queue_com['info'].put('NEW SESSION\n')
 
         # Set stop variable to the return value of the pre_check
         if settings['Monitor']:
@@ -825,7 +826,6 @@ class ProcessWorker(QObject):
         if int(self.settings['General']['Number of feedbacks']) != 0:
             if 'Later' in (train2d_name, select2d_name, extract_name, class2d_name):
                 self.sig_error.emit('Number of feedbacks provided and Extract, Class2d, Select2d, or Train2d set to Later. Remember that particle extraction and subsequent runs will stall until a Extract, Class2d, Select2d, or Train2d  program is provided.')
-                error = True
             if 'False' in (train2d_name, select2d_name, extract_name, class2d_name):
                 self.sig_error.emit('Number of feedbacks provided and Extract, Class2d, Select2d, or Train2d set to False. This is not possible, because the program will stall infinitely.')
                 error = True

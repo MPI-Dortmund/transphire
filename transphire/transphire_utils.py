@@ -202,12 +202,25 @@ def find_latest_version(name, dictionary):
     Returns:
     The best matching version Key.
     """
-    prog_name = name
-    valid_versions = [
-        tuple([tuple([int(num) for num in VERSION_RE.search(entry).group(2).split('.')]), entry])
-        for entry in dictionary.keys()
-        if prog_name in entry
-        ]
+    valid_versions = []
+    for entry in dictionary:
+        if name not in entry:
+            continue
+        prog_name, version = VERSION_RE.search(entry).groups()
+        if prog_name == name:
+            valid_versions.append(
+                tuple(
+                    [
+                        tuple(
+                            [
+                                int(num) for num in version.split('.')
+                                ]
+                            ),
+                        entry
+                        ]
+                    )
+                )
+
     return sorted(valid_versions)[-1][-1]
 
 
@@ -346,7 +359,6 @@ def get_function_dict():
             'license': True,
             'category': 'External software',
             'allow_empty': ['-DefectFile', '-Gain', '-Dark'],
-            'old': True,
             }
     function_dict['MotionCor2 >=v1.0.5'] = copy_mod.deepcopy(function_dict['MotionCor2 >=v1.0.0'])
     function_dict['MotionCor2 >=v1.0.5']['content'] = tc.default_motion_cor_2_v1_0_5
@@ -369,7 +381,6 @@ def get_function_dict():
             'license': False,
             'category': 'External software',
             'allow_empty': [],
-            'old': True,
             }
 
     ### CTF Programs
@@ -384,13 +395,11 @@ def get_function_dict():
             'license': False,
             'category': 'External software',
             'allow_empty': ['Gain file'],
-            'old': True,
             }
 
     function_dict['CTFFIND4 >=v4.1.10'] = function_dict['CTFFIND4 >=v4.1.8']
 
     function_dict['CTFFIND4 >=v4.1.13'] = copy_mod.deepcopy(function_dict['CTFFIND4 >=v4.1.8'])
-    function_dict['CTFFIND4 >=v4.1.13']['old'] = True
 
     function_dict['Gctf >=v1.06'] = {
             'plot': tp.update_ctf,
@@ -402,7 +411,6 @@ def get_function_dict():
             'license': False,
             'category': 'External software',
             'allow_empty': [],
-            'old': True,
             }
     function_dict['Gctf >=v1.18'] = copy_mod.deepcopy(function_dict['Gctf >=v1.06'])
     function_dict['Gctf >=v1.18']['content'] = tc.default_gctf_v1_18
@@ -417,10 +425,8 @@ def get_function_dict():
             'license': False,
             'category': 'External software',
             'allow_empty': [],
-            'old': True,
             }
     function_dict['CTER >=v1.3'] = copy_mod.deepcopy(function_dict['CTER >=v1.0'])
-    function_dict['CTER >=v1.3']['old'] = True
 
     ### Picking programs
 
@@ -434,7 +440,6 @@ def get_function_dict():
             'license': True,
             'category': 'External software',
             'allow_empty': [],
-            'old': True,
             }
     function_dict['crYOLO >=v1.0.5'] = copy_mod.deepcopy(function_dict['crYOLO >=v1.0.4'])
 
@@ -449,7 +454,6 @@ def get_function_dict():
 
     function_dict['crYOLO >=v1.4.1'] = copy_mod.deepcopy(function_dict['crYOLO >=v1.2.2'])
     function_dict['crYOLO >=v1.4.1']['content'] = tc.default_cryolo_v1_4_1
-    function_dict['crYOLO >=v1.4.1']['old'] = True
 
     function_dict['crYOLO >=v1.5.8'] = copy_mod.deepcopy(function_dict['crYOLO >=v1.2.2'])
     function_dict['crYOLO >=v1.5.8']['content'] = tc.default_cryolo_v1_5_8
@@ -467,7 +471,6 @@ def get_function_dict():
             'license': False,
             'category': 'External software',
             'allow_empty': [''],
-            'old': True,
             }
 
 
@@ -483,7 +486,6 @@ def get_function_dict():
             'license': False,
             'category': 'External software',
             'allow_empty': [''],
-            'old': True,
             }
 
 
@@ -499,7 +501,6 @@ def get_function_dict():
             'license': False,
             'category': 'External software',
             'allow_empty': [],
-            'old': True,
             }
 
     ### 2D train programs
@@ -514,11 +515,9 @@ def get_function_dict():
             'license': True,
             'category': 'External software',
             'allow_empty': [],
-            'old': True,
             }
     function_dict['crYOLO_train >=v1.5.8'] = copy_mod.deepcopy(function_dict['crYOLO_train >=v1.5.4'])
     function_dict['crYOLO_train >=v1.5.8']['content'] = tc.default_cryolo_train_v1_5_8
-    function_dict['crYOLO_train >=v1.5.8']['old'] = True
 
 
     ### auto processing programs
@@ -544,7 +543,6 @@ def get_function_dict():
                 '--meridien_addition',
                 '--sharpening_meridien_addition',
                 ],
-            'old': True,
             }
 
     ### Compression programs
@@ -557,7 +555,6 @@ def get_function_dict():
             'license': False,
             'category': 'External software',
             'allow_empty': ['--command_uncompress'],
-            'old': True,
             }
 
     ### Other no executable stuff
@@ -572,7 +569,6 @@ def get_function_dict():
             'license': False,
             'category': 'Internal settings',
             'allow_empty': [],
-            'old': True,
             }
 
     function_dict['Global'] = {
@@ -585,7 +581,6 @@ def get_function_dict():
             'license': False,
             'category': 'Internal settings',
             'allow_empty': ['-Gain'],
-            'old': True,
             }
 
     function_dict['Input'] = {
@@ -598,7 +593,6 @@ def get_function_dict():
             'license': False,
             'category': 'Internal settings',
             'allow_empty': [],
-            'old': True,
             }
 
     function_dict['General'] = {
@@ -611,7 +605,6 @@ def get_function_dict():
             'license': False,
             'category': 'Internal settings',
             'allow_empty': ['Rename suffix', 'Rename prefix'],
-            'old': True,
             }
 
     function_dict['Mount'] = {
@@ -624,7 +617,6 @@ def get_function_dict():
             'license': False,
             'category': 'TranSPHIRE settings',
             'allow_empty': [],
-            'old': True,
             }
 
     function_dict['Notification'] = {
@@ -637,7 +629,6 @@ def get_function_dict():
             'license': False,
             'category': 'TranSPHIRE settings',
             'allow_empty': [],
-            'old': True,
             }
     function_dict['Notification_widget'] = {
             'plot': None,
@@ -649,7 +640,6 @@ def get_function_dict():
             'license': False,
             'category': 'TranSPHIRE settings',
             'allow_empty': [],
-            'old': True,
             }
     function_dict['Others'] = {
             'plot': None,
@@ -661,7 +651,6 @@ def get_function_dict():
             'license': False,
             'category': 'TranSPHIRE settings',
             'allow_empty': [],
-            'old': True,
             }
     function_dict['Font'] = {
             'plot': None,
@@ -673,7 +662,6 @@ def get_function_dict():
             'license': False,
             'category': 'TranSPHIRE settings',
             'allow_empty': [],
-            'old': True,
             }
     function_dict['Copy'] = {
             'plot': None,
@@ -685,7 +673,6 @@ def get_function_dict():
             'license': False,
             'category': 'TranSPHIRE settings',
             'allow_empty': [],
-            'old': True,
             }
     function_dict['Path'] = {
             'plot': None,
@@ -697,7 +684,6 @@ def get_function_dict():
             'license': False,
             'category': 'TranSPHIRE settings',
             'allow_empty': [],
-            'old': True,
             }
     for key in function_dict:
         try:
@@ -705,7 +691,10 @@ def get_function_dict():
             newest_key = find_latest_version(prog_name, function_dict)
         except AttributeError:
             newest_key = key
-        function_dict[newest_key]['old'] = False
+        if newest_key == key:
+            function_dict[key]['old'] = False
+        else:
+            function_dict[key]['old'] = True
     return function_dict
 
 

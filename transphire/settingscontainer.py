@@ -210,6 +210,8 @@ class SettingsContainer(QWidget):
                     test_list = ['False', 'True']
                     if set(test_list) == set(entries):
                         continue
+                    elif 'Symlink' in entries:
+                        continue
                     settings[new_key] = self.content[key].get_combo_entries()
             else:
                 pass

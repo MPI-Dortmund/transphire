@@ -21,7 +21,7 @@ import sys
 import os
 import json
 import argparse
-import urllib
+import urllib.request
 from PyQt5.QtWidgets import QApplication
 
 import transphire
