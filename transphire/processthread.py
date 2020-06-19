@@ -528,15 +528,15 @@ class ProcessThread(object):
             if switch_feedback:
                 tu.copy(
                     self.shared_dict['typ'][aim]['save_file'],
-                    '{0}_feedback_{1}'.format(self.shared_dict['typ'][aim]['save_file'], self.settings['do_feedback_loop'].value)
+                    '{0}_folder_feedback_{1}'.format(self.shared_dict['typ'][aim]['save_file'], self.settings['do_feedback_loop'].value)
                     )
                 tu.copy(
                     self.shared_dict['typ'][aim]['list_file'],
-                    '{0}_feedback_{1}'.format(self.shared_dict['typ'][aim]['list_file'], self.settings['do_feedback_loop'].value)
+                    '{0}_folder_feedback_{1}'.format(self.shared_dict['typ'][aim]['list_file'], self.settings['do_feedback_loop'].value)
                     )
                 tu.copy(
                     self.shared_dict['typ'][aim]['done_file'],
-                    '{0}_feedback_{1}'.format(self.shared_dict['typ'][aim]['done_file'], self.settings['do_feedback_loop'].value)
+                    '{0}_folder_feedback_{1}'.format(self.shared_dict['typ'][aim]['done_file'], self.settings['do_feedback_loop'].value)
                     )
 
             pattern = re.compile(remove_pattern)
@@ -1953,7 +1953,7 @@ class ProcessThread(object):
         self.file_to_distribute(file_name=file_name_bad)
 
     def file_to_distribute(self, file_name):
-        for copy_name in ('work', 'HDD', 'backup'):
+        for copy_name in ('work', 'hdd', 'backup'):
             copy_type = 'Copy_to_{0}'.format(copy_name.lower())
             if not self.settings['Copy']['Copy to {0}'.format(copy_name)] == 'False':
                 self.add_to_queue(aim=copy_type, root_name=file_name)
@@ -2851,9 +2851,9 @@ class ProcessThread(object):
         data, data_orig = tu.get_function_dict()[self.settings['Copy']['CTF']]['plot_data'](
             self.settings['Copy']['CTF'],
             self.settings['Copy']['CTF'],
-            self.settings['copy_to_work_feedback_0'],
+            self.settings['copy_to_work_folder_feedback_0'],
             self.settings,
-            self.settings['ctf_folder_feedback_0'],
+            self.settings['ctf_folder_folder_feedback_0'],
             import_name
             )
 
@@ -4865,7 +4865,7 @@ class ProcessThread(object):
             dont_tar = True
         elif not self.settings['Copy']['Tar to backup'] == 'True' and self.typ == 'Copy_to_backup':
             dont_tar = True
-        elif not self.settings['Copy']['Tar to HDD'] == 'True' and self.typ == 'Copy_to_HDD':
+        elif not self.settings['Copy']['Tar to hdd'] == 'True' and self.typ == 'Copy_to_hdd':
             dont_tar = True
         elif root_name.endswith('jpg'):
             dont_tar = True

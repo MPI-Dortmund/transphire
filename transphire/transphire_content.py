@@ -892,7 +892,7 @@ def default_pipeline():
             'Meta;' +
             'Session to work:Copy to work:Copy_to_work,' +
             'Session to backup:Copy to backup:Copy_to_backup,' +
-            'Session to HDD:Copy to HDD:Copy_to_hdd',
+            'Session to hdd:Copy to hdd:Copy_to_hdd',
             'PLAIN',
             'Main',
             ''
@@ -908,9 +908,9 @@ def default_pipeline():
             'Compress:Compress,' +
             'Meta to work:Copy to work:Copy_to_work,' +
             'Meta to backup:Copy to backup:Copy_to_backup,' +
-            'Meta to HDD:Copy to HDD:Copy_to_hdd,' +
+            'Meta to hdd:Copy to hdd:Copy_to_hdd,' +
             'Frames to work:Copy to work:Copy_to_work,' +
-            'Frames to HDD:Copy to HDD:Copy_to_hdd,' +
+            'Frames to hdd:Copy to hdd:Copy_to_hdd,' +
             'Frames to backup:Copy to backup:Copy_to_backup',
             'PLAIN',
             'Main',
@@ -926,7 +926,7 @@ def default_pipeline():
             'Extract:Extract,' +
             'Train2d:Train2d,' +
             'Motion to work:Copy to work:Copy_to_work,' +
-            'Motion to HDD:Copy to HDD:Copy_to_hdd,' +
+            'Motion to hdd:Copy to hdd:Copy_to_hdd,' +
             'Motion to backup:Copy to backup:Copy_to_backup',
             'PLAIN',
             'Main',
@@ -939,7 +939,7 @@ def default_pipeline():
             'CTF;' +
             'Extract:Extract,' +
             'CTF to work:Copy to work:Copy_to_work,' +
-            'CTF to HDD:Copy to HDD:Copy_to_hdd,' +
+            'CTF to hdd:Copy to hdd:Copy_to_hdd,' +
             'CTF to backup:Copy to backup:Copy_to_backup',
             'PLAIN',
             'Main',
@@ -952,7 +952,7 @@ def default_pipeline():
             'Picking;' +
             'Extract:Extract,' +
             'Picking to work:Copy to work:Copy_to_work,' +
-            'Picking to HDD:Copy to HDD:Copy_to_hdd,' +
+            'Picking to hdd:Copy to hdd:Copy_to_hdd,' +
             'Picking to backup:Copy to backup:Copy_to_backup',
             'PLAIN',
             'Main',
@@ -966,7 +966,7 @@ def default_pipeline():
             'Class2d:Class2d,' +
             '!Class2d:Auto3d:Auto3d,' +
             'Extract to work:Copy to work:Copy_to_work,' +
-            'Extract to HDD:Copy to HDD:Copy_to_hdd,' +
+            'Extract to hdd:Copy to hdd:Copy_to_hdd,' +
             'Extract to backup:Copy to backup:Copy_to_backup',
             'PLAIN',
             'Main',
@@ -980,7 +980,7 @@ def default_pipeline():
             'Select2d:Select2d,' +
             '!Select2d:Auto3d:Auto3d,' +
             'Class2d to work:Copy to work:Copy_to_work,' +
-            'Class2d to HDD:Copy to HDD:Copy_to_hdd,' +
+            'Class2d to hdd:Copy to hdd:Copy_to_hdd,' +
             'Class2d to backup:Copy to backup:Copy_to_backup',
             'PLAIN',
             'Main',
@@ -994,7 +994,7 @@ def default_pipeline():
             'Train2d:Train2d,' +
             'Auto3d:Auto3d,' +
             'Select2d to work:Copy to work:Copy_to_work,' +
-            'Select2d to HDD:Copy to HDD:Copy_to_hdd,' +
+            'Select2d to hdd:Copy to hdd:Copy_to_hdd,' +
             'Select2d to backup:Copy to backup:Copy_to_backup',
             'PLAIN',
             'Main',
@@ -1006,7 +1006,7 @@ def default_pipeline():
             int,
             'Train2d;' +
             'Train2d to work:Copy to work:Copy_to_work,' +
-            'Train2d to HDD:Copy to HDD:Copy_to_hdd,' +
+            'Train2d to hdd:Copy to hdd:Copy_to_hdd,' +
             'Train2d to backup:Copy to backup:Copy_to_backup',
             'PLAIN',
             'Main',
@@ -1018,7 +1018,7 @@ def default_pipeline():
             int,
             'Auto3d;' +
             'Auto3d to work:Copy to work:Copy_to_work,' +
-            'Auto3d to HDD:Copy to HDD:Copy_to_hdd,' +
+            'Auto3d to hdd:Copy to hdd:Copy_to_hdd,' +
             'Auto3d to backup:Copy to backup:Copy_to_backup',
             'PLAIN',
             'Main',
@@ -1030,7 +1030,7 @@ def default_pipeline():
             int,
             'Compress;' +
             'Compress to work:Copy to work:Copy_to_work,' +
-            'Compress to HDD:Copy to HDD:Copy_to_hdd,' +
+            'Compress to hdd:Copy to hdd:Copy_to_hdd,' +
             'Compress to backup:Copy to backup:Copy_to_backup',
             'PLAIN',
             'Main',
@@ -1400,6 +1400,7 @@ def default_motion_cor_2_v1_3_0():
         ['-Gpu:GPU', '0', [int]*99, '', 'PLAIN', category, ' GPU IDs. Default 0.  For multiple GPUs, separate IDs by space.  For example, -Gpu 0 1 2 3 specifies 4 GPUs.'],
         ['-GpuMemUsage:Memory usage', '0.5', float, '', 'PLAIN', category, '1. GPU memory usage, default 0.5, meaning 50% of GPU memory will be used to buffer movie frames.  2. The value should be between 0 and 0.5. When 0 is given, all movie frames are buffered on CPU memory.'],
         ['GPU SPLIT:GPU SPLIT', '1', int, '', 'PLAIN', category, 'NOT AN ISAC2 OPTION. Specify how many jobs per GPU.'],
+        ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'NOT A CRYOLO TRAIN OPTION. Split the gpu values specified in --gpu to be able to run mutliple crYOLO jobs in parallel.'],
         ['dose cutoff', '4', float, '', 'PLAIN', category, 'NOT A MOTIONCOR OPTION. Used to create the Relion3 bayesian polishing files.'],
         ])
     return items
@@ -1501,7 +1502,7 @@ def default_copy(settings_folder):
         ['WIDGETS RARE', '10', int, '', 'PLAIN', '', '', ''],
         ['Copy to work', copy_to_work, bool, '', 'COMBO', 'Main', 'Copy data to the work drive.'],
         ['Copy to backup', copy_to_backup, bool, '', 'COMBO', 'Main', 'Copy data to the backup drive.'],
-        ['Copy to HDD', copy_to_hdd, bool, '', 'COMBO', 'Main', 'Copy data to an external hard disc.'],
+        ['Copy to hdd', copy_to_hdd, bool, '', 'COMBO', 'Main', 'Copy data to an external hard disc.'],
         ]
 
     for entry in valid_sub_items:
@@ -1510,24 +1511,24 @@ def default_copy(settings_folder):
     items.extend([
         ['Session to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the non-micrograph data (EPU session, ...) to the work drive if "Copy to work" is specified.'],
         ['Session to backup', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Copy the non-micrograph data (EPU session, ...) to the backup drive if "Copy to backup" is specified.'],
-        ['Session to HDD', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Copy the non-micrograph data (EPU session, ...) to the HDD drive if "Copy to HDD" is specified.'],
+        ['Session to hdd', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Copy the non-micrograph data (EPU session, ...) to the HDD drive if "Copy to HDD" is specified.'],
         ['Frames to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the micograph movies to the work drive if "Copy to work" is specified.'],
         ['Frames to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the micograph movies to the backup drive if "Copy to backup" is specified.'],
-        ['Frames to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the micograph movies to the HDD drive if "Copy to HDD" is specified.'],
+        ['Frames to hdd', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the micograph movies to the HDD drive if "Copy to HDD" is specified.'],
         ['Meta to work', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Copy the micrograph meta data to the work drive if "Copy to work" is specified.'],
         ['Meta to backup', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Copy the micrograph meta data to the backup drive if "Copy to backup" is specified.'],
-        ['Meta to HDD', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Copy the micrograph meta data to the HDD drive if "Copy to HDD" is specified.'],
+        ['Meta to hdd', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Copy the micrograph meta data to the HDD drive if "Copy to HDD" is specified.'],
         ])
 
     for entry in valid_sub_items:
         items.append(['{0} to work'.format(entry), ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Copy the {0} data to the work drive if "Copy to work" is specified.'.format(entry)])
         items.append(['{0} to backup'.format(entry), ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Copy the {0} data to the backup drive if "Copy to backup" is specified.'.format(entry)])
-        items.append(['{0} to HDD'.format(entry), ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Copy the {0} data the HDD drive if "Copy to HDD" is specified.'.format(entry)])
+        items.append(['{0} to hdd'.format(entry), ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Copy the {0} data the HDD drive if "Copy to HDD" is specified.'.format(entry)])
 
     items.extend([
         ['Tar to work', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the information to work drive in tar format if "Copy to work" is specified.'],
         ['Tar to backup', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the information to backup drive in tar format if "Copy to backup" is specified.'],
-        ['Tar to HDD', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the information to HDD drive in tar format if "Copy to HDD" is specified.'],
+        ['Tar to hdd', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'Copy the information to HDD drive in tar format if "Copy to HDD" is specified.'],
         ['Tar size (Gb)', '2', float, '', 'PLAIN', 'Advanced', 'Size of the tar files before copying.'],
         ['Delete data after import?', ['True', 'False'], bool, '', 'COMBO', 'Main', 'Delete the data from the camera computer after the import.'],
         ['Delete stack after compression?', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Delete the mrc stack after compression.'],

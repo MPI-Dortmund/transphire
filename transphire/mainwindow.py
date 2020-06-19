@@ -1147,39 +1147,51 @@ class MainWindow(QMainWindow):
             ]
         names.append('Copy_to_hdd')
         idx = 0
+        settings['plot_emit'] = []
         for entry in names:
             base_dir2 = None
             no_feedback = False
             if 'copy_to_hdd' in entry.lower():
                 base_dir = self.mount_directory
-                folder_name = entry.lower()
                 no_feedback = True
             elif 'copy_to_' in entry.lower():
                 base_dir = self.mount_directory
-                folder_name = settings['Copy'][entry.replace('_', ' ')].replace(' ', '_').replace('>=', '')
                 no_feedback = True
             else:
                 idx += 1
                 base_dir = settings['project_folder']
                 base_dir2 = settings['scratch_folder']
-                folder_name = '{0:03d}_{1}'.format(idx, settings['Copy'][entry].replace(' ', '_').replace('>=', ''))
 
-            for index in range(int(settings['General']['Number of feedbacks']) + 1):
-                if index == 0:
-                    folder_name_tmp = folder_name
-                elif no_feedback:
-                    continue
+            entry_name = '{}_entries'.format(entry)
+            prog_name_entries = settings['Copy'][entry_name] if entry_name in settings['Copy'] else [entry]
+            for prog_name in prog_name_entries:
+                if 'copy_to_hdd' in entry.lower():
+                    folder_name = entry.lower()
+                elif 'copy_to_' in entry.lower():
+                    folder_name = prog_name.replace(' ', '_').replace('>=', '')
                 else:
-                    folder_name_tmp = os.path.join('Feedback_results', '{0}_feedback_{1}'.format(folder_name, int(settings['General']['Number of feedbacks']) - index + 1))
-                settings['{0}_folder_feedback_{1}'.format(entry.lower(), index)] = os.path.join(
-                    base_dir,
-                    folder_name_tmp
-                    )
-                if base_dir2 is not None:
-                    settings['scratch_{0}_folder_feedback_{1}'.format(entry.lower(), index)] = os.path.join(
-                        base_dir2,
-                        folder_name_tmp
-                        )
+                    folder_name = '{0:03d}_{1}'.format(idx, prog_name.replace(' ', '_').replace('>=', ''))
+
+                for index in range(int(settings['General']['Number of feedbacks']) + 1):
+                    if index == 0:
+                        folder_name_tmp = folder_name
+                    elif no_feedback:
+                        continue
+                    else:
+                        folder_name_tmp = os.path.join('000_Feedback_results', '{0}_feedback_{1}'.format(folder_name, int(settings['General']['Number of feedbacks']) - index + 1))
+
+                    folder_setting_name = '{0}_folder_feedback_{1}'.format(entry.lower(), index)
+                    folder_setting = os.path.join(base_dir, folder_name_tmp)
+                    prog_name_feedback = '{} feedback {}'.format(prog_name, index) if index != 0 else prog_name
+                    settings['plot_emit'].append([prog_name, prog_name_feedback, entry, folder_setting])
+
+                    if prog_name == settings['Copy'][entry.replace('_', ' ')]:
+                        settings[folder_setting_name] = folder_setting
+                        if base_dir2 is not None:
+                            settings['scratch_{0}_folder_feedback_{1}'.format(entry.lower(), index)] = os.path.join(
+                                base_dir2,
+                                folder_name_tmp
+                                )
 
         return settings, folder_dict
 

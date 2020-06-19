@@ -70,16 +70,9 @@ class PlotWorker(QObject):
         Returns:
         None
         """
-        for name, directory_name, settings, current_name in settings:
-            if 'feedback' in name:
-                name_no_feedback = ' '.join(name.rsplit()[:-2])
-            else:
-                name_no_feedback = name
-
+        for name, name_no_feedback, directory_name, settings, current_name in settings:
             if name_no_feedback not in ('Later', 'False'):
-                if ' feedback 0' in name:
-                    name = name_no_feedback
-                self.settings.append([name, name_no_feedback, directory_name, settings])
+                self.settings.append([name, name_no_feedback, directory_name, settings, current_name])
 
         self.calculate_array()
         self.sig_set_visual.emit()
@@ -98,12 +91,16 @@ class PlotWorker(QObject):
         None
         """
         valid_entries = []
-        for name, name_no_feedback, directory_name, settings in self.settings:
+        for entry in self.settings[:]:
+            name, name_no_feedback, directory_name, settings, current_name = entry
             if os.path.isdir(directory_name):
                 valid_entries.append([name, name_no_feedback, directory_name, settings])
+                print('SET VISIBLE TRUE', name)
                 self.sig_visible.emit(True, name)
             else:
                 self.sig_visible.emit(False, name)
+            if name != current_name:
+                self.settings.remove(entry)
 
         if valid_entries:
             with mp.Pool(min(len(valid_entries), len(valid_entries))) as p:
