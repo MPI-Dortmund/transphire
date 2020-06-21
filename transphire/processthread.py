@@ -129,6 +129,7 @@ class ProcessThread(object):
 
         self.queue_com['log'].put(tu.create_log('Starting', name))
         self.has_finished = has_finished
+        self.disable_thread = False
 
         # This list saves the per process locks to prevent garbage collection
         self.GLOBAL_LOCKS = []
@@ -300,6 +301,10 @@ class ProcessThread(object):
                 self.is_running = False
 
         # Print, if stopped
+        if self.disable_thread:
+            color = tu.get_color('Running')
+        else:
+            color = tu.get_color('Error')
         self.queue_com['status'].put([
             '{0:02d}|{1:02d}'.format(
                 self.shared_dict_typ['running'],
@@ -307,7 +312,7 @@ class ProcessThread(object):
                 ),
             [],
             self.typ,
-            tu.get_color('Error')
+            color
             ])
         self.queue_com['log'].put(tu.create_log('Stopped', self.name))
         print(self.name, ': Stopped')
@@ -914,6 +919,7 @@ class ProcessThread(object):
                 self.add_to_queue(aim=self.typ, root_name=root_name)
             self.write_error(msg=tb.format_exc(), root_name=root_name)
             self.stop.value = True
+            self.disable_thread = True
             self.queue_lock.acquire()
             try:
                 self.shared_dict_typ['max_running'] -= 1
@@ -2833,7 +2839,7 @@ class ProcessThread(object):
             self.prog_name,
             self.prog_name,
             self.settings,
-            self.settings['ctf_folder_folder_feedback_0'],
+            self.settings['ctf_folder_feedback_0'],
             import_name
             )
 

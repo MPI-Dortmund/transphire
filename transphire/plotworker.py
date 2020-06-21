@@ -105,7 +105,7 @@ class PlotWorker(QObject):
                 self.sig_visible.emit(True, name)
             else:
                 self.sig_visible.emit(False, name)
-            if name != current_name:
+            if name_no_feedback != current_name:
                 self.settings.remove(entry)
 
         if valid_entries:

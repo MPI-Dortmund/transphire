@@ -319,10 +319,6 @@ def create_cryolo_v1_4_1_command(
     command.append('--gpu')
     command.append('{0}'.format(gpu))
 
-    ignore_list.append('--otf')
-    if settings[picking_name]['--otf'] == 'True':
-        command.append('--otf')
-
     for key in settings[picking_name]:
         if key in ignore_list:
             continue
