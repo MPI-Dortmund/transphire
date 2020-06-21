@@ -422,7 +422,7 @@ class ProcessThread(object):
                 time_diff = time.time() - self.time_last
                 if folder == 'Input project path for frames' or \
                         folder == 'Input project path for jpg':
-                    output_folder = self.settings['General'][folder]
+                    output_folder = self.settings['Input'][folder]
                 else:
                     output_folder = self.settings[folder]
 
@@ -2537,31 +2537,9 @@ class ProcessThread(object):
             )
 
         mask = np.in1d(
-            np.array(
-                np.char.rsplit(
-                    np.array(
-                        np.char.rsplit(
-                            np.array(
-                                np.char.rsplit(
-                                    data['file_name'],
-                                    '/',
-                                    1
-                                    ).tolist()
-                                )[:, -1],
-                            '.',
-                            1
-                            ).tolist()
-                        )[:,0],
-                    '.',
-                    1
-                    ).tolist()
-                )[:,0],
-            np.char.rsplit(np.char.rsplit(
-                queue_dict[0]['sum'][0],
-                '/',
-                1
-                ).tolist()[-1], '.', 1).tolist()[0]
-            )
+                np.array(np.char.rsplit(data['file_name'], '/', 1).tolist())[:, -1],
+                [os.path.basename(queue_dict[0]['sum'][0])]
+                )
 
         tum.create_jpg_file(
             file_for_jpg,

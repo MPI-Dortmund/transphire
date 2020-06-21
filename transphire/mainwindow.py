@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import datetime
 import sys
 import os
 import re
@@ -911,7 +912,7 @@ class MainWindow(QMainWindow):
         else:
             pass
 
-    def _extract_settings(self, key, settings, error_list, check_list):
+    def _extract_settings(self, key, settings, error_list, check_list, gain_names):
         try:
             settings_widget = self.content[key].get_settings()
         except AttributeError:
@@ -933,14 +934,20 @@ class MainWindow(QMainWindow):
         else:
             skip_name_list = tu.get_function_dict()[key]['allow_empty']
 
-        gpu_name = None
+        non_global_names_with_global = {}
         for entry in settings_widget:
             for name in sorted(list(entry.keys())):
+                if name == 'Bin superres':
+                    if entry[name] == 'True':
+                        entry[name] = 2
+                    elif entry[name] == 'False':
+                        entry[name] = 1
+                    else:
+                        assert False, (name, entry[name])
                 if name.endswith('_global'):
                     if entry[name][0] is not None and entry[name][1]:
                         if key != 'Global':
-                            if entry[name][0] == 'GPU':
-                                gpu_name = name.split('_global')[0]
+                            non_global_names_with_global[entry[name][0]] = name.split('_global')[0]
                             entry[name.split('_global')[0]] = settings['Global'][entry[name][0]]
                         elif key == 'Global':
                             if entry[name][0] == 'GPU':
@@ -954,12 +961,15 @@ class MainWindow(QMainWindow):
                                 except subprocess.CalledProcessError:
                                     gpu_devices = []
                                 if len(set(gpu_devices)) != 1:
-                                    error_list.append('The computer does have different types of GPUs available! In order to not make any mistakes, please specify the GPU IDs manually')
+                                    error_list.append('The computer does have different types of GPUs available or the GPU\'s crashed! In order to not make any mistakes, please specify the GPU IDs manually')
                                 entry[name.split('_global')[0]] = ' '.join([str(entry) for entry in range(len(gpu_devices))])
+                            elif entry[name][0] == 'Memory usage':
+                                entry[name.split('_global')[0]] = 0.9 / max(int(entry['GPU SPLIT']), 1)
+                            elif entry[name][0] == 'Memory usage large':
+                                entry[name.split('_global')[0]] = 0.9 / max(int(entry['GPU SPLIT LARGE']), 1)
+
                             #elif entry[name][0] == 'GPU SPLIT':
                             #    entry[name.split('_global')[0]] = '1'
-                            #elif entry[name][0] == 'Memory usage':
-                            #    entry[name.split('_global')[0]] = 0.9 / int(entry['GPU SPLIT'])
 
                         else:
                             assert False, key
@@ -988,23 +998,27 @@ class MainWindow(QMainWindow):
             else:
                 pass
 
-        if gpu_name is not None:
-            for entry in settings_widget:
-                try:
-                    gpu_splits = int(entry['GPU SPLIT'][0])
-                except KeyError:
-                    gpu_splits = 0
+        for global_key, local_key in non_global_names_with_global.items():
+            if global_key == 'GPU':
+                for entry in settings_widget:
+                    try:
+                        gpu_splits = int(entry['GPU SPLIT'][0])
+                    except KeyError:
+                        gpu_splits = 0
 
-                if gpu_splits != 0:
-                    new_gpu = []
-                    for gpu_idx in entry[gpu_name].split():
-                        for i in range(gpu_splits):
-                            new_gpu.append('{}_{}'.format(gpu_idx, i))
-                    entry[gpu_name] = ' '.join(new_gpu)
-                try:
-                    del entry['GPU SPLIT']
-                except KeyError:
-                    pass
+                    if gpu_splits != 0:
+                        new_gpu = []
+                        for gpu_idx in entry[local_key].split():
+                            for i in range(gpu_splits):
+                                new_gpu.append('{}_{}'.format(gpu_idx, i))
+                        entry[local_key] = ' '.join(new_gpu)
+                    try:
+                        del entry['GPU SPLIT']
+                    except KeyError:
+                        pass
+            elif global_key in ('Gain', 'Dark', 'Defect'):
+                if entry[local_key]:
+                    gain_names.append([key, local_key])
 
         for idx, entry in enumerate(settings_widget):
             if key == 'Frames':
@@ -1043,12 +1057,13 @@ class MainWindow(QMainWindow):
                 if isinstance(value, str) and value not in ('False', 'Later', 'True'):
                     check_list.append(value)
 
+        gain_names = []
         for key in first_round:
-            self._extract_settings('Global', settings, error_list, check_list)
+            self._extract_settings('Global', settings, error_list, check_list, gain_names)
         for key in self.content:
             if key in first_round:
                 continue
-            self._extract_settings(key, settings, error_list, check_list)
+            self._extract_settings(key, settings, error_list, check_list, gain_names)
 
         settings['motion_frames'] = {
             '0': {
@@ -1192,6 +1207,17 @@ class MainWindow(QMainWindow):
                                 base_dir2,
                                 folder_name_tmp
                                 )
+        for key, local_key in gain_names:
+            old_gain = settings[key][local_key]
+            new_gain = os.path.join(
+                settings['gain_folder'],
+                "{}_{}".format(
+                    datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S'),
+                    os.path.basename(old_gain)
+                    )
+                )
+            tu.copy(old_gain, new_gain)
+            settings[key][local_key] = new_gain
 
         return settings, folder_dict
 

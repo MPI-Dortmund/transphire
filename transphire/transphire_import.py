@@ -815,10 +815,6 @@ def import_motion_cor_2_v1_0_0(name, name_no_feedback, settings, directory_name,
     Return:
     Imported data
     """
-    print('name', name)
-    print('name_no_feedback', name_no_feedback)
-    print('directory_name', directory_name)
-    print('import_name', import_name)
     dtype_import_dict_name = tu.find_best_match(name_no_feedback, get_dtype_import_dict())
 
     directory_names = glob.glob('{0}/*_with*_DW_log'.format(directory_name))
@@ -856,11 +852,12 @@ def import_motion_cor_2_v1_0_0(name, name_no_feedback, settings, directory_name,
         tu.get_name(entry)
         for entry in glob.glob(os.path.join(directory_name, 'json*', '*.json'))
         ])
-    useable_files = [
-        file_name
-        for file_name in sorted(useable_files)
-        if tu.get_name(tu.get_name(file_name)) in useable_files_jpg | useable_files_json
-        ]
+    if not import_name: 
+        useable_files = [
+            file_name
+            for file_name in sorted(useable_files)
+            if tu.get_name(tu.get_name(file_name)) in useable_files_jpg | useable_files_json
+            ]
 
     data = np.zeros(
         len(useable_files),

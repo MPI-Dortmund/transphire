@@ -749,38 +749,18 @@ def combine_motion_outputs(
         '_rlnMicrographMovieName {0}'.format(movie_name.replace(project_base, '')),
         ]
     if gain_var:
-        new_gain = os.path.join(
-            project_folder,
-            '{0}_gain.mrc'.format(os.path.basename(gain_var))
-            )
-        if not os.path.exists(new_gain):
-            tu.copy(gain_var, new_gain)
-            data_meta.extend([
-                '_rlnMicrographGainName {0}'.format(new_gain.replace(project_base, '')),
-                ])
-        else:
-            data_meta.extend([
-                '_rlnMicrographGainName {0}'.format(new_gain.replace(project_base, '')),
-                ])
-            new_gain = None
+        new_gain = gain_var
+        data_meta.extend([
+            '_rlnMicrographGainName {0}'.format(new_gain.replace(project_base, '')),
+            ])
     else:
         new_gain = None
 
     if defect_var:
-        new_defect = os.path.join(
-            project_folder,
-            '{0}_defect.mrc'.format(os.path.basename(defect_var))
-            )
-        if not os.path.exists(new_defect):
-            tu.copy(defect_var, new_defect)
-            data_meta.extend([
-                '_rlnMicrographDefectFile {0}'.format(new_defect.replace(project_base, '')),
-                ])
-        else:
-            data_meta.extend([
-                '_rlnMicrographDefectFile {0}'.format(new_defect.replace(project_base, '')),
-                ])
-            new_defect = None
+        new_defect = defect_var
+        data_meta.extend([
+            '_rlnMicrographDefectFile {0}'.format(new_defect.replace(project_base, '')),
+            ])
     else:
         new_defect = None
 
@@ -872,11 +852,7 @@ def combine_motion_outputs(
         write.write('\n'.join(export_lines_star_relion3))
 
     if dark_var:
-        new_dark = os.path.join(
-            project_folder,
-            '{0}_dark.mrc'.format(os.path.basename(dark_var))
-            )
-        tu.copy(dark_var, new_dark)
+        new_dark = dark_var
     else:
         new_dark = None
 
@@ -925,6 +901,7 @@ def create_export_data(export_data, lines):
 
 def create_jpg_file(input_file, data, settings):
     file_name = tu.get_name(input_file)
+    data = data[0]
 
     tu.mkdir_p(os.path.join(settings['motion_folder_feedback_0'], 'jpg'))
     tu.mkdir_p(os.path.join(settings['motion_folder_feedback_0'], 'jpg_2'))
@@ -939,8 +916,8 @@ def create_jpg_file(input_file, data, settings):
         'label_y': 'Drift y / px',
         'data': [
             {
-                'values_x': data[0],
-                'values_y': data[1],
+                'values_x': data[0].tolist(),
+                'values_y': data[1].tolist(),
                 'is_high_res': True,
                 'label_plot': '',
                 'marker': '',
@@ -961,8 +938,8 @@ def create_jpg_file(input_file, data, settings):
                 },
             ]
         }
-    with open(json_file, 'r') as read:
-        json.dump(json_dict, read)
+    with open(json_file, 'w') as write:
+        json.dump(json_dict, write)
 
     arr_1 = None
     arr_2 = None

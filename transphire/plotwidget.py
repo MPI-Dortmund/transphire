@@ -579,9 +579,9 @@ class PlotWidget(QWidget):
         if return_value is not None:
             self._minimum_x, self._maximum_x, self._minimum_y, self._maximum_y, self._bins = \
                 return_value
-            self.force_update()
+            self.force_update(do_message=True)
 
-    def update_data(self):
+    def update_data(self, do_message=False):
         if self.plot_typ in ('values', 'histogram'):
             mask_y = np.logical_and(
                 self._ydata_raw >= self._minimum_y,
@@ -593,22 +593,23 @@ class PlotWidget(QWidget):
                 )
             mask = np.logical_and(mask_y, mask_x)
 
-            try:
-                self.mean = np.mean(self._ydata_raw[mask])
-                self.median = np.median(self._ydata_raw[mask])
-                self.view_widget.update_label({
-                    'Min': np.min(self._ydata_raw[mask]),
-                    'Max': np.max(self._ydata_raw[mask]),
-                    'Sum': np.sum(self._ydata_raw[mask]),
-                    'Mean': self.mean,
-                    'Median': self.median,
-                    'In range': np.count_nonzero(mask),
-                    'of': mask.shape[0],
-                    })
-            except ValueError:
+            if self._ydata_raw[mask].size == 0:
                 self.trim_widget.set_values(self._previous_dict)
-                tu.message('Masking values do not contain any data points! Falling back to previous values!')
-                return
+                if do_message:
+                    tu.message('Masking values do not contain any data points! Falling back to previous values!')
+                return False
+
+            self.mean = np.mean(self._ydata_raw[mask])
+            self.median = np.median(self._ydata_raw[mask])
+            self.view_widget.update_label({
+                'Min': np.min(self._ydata_raw[mask]),
+                'Max': np.max(self._ydata_raw[mask]),
+                'Sum': np.sum(self._ydata_raw[mask]),
+                'Mean': self.mean,
+                'Median': self.median,
+                'In range': np.count_nonzero(mask),
+                'of': mask.shape[0],
+                })
 
             if self.plot_typ == 'values':
                 self._xdata = self._xdata_raw[mask]
@@ -618,9 +619,10 @@ class PlotWidget(QWidget):
                     self._ydata_raw[mask],
                     self._bins
                     )
+        return True
 
     @pyqtSlot()
-    def force_update(self):
+    def force_update(self, do_message=False):
         for plot_line in self._median_ref:
             if plot_line is not None:
                 for entry in plot_line:
@@ -636,7 +638,7 @@ class PlotWidget(QWidget):
         self._plot_ref = [None] * len(self._plot_ref)
         self._median_ref = [None] * len(self._median_ref)
         self._mean_ref = [None] * len(self._mean_ref)
-        self.update_figure()
+        self.update_figure(do_message)
 
     def prepare_axes(self, update):
         if (
@@ -687,7 +689,7 @@ class PlotWidget(QWidget):
         return update
 
     @pyqtSlot()
-    def update_figure(self):
+    def update_figure(self, do_message=False):
 
         is_active = self.parent.parent.content[self.parent.parent_layout] == self.parent.parent.content[self.parent.parent_layout].latest_active[0]
 
@@ -699,7 +701,9 @@ class PlotWidget(QWidget):
         if not self._plot_ref:
             return
 
-        self.update_data()
+        if not self.update_data(do_message):
+            return
+
         if self.plot_typ in ('values', 'histogram'):
             try:
                 update = self.prepare_axes(update=self._plot_ref[0] is None)

@@ -70,9 +70,16 @@ class PlotWorker(QObject):
         Returns:
         None
         """
+        small_settings = {'General': {}, 'Path': {}}
         for name, name_no_feedback, directory_name, settings, current_name in settings:
             if name_no_feedback not in ('Later', 'False'):
-                self.settings.append([name, name_no_feedback, directory_name, settings, current_name])
+                small_settings['General']['Project directory']= settings['General']['Project directory']
+                small_settings['Path']['chimerax']= settings['Path']['chimerax']
+                small_settings['copy_to_work_folder_feedback_0']= settings['copy_to_work_folder_feedback_0']
+                small_settings['General']['Rename prefix'] = settings['General']['Rename prefix']
+                small_settings['General']['Rename suffix'] = settings['General']['Rename suffix']
+                small_settings['General']['Rename micrographs'] = settings['General']['Rename micrographs']
+                self.settings.append([name, name_no_feedback, directory_name, small_settings, current_name])
 
         self.calculate_array()
         self.sig_set_visual.emit()
@@ -105,8 +112,8 @@ class PlotWorker(QObject):
             try:
                 with mp.Pool(min(len(valid_entries), len(valid_entries))) as p:
                     data = p.starmap(self.calculate_array_now, valid_entries)
-            except RuntimeError:
-                pass
+            except RuntimeError as e:
+                print(e)
             else:
                 self.send_data(data)
         self.sig_new_round.emit()

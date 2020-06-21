@@ -227,6 +227,7 @@ class PlotContainer(QMainWindow):
         if name == self.plot_name:
             if self._is_visible != visible:
                 self.parent.content[self.parent_layout].enable_tab(visible)
+                self.parent.set_visualisation()
                 if visible:
                     for widget in self.content:
                         widget.show()

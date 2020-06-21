@@ -503,7 +503,6 @@ def default_cter_v1_0():
         #Main
     category = 'Main'
     items.extend([
-        ['--Cs', '2.0', float, '', 'PLAIN', category, 'Microscope spherical aberration (Cs) [mm]: The spherical aberration (Cs) of microscope used for imaging.'],
         ['--f_start', '-1', float, '', 'PLAIN', category, 'Lowest resolution [A]: Lowest resolution to be considered in the CTF estimation. Determined automatically by default.'],
         ['--f_stop', '-1', float, '', 'PLAIN', category, 'Highest resolution [A]: Highest resolution to be considered in the CTF estimation. Determined automatically by default.'],
         ['--defocus_min', '0.3', float, 'Phase plate:True', 'PLAIN', category, 'Minimum defocus search [um]'],
@@ -525,6 +524,7 @@ def default_cter_v1_0():
         #Main
     category = 'Rare'
     items.extend([
+        ['--Cs:Cs', '2.0', float, '', 'PLAIN', category, 'Microscope spherical aberration (Cs) [mm]: The spherical aberration (Cs) of microscope used for imaging.'],
         ['--apix:Pixel size', '1.0', float, '', 'PLAIN', category, 'Pixel size [A/Pixels]: The pixel size of input micrograph(s) or images in input particle stack.'],
         ['--voltage:voltage', '300', float, '', 'PLAIN', category, 'Microscope voltage [kV]: The acceleration voltage of microscope used for imaging.'],
         ['Phase plate:Phase Plate', ['False', 'True'], bool, '', 'COMBO', category, 'Volta Phase Plate - fit smplitude contrast.'],
@@ -556,7 +556,6 @@ def default_gctf_v1_06():
         #Main
     category = 'Main'
     items.extend([
-        ['--cs', '2.7', float, '', 'PLAIN', category, 'Spherical aberration, in  millimeter'],
         ['--resL', '50', float, '', 'PLAIN', category, 'Lowest Resolution to be used for search, in angstrom'],
         ['--resH', '4', float, '', 'PLAIN', category, 'Highest Resolution to be used for search, in angstrom'],
         ['--phase_shift_L', '0.0', float, 'Phase plate:True', 'PLAIN', category, 'User defined phase shift, lowest phase shift,  in degree; typically, ~90.0 for micrographs using phase plate '],
@@ -571,6 +570,7 @@ def default_gctf_v1_06():
         #Advanced
     category = 'Advanced'
     items.extend([
+        ['--cs:Cs', '2.7', float, '', 'PLAIN', category, 'Spherical aberration, in  millimeter'],
         ['--ac', '0.1', float, '', 'PLAIN', category, 'Amplitude contrast; normal range 0.04~0.1; pure ice 0.04, carbon 0.1; but doesn\'t matter too much if using wrong value'],
         ['--boxsize', '1024', int, '', 'PLAIN', category, 'Boxsize in pixel to be used for FFT, 512 or 1024 highly recommended'],
         ['Use movies', ['False', 'True'], bool, '', 'COMBO', category, 'Enable Gctf movie mode'],
@@ -635,7 +635,7 @@ def default_gctf_v1_18():
         ['--apix:Pixel size', '1.34', float, '', 'PLAIN', 'Main', 'Pixel size'],
         ['--dstep', '14.0', float, '', 'PLAIN', 'Main', 'Detector size in micrometer; don\'t worry if unknown; just use default.'],
         ['--kV:voltage', '300', float, '', 'PLAIN', 'Main', 'High tension in Kilovolt, typically 300, 200 or 120'],
-        ['--cs', '2.7', float, '', 'PLAIN', 'Main', 'Spherical aberration, in  millimeter'],
+        ['--cs:Cs', '2.7', float, '', 'PLAIN', 'Main', 'Spherical aberration, in  millimeter'],
         ['--ac', '0.1', float, '', 'PLAIN', 'Main', 'Amplitude contrast; normal range 0.04~0.1; pure ice 0.04, carbon 0.1; but doesn\'t matter too much if using wrong value'],
         ['Phase plate:Phase Plate', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Use phase plate options'],
         ['--phase_shift_L', '0.0', float, 'Phase plate:True', 'PLAIN', 'Main', 'User defined phase shift, lowest phase shift,  in degree; typically, ~90.0 for micrographs using phase plate '],
@@ -1062,7 +1062,6 @@ def default_ctffind_4_v4_1_8():
         #Main
     category = 'Main'
     items.extend([
-        ['Spherical aberration', '2.7', float, '', 'PLAIN', category, ''],
         ['Min resolution(A)', '30', float, '', 'PLAIN', category, ''],
         ['Max resolution(A)', '5', float, '', 'PLAIN', category, ''],
         ['Min defocus(A)', '5000', float, '', 'PLAIN', category, ''],
@@ -1087,6 +1086,7 @@ def default_ctffind_4_v4_1_8():
         #Rare
     category = 'Rare'
     items.extend([
+        ['Spherical aberration:Cs', '2.7', float, '', 'PLAIN', category, ''],
         ['Pixel size:Pixel size', '1.0', float, '', 'PLAIN', category, ''],
         ['Acceleration voltage:voltage', '300.0', float, '', 'PLAIN', category, ''],
         ['Phase shift:Phase Plate', ['False', 'True'], bool, '', 'COMBO', category, ''],
@@ -1229,7 +1229,7 @@ def default_motion_cor_2_v1_0_0():
         ['-InitDose', '0', float, '', 'PLAIN', 'Advanced', 'Initial dose received before stack is acquired'],
         ['-Group', '1', int, '', 'PLAIN', 'Advanced', 'Group every specified number of frames by adding them together. The alignment is then performed on the summed frames. By default, no grouping is performed.'],
         ['-FmRef', '0', int, '', 'PLAIN', 'Advanced', 'Specify which frame to be the reference to which all other frames are aligned. MotionCor2 uses by default (-1), i.e. the central frame is chosen. The central frame is at N/2 based upon zero indexing where N is the number of frames that will be summed, i.e., not including the frames thrown away. For Particle polishing, a value of 0 is recommended (default)'],
-        ['-DefectFile', '', str, '', 'FILE/SEARCH', 'Advanced', '1. Defect file that stores entries of defects on camera.  2. Each entry corresponds to a rectangular region in image.  The pixels in such a region are replaced by neighboring good pixel values.  3. Each entry contains 4 integers x, y, w, h representing the x, y coordinates, width, and heights, respectively.'],
+        ['-DefectFile:Defect', '', str, '', 'FILE/SEARCH', 'Advanced', '1. Defect file that stores entries of defects on camera.  2. Each entry corresponds to a rectangular region in image.  The pixels in such a region are replaced by neighboring good pixel values.  3. Each entry contains 4 integers x, y, w, h representing the x, y coordinates, width, and heights, respectively.'],
         ['-Tilt', '0 0', [float, float], '', 'PLAIN', 'Advanced', 'Specify the starting angle and the step angle of tilt series. They are required for dose weighting. If not given, dose weighting will be disabled.'],
         ['-Mag', '1 1 0', [float, float, float], '', 'PLAIN', 'Advanced', '1. Correct anisotropic magnification by stretching image along the major axis, the axis where the lower magificantion is detected.  2. Three inputs are needed including magnifications along major and minor axes and the angle of the major axis relative to the image x-axis in degree.  3. By default no correction is performed.'],
         ['-InFmMotion', '0', int, '', 'PLAIN', 'Advanced', '1. 1 - Account for in-frame motion.  0 - Do not account for in-frame motion.'],
@@ -1277,8 +1277,8 @@ def default_motion_cor_2_v1_0_5():
         ['-InitDose', '0', float, '', 'PLAIN', 'Advanced', 'Initial dose received before stack is acquired'],
         ['-Group', '1', int, '', 'PLAIN', 'Advanced', 'Group every specified number of frames by adding them together. The alignment is then performed on the summed frames. By default, no grouping is performed.'],
         ['-FmRef', '-1', int, '', 'PLAIN', 'Advanced', 'Specify which frame to be the reference to which all other frames are aligned. By default (-1) the the central frame is chosen. The central frame is at N/2 based upon zero indexing where N is the number of frames that will be summed, i.e., not including the frames thrown away.'],
-        ['-DefectFile', '', str, '', 'FILE/SEARCH', 'Advanced', '1. Defect file that stores entries of defects on camera.  2. Each entry corresponds to a rectangular region in image.  The pixels in such a region are replaced by neighboring good pixel values.  3. Each entry contains 4 integers x, y, w, h representing the x, y coordinates, width, and heights, respectively.'],
-        ['-Dark', '', str, '', 'FILE/SEARCH', 'Advanced', '1. MRC file that stores the dark reference. If not specified, dark subtraction will be skipped.  2. If -RotGain and/or -FlipGain is specified, the dark reference will also be rotated and/or flipped.'],
+        ['-DefectFile:Defect', '', str, '', 'FILE/SEARCH', 'Advanced', '1. Defect file that stores entries of defects on camera.  2. Each entry corresponds to a rectangular region in image.  The pixels in such a region are replaced by neighboring good pixel values.  3. Each entry contains 4 integers x, y, w, h representing the x, y coordinates, width, and heights, respectively.'],
+        ['-Dark:Dark', '', str, '', 'FILE/SEARCH', 'Advanced', '1. MRC file that stores the dark reference. If not specified, dark subtraction will be skipped.  2. If -RotGain and/or -FlipGain is specified, the dark reference will also be rotated and/or flipped.'],
         ['-Tilt', '0 0', [float, float], '', 'PLAIN', 'Advanced', 'Specify the starting angle and the step angle of tilt series. They are required for dose weighting. If not given, dose weighting will be disabled.'],
         ['-Mag', '1 1 0', [float, float, float], '', 'PLAIN', 'Advanced', '1. Correct anisotropic magnification by stretching image along the major axis, the axis where the lower magificantion is detected.  2. Three inputs are needed including magnifications along major and minor axes and the angle of the major axis relative to the image x-axis in degree.  3. By default no correction is performed.'],
         ['-InFmMotion', '0', int, '', 'PLAIN', 'Advanced', '1. 1 - Account for in-frame motion.  0 - Do not account for in-frame motion.'],
@@ -1326,8 +1326,8 @@ def default_motion_cor_2_v1_1_0():
         ['-InitDose', '0', float, '', 'PLAIN', 'Advanced', 'Initial dose received before stack is acquired'],
         ['-Group', '1', int, '', 'PLAIN', 'Advanced', 'Group every specified number of frames by adding them together. The alignment is then performed on the summed frames. By default, no grouping is performed.'],
         ['-FmRef', '-1', int, '', 'PLAIN', 'Advanced', 'Specify which frame to be the reference to which all other frames are aligned. By default (-1) the the central frame is chosen. The central frame is at N/2 based upon zero indexing where N is the number of frames that will be summed, i.e., not including the frames thrown away.'],
-        ['-DefectFile', '', str, '', 'FILE/SEARCH', 'Advanced', '1. Defect file that stores entries of defects on camera.  2. Each entry corresponds to a rectangular region in image.  The pixels in such a region are replaced by neighboring good pixel values.  3. Each entry contains 4 integers x, y, w, h representing the x, y coordinates, width, and heights, respectively.'],
-        ['-Dark', '', str, '', 'FILE/SEARCH', 'Advanced', '1. MRC file that stores the dark reference. If not specified, dark subtraction will be skipped.  2. If -RotGain and/or -FlipGain is specified, the dark reference will also be rotated and/or flipped.'],
+        ['-DefectFile:Defect', '', str, '', 'FILE/SEARCH', 'Advanced', '1. Defect file that stores entries of defects on camera.  2. Each entry corresponds to a rectangular region in image.  The pixels in such a region are replaced by neighboring good pixel values.  3. Each entry contains 4 integers x, y, w, h representing the x, y coordinates, width, and heights, respectively.'],
+        ['-Dark:Dark', '', str, '', 'FILE/SEARCH', 'Advanced', '1. MRC file that stores the dark reference. If not specified, dark subtraction will be skipped.  2. If -RotGain and/or -FlipGain is specified, the dark reference will also be rotated and/or flipped.'],
         ['-Tilt', '0 0', [float, float], '', 'PLAIN', 'Advanced', 'Specify the starting angle and the step angle of tilt series. They are required for dose weighting. If not given, dose weighting will be disabled.'],
         ['-Mag', '1 1 0', [float, float, float], '', 'PLAIN', 'Advanced', '1. Correct anisotropic magnification by stretching image along the major axis, the axis where the lower magificantion is detected.  2. Three inputs are needed including magnifications along major and minor axes and the angle of the major axis relative to the image x-axis in degree.  3. By default no correction is performed.'],
         ['-InFmMotion', '0', int, '', 'PLAIN', 'Advanced', '1. 1 - Account for in-frame motion.  0 - Do not account for in-frame motion.'],
@@ -1390,8 +1390,8 @@ def default_motion_cor_2_v1_3_0():
         ['-StackZ', '0', int, '', 'PLAIN', category, 'Number of frames per stack. If not specified, it will be loaded from MRC header.'],
         ['-InitDose', '0', float, '', 'PLAIN', category, 'Initial dose received before stack is acquired'],
         ['-FmRef', '0', int, '', 'PLAIN', category, 'Specify which frame to be the reference to which all other frames are aligned. By default (-1) the the central frame is chosen. The central frame is at N/2 based upon zero indexing where N is the number of frames that will be summed, i.e., not including the frames thrown away. Keep a value of 0 in order to make the most out of polishing.'],
-        ['-DefectFile', '', str, '', 'FILE/SEARCH', category, '1. Defect file that stores entries of defects on camera.  2. Each entry corresponds to a rectangular region in image.  The pixels in such a region are replaced by neighboring good pixel values.  3. Each entry contains 4 integers x, y, w, h representing the x, y coordinates, width, and heights, respectively.'],
-        ['-Dark', '', str, '', 'FILE/SEARCH', category, '1. MRC file that stores the dark reference. If not specified, dark subtraction will be skipped.  2. If -RotGain and/or -FlipGain is specified, the dark reference will also be rotated and/or flipped.'],
+        ['-DefectFile:Defect', '', str, '', 'FILE/SEARCH', category, '1. Defect file that stores entries of defects on camera.  2. Each entry corresponds to a rectangular region in image.  The pixels in such a region are replaced by neighboring good pixel values.  3. Each entry contains 4 integers x, y, w, h representing the x, y coordinates, width, and heights, respectively.'],
+        ['-Dark:Dark', '', str, '', 'FILE/SEARCH', category, '1. MRC file that stores the dark reference. If not specified, dark subtraction will be skipped.  2. If -RotGain and/or -FlipGain is specified, the dark reference will also be rotated and/or flipped.'],
         ['-Tilt', '0 0', [float, float], '', 'PLAIN', category, 'Specify the starting angle and the step angle of tilt series. They are required for dose weighting. If not given, dose weighting will be disabled.'],
         ['-Mag', '1 1 0', [float, float, float], '', 'PLAIN', category, '1. Correct anisotropic magnification by stretching image along the major axis, the axis where the lower magificantion is detected.  2. Three inputs are needed including magnifications along major and minor axes and the angle of the major axis relative to the image x-axis in degree.  3. By default no correction is performed.'],
         ['-InFmMotion', '0', int, '', 'PLAIN', category, '1. 1 - Account for in-frame motion.  0 - Do not account for in-frame motion.'],
@@ -1544,6 +1544,7 @@ def default_global():
         ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['Bin superres', ['True', 'False'], bool, '', 'COMBO', 'Main', 'Bin superresolution datasets by a factor of 2 automatically.'],
         ['Pixel size', '1.0', float, '', 'PLAIN', 'Main', '', 'Pixel size in A/pixel.'],
+        ['Cs', '2.0', float, '', 'PLAIN', 'Main', 'Microscope spherical aberration (Cs) [mm]: The spherical aberration (Cs) of microscope used for imaging.'],
         ['Phase Plate', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Use phase plate options'],
         ['Filament mode', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Input is filamentous data.'],
         ['Filament width', '-1', bool, '', 'PLAIN', 'Main', 'Input is filamentous data.'],
@@ -1553,7 +1554,9 @@ def default_global():
         ['GPU:GPU', '0', str, '', 'PLAIN', 'Main', 'Specifiy which gpu\'s should be used. ON-THE-FLY finds the number of GPU\'s dynaically.'],
         ['GPU SPLIT', '2', int, '', 'PLAIN', 'Main', 'Define the number of GPU splits.'],
         ['GPU SPLIT LARGE', '0', int, '', 'PLAIN', 'Main', 'Define the number of GPU splits.'],
-        ['Memory usage', '0.4', float, '', 'PLAIN', 'Main', 'Specifiy how much GPU memory should be used.'],
-        ['Memory usage large', '0.9', float, '', 'PLAIN', 'Main', 'Specifiy how much GPU memory should be used.'],
+        ['Memory usage:Memory usage', '0.4', float, '', 'PLAIN', 'Main', 'Specifiy how much GPU memory should be used.'],
+        ['Memory usage large:Memory usage large', '0.9', float, '', 'PLAIN', 'Main', 'Specifiy how much GPU memory should be used.'],
+        ['Defect', '', str, '', 'FILE/SEARCH', 'Advanced', '', '1. Defect file that stores entries of defects on camera.  2. Each entry corresponds to a rectangular region in image.  The pixels in such a region are replaced by neighboring good pixel values.  3. Each entry contains 4 integers x, y, w, h representing the x, y coordinates, width, and heights, respectively.'],
+        ['Dark', '', str, '', 'FILE/SEARCH', 'Advanced', '', '1. MRC file that stores the dark reference. If not specified, dark subtraction will be skipped.  2. If -RotGain and/or -FlipGain is specified, the dark reference will also be rotated and/or flipped.'],
         ]
     return items

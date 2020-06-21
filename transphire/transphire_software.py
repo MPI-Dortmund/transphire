@@ -652,14 +652,12 @@ def check_nr_frames(frames, settings, force=False):
     if int(settings['Input']['Number of frames']) == -1 and not force:
         return True, 0, 0, 0
 
-    if settings['is_superres'].value == 2:
-        settings['is_superres'].value = bool(get_x_dim(frames, settings) > 7000)
-
+#    if settings['is_superres'].value == 2:
+#        settings['is_superres'].value = bool(get_x_dim(frames, settings) > 7000)
+#
     if not frames:
         frames.append(None)
-        return False, 0
-    elif int(settings['Input']['Number of frames']) == -1:
-        return True, 0
+        return False, 0, 0, 0
     else:
         command = "{0} '{1}'".format(
             settings['Path']['IMOD header'],
