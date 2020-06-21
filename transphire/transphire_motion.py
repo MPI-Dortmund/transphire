@@ -16,6 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import json
 import os
 #import re
 import collections as co
@@ -193,7 +194,7 @@ def get_dw_file_name(output_transfer_scratch, file_name, settings, queue_com, na
             raise IOError(message)
 
 
-def get_motion_command(file_input, file_output_scratch, file_log_scratch, settings, queue_com, name, do_subsum):
+def get_motion_command(file_input, file_output_scratch, file_log_scratch, settings, queue_com, name, set_name, do_subsum):
     """
     Get the command for the selected motion software.
 
@@ -226,6 +227,7 @@ def get_motion_command(file_input, file_output_scratch, file_log_scratch, settin
                 settings=settings,
                 queue_com=queue_com,
                 name=name,
+                set_name=set_name,
                 do_subsum=do_subsum,
                 )
             gpu_list = gpu.split()
@@ -282,6 +284,7 @@ def get_motion_command(file_input, file_output_scratch, file_log_scratch, settin
                 settings=settings,
                 queue_com=queue_com,
                 name=name,
+                set_name=set_name,
                 do_subsum=do_subsum,
                 )
 
@@ -300,6 +303,7 @@ def create_unblur_v1_0_0_command(
         settings,
         queue_com,
         name,
+        set_name,
         do_subsum,
         ):
     """
@@ -360,7 +364,11 @@ def create_unblur_v1_0_0_command(
                 cmd.append('no')
         if settings[motion_name]['Gain image filename'] != '':
             cmd.append('no')
-            cmd.append(settings[motion_name]['Gain image filename'])
+            external_log, key = settings[motion_name]['Gain image filename'].split('|||')
+            with open(external_log, 'r') as read:
+                log_data = json.load(read)
+            gain_file = log_data[set_name][key]['new_file']
+            cmd.append(gain_file)
         else:
             cmd.append('yes')
         cmd.append(settings[motion_name]['First frame to use for sum'])
@@ -382,7 +390,7 @@ def create_unblur_v1_0_0_command(
     return ';'.join(commands)
 
 
-def create_motion_cor_2_v1_0_0_command(motion_name, file_input, file_output, file_log, settings, queue_com, name, do_subsum):
+def create_motion_cor_2_v1_0_0_command(motion_name, file_input, file_output, file_log, settings, queue_com, name, set_name, do_subsum):
     """
     Create the MotionCor2 v1.0.0 command
 
@@ -452,13 +460,21 @@ def create_motion_cor_2_v1_0_0_command(motion_name, file_input, file_output, fil
     command.append('-Gpu')
     command.append('{0}'.format(gpu))
 
-    for key in settings[motion_name]:
+    for key, value in settings[motion_name].items():
         if key in ignore_list:
             continue
-        elif settings[motion_name][key]:
+        elif value:
+            if '|||' in value:
+                external_log, local_key = value.split('|||')
+                with open(external_log, 'r') as read:
+                    log_data = json.load(read)
+                set_value = log_data[set_name][local_key]['new_file']
+            else:
+                set_value = value
+
             command.append(key)
             command.append(
-                '{0}'.format(settings[motion_name][key])
+                '{0}'.format(set_value)
                 )
         else:
             continue

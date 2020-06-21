@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import json
 import datetime
 import sys
 import os
@@ -912,7 +913,7 @@ class MainWindow(QMainWindow):
         else:
             pass
 
-    def _extract_settings(self, key, settings, error_list, check_list, gain_names):
+    def _extract_settings(self, key, settings, error_list, check_list, external_files):
         try:
             settings_widget = self.content[key].get_settings()
         except AttributeError:
@@ -1016,9 +1017,10 @@ class MainWindow(QMainWindow):
                         del entry['GPU SPLIT']
                     except KeyError:
                         pass
+
             elif global_key in ('Gain', 'Dark', 'Defect'):
                 if entry[local_key]:
-                    gain_names.append([key, local_key])
+                    external_files[key] = {'local_key': local_key}
 
         for idx, entry in enumerate(settings_widget):
             if key == 'Frames':
@@ -1057,13 +1059,13 @@ class MainWindow(QMainWindow):
                 if isinstance(value, str) and value not in ('False', 'Later', 'True'):
                     check_list.append(value)
 
-        gain_names = []
+        external_files = {}
         for key in first_round:
-            self._extract_settings('Global', settings, error_list, check_list, gain_names)
+            self._extract_settings('Global', settings, error_list, check_list, external_files)
         for key in self.content:
             if key in first_round:
                 continue
-            self._extract_settings(key, settings, error_list, check_list, gain_names)
+            self._extract_settings(key, settings, error_list, check_list, external_files)
 
         settings['motion_frames'] = {
             '0': {
@@ -1130,14 +1132,13 @@ class MainWindow(QMainWindow):
             'TranSPHIRE_results'
             )
         folder_dict = {
-            'settings_folder': 'XXX_TranSPHIRE_settings',
             'log_folder': 'XXX_Log_files',
             'queue_folder': 'XXX_Queue_files',
             'error_folder': 'XXX_Error_files',
             'tar_folder': 'XXX_Tar_file_folder',
             'stack_folder': '000_Import',
             'meta_folder': '000_Import_meta',
-            'gain_folder': '000_Gain_files',
+            'set_folder': 'XXX_Sets',
             'software_meta_folder': '000_Session_meta',
             }
         for key, value in folder_dict.items():
@@ -1145,14 +1146,17 @@ class MainWindow(QMainWindow):
                 settings['project_folder'],
                 value
                 )
+        settings['current_set'] = datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S'),
 
         settings['do_feedback_loop'] = int(settings['General']['Number of feedbacks'])
-        settings['feedback_file'] = os.path.join(settings['log_folder'], 'do_feedback')
+        settings['feedback_file'] = os.path.join(settings['log_folder'], 'feedback_log')
         settings['spot_file'] = os.path.join(settings['log_folder'], 'spot_dict.txt')
         settings['data_frame'] = os.path.join(settings['project_folder'], 'data_frame.csv')
-        settings['data_frame_gain'] = os.path.join(settings['gain_folder'], 'gain_data_frame.csv')
+        settings['external_log'] = os.path.join(settings['set_folder'], 'external_files.json')
         settings['translation_file'] = os.path.join(settings['project_folder'], 'Valid_micrographs_info.txt')
         settings['translation_file_bad'] = os.path.join(settings['project_folder'], 'Discarded_micrographs_info.txt')
+
+        settings['set_folder'] = os.path.join(settings['set_folder'], settings['current_set'])
 
         names = [
             entry.replace('_entries', '')
@@ -1193,7 +1197,13 @@ class MainWindow(QMainWindow):
                     elif no_feedback:
                         continue
                     else:
-                        folder_name_tmp = os.path.join('000_Feedback_results', '{0}_feedback_{1}'.format(folder_name, int(settings['General']['Number of feedbacks']) - index + 1))
+                        folder_name_tmp = os.path.join(
+                            '000_Feedback_results',
+                            '{0}_feedback_{1}'.format(
+                                folder_name,
+                                int(settings['General']['Number of feedbacks']) - index + 1
+                                )
+                            )
 
                     folder_setting_name = '{0}_folder_feedback_{1}'.format(entry.lower(), index)
                     folder_setting = os.path.join(base_dir, folder_name_tmp)
@@ -1207,17 +1217,24 @@ class MainWindow(QMainWindow):
                                 base_dir2,
                                 folder_name_tmp
                                 )
-        for key, local_key in gain_names:
-            old_gain = settings[key][local_key]
-            new_gain = os.path.join(
-                settings['gain_folder'],
-                "{}_{}".format(
-                    datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S'),
-                    os.path.basename(old_gain)
+        for key, value in external_files.items():
+            if settings[key][value['local_key']]:
+                value['old_file'] = settings[key][value['local_key']]
+                value['new_file'] = os.path.join(
+                    settings['set_folder'],
+                    os.path.basename(value['old_file'])
                     )
-                )
-            tu.copy(old_gain, new_gain)
-            settings[key][local_key] = new_gain
+                tu.copy(value['old_file'], value['new_file'])
+                settings[key][local_key] = 'external_log|||{}'.format(key)
+
+        try:
+            with open(settings['external_log'], 'r') as read:
+                current_data = json.load(read)
+        except FileNotFoundError:
+            current_data = {}
+        current_data[settings['current_set']] = external_files
+        with open(settings['external_log'], 'w') as write:
+            json.dump(current_data, write)
 
         return settings, folder_dict
 
@@ -1262,7 +1279,7 @@ class MainWindow(QMainWindow):
             self.workers['plotting'].reset_list()
             settings_file, message = self.save(
                 file_name=os.path.join(
-                    settings['settings_folder'],
+                    settings['set_folder'],
                     settings['General']['Project name']
                     ),
                 do_message=False

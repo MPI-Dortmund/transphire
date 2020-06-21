@@ -1450,7 +1450,11 @@ class ProcessThread(object):
                     elif var:
                         self.add_to_queue(
                             aim=aim_name,
-                            root_name='{0}|||{1}'.format(self.shared_dict_typ['file_number'], root_name)
+                            root_name='{0}|||{1}|||{2}'.format(
+                                self.shared_dict_typ['file_number'],
+                                root_name,
+                                self.settings['current_set']
+                                )
                             )
                     else:
                         pass
@@ -1650,7 +1654,7 @@ class ProcessThread(object):
         start_prog = time.time()
         self.queue_com['log'].put(tu.create_log(self.name, 'run_import', root_name_input, 'start process'))
         root_name_raw = root_name
-        number, root_name = root_name_raw.split('|||')
+        number, root_name, set_name = root_name_raw.split('|||')
         number = int(number)
         frames_root = root_name.replace(
             self.settings['Input']['Input project path for jpg'],
@@ -1863,7 +1867,7 @@ class ProcessThread(object):
                 if 'Compress' in compare or \
                         'Motion' in compare or \
                         'CTF_frames' in compare:
-                    self.add_to_queue(aim=aim_name, root_name=new_stack)
+                    self.add_to_queue(aim=aim_name, root_name='|||'.join([new_stack, set_name]))
                 else:
                     self.add_to_queue(
                         aim=aim_name,
@@ -2186,6 +2190,7 @@ class ProcessThread(object):
         root_name_input = root_name
         start_prog = time.time()
         self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', root_name_input, 'start process'))
+        root_name, set_name = root_name.split('|||')
         if not os.path.isfile(root_name):
             compress_name = self.settings['Copy']['Compress']
             try:
@@ -2370,6 +2375,7 @@ class ProcessThread(object):
                     file_log_scratch=file_log_scratch,
                     queue_com=self.queue_com,
                     name=self.name,
+                    set_name=set_name,
                     settings=self.settings,
                     do_subsum=do_subsum
                     )
@@ -2711,7 +2717,12 @@ class ProcessThread(object):
         root_name_input = root_name
         start_prog = time.time()
         self.queue_com['log'].put(tu.create_log(self.name, 'run_ctf', root_name_input, 'start process'))
-        root_name_raw = root_name
+        if '|||' in root_name:
+            root_name_raw, set_name = root_name.split('|||')
+            root_name = root_name_raw
+        else:
+            set_name = None
+            root_name_raw = root_name
         # Split is file_sum, file_dw_sum, file_frames
         try:
             file_sum, file_dw, file_input = root_name.split(';;;')
@@ -2759,6 +2770,7 @@ class ProcessThread(object):
             new_name=new_name,
             settings=self.settings,
             queue_com=self.queue_com,
+            set_name=set_name,
             name=self.name
             )
 
@@ -4070,7 +4082,8 @@ class ProcessThread(object):
         root_name_input = root_name
         start_prog = time.time()
         self.queue_com['log'].put(tu.create_log(self.name, 'run_compress', root_name_input, 'start process'))
-        new_root_name, extension = os.path.splitext(os.path.basename(root_name))
+        root_name, _ = root_name.split('|||')
+        new_root_name, extension = os.path.splitext(os.path.basename(root_name)
 
         log_prefix = os.path.join(
                 self.settings['compress_folder_feedback_0'],

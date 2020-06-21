@@ -30,7 +30,7 @@ from transphire import transphire_import as ti
 from transphire import transphire_utils as tu
 
 
-def get_ctf_command(file_sum, file_input, new_name, settings, queue_com, name):
+def get_ctf_command(file_sum, file_input, new_name, settings, queue_com, set_name, name):
     """
     Create the ctf command based on the ctf software.
 
@@ -56,6 +56,7 @@ def get_ctf_command(file_sum, file_input, new_name, settings, queue_com, name):
                 file_sum=file_sum,
                 file_input=file_input,
                 file_output=new_name,
+                set_name=set_name,
                 settings=settings
                 )
             check_files = []
@@ -82,6 +83,7 @@ def get_ctf_command(file_sum, file_input, new_name, settings, queue_com, name):
                 file_sum=file_sum,
                 file_input=file_input,
                 file_output=new_name,
+                set_name=set_name,
                 settings=settings,
                 name=name
                 )
@@ -465,7 +467,11 @@ def create_ctffind_4_v4_1_13_command(ctf_name, file_sum, file_input, file_output
             ctffind_command.append('{0}'.format('yes'))
         else:
             ctffind_command.append('{0}'.format('no'))
-            ctffind_command.append('{0}'.format(ctf_settings['Gain file']))
+            external_log, key = settings[motion_name]['Gain image filename'].split('|||')
+            with open(external_log, 'r') as read:
+                log_data = json.load(read)
+            gain_file = log_data[set_name][key]['new_file']
+            ctffind_command.append(gain_file)
         # Correct for magnifying distortions
         if ctf_settings['Correct mag. distort.'] == 'True':
             ctffind_command.append('{0}'.format('yes'))
