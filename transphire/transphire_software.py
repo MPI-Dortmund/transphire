@@ -629,9 +629,7 @@ def get_x_dim(frames, settings):
         frames[0]
         )
 
-    child = pe.spawnu(command)
-    text = child.read()
-    child.interact()
+    text = subprocess.check_output(command, shell=True, encoding='utf-8')
 
     x_dim = 0
     for line in text.split('\n'):

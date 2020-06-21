@@ -4083,7 +4083,7 @@ class ProcessThread(object):
         start_prog = time.time()
         self.queue_com['log'].put(tu.create_log(self.name, 'run_compress', root_name_input, 'start process'))
         root_name, _ = root_name.split('|||')
-        new_root_name, extension = os.path.splitext(os.path.basename(root_name)
+        new_root_name, extension = os.path.splitext(os.path.basename(root_name))
 
         log_prefix = os.path.join(
                 self.settings['compress_folder_feedback_0'],

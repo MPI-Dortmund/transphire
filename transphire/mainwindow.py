@@ -1146,7 +1146,7 @@ class MainWindow(QMainWindow):
                 settings['project_folder'],
                 value
                 )
-        settings['current_set'] = datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S'),
+        settings['current_set'] = datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
 
         settings['do_feedback_loop'] = int(settings['General']['Number of feedbacks'])
         settings['feedback_file'] = os.path.join(settings['log_folder'], 'feedback_log')
@@ -1225,7 +1225,7 @@ class MainWindow(QMainWindow):
                     os.path.basename(value['old_file'])
                     )
                 tu.copy(value['old_file'], value['new_file'])
-                settings[key][local_key] = 'external_log|||{}'.format(key)
+                settings[key][value['local_key']] = 'external_log|||{}'.format(key)
 
         try:
             with open(settings['external_log'], 'r') as read:

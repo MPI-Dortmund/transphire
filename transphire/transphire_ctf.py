@@ -83,7 +83,6 @@ def get_ctf_command(file_sum, file_input, new_name, settings, queue_com, set_nam
                 file_sum=file_sum,
                 file_input=file_input,
                 file_output=new_name,
-                set_name=set_name,
                 settings=settings,
                 name=name
                 )
@@ -385,7 +384,7 @@ def create_cter_1_0_command(
 
     return ' '.join(command)
 
-def create_ctffind_4_v4_1_13_command(ctf_name, file_sum, file_input, file_output, settings):
+def create_ctffind_4_v4_1_13_command(ctf_name, file_sum, file_input, file_output, set_name, settings):
     """Create the ctffind command"""
     ctf_settings = settings[ctf_name]
     ctffind_command = []
@@ -467,7 +466,7 @@ def create_ctffind_4_v4_1_13_command(ctf_name, file_sum, file_input, file_output
             ctffind_command.append('{0}'.format('yes'))
         else:
             ctffind_command.append('{0}'.format('no'))
-            external_log, key = settings[motion_name]['Gain image filename'].split('|||')
+            external_log, key = ctf_settings['Gain image filename'].split('|||')
             with open(external_log, 'r') as read:
                 log_data = json.load(read)
             gain_file = log_data[set_name][key]['new_file']
