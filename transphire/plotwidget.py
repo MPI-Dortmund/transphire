@@ -121,9 +121,11 @@ class SelectWidget(QWidget):
             current_idx += 1
         else:
             current_idx = current_idx
-        self.buttons['Image'].blockSignals(True)
+
+        cur_state = self.buttons['Image'].blockSignals(True)
         self.buttons['Image'].setCurrentIndex(current_idx)
-        self.buttons['Image'].blockSignals(False)
+        self.buttons['Image'].blockSignals(cur_state)
+
         self.buttons['Image'].activated.emit(current_idx)
         self.buttons['Image'].currentTextChanged.emit(self.buttons['Image'].currentText())
 
@@ -137,10 +139,10 @@ class SelectWidget(QWidget):
     def filter_combo(self, text):
         items = [entry for entry in self._full_combo_list if text in entry]
 
-        self.buttons['Image'].blockSignals(True)
+        cur_state = self.buttons['Image'].blockSignals(True)
         self.buttons['Image'].clear()
         self.buttons['Image'].addItems(['latest'] * bool(text == '') + items)
-        self.buttons['Image'].blockSignals(False)
+        self.buttons['Image'].blockSignals(cur_state)
         if items:
             self.handle_change()
 
@@ -149,15 +151,18 @@ class SelectWidget(QWidget):
 
     def set_values(self, value_list):
         self._full_combo_list = value_list.tolist()
-        if self.buttons['Filter'].text() == '':
-            self.buttons['Image'].blockSignals(True)
-            current_value = self.buttons['Image'].currentText()
-            self.buttons['Image'].clear()
-            self.buttons['Image'].addItems(['latest'] + self._full_combo_list)
-            idx = self.buttons['Image'].setCurrentText(current_value)
-            self.buttons['Image'].blockSignals(False)
-            if idx == -1:
-                self.handle_change()
+
+        current_value = self.buttons['Image'].currentText()
+        self.buttons['Filter'].textEdited.emit(self.buttons['Filter'].text())
+
+        cur_state = self.buttons['Image'].blockSignals(True)
+        idx = self.buttons['Image'].setCurrentText(current_value)
+        self.buttons['Image'].blockSignals(cur_state)
+        if idx != -1:
+            self.handle_change()
+        else:
+            self.buttons['Image'].activated.emit(self.buttons['Image'].currentIndex())
+
 
 
 class TrimWidget(QWidget):
@@ -745,9 +750,11 @@ class PlotWidget(QWidget):
             try:
                 current_name = self._basenames[-1]
             except IndexError:
-                pass
+                return
             except TypeError:
                 return
+        elif not current_name:
+            return
 
         try:
             data_list = self._data['image'][self._basenames == current_name][0].split(';;;')
@@ -808,6 +815,7 @@ class PlotWidget(QWidget):
                         data_dict['is_high_res'],
                         data_dict['label_plot'],
                         data_dict['marker'],
+                        data_dict['color'],
                         plot_idx,
                         )
                     plot_idx += 1
@@ -917,7 +925,7 @@ class PlotWidget(QWidget):
             new_values = np.array([x_data, y_data]).T
         return colors, new_values
 
-    def update_image_plot(self, canvas, data_x, data_y, high_res, label, marker, idx):
+    def update_image_plot(self, canvas, data_x, data_y, high_res, label, marker, color, idx):
         if high_res:
             color, vals = self.high_res(data_x, data_y, 30)
             canvas.axes.set_prop_cycle('color', color)
@@ -936,12 +944,14 @@ class PlotWidget(QWidget):
                     'o',
                     ))
         else:
+            if color is None:
+                color = self._color
             self._image_ref.append(canvas.axes.plot(
                 data_x,
                 data_y,
                 marker,
                 label=label,
-                color=self._color,
+                color=color,
                 markeredgecolor='black',
                 markersize=10,
                 ))

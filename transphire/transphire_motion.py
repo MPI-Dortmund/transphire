@@ -921,6 +921,7 @@ def create_jpg_file(input_file, data, settings):
                 'is_high_res': True,
                 'label_plot': '',
                 'marker': '',
+                'color': None,
                 },
             {
                 'values_x': [data[0][0]],
@@ -928,6 +929,7 @@ def create_jpg_file(input_file, data, settings):
                 'is_high_res': False,
                 'label_plot': 'First',
                 'marker': 'p',
+                'color': None,
                 },
             {
                 'values_x': [data[0][-1]],
@@ -935,6 +937,7 @@ def create_jpg_file(input_file, data, settings):
                 'is_high_res': False,
                 'label_plot': 'Last',
                 'marker': 'd',
+                'color': None,
                 },
             ]
         }

@@ -16,6 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import json
 import glob
 import os
 import shutil
@@ -1057,11 +1058,11 @@ def create_jpg_file(input_mrc_file, settings, ctf_name):
 
     tu.mkdir_p(os.path.join(settings['ctf_folder_feedback_0'], 'jpg'))
     tu.mkdir_p(os.path.join(settings['ctf_folder_feedback_0'], 'jpg_2'))
-    tu.mkdir_p(os.path.join(settings['ctf_folder_feedback_0'], 'jpg_3'))
+    tu.mkdir_p(os.path.join(settings['ctf_folder_feedback_0'], 'json'))
 
     jpg_file_1 = os.path.join(settings['ctf_folder_feedback_0'], 'jpg', '{0}.jpg'.format(file_name))
     jpg_file_2 = os.path.join(settings['ctf_folder_feedback_0'], 'jpg_2', '{0}.jpg'.format(file_name))
-    jpg_file_3 = os.path.join(settings['ctf_folder_feedback_0'], 'jpg_3', '{0}.jpg'.format(file_name))
+    json_file = os.path.join(settings['ctf_folder_feedback_0'], 'json', '{0}.json'.format(file_name))
 
     arr_1 = None
     arr_2 = None
@@ -1152,11 +1153,19 @@ def create_jpg_file(input_mrc_file, settings, ctf_name):
     if arr_2 is not None:
         mi.imsave(jpg_file_2, arr_2, cmap='gist_gray')
     if arr_3 is not None:
-        fig, ax = plt.subplots()
-        for y_values, label in arr_3:
-            ax.plot(x_data, y_values, label=label)
-        plt.legend(loc='upper right')
-        plt.grid()
-        plt.ylim([-0.5, 2.5])
-        plt.savefig(jpg_file_3, dpi=300)
-        plt.close(fig)
+        json_dict = {
+            'label_x': 'Spacial frequency 1/px',
+            'label_y': 'CTF',
+            'data': []
+            }
+        for idx, (y_values, label) in enumerate(arr_3):
+            json_dict['data'].append({
+                'values_x': x_data.tolist(),
+                'values_y': y_values.tolist(),
+                'is_high_res': False,
+                'label_plot': label,
+                'marker': '-',
+                'color': matplotlib.cm.get_cmap('viridis')(idx / (len(arr_3) - 1)),
+                })
+        with open(json_file, 'w') as write:
+            json.dump(json_dict, write)

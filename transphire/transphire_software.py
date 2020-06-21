@@ -22,7 +22,7 @@ import re
 import datetime
 import numpy as np
 import traceback as tb
-import pexpect as pe
+import subprocess
 from hyperspy.io_plugins.digital_micrograph import DigitalMicrographReader
 from transphire import transphire_import as ti
 from transphire import transphire_utils as tu
@@ -664,9 +664,7 @@ def check_nr_frames(frames, settings, force=False):
             frames[0]
             )
 
-        child = pe.spawnu(command)
-        text = child.read()
-        child.interact()
+        text = subprocess.check_output(command, shell=True, encoding='utf-8')
 
         nr_frames = 0
         for line in text.split('\n'):

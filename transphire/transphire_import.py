@@ -533,7 +533,7 @@ def import_ctffind_v4_1_8(name, name_no_feedback, settings, directory_name, impo
     files = [
         entry for entry in glob.glob(
         '{0}/{1}*.txt'.format(directory_name, import_name)
-        ) if not entry.endswith('_avrot.txt')
+        ) if not entry.endswith('_avrot.txt') and not '_transphire_' in entry
         ]
 
     useable_files = []
@@ -553,15 +553,21 @@ def import_ctffind_v4_1_8(name, name_no_feedback, settings, directory_name, impo
             else:
                 continue
 
-    useable_files_jpg = [
+    useable_files_jpg = set([
         tu.get_name(entry)
         for entry in glob.glob(os.path.join(directory_name, 'jpg*', '*.jpg'))
-        ]
-    useable_files = [
-        [file_name, data_name]
-        for file_name, data_name in sorted(useable_files)
-        if tu.get_name(file_name) in useable_files_jpg
-        ]
+        ])
+    useable_files_json = set([
+        tu.get_name(entry)
+        for entry in glob.glob(os.path.join(directory_name, 'json*', '*.json'))
+        ])
+    if not import_name: 
+        useable_files = [
+            entry
+            for entry in sorted(useable_files)
+            if tu.get_name(entry[0]) in useable_files_jpg and
+            tu.get_name(entry[0]) in useable_files_json
+            ]
 
     data = np.zeros(
         len(useable_files),
@@ -576,17 +582,20 @@ def import_ctffind_v4_1_8(name, name_no_feedback, settings, directory_name, impo
     data.fill(0)
     data_original.fill(0)
 
-    file_names_jpg = [tu.get_name(entry[0]) for entry in useable_files]
-    jpgs = sorted([os.path.basename(entry) for entry in glob.glob(os.path.join(directory_name, 'jpg*'))])
-    jpg_names = [';;;'.join([os.path.join(directory_name, jpg_dir_name, '{0}.jpg'.format(entry)) for jpg_dir_name in jpgs]) for entry in file_names_jpg]
-
-    match_re = re.compile('# Input file: (.*?) ; Number of micrographs: 1')
+    match_re = re.compile('# Input file: (.*?)\s+; Number of micrographs: 1')
 
     file_names = []
+    jpg_json_data = []
     for file_name, _ in useable_files:
         with open(file_name, 'r') as read:
             content = read.read()
-        file_names.append(match_re.search(content).group(1))
+        file_names.append(match_re.search(content, re.S).group(1))
+
+        file_name_base = tu.get_name(file_name)
+        jpgs = glob.glob(os.path.join(directory_name, 'jpg*', '{}.jpg'.format(file_name_base)))
+        json = glob.glob(os.path.join(directory_name, 'json*', '{}.json'.format(file_name_base)))
+        jpg_json_data.append(';;;'.join(jpgs + json))
+
 
     data_original['file_name'] = file_names
     data['file_name'] = file_names
@@ -606,7 +615,7 @@ def import_ctffind_v4_1_8(name, name_no_feedback, settings, directory_name, impo
             data[dtype_name] = [np.degrees(entry[1][dtype_name]) for entry in useable_files]
         else:
             data[dtype_name] = [entry[1][dtype_name] for entry in useable_files]
-    data['image'] = jpg_names
+    data['image'] = jpg_json_data
 
     data = np.sort(data, order='file_name')
     data_original = np.sort(data_original, order='file_name')
@@ -650,15 +659,21 @@ def import_gctf_v1_06(name, name_no_feedback, settings, directory_name, import_n
             else:
                 continue
 
-    useable_files_jpg = [
+    useable_files_jpg = set([
         tu.get_name(entry)
         for entry in glob.glob(os.path.join(directory_name, 'jpg*', '*.jpg'))
-        ]
-    useable_files = [
-        [file_name, data_name]
-        for file_name, data_name in sorted(useable_files)
-        if tu.get_name(tu.get_name(file_name)) in useable_files_jpg
-        ]
+        ])
+    useable_files_json = set([
+        tu.get_name(entry)
+        for entry in glob.glob(os.path.join(directory_name, 'json*', '*.json'))
+        ])
+    if not import_name: 
+        useable_files = [
+            file_name
+            for file_name in sorted(useable_files)
+            if tu.get_name(file_name) in useable_files_jpg and
+            tu.get_name(file_name) in useable_files_json
+            ]
 
     data = np.zeros(
         len(useable_files),
@@ -678,9 +693,12 @@ def import_gctf_v1_06(name, name_no_feedback, settings, directory_name, import_n
         else:
             send_data.send((None, None))
 
-    file_names_jpg = [tu.get_name(tu.get_name(entry[0])) for entry in useable_files]
-    jpgs = sorted([os.path.basename(entry) for entry in glob.glob(os.path.join(directory_name, 'jpg*'))])
-    jpg_names = [';;;'.join([os.path.join(directory_name, jpg_dir_name, '{0}.jpg'.format(entry)) for jpg_dir_name in jpgs]) for entry in file_names_jpg]
+    jpg_json_data = []
+    for entry in sorted(useable_files):
+        file_name_base = tu.get_name(file_name)
+        jpgs = glob.glob(os.path.join(directory_name, 'jpg*', '{}.jpg'.format(file_name_base)))
+        json = glob.glob(os.path.join(directory_name, 'json*', '{}.json'.format(file_name_base)))
+        jpg_json_data.append(';;;'.join(jpgs + json))
 
     relion_dict = get_relion_dict()
     for dtype_name in useable_files[0][1].dtype.names:
@@ -706,8 +724,7 @@ def import_gctf_v1_06(name, name_no_feedback, settings, directory_name, import_n
                 pass
             data[transphire_name] = np.nan_to_num(data[transphire_name], copy=False)
 
-
-    data['image'] = jpg_names
+    data['image'] = jpg_json_data
 
     data = np.sort(data, order='file_name')
     data_original = np.sort(data_original, order='file_name')
@@ -748,15 +765,21 @@ def import_cter_v1_0(name, name_no_feedback, settings, directory_name, import_na
             else:
                 continue
 
-    useable_files_jpg = [
+    useable_files_jpg = set([
         tu.get_name(entry)
         for entry in glob.glob(os.path.join(directory_name, 'jpg*', '*.jpg'))
-        ]
-    useable_files = [
-        [file_name, data_name]
-        for file_name, data_name in useable_files
-        if os.path.split(os.path.dirname(file_name))[-1] in useable_files_jpg
-        ]
+        ])
+    useable_files_json = set([
+        tu.get_name(entry)
+        for entry in glob.glob(os.path.join(directory_name, 'json*', '*.json'))
+        ])
+    if not import_name: 
+        useable_files = [
+            file_name
+            for file_name in sorted(useable_files)
+            if tu.get_name(file_name) in useable_files_jpg and
+            tu.get_name(file_name) in useable_files_json
+            ]
 
     data = np.zeros(
         len(useable_files),
@@ -771,9 +794,12 @@ def import_cter_v1_0(name, name_no_feedback, settings, directory_name, import_na
     data.fill(0)
     data_original.fill(0)
 
-    file_names_jpg = [os.path.split(os.path.dirname(entry[0]))[-1] for entry in useable_files]
-    jpgs = sorted([os.path.basename(entry) for entry in glob.glob(os.path.join(directory_name, 'jpg*'))])
-    jpg_names = [';;;'.join([os.path.join(directory_name, jpg_dir_name, '{0}.jpg'.format(entry)) for jpg_dir_name in jpgs if os.path.exists(os.path.join(directory_name, jpg_dir_name, '{0}.jpg'.format(entry)))]) for entry in file_names_jpg]
+    jpg_json_data = []
+    for entry in sorted(useable_files):
+        file_name_base = tu.get_name(file_name)
+        jpgs = glob.glob(os.path.join(directory_name, 'jpg*', '{}.jpg'.format(file_name_base)))
+        json = glob.glob(os.path.join(directory_name, 'json*', '{}.json'.format(file_name_base)))
+        jpg_json_data.append(';;;'.join(jpgs + json))
 
 
     for dtype_name in data_original.dtype.names:
@@ -794,7 +820,7 @@ def import_cter_v1_0(name, name_no_feedback, settings, directory_name, import_na
             data['limit'] = [1 / entry[1][dtype_name] if entry[1][dtype_name] != 0 else 1 / entry[1]['limit_pixel_error'] for entry in useable_files]
         else:
             continue
-    data['image'] = jpg_names
+    data['image'] = jpg_json_data
 
     data = np.sort(data, order='file_name')
     data_original = np.sort(data_original, order='file_name')
@@ -856,7 +882,8 @@ def import_motion_cor_2_v1_0_0(name, name_no_feedback, settings, directory_name,
         useable_files = [
             file_name
             for file_name in sorted(useable_files)
-            if tu.get_name(tu.get_name(file_name)) in useable_files_jpg | useable_files_json
+            if tu.get_name(tu.get_name(file_name)) in useable_files_jpg and
+            tu.get_name(tu.get_name(file_name)) in useable_files_json
             ]
 
     data = np.zeros(
@@ -1070,11 +1097,17 @@ def import_unblur_v1_0_0(name, name_no_feedback, settings, directory_name, impor
         tu.get_name(entry)
         for entry in glob.glob(os.path.join(directory_name, 'jpg*', '*.jpg'))
         ])
-    useable_files = [
-        file_name
-        for file_name in sorted(useable_files)
-        if tu.get_name(tu.get_name(file_name)) in useable_files_jpg
-        ]
+    useable_files_json = set([
+        tu.get_name(entry)
+        for entry in glob.glob(os.path.join(directory_name, 'json*', '*.json'))
+        ])
+    if not import_name: 
+        useable_files = [
+            file_name
+            for file_name in sorted(useable_files)
+            if tu.get_name(tu.get_name(file_name)) in useable_files_jpg and
+            tu.get_name(tu.get_name(file_name)) in useable_files_json
+            ]
 
     data = np.zeros(
         len(useable_files),
@@ -1142,7 +1175,12 @@ def import_unblur_v1_0_0(name, name_no_feedback, settings, directory_name, impor
             'jpg*',
             '{0}.jpg'.format(tu.get_name(tu.get_name(file_name)))
             )
-        data[idx]['image'] = ';;;'.join(glob.glob(jpg_name))
+        json_name = os.path.join(
+            directory_name,
+            'json*',
+            '{0}.json'.format(tu.get_name(tu.get_name(file_name)))
+            )
+        data[idx]['image'] = ';;;'.join(glob.glob(jpg_name) + glob.glob(json_name))
 
     sort_idx = np.argsort(data, order='file_name')
     data = data[sort_idx]
