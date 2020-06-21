@@ -157,7 +157,6 @@ def default_isac2_1_2():
         ['GPU SPLIT:GPU SPLIT LARGE', '1', int, '', 'PLAIN', category, 'NOT AN ISAC2 OPTION. Specify how many jobs per GPU.'],
         ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', category, 'NOT AN ISAC2 OPTION. Split the gpu values specified in --gpu to be able to run mutliple ISAC jobs in parallel.'],
 
-        ['--gpu_class_limit', '-1', int, '', 'PLAIN', category, 'By default ISAC will check how much data can fit on the available GPUs. This can take more than a minute, which is annoying for testing. To skip this check, use --gpu_info to get a class limit value to use for this parameter. [Default: -1]'],
         ['--gpu_memory_use:Memory usage large', '-1', float, '', 'PLAIN', category, 'Specify how much memory on the chosen GPUs ISAC is allowed to use. A value of 0.9 means 90% of the available memory (this is the default; higher percentages should be used with caution). [Default: -1.0]'],
         ])
     return items

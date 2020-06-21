@@ -598,7 +598,7 @@ class PlotWidget(QWidget):
                 )
             mask = np.logical_and(mask_y, mask_x)
 
-            if self._ydata_raw[mask].size == 0:
+            if self._ydata_raw[mask].size == 0 or self._xdata_raw[mask].size == 0:
                 self.trim_widget.set_values(self._previous_dict)
                 if do_message:
                     tu.message('Masking values do not contain any data points! Falling back to previous values!')
