@@ -1895,6 +1895,8 @@ class ProcessThread(object):
         self.shared_dict['typ'][self.content_settings['group']]['share_lock'].acquire()
         try:
             self.shared_dict['share'][self.content_settings['group']].remove(root_name)
+        except ValueError:
+            pass
         finally:
             self.shared_dict['typ'][self.content_settings['group']]['share_lock'].release()
 
@@ -3027,10 +3029,12 @@ class ProcessThread(object):
             shell=shell
             )
 
+        print('0')
         zero_list = [err_file]
         non_zero_list = [log_file]
         non_zero_list.extend(check_files)
 
+        print('1')
         log_files, copied_log_files = tue.find_logfiles(
             root_path=output_dir,
             settings=self.settings,
@@ -3038,6 +3042,7 @@ class ProcessThread(object):
             name=self.name
             )
 
+        print('2')
         tus.check_outputs(
             zero_list=zero_list,
             non_zero_list=non_zero_list,
@@ -3046,6 +3051,7 @@ class ProcessThread(object):
             command=command
             )
 
+        print('3')
         n_particles = tue.get_particle_number(
             log_file,
             self.settings,
@@ -3053,12 +3059,14 @@ class ProcessThread(object):
             name=self.name
             )
 
+        print('4')
         try:
             log_files.remove(err_file)
             copied_log_files.remove(err_file)
         except ValueError:
             pass
 
+        print('5')
         for old_file, new_file in zip(log_files, copied_log_files):
             if os.path.realpath(old_file) != os.path.realpath(new_file):
                 os.remove(old_file)
@@ -3069,8 +3077,10 @@ class ProcessThread(object):
         copied_log_files.extend(zero_list)
         copied_log_files = list(set(copied_log_files))
 
+        print('6')
         tue.create_jpg_file(file_name, self.settings[folder_name])
 
+        print('7')
         skip_list = False
         if skip_list:
             pass
@@ -3119,7 +3129,9 @@ class ProcessThread(object):
                 else:
                     pass
 
+        print('8')
         self.remove_from_queue_file(matches_in_queue, self.shared_dict_typ['list_file'])
+        print('9')
         self.queue_com['log'].put(tu.create_log(self.name, 'run_extract', root_name_input, 'stop process', time.time() - start_prog))
 
     @staticmethod

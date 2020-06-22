@@ -888,7 +888,7 @@ class MainWindow(QMainWindow):
         self.workers['plotting'].sig_reset_list.emit()
 
         if start:
-            settings, _ = self.get_start_settings(monitor=True)
+            settings, _, _ = self.get_start_settings(monitor=True)
             if settings is None:
                 tu.message('Please fill non emtpy entries.')
                 self.enable(True)
@@ -1146,7 +1146,6 @@ class MainWindow(QMainWindow):
                 settings['project_folder'],
                 value
                 )
-        settings['current_set'] = datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
 
         settings['do_feedback_loop'] = int(settings['General']['Number of feedbacks'])
         settings['feedback_file'] = os.path.join(settings['log_folder'], 'feedback_log')
@@ -1156,7 +1155,9 @@ class MainWindow(QMainWindow):
         settings['translation_file'] = os.path.join(settings['project_folder'], 'Valid_micrographs_info.txt')
         settings['translation_file_bad'] = os.path.join(settings['project_folder'], 'Discarded_micrographs_info.txt')
 
+        settings['current_set'] = datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
         settings['set_folder'] = os.path.join(settings['set_folder'], settings['current_set'])
+        folder_dict['set_folder'] = settings['set_folder']
 
         names = [
             entry.replace('_entries', '')
@@ -1217,30 +1218,12 @@ class MainWindow(QMainWindow):
                                 base_dir2,
                                 folder_name_tmp
                                 )
-        for key, value in external_files.items():
-            if settings[key][value['local_key']]:
-                value['old_file'] = settings[key][value['local_key']]
-                value['new_file'] = os.path.join(
-                    settings['set_folder'],
-                    os.path.basename(value['old_file'])
-                    )
-                tu.copy(value['old_file'], value['new_file'])
-                settings[key][value['local_key']] = 'external_log|||{}'.format(key)
 
-        try:
-            with open(settings['external_log'], 'r') as read:
-                current_data = json.load(read)
-        except FileNotFoundError:
-            current_data = {}
-        current_data[settings['current_set']] = external_files
-        with open(settings['external_log'], 'w') as write:
-            json.dump(current_data, write)
-
-        return settings, folder_dict
+        return settings, folder_dict, external_files
 
     @pyqtSlot()
     def start(self):
-        settings, folder_dict = self.get_start_settings()
+        settings, folder_dict, external_files = self.get_start_settings()
 
         # Check for continue mode
         if settings is None:
@@ -1269,6 +1252,29 @@ class MainWindow(QMainWindow):
                     tu.message('Project name cannot be empty')
                     self.enable(True)
                     return None
+
+            for key, value in external_files.items():
+                if settings[key][value['local_key']]:
+                    value['old_file'] = settings[key][value['local_key']]
+                    value['new_file'] = os.path.join(
+                        settings['set_folder'],
+                        os.path.basename(value['old_file'])
+                        )
+                    try:
+                        tu.copy(value['old_file'], value['new_file'])
+                    except FileNotFoundError:
+                        tu.message("Input file {} not available!".format(value['old_file']))
+                        return None
+                    settings[key][value['local_key']] = 'external_log|||{}'.format(key)
+
+            try:
+                with open(settings['external_log'], 'r') as read:
+                    current_data = json.load(read)
+            except FileNotFoundError:
+                current_data = {}
+            current_data[settings['current_set']] = external_files
+            with open(settings['external_log'], 'w') as write:
+                json.dump(current_data, write, indent=1)
 
             self.content['Button'].start_button.setVisible(False)
             self.content['Button'].start_button.setEnabled(False)

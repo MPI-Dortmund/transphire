@@ -660,9 +660,16 @@ class PlotWidget(QWidget):
 
             is_histogram = bool(self.plot_typ == 'histogram')
 
-            width = self._xdata[1] - self._xdata[0]
+            try:
+                width = self._xdata[1] - self._xdata[0]
+            except IndexError:
+                width = 0
+                assert not is_histogram, (self._xdata, self._ydata)
+
             diff_x = np.max(self._xdata) - np.min(self._xdata)
+            diff_x = np.maximum(diff_x, 1)
             diff_y = np.max(self._ydata) - np.min(self._ydata) * bool(not is_histogram)
+            diff_y = np.maximum(diff_y, 1)
 
             mult = 0.05
             boarder_x = np.maximum(diff_x * mult / 2, width * is_histogram)
@@ -734,8 +741,14 @@ class PlotWidget(QWidget):
                 self.update_helpers(canvas.mpl_canvas, plot_idx, update, self.plot_typ)
 
                 if update:
-                    canvas.mpl_canvas.axes.set_xlim(self._applied_min_x, self._applied_max_x)
-                    canvas.mpl_canvas.axes.set_ylim(self._applied_min_y, self._applied_max_y)
+                    canvas.mpl_canvas.axes.set_xlim(
+                        self._applied_min_x,
+                        self._applied_max_x
+                        )
+                    canvas.mpl_canvas.axes.set_ylim(
+                        self._applied_min_y,
+                        self._applied_max_y
+                        )
                     canvas.mpl_canvas.draw()
                 else:
                     canvas.mpl_canvas.update()

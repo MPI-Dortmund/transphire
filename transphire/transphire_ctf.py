@@ -467,7 +467,7 @@ def create_ctffind_4_v4_1_13_command(ctf_name, file_sum, file_input, file_output
         else:
             ctffind_command.append('{0}'.format('no'))
             external_log, key = ctf_settings['Gain image filename'].split('|||')
-            with open(external_log, 'r') as read:
+            with open(settings[external_log], 'r') as read:
                 log_data = json.load(read)
             gain_file = log_data[set_name][key]['new_file']
             ctffind_command.append(gain_file)
@@ -1173,4 +1173,4 @@ def create_jpg_file(input_mrc_file, settings, ctf_name):
                 'color': matplotlib.cm.get_cmap('viridis')(idx / (len(arr_3) - 1)),
                 })
         with open(json_file, 'w') as write:
-            json.dump(json_dict, write)
+            json.dump(json_dict, write, indent=1)

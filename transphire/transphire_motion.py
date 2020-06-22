@@ -364,7 +364,7 @@ def create_unblur_v1_0_0_command(
         if settings[motion_name]['Gain image filename'] != '':
             cmd.append('no')
             external_log, key = settings[motion_name]['Gain image filename'].split('|||')
-            with open(external_log, 'r') as read:
+            with open(settings[external_log], 'r') as read:
                 log_data = json.load(read)
             gain_file = log_data[set_name][key]['new_file']
             cmd.append(gain_file)
@@ -463,12 +463,15 @@ def create_motion_cor_2_v1_0_0_command(motion_name, file_input, file_output, fil
         if key in ignore_list:
             continue
         elif value:
-            if '|||' in value:
-                external_log, local_key = value.split('|||')
-                with open(external_log, 'r') as read:
-                    log_data = json.load(read)
-                set_value = log_data[set_name][local_key]['new_file']
-            else:
+            try:
+                if '|||' in value:
+                    external_log, local_key = value.split('|||')
+                    with open(settings[external_log], 'r') as read:
+                        log_data = json.load(read)
+                    set_value = log_data[set_name][local_key]['new_file']
+                else:
+                    set_value = value
+            except TypeError:
                 set_value = value
 
             command.append(key)
@@ -957,7 +960,7 @@ def create_jpg_file(input_file, data, settings):
             ]
         }
     with open(json_file, 'w') as write:
-        json.dump(json_dict, write)
+        json.dump(json_dict, write, indent=1)
 
     arr_1 = None
     arr_2 = None

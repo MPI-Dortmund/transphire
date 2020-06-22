@@ -224,16 +224,29 @@ def create_jpg_file(file_name, output_dir):
         width = image.shape[0] * columns / dpi
         height = image.shape[1] * rows / dpi
 
-        for idx, img_file in enumerate(files):
-            ax = plt.subplot(rows, columns, idx+1, aspect='equal', frameon=False, adjustable='box')
-            ax.imshow(img.imread(img_file), cmap='Greys_r')
-            ax.axis('off')
+        fig, ax = plt.subplots(rows, columns, subplot_kw={'frameon':False, 'adjustable': 'box', 'aspect': 'equal'})
+        ax = ax.ravel()
+        for idx, ax_instance in enumerate(ax):
+            try:
+                ax_instance.imshow(img.imread(files[idx]), cmap='Greys_r')
+            except IndexError:
+                pass
+            ax_instance.axis('off')
 
-        fig = plt.gcf()
         fig.set_size_inches(width, height)
         aspect = width / height
         plt.subplots_adjust(wspace=0.05, hspace=0.05/aspect, top=1, bottom=0, left=0, right=1)
         suffix = os.path.basename(folder_name).split('_')[1]
         tu.mkdir_p(os.path.join(output_dir, 'jpg_{0}'.format(png_idx)))
-        plt.savefig(os.path.join(output_dir, 'jpg_{0}'.format(png_idx), '{0}_{1}.jpg'.format(file_name, suffix)), dpi=dpi, transparent=True, edgecolor=None) 
-        plt.close('all')
+        plt.savefig(
+            os.path.join(
+                output_dir,
+                'jpg_{0}'.format(png_idx),
+                '{0}_{1}.jpg'.format(file_name, suffix)
+                ),
+            dpi=dpi,
+            transparent=True,
+            edgecolor=None
+            ) 
+        plt.close(fig)
+
