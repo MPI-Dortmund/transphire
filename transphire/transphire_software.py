@@ -664,10 +664,12 @@ def check_nr_frames(frames, settings, force=False):
 
         text = subprocess.check_output(command, shell=True, encoding='utf-8')
 
-        nr_frames = 0
+        z_dim = 0
+        x_dim = 0
+        y_dim = 0
         for line in text.split('\n'):
             if line.startswith(' Number of columns, rows, sections .....'):
-                x_dim, y_dim, z_dim = line.split()[-3:]
+                x_dim, y_dim, z_dim = list(map(int, line.split()[-3:]))
 
         return bool(nr_frames == int(settings['Input']['Number of frames'])), x_dim, y_dim, z_dim
 
