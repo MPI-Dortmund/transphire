@@ -5209,65 +5209,73 @@ class ProcessThread(object):
                     while self.shared_dict['gpu_lock'][main][count_idx].value != 0:
                         time.sleep(0.05)
 
-        # Run the command
-        self.delete_file_to_delete(file_to_delete)
+        try:
+            if self.abort.value:
+                raise UserWarning('STOP abortion')
 
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_command', root_name_input, 'start program'))
-        while True:
-            with open(log_file, 'w') as out:
-                out.write(command)
-                with open(err_file, 'w') as err:
-                    start_time = time.time()
-                    self.delete_file_to_delete(file_to_delete)
-                    stop_time = time.time()
-                    if shell:
-                        command_popen = command
-                    else:
-                        command_popen = command.split()
-                    cmd = sp.Popen(
-                        command_popen,
-                        shell=shell,
-                        stdout=out,
-                        stderr=err,
-                        preexec_fn=os.setsid
-                        )
-                    self.delete_file_to_delete(file_to_delete)
-                    while cmd.poll() is None:
-                        if self.abort.value:
-                            os.killpg(
-                                os.getpgid(cmd.pid),
-                                signal.SIGTERM
-                                )
-                            self.delete_file_to_delete(file_to_delete)
-                            stop_time = time.time()
-                            out.write('\nTime: {0} sec'.format(stop_time - start_time)) 
-                            raise UserWarning('STOP abortion')
-                        time.sleep(1)
-                    self.delete_file_to_delete(file_to_delete)
-                    stop_time = time.time()
-                    out.write('\nTime: {0} sec'.format(stop_time - start_time)) 
-            with open(err_file, 'r') as err:
-                if 'Error: All GPUs are in use, quit.' in err.read():
-                    continue
-            break
-        self.queue_com['log'].put(
-            tu.create_log(
-                self.name,
-                'run_command',
-                root_name_input,
-                'stop program'
+            # Run the command
+            self.delete_file_to_delete(file_to_delete)
+
+            self.queue_com['log'].put(tu.create_log(self.name, 'run_command', root_name_input, 'start program'))
+            while True:
+                with open(log_file, 'w') as out:
+                    out.write(command)
+                    with open(err_file, 'w') as err:
+                        start_time = time.time()
+                        self.delete_file_to_delete(file_to_delete)
+                        stop_time = time.time()
+                        if shell:
+                            command_popen = command
+                        else:
+                            command_popen = command.split()
+                        cmd = sp.Popen(
+                            command_popen,
+                            shell=shell,
+                            stdout=out,
+                            stderr=err,
+                            preexec_fn=os.setsid
+                            )
+                        self.delete_file_to_delete(file_to_delete)
+                        while cmd.poll() is None:
+                            if self.abort.value:
+                                os.killpg(
+                                    os.getpgid(cmd.pid),
+                                    signal.SIGTERM
+                                    )
+                                self.delete_file_to_delete(file_to_delete)
+                                stop_time = time.time()
+                                out.write('\nTime: {0} sec'.format(stop_time - start_time)) 
+                                raise UserWarning('STOP abortion')
+                            time.sleep(1)
+
+                        self.delete_file_to_delete(file_to_delete)
+                        stop_time = time.time()
+                        out.write('\nTime: {0} sec'.format(stop_time - start_time)) 
+                with open(err_file, 'r') as err:
+                    if 'Error: All GPUs are in use, quit.' in err.read():
+                        continue
+                break
+
+            self.queue_com['log'].put(
+                tu.create_log(
+                    self.name,
+                    'run_command',
+                    root_name_input,
+                    'stop program'
+                    )
                 )
-            )
 
-        self.delete_file_to_delete(file_to_delete)
+            self.delete_file_to_delete(file_to_delete)
 
-        if gpu_list:
-            for main, entry in gpu_list:
-                if '_' in entry:
-                    self.shared_dict['gpu_lock'][main][count_idx].value -= 1
-                self.shared_dict['gpu_lock'][entry][mutex_idx].release()
+        finally:
+            if gpu_list:
+                for main, entry in gpu_list:
+                    if '_' in entry:
+                        self.shared_dict['gpu_lock'][main][count_idx].value -= 1
+                    self.shared_dict['gpu_lock'][entry][mutex_idx].release()
 
         return log_file, err_file
+
 
     @staticmethod
     def delete_file_to_delete(file_to_delete):
