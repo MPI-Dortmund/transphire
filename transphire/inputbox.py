@@ -106,13 +106,16 @@ class InputBox(QDialog):
             is_checked = None
             for input_key in self.restart_content:
                 if key == input_key and is_checked is None:
-                    is_checked = state
+                    cur_state = self.restart_content[input_key].blockSignals(True)
+                    self.restart_content[input_key].setChecked(state)
+                    self.restart_content[input_key].blockSignals(cur_state)
+                    is_checked = 1 if state else 0
                 elif key in ('CTF', 'Picking') and input_key in ('CTF', 'Picking'):
                     if not state and not is_checked:
-                        is_checked = self.restart_content[input_key].isChecked()
+                        is_checked = 1 if self.restart_content[input_key].isChecked() else 0
                 elif is_checked is not None:
                     cur_state = self.restart_content[input_key].blockSignals(True)
-                    self.restart_content[input_key].setChecked(is_checked)
+                    self.restart_content[input_key].setCheckState(is_checked)
                     self.restart_content[input_key].setEnabled(not is_checked)
                     self.restart_content[input_key].blockSignals(cur_state)
 
