@@ -36,7 +36,7 @@ class SettingsWidget(QWidget):
     """
     sig_index_changed = pyqtSignal(str)
 
-    def __init__(self, name, content, content_others, mount_directory, global_dict=None, parent=None):
+    def __init__(self, name, content, content_others, mount_directory, global_dict=None, input_file_names=None, parent=None):
         """
         Initialise the layout.
 
@@ -118,6 +118,7 @@ class SettingsWidget(QWidget):
             self.tooltip = '{0}\n\nShortcuts:\nCtrl + Shift + Return -> Open enlarged view'.format(self.tooltip)
 
         elif self.typ == 'FILE' or self.typ == 'FILE/SEARCH':
+            input_file_names.append(self.name)
             self.edit = QLineEdit(self.name, self)
             self.edit.textChanged.connect(self.change_tooltip)
             self.edit.setText(self.default)
@@ -348,8 +349,9 @@ class SettingsWidget(QWidget):
             message = 'Unreachable code! Please contact the TranSPHIRE authors!'
             tu.message(message)
             return None
+        value = value.strip()
 
-        if ' ' in value and (self.typ in ('FILE', 'DIR', 'FILE/CHOICE') or self.name in ('Rename prefix', 'Rename suffix', 'Project name')):
+        if ' ' in value and (self.typ in ('FILE', 'DIR', 'FILE/SEARCH') or self.name in ('Rename prefix', 'Rename suffix', 'Project name')):
             self.edit.setStyleSheet(tu.get_style(typ='error'))
             message = '{0}: {1} needs to be {2}. To avoid problems later, file paths are not allowed to contain whitespaces. If this is the case, please rename the respective folders and files'.format(
                 self.label.text(),

@@ -64,6 +64,7 @@ def default_auto_sphire_v1_3():
     category = 'Advanced'
     items.extend([
         ['--skip_meridien', ['False', 'True'], bool,  '', 'COMBO', category, '', 'Skip meridien and just do initial model estimation.'],
+        ['--skip_mask_rviper', ['True', 'False'], bool,  '', 'COMBO', category, '', 'Skip creation of a mask after initial model estimation. (recommended)'],
         ['--rviper_use_final', ['True', 'False'], bool,  '', 'COMBO', category, '', 'Available memory per node.'],
         ['--sharpening_meridien_ndilation', '4', int,  '', 'PLAIN', category, '', 'Available memory per node.'],
         ['--sharpening_meridien_soft_edge', '2', str,  '', 'PLAIN', category, '', 'Available memory per node.'],

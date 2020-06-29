@@ -15,12 +15,14 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import signal
 import time
 import os
 import re
 import shutil as sh
 import traceback as tb
 import glob
+import json
 import copy
 import matplotlib
 import threading
@@ -65,6 +67,7 @@ class ProcessThread(object):
             mount_directory,
             use_threads_set,
             stop,
+            abort,
             has_finished,
             data_frame,
             parent=None
@@ -90,6 +93,7 @@ class ProcessThread(object):
         super(ProcessThread, self).__init__()
         # Variables
         self.stop = stop
+        self.abort = abort
         self.password = password
         self.shared_dict = shared_dict
         self.done = False
@@ -290,7 +294,9 @@ class ProcessThread(object):
             self.is_running = False
 
         if self.shared_dict_typ['queue_list']:
-            if self.later:
+            if self.abort.value:
+                pass
+            elif self.later:
                 pass
             elif not self.run_this_thread:
                 pass
@@ -4509,6 +4515,20 @@ class ProcessThread(object):
             else:
                 assert os.path.exists(output_classes) or volume != 'XXXNoneXXX', 'There should be classes or a volume present at this point of the code'
 
+            for value in self.settings[self.prog_name].values():
+                try:
+                    if '|||' in value:
+                        external_log, local_key = value.split('|||')
+                        with open(settings[external_log], 'r') as read:
+                            log_data = json.load(read)
+                        try:
+                            set_value = log_data[self.settings['current_set']][self.prog_name][local_key]['new_file']
+                        except KeyError:
+                            continue
+                        self.settings[prog_name][local_key] = set_value
+                except TypeError:
+                    pass
+
             cmd = []
             cmd.append(self.settings['Path'][self.prog_name])
             cmd.append(log_prefix)
@@ -4522,7 +4542,8 @@ class ProcessThread(object):
             cmd.append('--box_size={0}'.format(self.settings[prog_name_window]['--box_size']))
             cmd.append('--radius={0}'.format(self.settings[self.prog_name]['--radius']))
 
-            cmd.append('--skip_mask_rviper')
+            if self.settings[self.prog_name]['--skip_mask_rviper'] == 'True':
+                cmd.append('--skip_mask_rviper')
             if self.settings[self.prog_name]['--skip_meridien'] == 'True':
                 cmd.append('--skip_meridien')
                 volume = 'SKIP_MERIDIEN'
@@ -5200,11 +5221,28 @@ class ProcessThread(object):
                     self.delete_file_to_delete(file_to_delete)
                     stop_time = time.time()
                     if shell:
-                        cmd = sp.Popen(command, shell=True, stdout=out, stderr=err)
+                        command_popen = command
                     else:
-                        cmd = sp.Popen(command.split(), stdout=out, stderr=err)
+                        command_popen = command.split()
+                    cmd = sp.Popen(
+                        command_popen,
+                        shell=shell,
+                        stdout=out,
+                        stderr=err,
+                        preexec_fn=os.setsid
+                        )
                     self.delete_file_to_delete(file_to_delete)
-                    cmd.wait()
+                    while cmd.poll() is None:
+                        if self.abort.value:
+                            os.killpg(
+                                os.getpgid(cmd.pid),
+                                signal.SIGTERM
+                                )
+                            self.delete_file_to_delete(file_to_delete)
+                            stop_time = time.time()
+                            out.write('\nTime: {0} sec'.format(stop_time - start_time)) 
+                            raise UserWarning('STOP abortion')
+                        time.sleep(1)
                     self.delete_file_to_delete(file_to_delete)
                     stop_time = time.time()
                     out.write('\nTime: {0} sec'.format(stop_time - start_time)) 
@@ -5212,7 +5250,14 @@ class ProcessThread(object):
                 if 'Error: All GPUs are in use, quit.' in err.read():
                     continue
             break
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_command', root_name_input, 'stop program'))
+        self.queue_com['log'].put(
+            tu.create_log(
+                self.name,
+                'run_command',
+                root_name_input,
+                'stop program'
+                )
+            )
 
         self.delete_file_to_delete(file_to_delete)
 

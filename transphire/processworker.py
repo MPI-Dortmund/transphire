@@ -75,6 +75,7 @@ class ProcessWorker(QObject):
         self.content_process = content_process
         self.mount_directory = mount_directory
         self.stop = None
+        self.abort = None
         self.settings = {}
         self.idx_number = 0
         self.idx_values = 1
@@ -110,6 +111,7 @@ class ProcessWorker(QObject):
         None
         """
         # Set settings
+        self.abort = False
         self.sig_error.emit('NEW SESSION: {}'.format('Monitor' if settings['Monitor'] else 'Start'))
 
         content_process = cp.deepcopy(self.content_process)
@@ -625,6 +627,7 @@ class ProcessWorker(QObject):
                     password=self.password,
                     use_threads_set=use_threads_set,
                     stop=mp.Value('i', self.stop),
+                    abort=mp.Value('i', self.abort),
                     has_finished=mp.Value('i', 0),
                     data_frame=data_frame,
                     parent=self,
@@ -665,6 +668,7 @@ class ProcessWorker(QObject):
         # Send the stop signals to all threads
         for _, _, _, thread_obj in thread_list:
             thread_obj.stop.value = True
+            thread_obj.abort.value = self.abort
 
         for _, name, _, thread_obj in thread_list:
             queue_com['log'].put('Waiting for {0} to finish!'.format(name))

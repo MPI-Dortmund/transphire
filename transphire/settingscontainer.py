@@ -49,6 +49,7 @@ class SettingsContainer(QWidget):
 
         self.name = name
         self.global_dict = None
+        self.input_file_names = []
         try:
             content_others = kwargs['content_others']
         except KeyError:
@@ -137,7 +138,15 @@ class SettingsContainer(QWidget):
                         self.layout_dict['{0}_v'.format(layout_name)].setContentsMargins(0, 0, 0, 0)
                         self.layout_dict[layout_name].addLayout(self.layout_dict['{0}_v'.format(layout_name)])
 
-                    widget = SettingsWidget(content=widget[key], name=name, content_others=content_others, mount_directory=mount_worker.mount_directory, global_dict=global_dict, parent=self)
+                    widget = SettingsWidget(
+                        content=widget[key],
+                        name=name,
+                        content_others=content_others,
+                        mount_directory=mount_worker.mount_directory,
+                        global_dict=global_dict,
+                        input_file_names=self.input_file_names,
+                        parent=self
+                        )
                     if group and name not in ('Pipeline'):
                         group, state = group.split(':')
                         self.group.setdefault(group, [])
@@ -181,6 +190,9 @@ class SettingsContainer(QWidget):
                 self.change_state(name=sub_name)
         except KeyError:
             return None
+
+    def get_input_names(self):
+        return self.input_file_names
 
     def get_settings(self, quiet=False):
         """

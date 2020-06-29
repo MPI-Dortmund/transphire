@@ -15,7 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-
+import json
 import shutil
 import glob
 import os
@@ -117,14 +117,25 @@ def create_cinderella_0_3_1_command(
     command.append('--gpu')
     command.append('{0}'.format(gpu))
 
-    for key in settings[prog_name]:
+    for key, value in settings[prog_name].items():
         if key in ignore_list:
             continue
-        else:
+        elif value:
+            try:
+                if '|||' in value:
+                    external_log, local_key = value.split('|||')
+                    with open(settings[external_log], 'r') as read:
+                        log_data = json.load(read)
+                    try:
+                        set_value = log_data[settings['current_set']][prog_name][local_key]['new_file']
+                    except KeyError:
+                        continue
+                else:
+                    set_value = value
+            except TypeError:
+                set_value = value
             command.append(key)
-            command.append(
-                '{0}'.format(settings[prog_name][key])
-                )
+            command.append('{0}'.format(set_value))
     command.append(';')
 
     command.append('echo Bad Particles')

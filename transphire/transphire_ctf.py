@@ -469,8 +469,9 @@ def create_ctffind_4_v4_1_13_command(ctf_name, file_sum, file_input, file_output
             external_log, key = ctf_settings['Gain image filename'].split('|||')
             with open(settings[external_log], 'r') as read:
                 log_data = json.load(read)
-            gain_file = log_data[set_name][key]['new_file']
+            gain_file = log_data[set_name][ctf_name][key]['new_file']
             ctffind_command.append(gain_file)
+
         # Correct for magnifying distortions
         if ctf_settings['Correct mag. distort.'] == 'True':
             ctffind_command.append('{0}'.format('yes'))

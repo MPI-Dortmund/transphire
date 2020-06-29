@@ -16,7 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QDialogButtonBox, QWidget, QLineEdit, QFileDialog
+from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QDialogButtonBox, QWidget, QLineEdit, QFileDialog, QCheckBox
 from PyQt5.QtCore import pyqtSlot
 
 
@@ -31,7 +31,7 @@ class InputBox(QDialog):
     None
     """
 
-    def __init__(self, is_password, parent=None):
+    def __init__(self, is_password, is_stop=False, parent=None):
         """
         Initialise layout of the widget.
 
@@ -78,6 +78,10 @@ class InputBox(QDialog):
 
         layout.addWidget(self.label)
         layout.addWidget(self.edit)
+        if is_stop:
+            self.abort = QCheckBox('Abort running processes?', self)
+            self.abort.setChecked(True)
+            layout.addWidget(self.abort)
         layout.addWidget(button_box)
 
     def setText(self, heading, text):

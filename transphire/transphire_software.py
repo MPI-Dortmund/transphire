@@ -671,7 +671,7 @@ def check_nr_frames(frames, settings, force=False):
             if line.startswith(' Number of columns, rows, sections .....'):
                 x_dim, y_dim, z_dim = list(map(int, line.split()[-3:]))
 
-        return bool(nr_frames == int(settings['Input']['Number of frames'])), x_dim, y_dim, z_dim
+        return bool(z_dim == int(settings['Input']['Number of frames'])), x_dim, y_dim, z_dim
 
 
 def find_related_frames_to_jpg(frames_root, root_name, settings, queue_com, name):

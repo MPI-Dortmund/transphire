@@ -611,7 +611,6 @@ class MainWindow(QMainWindow):
                     )
             else:
                 pass
-
         self.content['Global'].set_global(global_dict)
 
         return error_list
@@ -921,6 +920,11 @@ class MainWindow(QMainWindow):
         else:
             settings[key] = {}
 
+        try:
+            input_file_names = self.content[key].get_input_names()
+        except AttributeError:
+            input_file_names = []
+
         if settings_widget is None:
             self.enable(True)
             error_list.append('{0} needs to have problems fixed!'.format(key))
@@ -1018,9 +1022,8 @@ class MainWindow(QMainWindow):
                     except KeyError:
                         pass
 
-            elif global_key in ('Gain', 'Dark', 'Defect'):
-                if entry[local_key]:
-                    external_files[key] = {'local_key': local_key}
+        for local_key in input_file_names:
+            external_files.setdefault(key, {})[local_key] = {}
 
         for idx, entry in enumerate(settings_widget):
             if key == 'Frames':
@@ -1253,19 +1256,22 @@ class MainWindow(QMainWindow):
                     self.enable(True)
                     return None
 
-            for key, value in external_files.items():
-                if settings[key][value['local_key']]:
-                    value['old_file'] = settings[key][value['local_key']]
-                    value['new_file'] = os.path.join(
-                        settings['set_folder'],
-                        os.path.basename(value['old_file'])
-                        )
-                    try:
-                        tu.copy(value['old_file'], value['new_file'])
-                    except FileNotFoundError:
-                        tu.message("Input file {} not available!".format(value['old_file']))
-                        return None
-                    settings[key][value['local_key']] = 'external_log|||{}'.format(key)
+            for key, local_dict in external_files.items():
+                if key in ('Path', 'Compress cmd'):
+                    continue
+                for local_key, value in local_dict.items():
+                    if settings[key][local_key]:
+                        value['old_file'] = settings[key][local_key]
+                        value['new_file'] = os.path.join(
+                            settings['set_folder'],
+                            os.path.basename(value['old_file'])
+                            )
+                        try:
+                            tu.copy(value['old_file'], value['new_file'])
+                        except FileNotFoundError:
+                            tu.message("Input file {} not available!".format(value['old_file']))
+                            return None
+                        settings[key][local_key] = 'external_log|||{}'.format(local_key)
 
             try:
                 with open(settings['external_log'], 'r') as read:
@@ -1298,7 +1304,7 @@ class MainWindow(QMainWindow):
             tu.message('Input needs to be "YES!" to work')
             self.enable(True)
 
-    def continue_dialog(self, text1, text2):
+    def continue_dialog(self, text1, text2, is_stop=False):
         """
         Check if the user wants to run the continue mode.
 
@@ -1309,13 +1315,17 @@ class MainWindow(QMainWindow):
         Return:
         True, if the input is YES!
         """
-        dialog = InputBox(is_password=False, parent=self)
+        dialog = InputBox(is_password=False, parent=self, is_stop=is_stop)
         dialog.setText(text1, text2)
         result = dialog.exec_()
 
-        if result:
-            text = dialog.getText()
+        text = dialog.getText()
+        if result and is_stop:
+            return bool(text == 'YES!'), dialog.abort.isChecked()
+        elif result:
             return bool(text == 'YES!')
+        elif is_stop:
+            return False, False
         else:
             return False
 
@@ -1330,17 +1340,18 @@ class MainWindow(QMainWindow):
         Return:
         None
         """
-        result = self.continue_dialog(
+        result, abort = self.continue_dialog(
             text1='Do you really want to stop?',
-            text2='Do you really want to stop!\nType: "YES!"'
+            text2='Do you really want to stop!\nType: "YES!"',
+            is_stop=True,
             )
         if result:
-            self.stop()
+            self.stop(abort=abort)
         else:
             tu.message('Input needs to be "YES!" to work')
 
     @pyqtSlot()
-    def stop(self):
+    def stop(self, abort=False):
         """
         Stop the process.
 
@@ -1350,6 +1361,8 @@ class MainWindow(QMainWindow):
         Return:
         None
         """
+        if abort:
+            self.workers['process'].abort = True
         self.workers['process'].stop = True
         self.content['Button'].start_monitor_button.setEnabled(False)
         self.content['Button'].stop_monitor_button.setEnabled(False)

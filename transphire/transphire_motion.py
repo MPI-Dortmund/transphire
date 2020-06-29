@@ -366,7 +366,7 @@ def create_unblur_v1_0_0_command(
             external_log, key = settings[motion_name]['Gain image filename'].split('|||')
             with open(settings[external_log], 'r') as read:
                 log_data = json.load(read)
-            gain_file = log_data[set_name][key]['new_file']
+            gain_file = log_data[set_name][motion_name][key]['new_file']
             cmd.append(gain_file)
         else:
             cmd.append('yes')
@@ -468,16 +468,17 @@ def create_motion_cor_2_v1_0_0_command(motion_name, file_input, file_output, fil
                     external_log, local_key = value.split('|||')
                     with open(settings[external_log], 'r') as read:
                         log_data = json.load(read)
-                    set_value = log_data[set_name][local_key]['new_file']
+                    try:
+                        set_value = log_data[set_name][motion_name][local_key]['new_file']
+                    except KeyError:
+                        continue
                 else:
                     set_value = value
             except TypeError:
                 set_value = value
 
             command.append(key)
-            command.append(
-                '{0}'.format(set_value)
-                )
+            command.append('{0}'.format(set_value))
         else:
             continue
 
@@ -964,7 +965,6 @@ def create_jpg_file(input_file, data, settings):
 
     arr_1 = None
     arr_2 = None
-
     try:
         with mrc.open(input_file) as mrc_file:
             input_data = mrc_file.data
@@ -975,7 +975,7 @@ def create_jpg_file(input_file, data, settings):
         with mrc.open(input_file) as mrc_file:
             input_data = mrc_file.data
     if len(input_data.shape) == 3:
-            input_data = np.sum(input_data, axis=0) / input_data.shape[0]
+        input_data = np.sum(input_data, axis=0) / input_data.shape[0]
     input_data = input_data - np.mean(input_data)
     input_data = tu.normalize_image(input_data)
 
