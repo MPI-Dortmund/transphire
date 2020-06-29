@@ -31,7 +31,7 @@ class InputBox(QDialog):
     None
     """
 
-    def __init__(self, is_password, is_stop=False, parent=None):
+    def __init__(self, is_password, restart_names=None, is_stop=False, parent=None):
         """
         Initialise layout of the widget.
 
@@ -43,6 +43,8 @@ class InputBox(QDialog):
         None
         """
         super(InputBox, self).__init__(parent)
+        if restart_names is None:
+            restart_names = []
         central_raw_layout = QVBoxLayout(self)
         central_raw_layout.setContentsMargins(0, 0, 0, 0)
         central_widget_raw = QWidget(self)
@@ -78,11 +80,46 @@ class InputBox(QDialog):
 
         layout.addWidget(self.label)
         layout.addWidget(self.edit)
+
         if is_stop:
             self.abort = QCheckBox('Abort running processes?', self)
             self.abort.setChecked(True)
             layout.addWidget(self.abort)
+
+        self.restart_content = {}
+        for entry in restart_names:
+            if entry == 'Compress':
+                name = 'Restart {}'.format(entry)
+            else:
+                name = 'Restart {} - Restarts subsequent jobs.'.format(entry)
+            self.restart_content[entry] = QCheckBox(name, self)
+            self.restart_content[entry].stateChanged.connect(self.handle_check)
+            layout.addWidget(self.restart_content[entry])
+
         layout.addWidget(button_box)
+
+    @pyqtSlot(int)
+    def handle_check(self, state):
+        sender = self.sender()
+        key = sender.text().split()[1]
+        if key != 'Compress':
+            is_checked = None
+            for input_key in self.restart_content:
+                if key == input_key and is_checked is None:
+                    is_checked = state
+                elif key in ('CTF', 'Picking') and input_key in ('CTF', 'Picking'):
+                    if not state and not is_checked:
+                        is_checked = self.restart_content[input_key].isChecked()
+                elif is_checked is not None:
+                    cur_state = self.restart_content[input_key].blockSignals(True)
+                    self.restart_content[input_key].setChecked(is_checked)
+                    self.restart_content[input_key].setEnabled(not is_checked)
+                    self.restart_content[input_key].blockSignals(cur_state)
+
+    def get_restart_dict(self):
+        for key in self.restart_content:
+            self.restart_content[key] = self.restart_content[key].isChecked()
+        return self.restart_content
 
     def setText(self, heading, text):
         """

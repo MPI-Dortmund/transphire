@@ -281,7 +281,7 @@ class StatusContainer(QWidget):
         Returns:
         None
         """
-        self.log_viewer.appendPlainText(text)
+        self.log_viewer.appendPlainText(text, indicator='error')
         self.sig_refresh_quota.emit()
 
     @pyqtSlot(str, str, str)

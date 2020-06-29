@@ -899,7 +899,7 @@ class MainWindow(QMainWindow):
                 self.content['Button'].start_monitor_button.setEnabled(True)
                 start = False
             else:
-                self.workers['process'].sig_start.emit(settings, '')
+                self.workers['process'].sig_start.emit(settings, '', {})
                 self.content['Button'].start_button.setEnabled(False)
                 self.content['Button'].stop_button.setEnabled(False)
         else:
@@ -1232,12 +1232,14 @@ class MainWindow(QMainWindow):
         if settings is None:
             return None
         elif os.path.exists(settings['project_folder']):
-            result = self.continue_dialog(
+            result, restart_dict = self.continue_dialog(
                 text1='Output project folder already exists!',
-                text2='Do you really want to continue the old run?\nType: "YES!"'
+                text2='Do you really want to continue the old run?\nType: "YES!"',
+                is_restart=True,
                 )
         else:
             result = True
+            restart_dict = {}
 
         # Start or stop procedure
         if result:
@@ -1296,7 +1298,7 @@ class MainWindow(QMainWindow):
                     ),
                 do_message=False
                 )
-            self.workers['process'].sig_start.emit(settings, settings_file)
+            self.workers['process'].sig_start.emit(settings, settings_file, restart_dict)
             self.workers['mount'].set_settings(settings=settings)
             self.save_temp_settings()
             tu.message(message)
@@ -1304,7 +1306,7 @@ class MainWindow(QMainWindow):
             tu.message('Input needs to be "YES!" to work')
             self.enable(True)
 
-    def continue_dialog(self, text1, text2, is_stop=False):
+    def continue_dialog(self, text1, text2, is_stop=False, is_restart=False):
         """
         Check if the user wants to run the continue mode.
 
@@ -1315,15 +1317,28 @@ class MainWindow(QMainWindow):
         Return:
         True, if the input is YES!
         """
-        dialog = InputBox(is_password=False, parent=self, is_stop=is_stop)
+        if is_restart:
+            restart_names = tu.get_unique_types()
+        else:
+            restart_names = []
+        dialog = InputBox(
+            is_password=False,
+            parent=self,
+            is_stop=is_stop,
+            restart_names=restart_names,
+            )
         dialog.setText(text1, text2)
         result = dialog.exec_()
 
         text = dialog.getText()
-        if result and is_stop:
+        if result and is_restart:
+            return bool(text == 'YES!'), dialog.get_restart_dict()
+        elif result and is_stop:
             return bool(text == 'YES!'), dialog.abort.isChecked()
         elif result:
             return bool(text == 'YES!')
+        elif is_restart:
+            return False, {}
         elif is_stop:
             return False, False
         else:

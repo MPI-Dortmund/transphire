@@ -347,6 +347,19 @@ def get_function_dict():
     None
     """
     function_dict = {}
+
+    ### Compression programs
+
+    function_dict['Compress cmd'] = {
+            'content': tc.default_compress_command_line,
+            'executable': True,
+            'has_path': False,
+            'typ': 'Compress',
+            'license': False,
+            'category': 'External software',
+            'allow_empty': ['--command_uncompress'],
+            }
+
     ### Motion programs
 
     function_dict['MotionCor2 >=v1.0.0'] = {
@@ -543,18 +556,6 @@ def get_function_dict():
                 '--meridien_addition',
                 '--sharpening_meridien_addition',
                 ],
-            }
-
-    ### Compression programs
-
-    function_dict['Compress cmd'] = {
-            'content': tc.default_compress_command_line,
-            'executable': True,
-            'has_path': False,
-            'typ': 'Compress',
-            'license': False,
-            'category': 'External software',
-            'allow_empty': ['--command_uncompress'],
             }
 
     ### Other no executable stuff
@@ -1497,8 +1498,6 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
             stop:0 white,
             stop:1 #68a3c3
             );
-        max-width: {2};
-        min-width: {2}
         }}
     QPushButton#unmount {{
         background-color: qradialgradient(

@@ -49,7 +49,7 @@ class ProcessWorker(QObject):
     sig_plot_picking - Emitted to plot picking information (picking_name|str, picking_settings|str, settings|object)
     """
     sig_set_project_directory = pyqtSignal(str, str, str)
-    sig_start = pyqtSignal(object, str)
+    sig_start = pyqtSignal(object, str, object)
     sig_finished = pyqtSignal()
     sig_error = pyqtSignal(str)
     sig_status = pyqtSignal(str, object, str, str)
@@ -99,8 +99,8 @@ class ProcessWorker(QObject):
 
         self.signal_plot.emit(settings_emit)
 
-    @pyqtSlot(object, str)
-    def run(self, settings, settings_file):
+    @pyqtSlot(object, str, object)
+    def run(self, settings, settings_file, restart_dict):
         """
         Start the process.
 
