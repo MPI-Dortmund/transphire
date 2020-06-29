@@ -466,7 +466,7 @@ def create_ctffind_4_v4_1_13_command(ctf_name, file_sum, file_input, file_output
             ctffind_command.append('{0}'.format('yes'))
         else:
             ctffind_command.append('{0}'.format('no'))
-            external_log, key = ctf_settings['Gain image filename'].split('|||')
+            external_log, key = ctf_settings['Gain file'].split('|||')
             with open(settings[external_log], 'r') as read:
                 log_data = json.load(read)
             gain_file = log_data[set_name][ctf_name][key]['new_file']
@@ -581,7 +581,12 @@ def create_ctffind_4_v4_1_8_command(ctf_name, file_sum, file_input, file_output,
             ctffind_command.append('{0}'.format('yes'))
         else:
             ctffind_command.append('{0}'.format('no'))
-            ctffind_command.append('{0}'.format(ctf_settings['Gain file']))
+            external_log, key = ctf_settings['Gain file'].split('|||')
+            with open(settings[external_log], 'r') as read:
+                log_data = json.load(read)
+            gain_file = log_data[set_name][ctf_name][key]['new_file']
+            ctffind_command.append(gain_file)
+
         # Correct for magnifying distortions
         if ctf_settings['Correct mag. distort.'] == 'True':
             ctffind_command.append('{0}'.format('yes'))
