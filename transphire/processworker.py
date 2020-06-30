@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import json
 import pexpect as pe
 import time
 import os
@@ -126,9 +127,24 @@ class ProcessWorker(QObject):
             settings['tar_folder'], 'Software_meta.tar'
             )
 
-        if settings['Copy']['Picking'] not in ('False', 'Later'):
-            settings[settings['Copy']['Picking']]['--threshold_old'] = settings[settings['Copy']['Picking']]['--threshold']
-            settings[settings['Copy']['Picking']]['--weights_old'] = settings[settings['Copy']['Picking']]['--weights']
+        picking_name = settings['Copy']['Picking'] 
+        if picking_name not in ('False', 'Later'):
+            settings[picking_name]['--threshold_old'] = settings[picking_name]['--threshold']
+            value = settings[picking_name]['--weights']
+            try:
+                if '|||' in value:
+                    external_log, local_key = value.split('|||')
+                    with open(settings[external_log], 'r') as read:
+                        log_data = json.load(read)
+                    try:
+                        set_value = log_data[settings['current_set']][picking_name][local_key]['new_file']
+                    except KeyError:
+                        set_value = value
+                else:
+                    set_value = value
+            except TypeError:
+                set_value = value
+            settings[picking_name]['--weights_old'] = set_value
 
         self.settings = settings
         self.sig_set_project_directory.emit(self.settings['project_folder'], self.settings['log_folder'], self.settings['error_folder'])
