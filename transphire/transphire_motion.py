@@ -875,7 +875,15 @@ def combine_motion_outputs(
     else:
         new_dark = None
 
-    return output_name_mic_combined, output_name_star_combined, output_name_star_relion3_combined, new_gain, new_defect, output_name_mic, output_name_star, output_name_star_relion3, relion3_meta, new_dark
+    return (
+        output_name_mic_combined,
+        output_name_star_combined,
+        output_name_star_relion3_combined,
+        output_name_mic,
+        output_name_star,
+        output_name_star_relion3,
+        relion3_meta
+        )
 
 
 def get_relion_header(names):

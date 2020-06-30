@@ -85,6 +85,7 @@ def create_cinderella_0_3_1_command(
     # Start the program
     ignore_list = []
     ignore_list.append('Split Gpu?')
+    ignore_list.append('--gpu')
 
     try:
         shutil.rmtree(file_output)

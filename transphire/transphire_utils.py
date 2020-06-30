@@ -1069,14 +1069,15 @@ def get_content_gui(content, template_name, n_feedbacks):
 
     all_content = []
     for entry in get_unique_types():
-        gui_content.append(
-            {
-                'name': 'Plot {0}'.format(entry),
-                'widget': TabDocker,
-                'layout': 'Visualisation',
-                },
-            )
         all_content.append([entry, content_extern[entry]])
+        if not entry.startswith('Compress'):
+            gui_content.append(
+                {
+                    'name': 'Plot {0}'.format(entry),
+                    'widget': TabDocker,
+                    'layout': 'Visualisation',
+                    },
+                )
 
     for typ, content_typ in all_content:
         for input_content in content_typ:
