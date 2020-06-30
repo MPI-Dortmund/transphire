@@ -1291,14 +1291,14 @@ class MainWindow(QMainWindow):
             self.content['Button'].start_monitor_button.setEnabled(False)
             self.content['Button'].stop_monitor_button.setEnabled(False)
             self.workers['plotting'].reset_list()
-            settings_file, message = self.save(
+            _, message = self.save(
                 file_name=os.path.join(
                     settings['set_folder'],
                     settings['General']['Project name']
                     ),
                 do_message=False
                 )
-            self.workers['process'].sig_start.emit(settings, settings_file, restart_dict)
+            self.workers['process'].sig_start.emit(settings, restart_dict)
             self.workers['mount'].set_settings(settings=settings)
             self.save_temp_settings()
             tu.message(message)

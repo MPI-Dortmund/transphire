@@ -49,7 +49,7 @@ class ProcessWorker(QObject):
     sig_plot_picking - Emitted to plot picking information (picking_name|str, picking_settings|str, settings|object)
     """
     sig_set_project_directory = pyqtSignal(str, str, str)
-    sig_start = pyqtSignal(object, str, object)
+    sig_start = pyqtSignal(object, object)
     sig_finished = pyqtSignal()
     sig_error = pyqtSignal(str)
     sig_status = pyqtSignal(str, object, str, str)
@@ -99,8 +99,8 @@ class ProcessWorker(QObject):
 
         self.signal_plot.emit(settings_emit)
 
-    @pyqtSlot(object, str, object)
-    def run(self, settings, settings_file, restart_dict):
+    @pyqtSlot(object, object)
+    def run(self, settings, restart_dict):
         """
         Start the process.
 
@@ -236,7 +236,6 @@ class ProcessWorker(QObject):
                 content_process=content_process,
                 full_content=full_content,
                 manager=manager,
-                settings_file=settings_file,
                 )
 
         self.sig_finished.emit()
@@ -313,7 +312,6 @@ class ProcessWorker(QObject):
             content_process,
             full_content,
             manager,
-            settings_file,
         ):
         """
         Run the TranSPHIRE process.
@@ -534,9 +532,8 @@ class ProcessWorker(QObject):
                     self.prefill_queue(
                         shared_dict=shared_dict,
                         entry=process[key][1],
-                        settings_file=settings_file,
                         )
-        queue_com['info'].put('Current settings saved to: {0}'.format(settings_file))
+        queue_com['info'].put('Current settings saved to: {0}'.format(self.settings['set_folder']))
         self.check_queue(queue_com=queue_com)
 
         # Unlock the Class2d queue in case of a TranSPHIRE crash during 2D classification
@@ -951,7 +948,7 @@ class ProcessWorker(QObject):
                 write.write('')
         return dictionary
 
-    def prefill_queue(self, shared_dict, entry, settings_file):
+    def prefill_queue(self, shared_dict, entry):
         """
         Prefill the queues for continue mode
 
@@ -977,7 +974,9 @@ class ProcessWorker(QObject):
 
         if key.startswith('Copy_to'):
             with open(save_file, 'a') as append:
-                append.write('{0}\n'.format(settings_file))
+                for root, _, files in os.walk(self.settings['set_folder']):
+                    for entry in files:
+                        append.write('{0}\n'.format(os.path.join(root, entry)))
 
         if os.path.exists(save_file):
             with open(save_file, 'r') as read:
