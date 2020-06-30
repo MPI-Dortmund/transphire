@@ -112,7 +112,7 @@ class PlotWorker(QObject):
             try:
                 with mp.Pool(min(len(valid_entries), len(valid_entries))) as p:
                     data = p.starmap(self.calculate_array_now, valid_entries)
-            except RuntimeError as e:
+            except Exception as e:
                 print(e)
             else:
                 self.send_data(data)
