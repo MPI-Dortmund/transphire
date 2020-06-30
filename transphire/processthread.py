@@ -2607,37 +2607,29 @@ class ProcessThread(object):
                 dw_file=dw_file,
                 stack_file=file_input,
                 )
-            output_name_mic = output_combine[5]
-            output_name_star = output_combine[6]
-            output_name_star_relion3 = output_combine[7]
             output_name_mic_comb = output_combine[0]
             output_name_star_comb = output_combine[1]
             output_name_star_relion3_comb = output_combine[2]
-            new_gain = output_combine[3]
-            new_defect = output_combine[4]
-            new_dark = output_combine[9]
+            output_name_mic = output_combine[3]
+            output_name_star = output_combine[4]
+            output_name_star_relion3 = output_combine[5]
+
+            output_name_mic_combined = output_combine[0]
+            output_name_star_combined = output_combine[1]
+            output_name_star_relion3_combined = output_combine[2]
+            output_name_mic = output_combine[3]
+            output_name_star = output_combine[4]
+            output_name_star_relion3 = output_combine[5]
+            star_files_relion3_meta = output_combine[6]
 
             combine_list = [
-                [self.shared_dict['motion_txt_lock'], output_name_mic, output_name_mic_comb],
-                [self.shared_dict['motion_star_lock'], output_name_star, output_name_star_comb],
-                [self.shared_dict['motion_star_relion3_lock'], output_name_star_relion3, output_name_star_relion3_comb],
+                [self.shared_dict['motion_txt_lock'], output_name_mic, output_name_mic_combined],
+                [self.shared_dict['motion_star_lock'], output_name_star, output_name_star_combined],
+                [self.shared_dict['motion_star_relion3_lock'], output_name_star_relion3, output_name_star_relion3_combined],
                 ]
             self.create_combines(combine_list)
 
-            star_files_relion3_meta = output_combine[8]
             self.file_to_distribute(file_name=star_files_relion3_meta)
-            if new_gain:
-                self.file_to_distribute(file_name=new_gain)
-            else:
-                pass
-            if new_dark:
-                self.file_to_distribute(file_name=new_dark)
-            else:
-                pass
-            if new_defect:
-                self.file_to_distribute(file_name=new_defect)
-            else:
-                pass
         else:
             pass
 
