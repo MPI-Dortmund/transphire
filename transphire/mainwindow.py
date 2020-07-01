@@ -899,7 +899,7 @@ class MainWindow(QMainWindow):
                 self.content['Button'].start_monitor_button.setEnabled(True)
                 start = False
             else:
-                self.workers['process'].sig_start.emit(settings, '', {})
+                self.workers['process'].sig_start.emit(settings, {})
                 self.content['Button'].start_button.setEnabled(False)
                 self.content['Button'].stop_button.setEnabled(False)
         else:

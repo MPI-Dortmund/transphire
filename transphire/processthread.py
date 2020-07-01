@@ -138,6 +138,23 @@ class ProcessThread(object):
         # This list saves the per process locks to prevent garbage collection
         self.GLOBAL_LOCKS = []
 
+        try:
+            for value in self.settings[self.prog_name].values():
+                try:
+                    if '|||' in value:
+                        external_log, local_key = value.split('|||')
+                        with open(settings[external_log], 'r') as read:
+                            log_data = json.load(read)
+                        try:
+                            set_value = log_data[self.settings['current_set']][self.prog_name][local_key]['new_file']
+                        except KeyError:
+                            continue
+                        self.settings[self.prog_name][local_key] = set_value
+                except TypeError:
+                    pass
+        except KeyError:
+            pass
+
     def run(self):
         """
         Run the thread.
@@ -2607,13 +2624,6 @@ class ProcessThread(object):
                 dw_file=dw_file,
                 stack_file=file_input,
                 )
-            output_name_mic_comb = output_combine[0]
-            output_name_star_comb = output_combine[1]
-            output_name_star_relion3_comb = output_combine[2]
-            output_name_mic = output_combine[3]
-            output_name_star = output_combine[4]
-            output_name_star_relion3 = output_combine[5]
-
             output_name_mic_combined = output_combine[0]
             output_name_star_combined = output_combine[1]
             output_name_star_relion3_combined = output_combine[2]
@@ -3027,12 +3037,10 @@ class ProcessThread(object):
             shell=shell
             )
 
-        print('0')
         zero_list = [err_file]
         non_zero_list = [log_file]
         non_zero_list.extend(check_files)
 
-        print('1')
         log_files, copied_log_files = tue.find_logfiles(
             root_path=output_dir,
             settings=self.settings,
@@ -3040,7 +3048,6 @@ class ProcessThread(object):
             name=self.name
             )
 
-        print('2')
         tus.check_outputs(
             zero_list=zero_list,
             non_zero_list=non_zero_list,
@@ -3049,7 +3056,6 @@ class ProcessThread(object):
             command=command
             )
 
-        print('3')
         n_particles = tue.get_particle_number(
             log_file,
             self.settings,
@@ -3057,14 +3063,12 @@ class ProcessThread(object):
             name=self.name
             )
 
-        print('4')
         try:
             log_files.remove(err_file)
             copied_log_files.remove(err_file)
         except ValueError:
             pass
 
-        print('5')
         for old_file, new_file in zip(log_files, copied_log_files):
             if os.path.realpath(old_file) != os.path.realpath(new_file):
                 os.remove(old_file)
@@ -3075,10 +3079,8 @@ class ProcessThread(object):
         copied_log_files.extend(zero_list)
         copied_log_files = list(set(copied_log_files))
 
-        print('6')
         tue.create_jpg_file(file_name, self.settings[folder_name])
 
-        print('7')
         skip_list = False
         if skip_list:
             pass
@@ -3127,9 +3129,7 @@ class ProcessThread(object):
                 else:
                     pass
 
-        print('8')
         self.remove_from_queue_file(matches_in_queue, self.shared_dict_typ['list_file'])
-        print('9')
         self.queue_com['log'].put(tu.create_log(self.name, 'run_extract', root_name_input, 'stop process', time.time() - start_prog))
 
     @staticmethod
@@ -3817,19 +3817,19 @@ class ProcessThread(object):
                                 ])
                             )
                     elif 'Auto3d' in compare:
-                        pass
-                        #self.add_to_queue(
-                        #    aim=aim_name,
-                        #    root_name='|||'.join([
-                        #        str(self.settings['do_feedback_loop'].value),
-                        #        root_name_raw,
-                        #        os.path.join(
-                        #            self.settings[folder_name],
-                        #            file_name,
-                        #            'ordered_class_averages_good.hdf'
-                        #            )
-                        #        ])
-                        #    )
+                        if self.settings[self.settings['Copy']['Auto3d']]['Run during feedback'] == 'True':
+                            self.add_to_queue(
+                                aim=aim_name,
+                                root_name='|||'.join([
+                                    str(self.settings['do_feedback_loop'].value),
+                                    root_name_raw,
+                                    os.path.join(
+                                        self.settings[folder_name],
+                                        file_name,
+                                        'ordered_class_averages_good.hdf'
+                                        )
+                                    ])
+                                )
                     else:
                         self.add_to_queue(aim=aim_name, root_name=copied_log_files)
                 else:
@@ -4507,20 +4507,6 @@ class ProcessThread(object):
             else:
                 assert os.path.exists(output_classes) or volume != 'XXXNoneXXX', 'There should be classes or a volume present at this point of the code'
 
-            for value in self.settings[self.prog_name].values():
-                try:
-                    if '|||' in value:
-                        external_log, local_key = value.split('|||')
-                        with open(settings[external_log], 'r') as read:
-                            log_data = json.load(read)
-                        try:
-                            set_value = log_data[self.settings['current_set']][self.prog_name][local_key]['new_file']
-                        except KeyError:
-                            continue
-                        self.settings[prog_name][local_key] = set_value
-                except TypeError:
-                    pass
-
             cmd = []
             cmd.append(self.settings['Path'][self.prog_name])
             cmd.append(log_prefix)
@@ -4536,6 +4522,7 @@ class ProcessThread(object):
 
             if self.settings[self.prog_name]['--skip_mask_rviper'] == 'True':
                 cmd.append('--skip_mask_rviper')
+
             if self.settings[self.prog_name]['--skip_meridien'] == 'True':
                 cmd.append('--skip_meridien')
                 volume = 'SKIP_MERIDIEN'
@@ -4573,6 +4560,7 @@ class ProcessThread(object):
             ignore_list.append('--rviper_use_final')
             ignore_list.append('Use SSH')
             ignore_list.append('Need SSH password')
+            ignore_list.append('Run during feedback')
             ignore_list.append('--mtf')
             ignore_list.append('input_volume')
             ignore_list.append('Viper filter frequency')
@@ -4582,6 +4570,7 @@ class ProcessThread(object):
             ignore_list.append('Minimum classes')
             ignore_list.append('Minimum particles')
             ignore_list.append('--skip_meridien')
+            ignore_list.append('--skip_mask_rviper')
             ignore_list.append('--filament_mode')
             if self.settings[self.prog_name]['--filament_mode'] == 'False':
                 ignore_list.append('--filament_width')
@@ -4688,6 +4677,7 @@ class ProcessThread(object):
             recursive_file_search(log_prefix, copy_files)
             recursive_file_search('{0}_FILES'.format(log_prefix), copy_files)
             self.copy_extern('Copy_to_work', copy_files)
+            time.sleep(10)
 
             if self.settings[self.prog_name]['Use SSH'] == 'True':
                 log_file, err_file = tus.get_logfiles('{0}_run_autosphire'.format(log_prefix))
@@ -4696,32 +4686,45 @@ class ProcessThread(object):
                 start_time = time.time()
                 log = []
                 child = pe.spawnu(cmd)
-                try:
-                    child.expect(
+                idx = child.expect(
+                    [
                         "{0}@{1}'s password:".format(
-                            self.settings[self.prog_name]['SSH username'],
-                            device
-                            ),
-                        )
-                except pe.exceptions.EOF as e:
-                    print('SSH autoSPHIRE command failed!')
+                        self.settings[self.prog_name]['SSH username'],
+                        device
+                        ),
+                        pe.EOF
+                        ]
+                    )
+                log.append(child.before)
+                log.append(child.after)
+                if idx == 1 and self.settings[self.prog_name]['Need SSH password'] == 'True':
+                    print('SSH autoSPHIRE command failed or no password is required!')
                     with open(err_file, 'w') as write:
                         write.write(str(e))
                     self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name_input, 'stop early 4', time.time() - start_prog))
                     raise
-                log.append(child.before)
-                log.append(child.after)
 
-                if self.settings[self.prog_name]['Need SSH password']:
+                elif idx == 1:
+                    child.expect(pe.EOF, timeout=10)
+
+                elif idx == 0 and self.settings[self.prog_name]['Need SSH password'] == 'False':
+                    print('SSH autoSPHIRE command failed or no password is required!')
+                    with open(err_file, 'w') as write:
+                        write.write(str(e))
+                    self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name_input, 'stop early 4', time.time() - start_prog))
+                    raise
+
+                elif idx == 0:
                     child.sendline(self.settings[self.prog_name]['SSH password'])
                     log.append(child.before)
                     log.append(child.after)
+                    child.expect(pe.EOF, timeout=10)
+
                 log.append(cmd)
-                child.expect(pe.EOF, timeout=10)
 
                 stop_time = time.time()
                 with open(log_file, 'w') as write:
-                    write.write('\n'.join(log))
+                    write.write('\n'.join(map(str, log)))
                     write.write('\nTime: {0} sec'.format(stop_time - start_time)) 
             else:
                 log_file, err_file = self.run_command(

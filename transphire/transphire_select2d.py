@@ -222,22 +222,26 @@ def find_logfiles(root_path, settings, queue_com, name):
 def create_jpg_file(file_name, output_dir):
     for png_idx, folder_name in enumerate(sorted(glob.glob(os.path.join(output_dir, file_name, 'png*')))):
         files = sorted(glob.glob(os.path.join(folder_name, '*')))
-        if len(files) == 0:
-            return None
-        columns = np.sqrt(2*len(files))
-        columns = int(columns+bool(columns % 2))
-        columns += bool(columns % 2)
-        rows = int(len(files) / columns + 1)
-
-        if columns * rows < len(files):
-            rows += 1
-        image = img.imread(files[0])
         dpi = 300
-        width = image.shape[0] * columns / dpi
-        height = image.shape[1] * rows / dpi
+        if len(files) == 0:
+            columns = 1
+            rows = 1
+            width = 1
+            height = 1
+        else:
+            columns = np.sqrt(2*len(files))
+            columns = int(columns+bool(columns % 2))
+            columns += bool(columns % 2)
+            rows = int(len(files) / columns + 1)
+
+            if columns * rows < len(files):
+                rows += 1
+            image = img.imread(files[0])
+            width = image.shape[0] * columns / dpi
+            height = image.shape[1] * rows / dpi
 
         fig, ax = plt.subplots(rows, columns, subplot_kw={'frameon':False, 'adjustable': 'box', 'aspect': 'equal'})
-        ax = ax.ravel()
+        ax = np.atleast_1d(ax).ravel()
         for idx, ax_instance in enumerate(ax):
             try:
                 ax_instance.imshow(img.imread(files[idx]), cmap='Greys_r')

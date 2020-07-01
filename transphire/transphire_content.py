@@ -63,6 +63,7 @@ def default_auto_sphire_v1_3():
         #Advanced
     category = 'Advanced'
     items.extend([
+        ['Run during feedback', ['False', 'True'], bool,  '', 'COMBO', category, '', 'Run Auto3d runs during feedback. If False, Auto3d is started after the feedback finished.'],
         ['--skip_meridien', ['False', 'True'], bool,  '', 'COMBO', category, '', 'Skip meridien and just do initial model estimation.'],
         ['--skip_mask_rviper', ['True', 'False'], bool,  '', 'COMBO', category, '', 'Skip creation of a mask after initial model estimation. (recommended)'],
         ['--rviper_use_final', ['True', 'False'], bool,  '', 'COMBO', category, '', 'Available memory per node.'],

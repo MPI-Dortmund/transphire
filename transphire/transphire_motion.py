@@ -870,11 +870,6 @@ def combine_motion_outputs(
     with open(output_name_star_relion3, 'w') as write:
         write.write('\n'.join(export_lines_star_relion3))
 
-    if dark_var:
-        new_dark = dark_var
-    else:
-        new_dark = None
-
     return (
         output_name_mic_combined,
         output_name_star_combined,

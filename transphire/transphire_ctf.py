@@ -25,7 +25,6 @@ import mrcfile as mrc
 import matplotlib
 matplotlib.use('QT5Agg')
 import matplotlib.image as mi
-import matplotlib.pyplot as plt
 from transphire import transphire_import as ti
 from transphire import transphire_utils as tu
 
@@ -69,6 +68,7 @@ def get_ctf_command(file_sum, file_input, new_name, settings, queue_com, set_nam
                 file_sum=file_sum,
                 file_input=file_input,
                 file_output=new_name,
+                set_name=set_name,
                 settings=settings
                 )
             check_files = []
@@ -499,7 +499,7 @@ def create_ctffind_4_v4_1_13_command(ctf_name, file_sum, file_input, file_output
     return command
 
 
-def create_ctffind_4_v4_1_8_command(ctf_name, file_sum, file_input, file_output, settings):
+def create_ctffind_4_v4_1_8_command(ctf_name, file_sum, file_input, file_output, set_name, settings):
     """Create the ctffind command"""
     ctf_settings = settings[ctf_name]
     ctffind_command = []

@@ -988,11 +988,11 @@ class ProcessWorker(QObject):
         if self.settings["Input"]["Software"] == "Just Stack":
             self.settings['copy_software_meta'] = False
 
+        prepend_list = []
         if key.startswith('Copy_to'):
-            with open(save_file, 'a') as append:
-                for root, _, files in os.walk(self.settings['set_folder']):
-                    for entry in files:
-                        append.write('{0}\n'.format(os.path.join(root, entry)))
+            for root, _, files in os.walk(self.settings['set_folder']):
+                for entry in files:
+                    prepend_list.append(os.path.join(root, entry))
 
         if os.path.exists(save_file):
             with open(save_file, 'r') as read:
@@ -1008,6 +1008,12 @@ class ProcessWorker(QObject):
         else:
             with open(save_file, 'w'):
                 pass
+
+        with open(save_file, 'a') as append:
+            for entry in prepend_list:
+                append.write('{}\n'.format(entry))
+                share_list.append(entry.split('|||')[-1])
+                queue.put(entry)
 
         if os.path.exists(done_file):
             with open(done_file, 'r') as read:
