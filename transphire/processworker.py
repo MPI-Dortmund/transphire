@@ -27,6 +27,13 @@ from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 from transphire.processthread import ProcessThread
 from transphire import transphire_utils as tu
 import multiprocessing as mp
+import multiprocessing.managers
+import queue
+
+
+class MyManager(mp.managers.BaseManager):
+    pass
+MyManager.register('LifoQueue', queue.LifoQueue)
 
 
 class ProcessWorker(QObject):
@@ -149,6 +156,8 @@ class ProcessWorker(QObject):
         self.settings = settings
         self.sig_set_project_directory.emit(self.settings['project_folder'], self.settings['log_folder'], self.settings['error_folder'])
 
+        manager_lifo = MyManager()
+        manager_lifo.start()
         manager = mp.Manager()
         typ_dict = {}
         share_dict = {}
@@ -165,7 +174,7 @@ class ProcessWorker(QObject):
                     process[key][self.idx_values]['aim'] = process[key][self.idx_values]['aim'].split(',')
                     share_dict[key] = manager.list()
                     bad_dict[key] = manager.list()
-                    queue_dict[key] = manager.Queue()
+                    queue_dict[key] = manager_lifo.LifoQueue()
                     typ_dict[key] = manager.dict({
                         'file_number': 0,
                         'spot': False,
