@@ -261,6 +261,7 @@ class ProcessWorker(QObject):
                 content_process=content_process,
                 full_content=full_content,
                 manager=manager,
+                restart_dict=restart_dict,
                 )
 
         self.sig_finished.emit()
@@ -337,6 +338,7 @@ class ProcessWorker(QObject):
             content_process,
             full_content,
             manager,
+            restart_dict,
         ):
         """
         Run the TranSPHIRE process.
@@ -557,6 +559,7 @@ class ProcessWorker(QObject):
                     self.prefill_queue(
                         shared_dict=shared_dict,
                         entry=process[key][1],
+                        restart_dict=restart_dict,
                         )
         queue_com['info'].put('Current settings saved to: {0}'.format(self.settings['set_folder']))
         self.check_queue(queue_com=queue_com)
@@ -973,7 +976,7 @@ class ProcessWorker(QObject):
                 write.write('')
         return dictionary
 
-    def prefill_queue(self, shared_dict, entry):
+    def prefill_queue(self, shared_dict, entry, restart_dict):
         """
         Prefill the queues for continue mode
 
@@ -997,72 +1000,139 @@ class ProcessWorker(QObject):
         if self.settings["Input"]["Software"] == "Just Stack":
             self.settings['copy_software_meta'] = False
 
-        prepend_list = []
-        if key.startswith('Copy_to'):
-            for root, _, files in os.walk(self.settings['set_folder']):
-                for entry in files:
-                    prepend_list.append(os.path.join(root, entry))
+        check_state = 0
+        try:
+            check_state = restart_dict[key]
+        except KeyError:
+            pass
 
-        if os.path.exists(save_file):
-            with open(save_file, 'r') as read:
-                lines = [line.strip() for line in read.readlines() if line.strip()]
+        if check_state in (1, 2):
+            lines = []
+            if check_state == 2 or key in ('Extract', 'Train2d'):
+                for entry in (save_file, done_file):
+                    if os.path.exists(entry):
+                        with open(entry, 'r') as read:
+                            lines.extend([line.strip() for line in read.readlines() if line.strip()])
+                    else:
+                        with open(entry, 'w'):
+                            pass
 
-            for line in lines:
-                if self.settings['software_meta_tar'] in line:
-                    self.settings['copy_software_meta'] = False
+            remove_patterns = ['THIS IS A DUMMY PATTERN!']
+            if check_state == 1 and key == 'Extract':
+                if restart_dict['Picking'] == 1 and restart_dict['CTF'] == 1:
+                    # Reset Motion correction and therefore picking and CTF
+                    remove_patterns = [
+                        '.*',
+                        ]
+                elif restart_dict['Picking'] == 2 and restart_dict['CTF'] == 2:
+                    # Reset Picking and CTF but not motion correction
+                    remove_patterns = [
+                        '.*\.box',
+                        '.*partres.txt',
+                        ]
+                elif restart_dict['Picking'] == 1:
+                    assert False, 'Picking cannot be 1 without CTF be 1'
+                elif restart_dict['CTF'] == 1:
+                    assert False, 'Picking cannot be 1 without CTF be 1'
+                elif restart_dict['Picking'] == 2:
+                    # Only reset picking
+                    remove_patterns = [
+                        '.*\.box',
+                        ]
+                elif restart_dict['CTF'] == 2:
+                    # Only reset CTF
+                    remove_patterns = [
+                        '.*partres.txt',
+                        ]
+
+            if check_state == 1 and key == 'Train2d':
+                if restart_dict['Motion'] == 2:
+                    remove_patterns = [
+                        '.*'
+                        ]
                 else:
-                    pass
-                share_list.append(line.split('|||')[-1])
-                queue.put(line)
-        else:
-            with open(save_file, 'w'):
-                pass
+                    remove_patterns = [
+                        '.*\.hdf'
+                        ]
 
-        with open(save_file, 'a') as append:
-            for entry in prepend_list:
-                append.write('{}\n'.format(entry))
-                share_list.append(entry.split('|||')[-1])
-                queue.put(entry)
+            for pattern in remove_patterns:
+                lines = sorted([entry for entry in lines if re.search(pattern, entry) is None])
 
-        if os.path.exists(done_file):
-            with open(done_file, 'r') as read:
-                lines = [line.strip() for line in read.readlines() if line.strip()]
-                shared_dict_typ['file_number'] = len(lines)
-            for line in lines:
-                if self.settings['software_meta_tar'] in line:
-                    self.settings['copy_software_meta'] = False
-                else:
-                    pass
-        else:
+            with open(save_file, 'w') as write:
+                write.write('\n'.join(sorted(lines)))
+
             with open(done_file, 'w'):
                 pass
-
-        if os.path.exists(list_file):
-            with open(list_file, 'r') as read:
-                lines = [line.strip() for line in read.readlines() if line.strip()]
-            for line in lines:
-                if line:
-                    queue_list.append(line)
-                if self.settings['software_meta_tar'] in line:
-                    self.settings['copy_software_meta'] = False
-                else:
-                    pass
-        else:
             with open(list_file, 'w'):
                 pass
 
-        # Tar index
-        if not queue_list:
-            tar_files = glob.glob(os.path.join(
-                self.settings['tar_folder'],
-                '{0}_*.tar'.format(key)
-                ))
-            if tar_files:
-                shared_dict_typ['tar_idx'] = max([int(re.search('{0}_.*([0-9]{{6}})\.tar'.format(re.escape(key)), entry).group(1)) for entry in tar_files]) + 1
+        elif check_state == 0:
+            prepend_list = []
+            if key.startswith('Copy_to'):
+                for root, _, files in os.walk(self.settings['set_folder']):
+                    for entry in files:
+                        prepend_list.append(os.path.join(root, entry))
+
+            if os.path.exists(save_file):
+                with open(save_file, 'r') as read:
+                    lines = [line.strip() for line in read.readlines() if line.strip()]
+
+                for line in lines:
+                    if self.settings['software_meta_tar'] in line:
+                        self.settings['copy_software_meta'] = False
+                    else:
+                        pass
+                    share_list.append(line.split('|||')[-1])
+                    queue.put(line)
             else:
-                shared_dict_typ['tar_idx'] = 0
-        else:
-            try:
-                shared_dict_typ['tar_idx'] = max([int(re.search('{0}_.*([0-9]{{6}})\.tar'.format(re.escape(key)), entry).group(1)) for entry in queue_list if re.search('{0}_.*([0-9]{{6}})\.tar'.format(re.escape(key)), entry)])
-            except ValueError:
-                pass
+                with open(save_file, 'w'):
+                    pass
+
+            with open(save_file, 'a') as append:
+                for entry in prepend_list:
+                    append.write('{}\n'.format(entry))
+                    share_list.append(entry.split('|||')[-1])
+                    queue.put(entry)
+
+            if os.path.exists(done_file):
+                with open(done_file, 'r') as read:
+                    lines = [line.strip() for line in read.readlines() if line.strip()]
+                    shared_dict_typ['file_number'] = len(lines)
+                for line in lines:
+                    if self.settings['software_meta_tar'] in line:
+                        self.settings['copy_software_meta'] = False
+                    else:
+                        pass
+            else:
+                with open(done_file, 'w'):
+                    pass
+
+            if os.path.exists(list_file):
+                with open(list_file, 'r') as read:
+                    lines = [line.strip() for line in read.readlines() if line.strip()]
+                for line in lines:
+                    if line:
+                        queue_list.append(line)
+                    if self.settings['software_meta_tar'] in line:
+                        self.settings['copy_software_meta'] = False
+                    else:
+                        pass
+            else:
+                with open(list_file, 'w'):
+                    pass
+
+            # Tar index
+            if not queue_list:
+                tar_files = glob.glob(os.path.join(
+                    self.settings['tar_folder'],
+                    '{0}_*.tar'.format(key)
+                    ))
+                if tar_files:
+                    shared_dict_typ['tar_idx'] = max([int(re.search('{0}_.*([0-9]{{6}})\.tar'.format(re.escape(key)), entry).group(1)) for entry in tar_files]) + 1
+                else:
+                    shared_dict_typ['tar_idx'] = 0
+            else:
+                try:
+                    shared_dict_typ['tar_idx'] = max([int(re.search('{0}_.*([0-9]{{6}})\.tar'.format(re.escape(key)), entry).group(1)) for entry in queue_list if re.search('{0}_.*([0-9]{{6}})\.tar'.format(re.escape(key)), entry)])
+                except ValueError:
+                    pass

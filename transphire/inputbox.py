@@ -121,7 +121,7 @@ class InputBox(QDialog):
 
     def get_restart_dict(self):
         for key in self.restart_content:
-            self.restart_content[key] = self.restart_content[key].isChecked()
+            self.restart_content[key] = self.restart_content[key].checkState()
         return self.restart_content
 
     def setText(self, heading, text):
