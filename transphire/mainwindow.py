@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import numpy as np
 import json
 import datetime
 import sys
@@ -1324,7 +1325,7 @@ class MainWindow(QMainWindow):
         if is_restart:
             restart_names = tu.get_unique_types()
         else:
-            restart_names = []
+            restart_names = np.array([])
         dialog = InputBox(
             is_password=False,
             parent=self,

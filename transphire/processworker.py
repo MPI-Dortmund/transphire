@@ -570,7 +570,6 @@ class ProcessWorker(QObject):
                         entry=process[key][1],
                         restart_dict=restart_dict,
                         )
-        self.stop = True
         queue_com['info'].put('Current settings saved to: {0}'.format(self.settings['set_folder']))
         self.check_queue(queue_com=queue_com)
 
@@ -989,6 +988,8 @@ class ProcessWorker(QObject):
         key = entry['name']
         share = entry['group']
         shared_dict_typ = shared_dict['typ'][key]
+        number_file = shared_dict_typ['number_file']
+        feedback_lock_file = shared_dict_typ['feedback_lock_file']
         save_file = shared_dict_typ['save_file']
         done_file = shared_dict_typ['done_file']
         list_file = shared_dict_typ['list_file']
@@ -1005,10 +1006,30 @@ class ProcessWorker(QObject):
         except KeyError:
             pass
 
+        prepend_list = []
+        if key.startswith('Copy_to'):
+            for root, _, files in os.walk(self.settings['set_folder']):
+                for entry in files:
+                    prepend_list.append(os.path.join(root, entry))
+
         if check_state in (1, 2):
             try:
                 shutil.move(
+                    feedback_lock_file,
+                    self.settings['restart_backup_folder'],
+                    )
+            except FileNotFoundError:
+                pass
+            try:
+                shutil.move(
                     self.settings['{}_folder_feedback_0'.format(key.lower())],
+                    self.settings['restart_backup_folder'],
+                    )
+            except FileNotFoundError:
+                pass
+            try:
+                shutil.move(
+                    number_file,
                     self.settings['restart_backup_folder'],
                     )
             except FileNotFoundError:
@@ -1051,7 +1072,7 @@ class ProcessWorker(QObject):
                         '.*partres.txt',
                         ]
 
-            if check_state == 1 and key == 'Train2d':
+            elif check_state == 1 and key == 'Train2d':
                 if restart_dict['Motion'] == 2:
                     remove_patterns = [
                         '.*'
@@ -1065,7 +1086,10 @@ class ProcessWorker(QObject):
                 lines = sorted([entry for entry in lines if re.search(pattern, entry) is None])
 
             with open(save_file, 'w') as write:
-                write.write('\n'.join(sorted(lines)))
+                write.write('\n'.join(sorted(lines)) + '\n')
+            for line in lines:
+                share_list.append(line.split('|||')[-1])
+                queue.put(line)
 
             with open(done_file, 'w'):
                 pass
@@ -1073,12 +1097,6 @@ class ProcessWorker(QObject):
                 pass
 
         elif check_state == 0:
-            prepend_list = []
-            if key.startswith('Copy_to'):
-                for root, _, files in os.walk(self.settings['set_folder']):
-                    for entry in files:
-                        prepend_list.append(os.path.join(root, entry))
-
             if os.path.exists(save_file):
                 with open(save_file, 'r') as read:
                     lines = [line.strip() for line in read.readlines() if line.strip()]
@@ -1093,12 +1111,6 @@ class ProcessWorker(QObject):
             else:
                 with open(save_file, 'w'):
                     pass
-
-            with open(save_file, 'a') as append:
-                for entry in prepend_list:
-                    append.write('{}\n'.format(entry))
-                    share_list.append(entry.split('|||')[-1])
-                    queue.put(entry)
 
             if os.path.exists(done_file):
                 with open(done_file, 'r') as read:
@@ -1142,3 +1154,11 @@ class ProcessWorker(QObject):
                     shared_dict_typ['tar_idx'] = max([int(re.search('{0}_.*([0-9]{{6}})\.tar'.format(re.escape(key)), entry).group(1)) for entry in queue_list if re.search('{0}_.*([0-9]{{6}})\.tar'.format(re.escape(key)), entry)])
                 except ValueError:
                     pass
+
+
+        if prepend_list:
+            with open(save_file, 'a') as append:
+                append.write('\n'.join(prepend_list) + '\n')
+            for entry in prepend_list:
+                share_list.append(entry.split('|||')[-1])
+                queue.put(entry)
