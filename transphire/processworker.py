@@ -519,7 +519,19 @@ class ProcessWorker(QObject):
             'typ': typ_dict,
             }
 
-        if not restart_dict['feedback']:
+        try:
+            restart_feedback = restart_dict['feedback']
+        except KeyError:
+            restart_feedback = False
+        if restart_feedback:
+            try:
+                shutil.move(
+                    os.path.join(self.settings['project_folder'], '000_Feedback_results'),
+                    self.settings['restart_backup_folder'],
+                    )
+            except FileNotFoundError:
+                pass
+        else:
             try:
                 with open(self.settings['feedback_file'], 'r') as read:
                     content = read.read().strip()
@@ -994,6 +1006,13 @@ class ProcessWorker(QObject):
             pass
 
         if check_state in (1, 2):
+            try:
+                shutil.move(
+                    self.settings['{}_folder_feedback_0'.format(key.lower())],
+                    self.settings['restart_backup_folder'],
+                    )
+            except FileNotFoundError:
+                pass
             lines = []
             if check_state == 2 or key in ('Extract', 'Train2d'):
                 for entry in (save_file, done_file):

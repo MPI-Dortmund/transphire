@@ -132,8 +132,9 @@ class InputBox(QDialog):
                     self.restart_content['feedback'].setCheckState(2)
 
         elif key == 'feedback':
-            self.restart_content['Picking'].setCheckState(state)
-            self.restart_content['Picking'].setEnabled(not state)
+            if self.restart_content['Picking'].isEnabled() or self.restart_content['Picking'].checkState() == 2:
+                self.restart_content['Picking'].setCheckState(state)
+                self.restart_content['Picking'].setEnabled(not state)
 
     def get_restart_dict(self):
         for key in self.restart_content:

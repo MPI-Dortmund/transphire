@@ -1142,6 +1142,7 @@ class MainWindow(QMainWindow):
             'stack_folder': '000_Import',
             'meta_folder': '000_Import_meta',
             'set_folder': 'XXX_Sets',
+            'restart_backup_folder': 'XXX_Restart_Backup',
             'software_meta_folder': '000_Session_meta',
             }
         for key, value in folder_dict.items():
@@ -1159,8 +1160,11 @@ class MainWindow(QMainWindow):
         settings['translation_file_bad'] = os.path.join(settings['project_folder'], 'Discarded_micrographs_info.txt')
 
         settings['current_set'] = datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
+
+        settings['restart_backup_folder'] = os.path.join(settings['restart_backup_folder'], settings['current_set'])
         settings['set_folder'] = os.path.join(settings['set_folder'], settings['current_set'])
         folder_dict['set_folder'] = settings['set_folder']
+        folder_dict['restart_backup_folder'] = settings['restart_backup_folder']
 
         names = [
             entry.replace('_entries', '')
