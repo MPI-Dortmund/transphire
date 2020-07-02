@@ -5292,7 +5292,6 @@ class ProcessThread(object):
 
         return log_file, err_file
 
-
     @staticmethod
     def delete_file_to_delete(file_to_delete):
         time.sleep(0.1)

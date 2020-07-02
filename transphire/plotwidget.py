@@ -425,37 +425,12 @@ class PlotWidget(QWidget):
         self._median_ref = []
         self._canvas_list = []
         self._is_started = False
-        self._xdata = np.array([])
-        self._ydata = np.array([])
-        self._data = None
-        self._basenames = None
-        self._color = '#68a3c3'
+        self.setup_values()
 
         if self.plot_typ in ('values', 'histogram'):
-            self._bins = 50
-            self._minimum_x = float('-inf')
-            self._maximum_x = float('inf')
-            self._minimum_y = float('-inf')
-            self._maximum_y = float('inf')
-            self._previous_dict = {}
-            self.mean = None
-            self.median = None
             self._hide_marker = False
 
             self.markersize = 4
-
-            self._cur_min_x = 0
-            self._cur_max_x = 0
-            self._cur_min_y = 0
-            self._cur_max_y = 0
-
-            self._applied_min_x = 0
-            self._applied_max_x = 0
-            self._applied_min_y = 0
-            self._applied_max_y = 0
-
-            self._xdata_raw = np.array([])
-            self._ydata_raw = np.array([])
 
             self.trim_widget = TrimWidget(
                 self.plot_typ,
@@ -482,6 +457,34 @@ class PlotWidget(QWidget):
             self.current_image_name = 'latest'
 
         layout_v.addLayout(self.layout_canvas, stretch=1)
+
+    def setup_values(self):
+        self._xdata = np.array([])
+        self._ydata = np.array([])
+        self._data = None
+        self._basenames = None
+        self._color = '#68a3c3'
+
+        self._cur_min_x = 0
+        self._cur_max_x = 0
+        self._cur_min_y = 0
+        self._cur_max_y = 0
+
+        self._applied_min_x = 0
+        self._applied_max_x = 0
+        self._applied_min_y = 0
+        self._applied_max_y = 0
+
+        self._xdata_raw = np.array([])
+        self._ydata_raw = np.array([])
+        self._bins = 50
+        self._minimum_x = float('-inf')
+        self._maximum_x = float('inf')
+        self._minimum_y = float('-inf')
+        self._maximum_y = float('inf')
+        self._previous_dict = {}
+        self.mean = None
+        self.median = None
 
     @pyqtSlot()
     def hide_marker(self):
@@ -771,6 +774,8 @@ class PlotWidget(QWidget):
 
         try:
             data_list = self._data['image'][self._basenames == current_name][0].split(';;;')
+        except IndexError:
+            return
         except KeyError:
             self.clear_canvas()
             return

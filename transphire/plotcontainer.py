@@ -146,6 +146,11 @@ class PlotContainer(QMainWindow):
         self._is_visible = False
 
     @pyqtSlot()
+    def reset_plot(self):
+        for entry in self.content:
+            entry.setup_values()
+
+    @pyqtSlot()
     def set_floating(self):
         self.sender().my_docker.setFloating(not self.sender().my_docker.isFloating())
 

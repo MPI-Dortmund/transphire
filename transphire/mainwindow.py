@@ -59,6 +59,7 @@ class MainWindow(QMainWindow):
     None
     """
     sig_reset = pyqtSignal(str, object)
+    sig_reset_plot = pyqtSignal()
 
     def __init__(
             self, content_raw, content_gui, content_pipeline, settings_folder,
@@ -604,6 +605,9 @@ class MainWindow(QMainWindow):
             if key == 'Plot per micrograph' or \
                     key == 'Plot histogram' or \
                     key == 'Show images':
+                self.sig_reset_plot.connect(
+                    self.content[key].reset_plot
+                    )
                 self.content[key].worker.sig_data.connect(
                     self.content[key].update_figure
                     )
@@ -1295,7 +1299,8 @@ class MainWindow(QMainWindow):
             self.content['Button'].stop_button.setEnabled(True)
             self.content['Button'].start_monitor_button.setEnabled(False)
             self.content['Button'].stop_monitor_button.setEnabled(False)
-            self.workers['plotting'].reset_list()
+            self.sig_reset_plot.emit()
+            self.workers['plotting'].sig_reset_list.emit()
             _, message = self.save(
                 file_name=os.path.join(
                     settings['set_folder'],
