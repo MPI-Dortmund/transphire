@@ -594,7 +594,6 @@ class ProcessWorker(QObject):
                         restart_dict=restart_dict,
                         keep_list=keep_list,
                         )
-        self.stop = True
         queue_com['info'].put('Current settings saved to: {0}'.format(self.settings['set_folder']))
         self.check_queue(queue_com=queue_com)
 
@@ -1148,7 +1147,7 @@ class ProcessWorker(QObject):
                                     good_lines.append(line)
                     lines = good_lines
                     with open(save_file, 'w') as write:
-                        write.write('\n'.join(lines))
+                        write.write('\n'.join(lines) + '\n')
 
                 for line in lines:
                     if self.settings['software_meta_tar'] in line:
