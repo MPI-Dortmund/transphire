@@ -138,22 +138,23 @@ class ProcessThread(object):
         # This list saves the per process locks to prevent garbage collection
         self.GLOBAL_LOCKS = []
 
-        try:
-            for value in self.settings[self.prog_name].values():
-                try:
-                    if '|||' in value:
-                        external_log, local_key = value.split('|||')
-                        with open(settings[external_log], 'r') as read:
-                            log_data = json.load(read)
-                        try:
-                            set_value = log_data[self.settings['current_set']][self.prog_name][local_key]['new_file']
-                        except KeyError:
-                            continue
-                        self.settings[self.prog_name][local_key] = set_value
-                except TypeError:
-                    pass
-        except KeyError:
-            pass
+        if self.typ not in ('Motion', 'CTF'):
+            try:
+                for value in self.settings[self.prog_name].values():
+                    try:
+                        if '|||' in value:
+                            external_log, local_key = value.split('|||')
+                            with open(settings[external_log], 'r') as read:
+                                log_data = json.load(read)
+                            try:
+                                set_value = log_data[self.settings['current_set']][self.prog_name][local_key]['new_file']
+                            except KeyError:
+                                continue
+                            self.settings[self.prog_name][local_key] = set_value
+                    except TypeError:
+                        pass
+            except KeyError:
+                pass
 
     def run(self):
         """
@@ -2578,11 +2579,15 @@ class ProcessThread(object):
                 [os.path.basename(queue_dict[0]['sum'][0])]
                 )
 
-        tum.create_jpg_file(
-            file_for_jpg,
-            data_original[mask],
-            self.settings,
-            )
+        self.shared_dict['matplotlib_lock'].acquire()
+        try:
+            tum.create_jpg_file(
+                file_for_jpg,
+                data_original[mask],
+                self.settings,
+                )
+        finally:
+            self.shared_dict['matplotlib_lock'].release()
 
         warnings, skip_list = tus.check_for_outlier(
             dict_name='Motion',
@@ -2850,11 +2855,15 @@ class ProcessThread(object):
         copied_log_files.extend(zero_list)
         copied_log_files = list(set(copied_log_files))
 
-        tuc.create_jpg_file(
-            file_sum,
-            self.settings,
-            self.settings['Copy']['CTF'],
-            )
+        self.shared_dict['matplotlib_lock'].acquire()
+        try:
+            tuc.create_jpg_file(
+                file_sum,
+                self.settings,
+                self.settings['Copy']['CTF'],
+                )
+        finally:
+            self.shared_dict['matplotlib_lock'].release()
 
         import_name = tu.get_name(file_sum)
         data, data_orig = tu.get_function_dict()[self.prog_name]['plot_data'](
@@ -3079,7 +3088,11 @@ class ProcessThread(object):
         copied_log_files.extend(zero_list)
         copied_log_files = list(set(copied_log_files))
 
-        tue.create_jpg_file(file_name, self.settings[folder_name])
+        self.shared_dict['matplotlib_lock'].acquire()
+        try:
+            tue.create_jpg_file(file_name, self.settings[folder_name])
+        finally:
+            self.shared_dict['matplotlib_lock'].release()
 
         skip_list = False
         if skip_list:
@@ -3603,10 +3616,14 @@ class ProcessThread(object):
             copied_log_files.extend(zero_list)
             copied_log_files = list(set(copied_log_files))
 
-            tuclass2d.create_jpg_file(
-                file_name,
-                self.settings[folder_name],
-                )
+            self.shared_dict['matplotlib_lock'].acquire()
+            try:
+                tuclass2d.create_jpg_file(
+                    file_name,
+                    self.settings[folder_name],
+                    )
+            finally:
+                self.shared_dict['matplotlib_lock'].release()
 
         except Exception:
             self.shared_dict_typ['queue_list_lock'].acquire()
@@ -3764,7 +3781,11 @@ class ProcessThread(object):
         copied_log_files.extend(zero_list)
         copied_log_files = list(set(copied_log_files))
 
-        tselect2d.create_jpg_file(file_name, self.settings[folder_name])
+        self.shared_dict['matplotlib_lock'].acquire()
+        try:
+            tselect2d.create_jpg_file(file_name, self.settings[folder_name])
+        finally:
+            self.shared_dict['matplotlib_lock'].release()
 
         skip_list = False
         if skip_list:
@@ -5061,13 +5082,13 @@ class ProcessThread(object):
                 if checksum_in == checksum_out:
                     break
                 elif counter == 5:
-                    print('PROBLEM', counter, file_in, file_out)
-                    raise IOError('PROBLEM')
+                    print('PROBLEM', counter, file_in, file_out, checksum_in, checksum_out, len_data_out, len_data_in)
+                    raise Exception('PROBLEM')
                 else:
-                    print('PROBLEM', counter, file_in, file_out)
+                    print('PROBLEM', counter, file_in, file_out, checksum_in, checksum_out, len_data_out, len_data_in)
                     counter += 1
             else:
-                print('PROBLEM', counter, file_in, file_out)
+                print('PROBLEM', counter, file_in, file_out, checksum_in, checksum_out, len_data_out, len_data_in)
                 counter += 1
 
 

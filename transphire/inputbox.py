@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import numpy as np
 import os
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QDialogButtonBox, QWidget, QLineEdit, QFileDialog, QCheckBox
 from PyQt5.QtCore import pyqtSlot
@@ -44,7 +45,7 @@ class InputBox(QDialog):
         """
         super(InputBox, self).__init__(parent)
         if restart_names is None:
-            restart_names = []
+            restart_names = np.array([])
         central_raw_layout = QVBoxLayout(self)
         central_raw_layout.setContentsMargins(0, 0, 0, 0)
         central_widget_raw = QWidget(self)
@@ -87,14 +88,19 @@ class InputBox(QDialog):
             layout.addWidget(self.abort)
 
         self.restart_content = {}
-        for entry in restart_names:
-            if entry == 'Compress':
-                name = 'Restart {}'.format(entry)
-            else:
-                name = 'Restart {} - Restarts subsequent jobs.'.format(entry)
-            self.restart_content[entry] = QCheckBox(name, self)
-            self.restart_content[entry].stateChanged.connect(self.handle_check)
-            layout.addWidget(self.restart_content[entry])
+        if restart_names.size:
+            layout.addWidget(QLabel('-----', self))
+            self.restart_content['feedback'] = QCheckBox('Restart feedback', self)
+            self.restart_content['feedback'].stateChanged.connect(self.handle_check)
+            layout.addWidget(self.restart_content['feedback'])
+            for entry in restart_names:
+                if entry == 'Compress':
+                    name = 'Restart {}'.format(entry)
+                else:
+                    name = 'Restart {} - Restarts subsequent jobs.'.format(entry)
+                self.restart_content[entry] = QCheckBox(name, self)
+                self.restart_content[entry].stateChanged.connect(self.handle_check)
+                layout.addWidget(self.restart_content[entry])
 
         layout.addWidget(button_box)
 
@@ -102,7 +108,7 @@ class InputBox(QDialog):
     def handle_check(self, state):
         sender = self.sender()
         key = sender.text().split()[1]
-        if key != 'Compress':
+        if key not in ('Compress', 'feedback'):
             is_checked = None
             for input_key in self.restart_content:
                 if key == input_key and is_checked is None:
@@ -113,11 +119,21 @@ class InputBox(QDialog):
                 elif key in ('CTF', 'Picking') and input_key in ('CTF', 'Picking'):
                     if not state and not is_checked:
                         is_checked = 1 if self.restart_content[input_key].isChecked() else 0
+                elif key in ('Train2d', 'Auto3d') and input_key in ('Train2d', 'Auto3d'):
+                    pass
                 elif is_checked is not None:
                     cur_state = self.restart_content[input_key].blockSignals(True)
                     self.restart_content[input_key].setCheckState(is_checked)
                     self.restart_content[input_key].setEnabled(not is_checked)
                     self.restart_content[input_key].blockSignals(cur_state)
+            if key == 'Motion' and not state:
+                if self.restart_content['feedback'].isChecked():
+                    self.restart_content['feedback'].setCheckState(0)
+                    self.restart_content['feedback'].setCheckState(2)
+
+        elif key == 'feedback':
+            self.restart_content['Picking'].setCheckState(state)
+            self.restart_content['Picking'].setEnabled(not state)
 
     def get_restart_dict(self):
         for key in self.restart_content:

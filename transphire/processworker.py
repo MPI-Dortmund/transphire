@@ -515,38 +515,35 @@ class ProcessWorker(QObject):
             'gpu_lock': gpu_mutex_dict,
             'gpu_lock_lock': manager.Lock(),
             'data_frame_lock': manager.Lock(),
+            'matplotlib_lock': manager.Lock(),
             'typ': typ_dict,
             }
 
-        try:
-            with open(self.settings['feedback_file'], 'r') as read:
-                content = read.read().strip()
-                self.settings['do_feedback_loop'] = int(content)
-        except FileNotFoundError:
-            pass
+        if not restart_dict['feedback']:
+            try:
+                with open(self.settings['feedback_file'], 'r') as read:
+                    content = read.read().strip()
+                    self.settings['do_feedback_loop'] = int(content)
+            except FileNotFoundError:
+                pass
 
         self.settings['is_superres'] = mp.Value('i', 2)
         self.settings['do_feedback_loop'] = mp.Value('i', self.settings['do_feedback_loop'])
         if self.settings['do_feedback_loop'].value == 0:
-            queue_com['status'].put([
-                '{0:02d}|{1:02d}'.format(
-                    int(self.settings['General']['Number of feedbacks']) - self.settings['do_feedback_loop'].value,
-                    int(self.settings['General']['Number of feedbacks'])
-                    ),
-                ['Done'],
-                'Feedbacks',
-                tu.get_color('Finished')
-                ])
+            status = 'Done'
+            color = 'Finished'
         else:
-            queue_com['status'].put([
-                '{0:02d}|{1:02d}'.format(
-                    int(self.settings['General']['Number of feedbacks']) - self.settings['do_feedback_loop'].value,
-                    int(self.settings['General']['Number of feedbacks'])
-                    ),
-                ['Running'],
-                'Feedbacks',
-                tu.get_color('Running')
-                ])
+            status = 'Running'
+            color = 'Running'
+        queue_com['status'].put([
+            '{0:02d}|{1:02d}'.format(
+                int(self.settings['General']['Number of feedbacks']) - self.settings['do_feedback_loop'].value,
+                int(self.settings['General']['Number of feedbacks'])
+                ),
+            [status],
+            'Feedbacks',
+            tu.get_color(color)
+            ])
         with open(self.settings['feedback_file'], 'w') as write:
             write.write(str(self.settings['do_feedback_loop'].value))
 
@@ -561,6 +558,7 @@ class ProcessWorker(QObject):
                         entry=process[key][1],
                         restart_dict=restart_dict,
                         )
+        self.stop = True
         queue_com['info'].put('Current settings saved to: {0}'.format(self.settings['set_folder']))
         self.check_queue(queue_com=queue_com)
 
@@ -701,26 +699,15 @@ class ProcessWorker(QObject):
                 time.sleep(1)
                 self.check_queue(queue_com=queue_com)
 
-        if self.settings['do_feedback_loop'].value == 0:
-            queue_com['status'].put([
-                '{0:02d}|{1:02d}'.format(
-                    int(self.settings['General']['Number of feedbacks']) - self.settings['do_feedback_loop'].value,
-                    int(self.settings['General']['Number of feedbacks'])
-                    ),
-                ['Not running'],
-                'Feedbacks',
-                'white'
-                ])
-        else:
-            queue_com['status'].put([
-                '{0:02d}|{1:02d}'.format(
-                    int(self.settings['General']['Number of feedbacks']) - self.settings['do_feedback_loop'].value,
-                    int(self.settings['General']['Number of feedbacks'])
-                    ),
-                ['Not running'],
-                'Feedbacks',
-                'white'
-                ])
+        queue_com['status'].put([
+            '{0:02d}|{1:02d}'.format(
+                int(self.settings['General']['Number of feedbacks']) - self.settings['do_feedback_loop'].value,
+                int(self.settings['General']['Number of feedbacks'])
+                ),
+            ['Not running'],
+            'Feedbacks',
+            tu.get_color('white')
+            ])
         queue_com['log'].put('All done!')
         self.check_queue(queue_com=queue_com)
 
@@ -741,7 +728,7 @@ class ProcessWorker(QObject):
                 '00|{0:02d}'.format(shared_dict['typ'][typ]['max_running']),
                 [size, shared_dict['typ'][typ]['file_number']],
                 key,
-                'white'
+                tu.get_color('white')
                 )
         time.sleep(1)
 
