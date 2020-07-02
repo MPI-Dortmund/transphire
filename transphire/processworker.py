@@ -519,10 +519,17 @@ class ProcessWorker(QObject):
             'typ': typ_dict,
             }
 
+        keep_list = [
+            self.settings['set_folder_raw'],
+            self.settings['tar_folder'],
+            self.settings['meta_folder'],
+            self.settings['stack_folder'],
+            ]
         try:
             restart_feedback = restart_dict['feedback']
         except KeyError:
             restart_feedback = False
+
         if restart_feedback:
             try:
                 shutil.move(
@@ -532,6 +539,7 @@ class ProcessWorker(QObject):
             except FileNotFoundError:
                 pass
         else:
+            keep_list.append('000_Feedback_results')
             try:
                 with open(self.settings['feedback_file'], 'r') as read:
                     content = read.read().strip()
@@ -565,11 +573,28 @@ class ProcessWorker(QObject):
                 for key in process:
                     if 'WIDGETS' in key:
                         continue
+                    elif process[key][1]['name'].startswith('Copy_to'):
+                        continue
                     self.prefill_queue(
                         shared_dict=shared_dict,
                         entry=process[key][1],
                         restart_dict=restart_dict,
+                        keep_list=keep_list,
                         )
+        for entry in content_process:
+            for process in entry:
+                for key in process:
+                    if 'WIDGETS' in key:
+                        continue
+                    elif not process[key][1]['name'].startswith('Copy_to'):
+                        continue
+                    self.prefill_queue(
+                        shared_dict=shared_dict,
+                        entry=process[key][1],
+                        restart_dict=restart_dict,
+                        keep_list=keep_list,
+                        )
+        self.stop = True
         queue_com['info'].put('Current settings saved to: {0}'.format(self.settings['set_folder']))
         self.check_queue(queue_com=queue_com)
 
@@ -974,7 +999,7 @@ class ProcessWorker(QObject):
                 write.write('')
         return dictionary
 
-    def prefill_queue(self, shared_dict, entry, restart_dict):
+    def prefill_queue(self, shared_dict, entry, restart_dict, keep_list):
         """
         Prefill the queues for continue mode
 
@@ -1097,9 +1122,33 @@ class ProcessWorker(QObject):
                 pass
 
         elif check_state == 0:
+            try:
+                keep_list.append(os.path.basename(self.settings['{}_folder_feedback_0'.format(key.lower())]))
+            except KeyError:
+                pass
             if os.path.exists(save_file):
                 with open(save_file, 'r') as read:
                     lines = [line.strip() for line in read.readlines() if line.strip()]
+
+                if key.startswith('Copy_to'):
+                    if '000_Feedback_results' in keep_list:
+                        keep_feedback = True
+                    else:
+                        keep_feedback = False
+
+                    good_lines = []
+                    for line in lines:
+                        for entry in keep_list:
+                            if os.path.dirname(line) == self.settings['project_folder']:
+                                good_lines.append(line)
+                            elif entry in line:
+                                if '000_Feedback_results' in line and not keep_feedback:
+                                    pass
+                                else:
+                                    good_lines.append(line)
+                    lines = good_lines
+                    with open(save_file, 'w') as write:
+                        write.write('\n'.join(lines))
 
                 for line in lines:
                     if self.settings['software_meta_tar'] in line:

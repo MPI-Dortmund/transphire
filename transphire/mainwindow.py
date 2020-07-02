@@ -1142,7 +1142,7 @@ class MainWindow(QMainWindow):
             'tar_folder': 'XXX_Tar_file_folder',
             'stack_folder': '000_Import',
             'meta_folder': '000_Import_meta',
-            'set_folder': 'XXX_Sets',
+            'set_folder_raw': 'XXX_Sets',
             'restart_backup_folder': 'XXX_Restart_Backup',
             'software_meta_folder': '000_Session_meta',
             }
@@ -1156,14 +1156,14 @@ class MainWindow(QMainWindow):
         settings['feedback_file'] = os.path.join(settings['log_folder'], 'feedback_log')
         settings['spot_file'] = os.path.join(settings['log_folder'], 'spot_dict.txt')
         settings['data_frame'] = os.path.join(settings['project_folder'], 'data_frame.csv')
-        settings['external_log'] = os.path.join(settings['set_folder'], 'external_files.json')
+        settings['external_log'] = os.path.join(settings['set_folder_raw'], 'external_files.json')
         settings['translation_file'] = os.path.join(settings['project_folder'], 'Valid_micrographs_info.txt')
         settings['translation_file_bad'] = os.path.join(settings['project_folder'], 'Discarded_micrographs_info.txt')
 
         settings['current_set'] = datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
 
         settings['restart_backup_folder'] = os.path.join(settings['restart_backup_folder'], settings['current_set'])
-        settings['set_folder'] = os.path.join(settings['set_folder'], settings['current_set'])
+        settings['set_folder'] = os.path.join(settings['set_folder_raw'], settings['current_set'])
         folder_dict['set_folder'] = settings['set_folder']
         folder_dict['restart_backup_folder'] = settings['restart_backup_folder']
 
