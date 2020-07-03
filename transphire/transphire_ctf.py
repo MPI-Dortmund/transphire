@@ -1167,6 +1167,7 @@ def create_jpg_file(input_mrc_file, settings, ctf_name):
         json_dict = {
             'label_x': 'Spacial frequency 1/px',
             'label_y': 'CTF',
+            'is_equal': False,
             'data': []
             }
         for idx, (y_values, label) in enumerate(arr_3):

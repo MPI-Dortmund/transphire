@@ -936,6 +936,7 @@ def create_jpg_file(input_file, data, settings):
     json_dict = {
         'label_x': 'Drift x / px',
         'label_y': 'Drift y / px',
+        'is_equal': True,
         'data': [
             {
                 'values_x': data[0].tolist(),

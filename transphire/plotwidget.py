@@ -304,8 +304,8 @@ class MplCanvasWidget(QWidget):
             self.font_size = 6
             self.labelpad = 0
         else:
-            self.font_size = 10
-            self.labelpad = 10
+            self.font_size = 8
+            self.labelpad = 5
 
         self.no_grid = no_grid
         self.plot_type = plot_type
@@ -825,7 +825,29 @@ class PlotWidget(QWidget):
                 plot_idx = 0
                 label_x = json_data['label_x']
                 label_y = json_data['label_y']
+                try:
+                    is_equal = json_data['is_equal']
+                except KeyError:
+                    is_equal = True
+                min_x = []
+                max_x = []
+                min_y = []
+                max_y = []
                 for data_dict in json_data['data']:
+                    if is_equal:
+                        max_abs = np.maximum(
+                            np.max(np.abs(data_dict['values_x'])),
+                            np.max(np.abs(data_dict['values_y'])),
+                            )
+                        min_x.append(-max_abs - np.maximum(max_abs * 0.1, 1))
+                        max_x.append(max_abs + np.maximum(max_abs * 0.1, 1))
+                        min_y.append(-max_abs - np.maximum(max_abs * 0.1, 1))
+                        max_y.append(max_abs + np.maximum(max_abs * 0.1, 1))
+                    else:
+                        min_x.append(np.min(data_dict['values_x']))
+                        max_x.append(np.max(data_dict['values_x']))
+                        min_y.append(np.min(data_dict['values_y']))
+                        max_y.append(np.max(data_dict['values_y']))
                     self.update_image_plot(
                         self._canvas_list[idx].mpl_canvas,
                         data_dict['values_x'],
@@ -837,8 +859,15 @@ class PlotWidget(QWidget):
                         plot_idx,
                         )
                     plot_idx += 1
+                self._canvas_list[idx].mpl_canvas.axes.set_xlim(
+                    np.min(min_x),
+                    np.max(max_x)
+                    )
+                self._canvas_list[idx].mpl_canvas.axes.set_ylim(
+                    np.min(min_y),
+                    np.max(max_y)
+                    )
 
-            self._canvas_list[idx].mpl_canvas.axes.autoscale(enable=True)
             self._canvas_list[idx].update_labels(
                 tu.split_maximum(current_name, 20, '_'),
                 label_x,
@@ -971,6 +1000,6 @@ class PlotWidget(QWidget):
                 label=label,
                 color=color,
                 markeredgecolor='black',
-                markersize=10,
+                markersize=6,
                 ))
             self._image_ref.append([canvas.axes.legend(loc='best')])
