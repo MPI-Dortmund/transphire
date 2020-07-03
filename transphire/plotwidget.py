@@ -877,14 +877,14 @@ class PlotWidget(QWidget):
             mean = [self.mean, self.mean]
             median = [self.median, self.median]
             if plot_type == 'values':
-                max_x = np.max(np.abs(self._xdata))
+                max_x = np.max(np.abs(self._xdata))*1e5
                 values_x = [np.min(self._xdata)-max_x, np.max(self._xdata)+max_x]
                 values = [
                     [self._mean_ref, values_x, mean, LIGHTBLUE],
                     [self._median_ref, values_x, median, LIGHTRED]
                     ]
             elif plot_type == 'histogram':
-                max_y = np.max(np.abs(self._ydata))
+                max_y = np.max(np.abs(self._ydata))*1e5
                 values_y = [np.min(self._ydata)-max_y, np.max(self._ydata)+max_y]
                 values = [
                     [self._mean_ref, mean, values_y, LIGHTBLUE],

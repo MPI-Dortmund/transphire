@@ -1281,6 +1281,7 @@ class MainWindow(QMainWindow):
                             tu.copy(value['old_file'], value['new_file'])
                         except FileNotFoundError:
                             tu.message("Input file {} not available!".format(value['old_file']))
+                            self.enable(True)
                             return None
                         settings[key][local_key] = 'external_log|||{}'.format(local_key)
 
