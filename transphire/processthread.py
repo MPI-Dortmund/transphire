@@ -5088,6 +5088,9 @@ class ProcessThread(object):
                 else:
                     print('PROBLEM', counter, file_in, file_out, checksum_in, checksum_out, len_data_out, len_data_in)
                     counter += 1
+            elif counter == 5:
+                print('PROBLEM', counter, file_in, file_out, checksum_in, checksum_out, len_data_out, len_data_in)
+                raise Exception('PROBLEM')
             else:
                 print('PROBLEM', counter, file_in, file_out, checksum_in, checksum_out, len_data_out, len_data_in)
                 counter += 1
