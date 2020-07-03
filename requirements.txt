@@ -1,0 +1,8 @@
+numpy
+matplotlib
+pexpect
+cython
+telepot
+imageio
+hyperspy
+mrcfile
