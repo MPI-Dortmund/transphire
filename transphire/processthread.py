@@ -1768,7 +1768,7 @@ class ProcessThread(object):
                     )
             message = '{0}: Filenumber {1} already exists!\n'.format(
                 self.name,
-                self.shared_dict_typ['file_number']
+                number
                 ) + \
                 'Check Startnumber! Last one used: {0}'.format(self.shared_dict_typ['file_number'])
             self.queue_com['notification'].put(message)
@@ -2579,15 +2579,11 @@ class ProcessThread(object):
                 [os.path.basename(queue_dict[0]['sum'][0])]
                 )
 
-        self.shared_dict['matplotlib_lock'].acquire()
-        try:
-            tum.create_jpg_file(
-                file_for_jpg,
-                data_original[mask],
-                self.settings,
-                )
-        finally:
-            self.shared_dict['matplotlib_lock'].release()
+        tum.create_jpg_file(
+            file_for_jpg,
+            data_original[mask],
+            self.settings,
+            )
 
         warnings, skip_list = tus.check_for_outlier(
             dict_name='Motion',
@@ -2855,15 +2851,11 @@ class ProcessThread(object):
         copied_log_files.extend(zero_list)
         copied_log_files = list(set(copied_log_files))
 
-        self.shared_dict['matplotlib_lock'].acquire()
-        try:
-            tuc.create_jpg_file(
-                file_sum,
-                self.settings,
-                self.settings['Copy']['CTF'],
-                )
-        finally:
-            self.shared_dict['matplotlib_lock'].release()
+        tuc.create_jpg_file(
+            file_sum,
+            self.settings,
+            self.settings['Copy']['CTF'],
+            )
 
         import_name = tu.get_name(file_sum)
         data, data_orig = tu.get_function_dict()[self.prog_name]['plot_data'](
@@ -3088,11 +3080,7 @@ class ProcessThread(object):
         copied_log_files.extend(zero_list)
         copied_log_files = list(set(copied_log_files))
 
-        self.shared_dict['matplotlib_lock'].acquire()
-        try:
-            tue.create_jpg_file(file_name, self.settings[folder_name])
-        finally:
-            self.shared_dict['matplotlib_lock'].release()
+        tue.create_jpg_file(file_name, self.settings[folder_name])
 
         skip_list = False
         if skip_list:
@@ -3616,14 +3604,10 @@ class ProcessThread(object):
             copied_log_files.extend(zero_list)
             copied_log_files = list(set(copied_log_files))
 
-            self.shared_dict['matplotlib_lock'].acquire()
-            try:
-                tuclass2d.create_jpg_file(
-                    file_name,
-                    self.settings[folder_name],
-                    )
-            finally:
-                self.shared_dict['matplotlib_lock'].release()
+            tuclass2d.create_jpg_file(
+                file_name,
+                self.settings[folder_name],
+                )
 
         except Exception:
             self.shared_dict_typ['queue_list_lock'].acquire()
@@ -3781,11 +3765,7 @@ class ProcessThread(object):
         copied_log_files.extend(zero_list)
         copied_log_files = list(set(copied_log_files))
 
-        self.shared_dict['matplotlib_lock'].acquire()
-        try:
-            tselect2d.create_jpg_file(file_name, self.settings[folder_name])
-        finally:
-            self.shared_dict['matplotlib_lock'].release()
+        tselect2d.create_jpg_file(file_name, self.settings[folder_name])
 
         skip_list = False
         if skip_list:
@@ -5072,7 +5052,7 @@ class ProcessThread(object):
             tu.copy(file_in, file_out)
             if not do_checksum:
                 break
-            time.sleep(0.1)
+            time.sleep(0.5)
 
             with open(file_out, 'rb') as read:
                 content = read.read()

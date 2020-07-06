@@ -174,7 +174,8 @@ class ProcessWorker(QObject):
                     process[key][self.idx_values]['aim'] = process[key][self.idx_values]['aim'].split(',')
                     share_dict[key] = manager.list()
                     bad_dict[key] = manager.list()
-                    queue_dict[key] = manager_lifo.LifoQueue()
+                    #queue_dict[key] = manager_lifo.LifoQueue()
+                    queue_dict[key] = manager.Queue()
                     typ_dict[key] = manager.dict({
                         'file_number': 0,
                         'spot': False,
@@ -515,7 +516,6 @@ class ProcessWorker(QObject):
             'gpu_lock': gpu_mutex_dict,
             'gpu_lock_lock': manager.Lock(),
             'data_frame_lock': manager.Lock(),
-            'matplotlib_lock': manager.Lock(),
             'typ': typ_dict,
             }
 
