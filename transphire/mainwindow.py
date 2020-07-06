@@ -974,7 +974,7 @@ class MainWindow(QMainWindow):
                                     error_list.append('The computer does have different types of GPUs available or the GPU\'s crashed! In order to not make any mistakes, please specify the GPU IDs manually')
                                 entry[name.split('_global')[0]] = ' '.join([str(entry) for entry in range(len(gpu_devices))])
                             elif entry[name][0] == 'Memory usage':
-                                entry[name.split('_global')[0]] = 0.9 / max(int(entry['GPU SPLIT']), 1)
+                                entry[name.split('_global')[0]] = 0.9 / (max(int(entry['GPU SPLIT']), 1) * 5 / 4)
                             elif entry[name][0] == 'Memory usage large':
                                 entry[name.split('_global')[0]] = 0.9 / max(int(entry['GPU SPLIT LARGE']), 1)
 
