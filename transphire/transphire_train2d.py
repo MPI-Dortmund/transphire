@@ -144,6 +144,9 @@ def create_train_command(sum_folder, box_folder, output_dir, name, settings):
         except KeyError:
             pass
 
+    if tu.is_higher_version(prog_name, '1.7.4'):
+        command.remove('--use_multithreading')
+
     ignore_list.append('Split Gpu?')
     ignore_list.append('--gpu')
     ignore_list.append('Box size')
