@@ -334,7 +334,10 @@ class ProcessThread(object):
                 self.shared_dict_typ['running'],
                 self.shared_dict_typ['max_running'],
                 ),
-            [],
+            [
+                self.queue.qsize(),
+                self.shared_dict_typ['file_number']
+                ],
             self.typ,
             color
             ])
@@ -941,7 +944,7 @@ class ProcessThread(object):
         except UserWarning:
             if not dummy:
                 self.add_to_queue(aim=self.typ, root_name=root_name)
-            self.write_error(msg=tb.format_exc(), root_name=root_name)
+            #self.write_error(msg=tb.format_exc(), root_name=root_name)
             self.stop.value = True
             self.disable_thread = True
             self.queue_lock.acquire()
