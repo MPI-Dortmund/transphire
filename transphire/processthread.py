@@ -3804,7 +3804,7 @@ class ProcessThread(object):
                             )
                     elif 'Train2d' in compare:
                         pass
-                    elif not self.settings['do_feedback_loop'].value and 'Auto3d' in compare:
+                    elif 'Auto3d' in compare:
                         self.add_to_queue(
                             aim=aim_name,
                             root_name='|||'.join([
@@ -3817,20 +3817,6 @@ class ProcessThread(object):
                                     )
                                 ])
                             )
-                    elif 'Auto3d' in compare:
-                        if self.settings[self.settings['Copy']['Auto3d']]['Run during feedback'] == 'True':
-                            self.add_to_queue(
-                                aim=aim_name,
-                                root_name='|||'.join([
-                                    str(self.settings['do_feedback_loop'].value),
-                                    root_name_raw,
-                                    os.path.join(
-                                        self.settings[folder_name],
-                                        file_name,
-                                        'ordered_class_averages_good.hdf'
-                                        )
-                                    ])
-                                )
                     else:
                         self.add_to_queue(aim=aim_name, root_name=copied_log_files)
                 else:
@@ -4331,6 +4317,10 @@ class ProcessThread(object):
             elif root_name != 'None' and len(root_name.split('|||')) == 4:
                 # Split root_name to get the needed information for this run.
                 feedback_loop, isac_folder, particle_stack, class_average_file = root_name.split('|||')
+                if feedback_loop != '0' and self.settings[self.prog_name]['Run during feedback'] == 'False':
+                    self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name_input, 'stop early 2a', time.time() - start_prog))
+                    return None ### Early exit here.
+
                 folder_name = 'auto3d_folder_feedback_{0}'.format(feedback_loop)
 
                 # Extract a substack from the good class averages.
