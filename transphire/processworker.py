@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import numpy as np
 import json
 import pexpect as pe
 import time
@@ -1137,15 +1138,16 @@ class ProcessWorker(QObject):
 
                     good_lines = []
                     for line in lines:
-                        for entry in keep_list:
-                            if os.path.dirname(line) == self.settings['project_folder']:
-                                good_lines.append(line)
-                            elif entry in line:
-                                if '000_Feedback_results' in line and not keep_feedback:
-                                    pass
-                                else:
-                                    good_lines.append(line)
-                    lines = good_lines
+                        if os.path.dirname(line) == self.settings['project_folder']:
+                            good_lines.append(line)
+                        else:
+                            for entry in keep_list:
+                                if entry in line:
+                                    if '000_Feedback_results' in line and not keep_feedback:
+                                        pass
+                                    else:
+                                        good_lines.append(line)
+                    lines = np.unique(good_lines).tolist()
                     with open(save_file, 'w') as write:
                         write.write('\n'.join(lines) + '\n')
 

@@ -3166,8 +3166,10 @@ class ProcessThread(object):
         start_prog = time.time()
         self.queue_com['log'].put(tu.create_log(self.name, 'run_train2d', root_name_input, 'start process'))
 
+        error = False
+        matches_in_queue = []
+        all_logs = []
         if root_name.endswith('_good.hdf'):
-            all_logs = []
 
             isac_folder, particle_stack, class_average_file = root_name.split('|||')
             file_name = tu.get_name(isac_folder)
@@ -3249,14 +3251,20 @@ class ProcessThread(object):
 
             self.shared_dict_typ['queue_list_lock'].acquire()
             try:
-                matches_in_queue = []
+                with open(self.shared_dict_typ['number_file'], 'w') as write:
+                    write.write(log_prefix)
                 for entry in sorted(glob.glob(os.path.join(new_box_dir, '*'))):
                     self.add_to_queue_file(
                         root_name=entry,
                         file_name=self.shared_dict_typ['list_file'],
                         )
-                    file_name = tu.get_name(tu.get_name(tu.get_name(entry)))[:-len('_original')]
-                    matches_in_queue.extend(self.all_in_queue_file(self.typ, file_name, lock=False))
+                    matches = self.all_in_queue_file(self.typ, tu.get_name(entry), lock=False)
+                    if len(matches) != 2:
+                        error = True
+                    elif error:
+                        pass
+                    else:
+                        matches_in_queue.extend(matches)
             finally:
                 self.shared_dict_typ['queue_list_lock'].release()
 
@@ -3267,11 +3275,27 @@ class ProcessThread(object):
                     root_name=root_name,
                     file_name=self.shared_dict_typ['list_file'],
                     )
+                with open(self.shared_dict_typ['list_file']) as read:
+                    box_files = [line.strip() for line in read.readlines() if line.strip() and '.box' in line]
+                if not box_files:
+                    error = True
+                else:                
+                    with open(self.shared_dict_typ['number_file'], 'r') as read:
+                        log_prefix = read.read()
+
+                for entry in box_files:
+                    matches = self.all_in_queue_file(self.typ, tu.get_name(entry), lock=False)
+                    if len(matches) != 2:
+                        error = True
+                        break
+                    else:
+                        matches_in_queue.extend(matches)
             finally:
                 self.shared_dict_typ['queue_list_lock'].release()
-                self.queue_com['log'].put(tu.create_log(self.name, 'run_train2d', root_name_input, 'stop early 1', time.time() - start_prog))
-            return None
 
+        if error:
+            self.queue_com['log'].put(tu.create_log(self.name, 'run_train2d', root_name_input, 'stop early 1', time.time() - start_prog))
+            return None
 
 
         # Create the command

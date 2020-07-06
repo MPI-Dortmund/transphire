@@ -101,16 +101,15 @@ class LogViewer(QWidget):
         text_raw = tu.create_log(text)
         prefix, suffix = text_raw.split(' => ', 1)
         if user:
-            text = '{}\n{}: {}'.format(prefix, getpass.getuser(), suffix)
+            text = '{}\n{}: {}\n'.format(prefix, getpass.getuser(), suffix)
         else:
-            text = '{}\n{}'.format(prefix, suffix)
+            text = '{}\n{}\n'.format(prefix, suffix)
         try:
             with open(self.file_name, 'a+') as write:
-                write.write(text_raw)
-                write.write('\n')
+                write.write(text)
         except IOError:
             pass
-        self.text.appendPlainText(text + '\n')
+        self.text.appendPlainText(text)
         cursor = self.text.textCursor()
         cursor.movePosition(QTextCursor.End)
         self.text.setTextCursor(cursor)
