@@ -30,7 +30,7 @@ from transphire.mainwindow import MainWindow
 from transphire.loadwindow import DefaultSettings
 
 
-def main(font, root_directory, settings_directory, mount_directory, adjust_width, adjust_height, edit_settings, n_feedbacks, version):
+def main(font, root_directory, settings_directory, mount_directory, adjust_width, adjust_height, edit_settings, n_feedbacks, version, kill):
     """
     Run the GUI.
 
@@ -45,6 +45,12 @@ def main(font, root_directory, settings_directory, mount_directory, adjust_width
     """
     if version:
         print(transphire.__version__)
+        return
+
+    if kill:
+        os.system(
+            "for i in $(ps -aux | grep '/bin/transphire' | grep -v vim | awk '{print $2}'); do kill -9 $i; done"
+            )
         return
 
     # Start the GUI from the users home directory.
@@ -206,6 +212,12 @@ def parse_args():
         help='Maximum number of allowed feedbacks, do not change unless you want to do more feedbacks which is not recommended at this point. (default 5)'
         )
     parser.add_argument(
+        '--kill',
+        default=False,
+        action='store_true',
+        help='Kill all running from the current user TranSPHIRE instances.'
+        )
+    parser.add_argument(
         '--version',
         default=False,
         action='store_true',
@@ -220,7 +232,7 @@ def run_package():
     Entry point for the transphire package
     """
     args = parse_args()
-    if not args['version']:
+    if not args['version'] and not args['kill']:
         check_running()
         check_update()
     main(**args)
