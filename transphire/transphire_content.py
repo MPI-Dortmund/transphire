@@ -215,6 +215,23 @@ def default_cinderella_v0_3_1():
     return items
 
 
+def default_cryolo_train_v1_7_4():
+    """
+    Content of crYOLO_train version 1.7.4
+
+    Arguments:
+    None
+
+    Return:
+    Content items as list
+    """
+    items = default_cryolo_train_v1_5_8()
+    for entry in items[:]:
+        if entry[0] == '--use_multithreading':
+            items.remove(entry)
+    return items
+
+
 def default_cryolo_train_v1_5_8():
     """
     Content of crYOLO_train version 1.5.8
