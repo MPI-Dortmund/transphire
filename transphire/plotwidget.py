@@ -811,8 +811,12 @@ class PlotWidget(QWidget):
                 self._canvas_list[idx].mpl_canvas.axes.get_yaxis().set_visible(False)
 
             elif data_file.endswith('.json'):
-                with open(data_file, 'r') as read:
-                    json_data = json.load(read)
+                try:
+                    with open(data_file, 'r') as read:
+                        json_data = json.load(read)
+                except Exception as e:
+                    print('Error reading image: {}. - {}'.format(data_file, str(e)))
+                    continue
 
                 for entry in self._image_ref:
                     for plot_obj in entry:
