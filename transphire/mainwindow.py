@@ -1018,8 +1018,8 @@ class MainWindow(QMainWindow):
 
                     if gpu_splits != 0:
                         new_gpu = []
-                        for gpu_idx in entry[local_key].split():
-                            for i in range(gpu_splits):
+                        for i in range(gpu_splits):
+                            for gpu_idx in entry[local_key].split():
                                 new_gpu.append('{}_{}'.format(gpu_idx, i))
                         entry[local_key] = ' '.join(new_gpu)
                     try:
