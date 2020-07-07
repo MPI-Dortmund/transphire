@@ -1220,7 +1220,7 @@ class MainWindow(QMainWindow):
 
                     folder_setting_name = '{0}_folder_feedback_{1}'.format(entry.lower(), index)
                     folder_setting = os.path.join(base_dir, folder_name_tmp)
-                    prog_name_feedback = '{} feedback {}'.format(prog_name, index) if index != 0 else prog_name
+                    prog_name_feedback = '{} feedback {}'.format(prog_name, int(settings['General']['Number of feedbacks']) - index + 1) if index != 0 else prog_name
                     settings['plot_emit'].append([prog_name, prog_name_feedback, entry, folder_setting])
 
                     if prog_name == settings['Copy'][entry.replace('_', ' ')]:
