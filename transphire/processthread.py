@@ -946,12 +946,16 @@ class ProcessThread(object):
                 self.add_to_queue(aim=self.typ, root_name=root_name)
             #self.write_error(msg=tb.format_exc(), root_name=root_name)
             self.stop.value = True
+            self.abort.value = True
             self.disable_thread = True
             self.queue_lock.acquire()
+            if self.typ == 'Picking': print(self.name, 'User Error! Reduce Max running', 1)
             try:
+                if self.typ == 'Picking': print(self.name, 'User Error! Reduce Max running', 2)
                 self.shared_dict_typ['max_running'] -= 1
             finally:
                 self.queue_lock.release()
+            if self.typ == 'Picking': print(self.name, 'User Error! Reduce Max running', 3)
         except Exception:
             if not dummy:
                 self.add_to_queue(aim=self.typ, root_name=root_name)
@@ -1000,10 +1004,13 @@ class ProcessThread(object):
                 finally:
                     self.queue_lock.release()
 
+        #if self.typ == 'Picking': print(self.name, 'User Error! Reduce Max running', 4)
         self.queue_lock.acquire()
         try:
+            #if self.typ == 'Picking': print(self.name, 'User Error! Reduce Max running', 5)
             self.shared_dict_typ['running'] -= 1
             if not self.shared_dict_typ['is_error']:
+                #if self.typ == 'Picking': print(self.name, 'User Error! Reduce Max running', 6)
                 if self.shared_dict_typ['running'] == 0:
                     color = tu.get_color('Waiting')
                 else:
@@ -1022,6 +1029,7 @@ class ProcessThread(object):
                     ])
         finally:
             self.queue_lock.release()
+        #if self.typ == 'Picking': print(self.name, 'User Error! Reduce Max running', 7)
 
     def check_queue_files(self, root_name):
         if self.settings['Copy']['Compress'] in ('False', 'Later'):
@@ -1901,8 +1909,8 @@ class ProcessThread(object):
                         root_name=[
                             entry
                             for entry in log_files
-                            if ('Frames to' in compare[0] and '/Stack/' in entry) or
-                                ('Meta to' in compare[0] and '/Meta/' in entry)
+                            if ('Frames to' in compare[0] and self.settings['stack_folder'] in entry) or
+                                ('Meta to' in compare[0] and self.settings['meta_folder'] in entry)
                             ]
                         )
             else:
