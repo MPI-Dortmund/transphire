@@ -25,6 +25,7 @@ import glob
 import json
 import copy
 import matplotlib
+import matplotlib.pyplot
 import threading
 import tarfile
 import subprocess as sp
@@ -167,6 +168,7 @@ class ProcessThread(object):
         None
         """
         # Replacing the Matplotlib Thread shared by all processes with its own lock to avoid a deadlock scenario.
+        matplotlib.pyplot.switch_backend('AGG')
         lock = threading.RLock()
         matplotlib.backends.backend_agg.RendererAgg.lock = lock
         self.GLOBAL_LOCKS.append(lock)
@@ -5236,7 +5238,7 @@ class ProcessThread(object):
 
         try:
             if self.abort.value:
-                raise UserWarning('STOP abortion')
+                raise UserWarning('STOP: abort')
 
             # Run the command
             self.delete_file_to_delete(file_to_delete)
@@ -5270,7 +5272,7 @@ class ProcessThread(object):
                                 self.delete_file_to_delete(file_to_delete)
                                 stop_time = time.time()
                                 out.write('\nTime: {0} sec'.format(stop_time - start_time)) 
-                                raise UserWarning('STOP abortion')
+                                raise UserWarning('STOP: abort')
                             time.sleep(1)
 
                         self.delete_file_to_delete(file_to_delete)

@@ -880,7 +880,10 @@ class PlotWidget(QWidget):
             self._canvas_list[idx].mpl_canvas.draw()
 
     def update_histogram(self, canvas, plot_idx, update):
-        width = self._xdata[1] - self._xdata[0]
+        try:
+            width = self._xdata[1] - self._xdata[0]
+        except IndexError:
+            return
         if update:
             self._plot_ref[plot_idx] = canvas.axes.bar(
                     self._xdata[:-1],
