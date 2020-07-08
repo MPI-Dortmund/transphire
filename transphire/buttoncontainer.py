@@ -253,8 +253,7 @@ class ButtonContainer(QWidget):
                 )
 
             if result:
-                load_file=temp_save_file
-                self.parent.save(load_file)
+                load_file, _ = self.parent.save(temp_save_file, do_message=False, temp=True, interactive=True)
             else:
                 load_file=False
             self.parent.sig_reset.emit(template_name, load_file)

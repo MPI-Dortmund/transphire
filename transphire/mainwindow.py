@@ -302,7 +302,7 @@ class MainWindow(QMainWindow):
         # Load settings saved in load_file
         if load_file is not None and load_file:
             self.load(file_name=load_file)
-            os.remove('{0}.txt'.format(load_file))
+            os.remove(load_file)
         elif os.path.exists('{0}.txt'.format(self.temp_save)) and load_file is None:
             # Result is True if answer is Yes
             result = tu.question(
