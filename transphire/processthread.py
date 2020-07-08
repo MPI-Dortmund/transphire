@@ -1911,8 +1911,8 @@ class ProcessThread(object):
                         root_name=[
                             entry
                             for entry in log_files
-                            if ('Frames to' in compare[0] and self.settings['stack_folder'] in entry) or
-                                ('Meta to' in compare[0] and self.settings['meta_folder'] in entry)
+                            if ('Frames to' in compare[0] and '{}/'.format(self.settings['stack_folder']) in entry) or
+                                ('Meta to' in compare[0] and '{}/'.format(self.settings['meta_folder']) in entry)
                             ]
                         )
             else:
