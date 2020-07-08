@@ -1471,7 +1471,6 @@ def default_general():
         ['Project directory', '', str, '', 'DIR', 'Advanced', 'TranSPHIRE project directory used to store all the project folders.'],
         ['Scratch directory', '', str, '', 'DIR', 'Advanced', 'TranSPHIRE scratch directory used for faster IO during the TranSPHIRE run.'],
 
-        ['Increment number', ['True', 'False'], bool, 'Rename micrographs:True', 'COMBO', 'Rare', 'Increment the number automatically in continue mode instead of manually.'],
         ['Start number', '0', int, 'Rename micrographs:True', 'PLAIN', 'Rare', 'First number to use for the renaming process.'],
         ['Estimated mic number', '10000', int, 'Rename micrographs:True', 'PLAIN', 'Rare', 'Estimated number of micrographs. This is used for the leading number of zeros in the renamed start number.'],
         ['Number of feedbacks', '5', int, '', 'PLAIN', 'Rare', 'Number of iterations to re-train crYOLO in an ISAC feedback loop. The feedback loop will use the ISAC output and do a crYOLO retrain with sparse picking. A value of 0 means no feedback.'],

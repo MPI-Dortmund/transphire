@@ -175,8 +175,8 @@ class ProcessWorker(QObject):
                     process[key][self.idx_values]['aim'] = process[key][self.idx_values]['aim'].split(',')
                     share_dict[key] = manager.list()
                     bad_dict[key] = manager.list()
-                    #queue_dict[key] = manager_lifo.LifoQueue()
-                    queue_dict[key] = manager.Queue()
+                    queue_dict[key] = manager_lifo.LifoQueue()
+                    #queue_dict[key] = manager.Queue()
                     typ_dict[key] = manager.dict({
                         'file_number': 0,
                         'spot': False,
@@ -612,48 +612,90 @@ class ProcessWorker(QObject):
         self.emit_plot_signals(folder_list=folder_list, monitor=False)
 
         # Define file number and check if file already exists
-        shared_dict['typ']['Find']['file_number'] = int(self.settings['General']['Start number']) - 1
-
         if self.settings['General']['Rename micrographs'] == 'True':
-            new_name = '{0}/{1}{2:0{3}d}{4}'.format(
-                self.settings['meta_folder'],
-                self.settings['General']['Rename prefix'],
-                shared_dict['typ']['Find']['file_number']+1,
-                len(self.settings['General']['Estimated mic number']),
-                self.settings['General']['Rename suffix']
-                )
-
-            if os.path.exists('{0}_krios_sum.mrc'.format(new_name)):
-                old_filenumber = shared_dict['typ']['Find']['file_number']
-                try:
-                    with open(shared_dict['typ']['Find']['number_file'], 'r') as read:
-                        shared_dict['typ']['Find']['file_number'] = int(read.readline())
-                except FileNotFoundError:
-                    shared_dict['typ']['Find']['file_number'] = 0
-                if self.settings['General']['Increment number'] == 'True':
-                    message = '{0}: Filenumber {1} already exists!\n'.format(
+            try:
+                with open(shared_dict['typ']['Find']['number_file'], 'r') as read:
+                    shared_dict['typ']['Find']['file_number'] = int(read.readline())
+            except FileNotFoundError:
+                shared_dict['typ']['Find']['file_number'] = int(self.settings['General']['Start number']) - 1
+                message = '{0}: New run detected - Set start number to {1}\n'.format(
+                    'Find',
+                    self.settings['General']['Start number'],
+                    )
+            else:
+                if self.settings['General']['Start number'] != '0' and \
+                        int(self.settings['General']['Start number']) > int(shared_dict['typ']['Find']['file_number']):
+                    message = '{0}: Filenumber {1} provided and larger than last file_number {2}!\nContinue with {1}\n'.format(
                         'Find',
-                        old_filenumber+1
-                        ) + \
-                        'Last one used: {0} - Continue with {1}'.format(
-                            shared_dict['typ']['Find']['file_number'],
-                            shared_dict['typ']['Find']['file_number']+1
-                            )
-                    queue_com['error'].put(message)
-                    queue_com['notification'].put(message)
+                        self.settings['General']['Start number'],
+                        shared_dict['typ']['Find']['file_number'],
+                        )
+                    shared_dict['typ']['Find']['file_number'] = int(self.settings['General']['Start number']) - 1
+
+                elif self.settings['General']['Start number'] != '0' and \
+                        int(self.settings['General']['Start number']) <= int(shared_dict['typ']['Find']['file_number']):
+                    self.stop = True
+                    message = '{0}: Filenumber {1} provided and smaller equals the last file_number {2}!\nPlease adjust the Start number to a valid, i.e. not used yet, value or 0\n'.format(
+                        'Find',
+                        self.settings['General']['Start number'],
+                        shared_dict['typ']['Find']['file_number'],
+                        )
+                elif self.settings['General']['Start number'] == '0':
+                    message = '{0}: Continue run detected! Continue with file number: {1}'.format(
+                        'Find',
+                        shared_dict['typ']['Find']['file_number'],
+                        )
                 else:
                     self.stop = True
-                    message = '{0}: Filenumber {1} already exists!\n'.format(
-                        'Find',
-                        old_filenumber+1
-                        ) + \
-                        'Check Startnumber! Last one used: {0}'.format(shared_dict['typ']['Find']['file_number'])
-                    queue_com['error'].put(message)
-                    queue_com['notification'].put(message)
-            else:
-                pass
-        else:
-            pass
+                    message = 'Unreachable code! Please contact the TranSPHIRE authors.'
+            queue_com['error'].put(message)
+            queue_com['notification'].put(message)
+                
+
+        #####
+#
+#        shared_dict['typ']['Find']['file_number'] = int(self.settings['General']['Start number']) - 1
+#
+#        if self.settings['General']['Rename micrographs'] == 'True':
+#            new_name = '{0}/{1}{2:0{3}d}{4}'.format(
+#                self.settings['meta_folder'],
+#                self.settings['General']['Rename prefix'],
+#                shared_dict['typ']['Find']['file_number']+1,
+#                len(self.settings['General']['Estimated mic number']),
+#                self.settings['General']['Rename suffix']
+#                )
+#
+#            if os.path.exists('{0}_krios_sum.mrc'.format(new_name)):
+#                old_filenumber = shared_dict['typ']['Find']['file_number']
+#                try:
+#                    with open(shared_dict['typ']['Find']['number_file'], 'r') as read:
+#                        shared_dict['typ']['Find']['file_number'] = int(read.readline())
+#                except FileNotFoundError:
+#                    shared_dict['typ']['Find']['file_number'] = 0
+#                if self.settings['General']['Increment number'] == 'True':
+#                    message = '{0}: Filenumber {1} already exists!\n'.format(
+#                        'Find',
+#                        old_filenumber+1
+#                        ) + \
+#                        'Last one used: {0} - Continue with {1}'.format(
+#                            shared_dict['typ']['Find']['file_number'],
+#                            shared_dict['typ']['Find']['file_number']+1
+#                            )
+#                    queue_com['error'].put(message)
+#                    queue_com['notification'].put(message)
+#                else:
+#                    self.stop = True
+#                    message = '{0}: Filenumber {1} already exists!\n'.format(
+#                        'Find',
+#                        old_filenumber+1
+#                        ) + \
+#                        'Check Startnumber! Last one used: {0}'.format(shared_dict['typ']['Find']['file_number'])
+#                    queue_com['error'].put(message)
+#                    queue_com['notification'].put(message)
+#            else:
+#                pass
+#        else:
+#            pass
 
         # Start threads
         thread_list = []
