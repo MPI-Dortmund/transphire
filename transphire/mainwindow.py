@@ -169,9 +169,17 @@ class MainWindow(QMainWindow):
 
         # Settings folder
         self.settings_folder = settings_folder
+        self.project_settings_folder = os.path.join(
+            settings_folder,
+            'PROJECT_SETTINGS'
+            )
+        tu.mkdir_p(self.project_settings_folder)
         self.mount_directory = mount_directory
         self.template_name = template_name
-        self.temp_save = '{0}/temp_save_{1}'.format(settings_folder, os.uname()[1].replace(' ', '_'))
+        self.temp_save = '{0}/temp_save_{1}'.format(
+            self.settings_folder,
+            os.uname()[1].replace(' ', '_')
+            )
 
         # Threads
         self.mount_calculation_ssh = None
@@ -1305,6 +1313,13 @@ class MainWindow(QMainWindow):
             _, message = self.save(
                 file_name=os.path.join(
                     settings['set_folder'],
+                    settings['General']['Project name']
+                    ),
+                do_message=False
+                )
+            _, message = self.save(
+                file_name=os.path.join(
+                    self.project_settings_folder,
                     settings['General']['Project name']
                     ),
                 do_message=False
