@@ -5080,7 +5080,7 @@ class ProcessThread(object):
             tu.copy(file_in, file_out)
             if not do_checksum:
                 break
-            time.sleep(0.5)
+            time.sleep(counter + 1)
 
             with open(file_out, 'rb') as read:
                 content = read.read()
