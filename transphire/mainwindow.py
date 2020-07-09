@@ -1324,6 +1324,8 @@ class MainWindow(QMainWindow):
                     ),
                 do_message=False
                 )
+            with open(os.path.join(settings['set_folder'], 'used_settings.json'), 'w') as write:
+                json.dump(settings, write, indent=1)
             self.workers['process'].sig_start.emit(settings, restart_dict)
             self.workers['mount'].set_settings(settings=settings)
             self.save_temp_settings()
