@@ -5305,8 +5305,8 @@ class ProcessThread(object):
 
     @staticmethod
     def delete_file_to_delete(file_to_delete):
-        time.sleep(0.1)
         if file_to_delete is not None:
+            time.sleep(0.1)
             try:
                 os.remove(file_to_delete)
             except FileNotFoundError:
@@ -5314,7 +5314,7 @@ class ProcessThread(object):
             except PermissionError:
                 with open(file_to_delete, 'w'):
                     pass
-        time.sleep(0.1)
+            time.sleep(0.1)
 
     def send_out_of_range_error(self, warning, file_name, error_type):
         message_const = 'If this is not the only message, you might consider changing microscope settings!'
