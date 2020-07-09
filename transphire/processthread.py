@@ -3449,7 +3449,8 @@ class ProcessThread(object):
                 finally:
                     self.shared_dict['typ'][type_name]['queue_lock'].release()
 
-            self.settings['do_feedback_loop'].value -= 1
+            with self.settings['do_feedback_loop'].get_lock():
+                self.settings['do_feedback_loop'].value -= 1
 
             with open(self.settings['feedback_file'], 'w') as write:
                 write.write(str(self.settings['do_feedback_loop'].value))
@@ -3506,7 +3507,7 @@ class ProcessThread(object):
                     root_name=root_name,
                     file_name=self.shared_dict_typ['list_file'],
                     )
-                self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name_input, 'stop early 1', time.time() - start_prog))
+                self.queue_com['log'].put(tu.create_log(self.name, 'run_class2d', root_name_input, 'stop early 1', time.time() - start_prog))
                 return None
 
             lines_to_use = []
@@ -3523,14 +3524,14 @@ class ProcessThread(object):
                     break
 
             if not final_lines_to_use:
-                self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name_input, 'stop early 2', time.time() - start_prog))
+                self.queue_com['log'].put(tu.create_log(self.name, 'run_class2d', root_name_input, 'stop early 2', time.time() - start_prog))
                 self.shared_dict_typ['queue_list_time'] = time.time()
                 return None
 
             try:
                 with open(self.shared_dict['typ']['Class2d']['feedback_lock_file'], 'r') as read:
                     if '1' in read.read():
-                        self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name_input, 'stop early 3', time.time() - start_prog))
+                        self.queue_com['log'].put(tu.create_log(self.name, 'run_class2d', root_name_input, 'stop early 3', time.time() - start_prog))
                         self.shared_dict_typ['queue_list_time'] = time.time()
                         return None
             except FileNotFoundError:
@@ -5230,7 +5231,8 @@ class ProcessThread(object):
 
             for main, entry in gpu_list:
                 if '_' in entry:
-                    self.shared_dict['gpu_lock'][main][count_idx].value += 1
+                    with self.shared_dict['gpu_lock'][main][count_idx].get_lock():
+                        self.shared_dict['gpu_lock'][main][count_idx].value += 1
                     self.shared_dict['gpu_lock'][main][mutex_idx].release()
                 else:
                     while self.shared_dict['gpu_lock'][main][count_idx].value != 0:
@@ -5298,7 +5300,8 @@ class ProcessThread(object):
             if gpu_list:
                 for main, entry in gpu_list:
                     if '_' in entry:
-                        self.shared_dict['gpu_lock'][main][count_idx].value -= 1
+                        with self.shared_dict['gpu_lock'][main][count_idx].get_lock():
+                            self.shared_dict['gpu_lock'][main][count_idx].value -= 1
                     self.shared_dict['gpu_lock'][entry][mutex_idx].release()
 
         return log_file, err_file
