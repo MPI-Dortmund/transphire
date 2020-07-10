@@ -32,7 +32,7 @@ import multiprocessing.managers
 import queue
 
 
-class MyManager(mp.managers.BaseManager):
+class MyManager(multiprocessing.managers.BaseManager):
     pass
 MyManager.register('LifoQueue', queue.LifoQueue)
 

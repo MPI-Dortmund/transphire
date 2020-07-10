@@ -5054,6 +5054,20 @@ class ProcessThread(object):
         self.shared_dict_typ['queue_list_time'] = time.time()
         self.queue_com['log'].put(tu.create_log(self.name, 'run_copy_extern', root_name_input, 'stop process', time.time() - start_prog))
 
+    @staticmethod
+    def get_hash(file_in, chunksize=1024**2):
+        length = 0
+        hashes = []
+        with open(file_in, 'rb') as read:
+            while True:
+                data = read.read(chunksize)
+                if not data:
+                    break
+                else:
+                    length += len(data)
+                    hashes.append(hash(data))
+        return length, hash(hashes)
+
     def copy_as_user(self, file_in, file_out):
         """
         Copy to another device.
@@ -5071,10 +5085,11 @@ class ProcessThread(object):
 
         do_checksum = os.path.split(file_in)[0] != self.settings['project_folder']
         if do_checksum:
-            with open(file_in, 'rb') as read:
-                content = read.read()
-            checksum_in = hash(content)
-            len_data_in = len(content)
+            len_data_in, checksum_in = self.get_hash(file_in)
+            #with open(file_in, 'rb') as read:
+            #    content = read.read()
+            #checksum_in = hash(content)
+            #len_data_in = len(content)
 
         while True:
             tu.copy(file_in, file_out)
@@ -5082,10 +5097,11 @@ class ProcessThread(object):
                 break
             time.sleep(counter + 1)
 
-            with open(file_out, 'rb') as read:
-                content = read.read()
-            len_data_out = len(content)
-            checksum_out = hash(content)
+            len_data_out, checksum_out = self.get_hash(file_out)
+            #with open(file_out, 'rb') as read:
+            #    content = read.read()
+            #len_data_out = len(content)
+            #checksum_out = hash(content)
 
             if len_data_in == len_data_out:
                 if checksum_in == checksum_out:
