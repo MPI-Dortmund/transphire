@@ -951,13 +951,13 @@ class ProcessThread(object):
             self.abort.value = True
             self.disable_thread = True
             self.queue_lock.acquire()
-            if self.typ == 'Picking': print(self.name, 'User Error! Reduce Max running', 1)
+            #if self.typ == 'Picking': print(self.name, 'User Error! Reduce Max running', 1)
             try:
-                if self.typ == 'Picking': print(self.name, 'User Error! Reduce Max running', 2)
+                #if self.typ == 'Picking': print(self.name, 'User Error! Reduce Max running', 2)
                 self.shared_dict_typ['max_running'] -= 1
             finally:
                 self.queue_lock.release()
-            if self.typ == 'Picking': print(self.name, 'User Error! Reduce Max running', 3)
+            #if self.typ == 'Picking': print(self.name, 'User Error! Reduce Max running', 3)
         except Exception:
             if not dummy:
                 self.add_to_queue(aim=self.typ, root_name=root_name)
@@ -5066,7 +5066,7 @@ class ProcessThread(object):
                 else:
                     length += len(data)
                     hashes.append(hash(data))
-        return length, hash(hashes)
+        return length, hash(tuple(hashes))
 
     def copy_as_user(self, file_in, file_out):
         """
@@ -5086,37 +5086,28 @@ class ProcessThread(object):
         do_checksum = os.path.split(file_in)[0] != self.settings['project_folder']
         if do_checksum:
             len_data_in, checksum_in = self.get_hash(file_in)
-            #with open(file_in, 'rb') as read:
-            #    content = read.read()
-            #checksum_in = hash(content)
-            #len_data_in = len(content)
 
         while True:
             tu.copy(file_in, file_out)
             if not do_checksum:
                 break
-            time.sleep(counter + 1)
 
             len_data_out, checksum_out = self.get_hash(file_out)
-            #with open(file_out, 'rb') as read:
-            #    content = read.read()
-            #len_data_out = len(content)
-            #checksum_out = hash(content)
 
             if len_data_in == len_data_out:
                 if checksum_in == checksum_out:
                     break
                 elif counter == 5:
-                    print('PROBLEM', counter, file_in, file_out, checksum_in, checksum_out, len_data_out, len_data_in)
+                    #print('PROBLEM', counter, file_in, file_out, checksum_in, checksum_out, len_data_out, len_data_in)
                     raise Exception('PROBLEM')
                 else:
-                    print('PROBLEM', counter, file_in, file_out, checksum_in, checksum_out, len_data_out, len_data_in)
+                    #print('PROBLEM', counter, file_in, file_out, checksum_in, checksum_out, len_data_out, len_data_in)
                     counter += 1
             elif counter == 5:
-                print('PROBLEM', counter, file_in, file_out, checksum_in, checksum_out, len_data_out, len_data_in)
+                #print('PROBLEM', counter, file_in, file_out, checksum_in, checksum_out, len_data_out, len_data_in)
                 raise Exception('PROBLEM')
             else:
-                print('PROBLEM', counter, file_in, file_out, checksum_in, checksum_out, len_data_out, len_data_in)
+                #print('PROBLEM', counter, file_in, file_out, checksum_in, checksum_out, len_data_out, len_data_in)
                 counter += 1
 
 
