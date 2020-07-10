@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import os
 import numpy as np
 
 
@@ -39,11 +40,12 @@ def get_mic_number(array, settings, as_int=True):
         prefix = settings['General']['Rename prefix']
         suffix = settings['General']['Rename suffix']
         for entry in array:
+            entry = os.path.basename(entry)
             if suffix == '':
-                first_part = entry.split('.')[0]
+                first_part_split = entry.split('.')
             else:
                 first_part_split = entry.split(suffix)
-                first_part = suffix.join(first_part_split[:-1])
+            first_part = suffix.join(first_part_split[:-1])
             if prefix == '':
                 number = first_part
             else:
