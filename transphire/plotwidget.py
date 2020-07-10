@@ -706,59 +706,62 @@ class PlotWidget(QWidget):
     @pyqtSlot()
     def update_figure(self, do_message=False):
 
-        is_active = self.parent.parent.content[self.parent.parent_layout] == self.parent.parent.content[self.parent.parent_layout].latest_active[0]
+        try:
+            is_active = self.parent.parent.content[self.parent.parent_layout] == self.parent.parent.content[self.parent.parent_layout].latest_active[0]
 
-        overview_is_floating = self.twin_container.dock_widget.isFloating() if self.twin_canvas is not None else False
+            overview_is_floating = self.twin_container.dock_widget.isFloating() if self.twin_canvas is not None else False
 
-        if not self.dock_widget.isFloating() and not is_active and not overview_is_floating:
-            return
-
-        if not self._plot_ref:
-            return
-
-        if not self.update_data(do_message):
-            return
-
-        if self.plot_typ in ('values', 'histogram'):
-            try:
-                update = self.prepare_axes(update=self._plot_ref[0] is None)
-            except ValueError as e:
-                print(e)
+            if not self.dock_widget.isFloating() and not is_active and not overview_is_floating:
                 return
 
-            for plot_idx, canvas in enumerate(self._canvas_list):
-                if update and self._mean_ref[plot_idx] is not None:
-                    for entry in self._mean_ref[plot_idx]:
-                        entry.remove()
-                if update and self._median_ref[plot_idx] is not None:
-                    for entry in self._median_ref[plot_idx]:
-                        entry.remove()
-                if update and self._plot_ref[plot_idx] is not None:
-                    for entry in self._plot_ref[plot_idx]:
-                        entry.remove()
+            if not self._plot_ref:
+                return
 
-                if self.plot_typ == 'values':
-                    self.update_values(canvas.mpl_canvas, plot_idx, update)
-                elif self.plot_typ == 'histogram':
-                    self.update_histogram(canvas.mpl_canvas, plot_idx, update)
-                self.update_helpers(canvas.mpl_canvas, plot_idx, update, self.plot_typ)
+            if not self.update_data(do_message):
+                return
 
-                if update:
-                    canvas.mpl_canvas.axes.set_xlim(
-                        self._applied_min_x,
-                        self._applied_max_x
-                        )
-                    canvas.mpl_canvas.axes.set_ylim(
-                        self._applied_min_y,
-                        self._applied_max_y
-                        )
-                    canvas.mpl_canvas.draw()
-                else:
-                    canvas.mpl_canvas.update()
-                    canvas.mpl_canvas.flush_events()
+            if self.plot_typ in ('values', 'histogram'):
+                try:
+                    update = self.prepare_axes(update=self._plot_ref[0] is None)
+                except ValueError as e:
+                    print(e)
+                    return
 
-        elif self.plot_typ in ('image'):
-            self.update_image()
+                for plot_idx, canvas in enumerate(self._canvas_list):
+                    if update and self._mean_ref[plot_idx] is not None:
+                        for entry in self._mean_ref[plot_idx]:
+                            entry.remove()
+                    if update and self._median_ref[plot_idx] is not None:
+                        for entry in self._median_ref[plot_idx]:
+                            entry.remove()
+                    if update and self._plot_ref[plot_idx] is not None:
+                        for entry in self._plot_ref[plot_idx]:
+                            entry.remove()
+
+                    if self.plot_typ == 'values':
+                        self.update_values(canvas.mpl_canvas, plot_idx, update)
+                    elif self.plot_typ == 'histogram':
+                        self.update_histogram(canvas.mpl_canvas, plot_idx, update)
+                    self.update_helpers(canvas.mpl_canvas, plot_idx, update, self.plot_typ)
+
+                    if update:
+                        canvas.mpl_canvas.axes.set_xlim(
+                            self._applied_min_x,
+                            self._applied_max_x
+                            )
+                        canvas.mpl_canvas.axes.set_ylim(
+                            self._applied_min_y,
+                            self._applied_max_y
+                            )
+                        canvas.mpl_canvas.draw()
+                    else:
+                        canvas.mpl_canvas.update()
+                        canvas.mpl_canvas.flush_events()
+
+            elif self.plot_typ in ('image'):
+                self.update_image()
+        except Exception:
+            pass
 
     def update_image(self):
         current_name = self.current_image_name

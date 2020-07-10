@@ -5015,6 +5015,7 @@ class ProcessThread(object):
 
             if not isinstance(root_name, list):
                 root_name = [root_name]
+            root_name = [entry for entry in root_name if os.path.isfile(entry)]
 
             with tarfile.open(tar_file, 'a') as tar:
                 for entry in root_name:
