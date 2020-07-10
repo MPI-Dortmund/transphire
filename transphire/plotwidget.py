@@ -798,17 +798,17 @@ class PlotWidget(QWidget):
                     print('Error reading image: {}. - {}'.format(data_file, str(e)))
                     continue
                 if self._plot_ref[idx] is None:
-                    self._plot_ref[idx] = [self._canvas_list[idx].mpl_canvas.axes.imshow(data)]
+                    self._plot_ref[idx] = [self._canvas_list[idx].mpl_canvas.axes.imshow(data, resample=False, aspect='equal')]
+                    self._canvas_list[idx].mpl_canvas.axes.set_xlim(
+                        0,
+                        data.shape[1]-1
+                        )
+                    self._canvas_list[idx].mpl_canvas.axes.set_ylim(
+                        0,
+                        data.shape[0]-1
+                        )
                 else:
                     self._plot_ref[idx][0].set_data(data)
-                self._canvas_list[idx].mpl_canvas.axes.set_xlim(
-                    0,
-                    data.shape[1]-1
-                    )
-                self._canvas_list[idx].mpl_canvas.axes.set_ylim(
-                    0,
-                    data.shape[0]-1
-                    )
                 self._canvas_list[idx].mpl_canvas.axes.grid(False)
                 self._canvas_list[idx].mpl_canvas.axes.get_xaxis().set_visible(False)
                 self._canvas_list[idx].mpl_canvas.axes.get_yaxis().set_visible(False)
@@ -876,7 +876,7 @@ class PlotWidget(QWidget):
                     )
 
             self._canvas_list[idx].update_labels(
-                tu.split_maximum(current_name, 20, '_'),
+                tu.split_maximum(tu.get_name(data_file), 20, '_'),
                 label_x,
                 label_y,
                 )
