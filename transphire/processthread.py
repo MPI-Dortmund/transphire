@@ -4536,6 +4536,11 @@ class ProcessThread(object):
             else:
                 assert os.path.exists(output_classes) or volume != 'XXXNoneXXX', 'There should be classes or a volume present at this point of the code'
 
+            # Remove output directory prior to running the code
+            try:
+                shutil.rmtree(log_prefix)
+            except FileNotFoundError:
+                pass
             cmd = []
             cmd.append(self.settings['Path'][self.prog_name])
             cmd.append(log_prefix)
