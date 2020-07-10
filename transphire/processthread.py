@@ -4736,7 +4736,7 @@ class ProcessThread(object):
                     with open(err_file, 'w') as write:
                         write.write('SSH autoSPHIRE command failed or no password is required!')
                     self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name_input, 'stop early 4', time.time() - start_prog))
-                    raise
+                    raise Exception('SSH autoSPHIRE command failed or no password is required!')
 
                 elif idx == 1:
                     child.expect(pe.EOF, timeout=10)
@@ -4746,7 +4746,7 @@ class ProcessThread(object):
                     with open(err_file, 'w') as write:
                         write.write('SSH autoSPHIRE command failed or no password is required!')
                     self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name_input, 'stop early 4', time.time() - start_prog))
-                    raise
+                    raise Exception('SSH autoSPHIRE command failed or no password is required!')
 
                 elif idx == 0:
                     child.sendline(self.settings[self.prog_name]['SSH password'])
