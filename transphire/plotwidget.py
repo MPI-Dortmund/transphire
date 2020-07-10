@@ -27,7 +27,7 @@ import matplotlib
 matplotlib.use('QT5Agg')
 
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QPushButton, QLineEdit, QLabel, QCheckBox
-from PyQt5.QtCore import pyqtSlot, pyqtSignal, Qt
+from PyQt5.QtCore import pyqtSlot, pyqtSignal, Qt, QCoreApplication
 from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
     NavigationToolbar2QT as NavigationToolbar
@@ -153,9 +153,9 @@ class SelectWidget(QWidget):
         self._full_combo_list = value_list.tolist()
 
         current_value = self.buttons['Image'].currentText()
+        cur_state = self.buttons['Image'].blockSignals(True)
         self.buttons['Filter'].textEdited.emit(self.buttons['Filter'].text())
 
-        cur_state = self.buttons['Image'].blockSignals(True)
         idx = self.buttons['Image'].setCurrentText(current_value)
         self.buttons['Image'].blockSignals(cur_state)
         if idx != -1:
@@ -576,10 +576,10 @@ class PlotWidget(QWidget):
                 self._is_first = False
                 for canvas in self._canvas_list:
                     canvas.update_labels(title, labels_x, label_y)
+            self.update_figure()
 
         elif self.plot_typ == 'image':
             self.select_widget.set_values(self._basenames)
-        self.update_figure()
 
     @pyqtSlot()
     def update_trim(self):

@@ -355,7 +355,6 @@ class MainWindow(QMainWindow):
         self.timers['plotting'].setInterval(20000)
         self.timers['plotting'].setSingleShot(True)
         self.timers['plotting'].timeout.connect(self.workers['plotting'].sig_calculate.emit)
-        self.timers['plotting'].start()
         self.workers['plotting'].sig_new_round.connect(self.new_round_plot)
 
         self.mount_thread_list = {}
