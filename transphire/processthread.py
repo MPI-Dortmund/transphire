@@ -19,7 +19,7 @@ import signal
 import time
 import os
 import re
-import shutil as sh
+import shutil
 import traceback as tb
 import glob
 import json
@@ -390,8 +390,8 @@ class ProcessThread(object):
                 ['project_folder', 'scratch_folder']
                 ):
             try:
-                total_quota = sh.disk_usage(self.settings[folder]).total / 1e12
-                used_quota = sh.disk_usage(self.settings[folder]).used / 1e12
+                total_quota = shutil.disk_usage(self.settings[folder]).total / 1e12
+                used_quota = shutil.disk_usage(self.settings[folder]).used / 1e12
             except FileNotFoundError:
                 self.stop.value = True
                 message_error = '\n'.join([
@@ -1727,7 +1727,7 @@ class ProcessThread(object):
             return None
 
         if overall_file_size > \
-                sh.disk_usage(self.settings['project_folder']).free:
+                shutil.disk_usage(self.settings['project_folder']).free:
             self.stop.value = True
             message = '{0}: Not enough space in project folder'.format(
                 self.name
@@ -4886,7 +4886,7 @@ class ProcessThread(object):
                             )
                         ):
                     if os.path.getsize(copy_file_name) > \
-                            sh.disk_usage(hdd_folder).free:
+                            shutil.disk_usage(hdd_folder).free:
                         new_name = None
                         continue
                     else:
