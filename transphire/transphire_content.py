@@ -41,6 +41,7 @@ def default_auto_sphire_v1_3():
         # MAIN
     category = 'Main'
     items.extend([
+        ['--apix:Pixel size', '1.0', float, '', 'PLAIN', category, '', 'Pixel size in A/pixel.'],
         ['--mpi_procs', '24', int, '', 'PLAIN', category, '', 'Number of processors to use.'],
         ['--mpi_submission_command', 'sbatch', str, '', 'PLAIN', category, '', 'Submission command, e.g. sbatch, qsub, ...'],
         ['--mpi_submission_template', '', str, '', 'FILE', category, '', 'Submission template.'],
@@ -77,7 +78,6 @@ def default_auto_sphire_v1_3():
         # Rare
     category = 'Rare'
     items.extend([
-        ['--apix:Pixel size', '1.0', float, '', 'PLAIN', category, '', 'Pixel size in A/pixel.'],
         ['--radius:Protein radius', '-1', float, '', 'PLAIN', category, '', 'Protein radius in pixels'],
         ['--phase_plate:Phase Plate', ['False', 'True'], bool, '', 'COMBO', category, '', 'Input is phase_plate.'],
         ['--filament_mode:Filament mode', ['False', 'True'], bool,  '', 'COMBO', category, '', 'Filament mode'],
@@ -521,6 +521,7 @@ def default_cter_v1_0():
         #Main
     category = 'Main'
     items.extend([
+        ['--apix:Pixel size', '1.0', float, '', 'PLAIN', category, 'Pixel size [A/Pixels]: The pixel size of input micrograph(s) or images in input particle stack.'],
         ['--f_start', '-1', float, '', 'PLAIN', category, 'Lowest resolution [A]: Lowest resolution to be considered in the CTF estimation. Determined automatically by default.'],
         ['--f_stop', '-1', float, '', 'PLAIN', category, 'Highest resolution [A]: Highest resolution to be considered in the CTF estimation. Determined automatically by default.'],
         ['--defocus_min', '0.3', float, 'Phase plate:True', 'PLAIN', category, 'Minimum defocus search [um]'],
@@ -543,7 +544,6 @@ def default_cter_v1_0():
     category = 'Rare'
     items.extend([
         ['--Cs:Cs', '2.0', float, '', 'PLAIN', category, 'Microscope spherical aberration (Cs) [mm]: The spherical aberration (Cs) of microscope used for imaging.'],
-        ['--apix:Pixel size', '1.0', float, '', 'PLAIN', category, 'Pixel size [A/Pixels]: The pixel size of input micrograph(s) or images in input particle stack.'],
         ['--voltage:voltage', '300', float, '', 'PLAIN', category, 'Microscope voltage [kV]: The acceleration voltage of microscope used for imaging.'],
         ['Phase plate:Phase Plate', ['False', 'True'], bool, '', 'COMBO', category, 'Volta Phase Plate - fit smplitude contrast.'],
         ['--kboot', '3', float, '', 'PLAIN', category, 'Number of CTF estimates per micrograph: Used for error assessment.'],
@@ -767,13 +767,13 @@ def default_font():
         ['Notification edit', '40', float, '', 'PLAIN', '', ''],
         ['Notification check', '25', float, '', 'PLAIN', '', ''],
         ['Notification button', '30', float, '', 'PLAIN', '', ''],
-        ['Mount button', '80', float, '', 'PLAIN', '', ''],
+        ['Mount button', '90', float, '', 'PLAIN', '', ''],
         ['Frame entry', '5', float, '', 'PLAIN', '', ''],
         ['Frame button', '8', float, '', 'PLAIN', '', ''],
         ['Frame label', '8', float, '', 'PLAIN', '', ''],
-        ['Setting widget', '30', float, '', 'PLAIN', '', ''],
-        ['Setting widget large', '60', float, '', 'PLAIN', '', ''],
-        ['Setting widget xlarge', '100', float, '', 'PLAIN', '', ''],
+        ['Setting widget', '50', float, '', 'PLAIN', '', ''],
+        ['Setting widget large', '90', float, '', 'PLAIN', '', ''],
+        ['Setting widget xlarge', '130', float, '', 'PLAIN', '', ''],
         ['Status name', '15', float, '', 'PLAIN', '', ''],
         ['Status info', '15', float, '', 'PLAIN', '', ''],
         ['Status quota', '15', float, '', 'PLAIN', '', ''],
@@ -820,10 +820,10 @@ def default_notification():
         ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
         ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
         ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
-        ['Project quota warning (%)', '80', float, '', 'PLAIN', 'Main', ''],
-        ['Project quota stop (%)', '90', float, '', 'PLAIN', 'Main', ''],
-        ['Scratch quota warning (%)', '80', float, '', 'PLAIN', 'Main', ''],
-        ['Scratch quota stop (%)', '90', float, '', 'PLAIN', 'Main', ''],
+        ['Project quota warning (%)', '90', float, '', 'PLAIN', 'Main', ''],
+        ['Project quota stop (%)', '97', float, '', 'PLAIN', 'Main', ''],
+        ['Scratch quota warning (%)', '90', float, '', 'PLAIN', 'Main', ''],
+        ['Scratch quota stop (%)', '97', float, '', 'PLAIN', 'Main', ''],
         ['Time until notification', '25', float, '', 'PLAIN', 'Main', ''],
         ['Nr. of values used for median', '5', int, '', 'PLAIN', 'Main', ''],
         ]
@@ -842,10 +842,10 @@ def default_notification():
                     continue
                 else:
                     items.append(
-                        ['{0} warning'.format(key), '-1000000 1000000', [float, float], '', 'PLAIN', 'Main', ''],
+                        ['{0} warning'.format(key), '-inf inf', [float, float], '', 'PLAIN', 'Main', ''],
                         )
                     items.append(
-                        ['{0} skip'.format(key), '-1000000 1000000', [float, float], '', 'PLAIN', 'Main', ''],
+                        ['{0} skip'.format(key), '-inf inf', [float, float], '', 'PLAIN', 'Main', ''],
                         )
         except KeyError:
             pass
@@ -1080,6 +1080,7 @@ def default_ctffind_4_v4_1_8():
         #Main
     category = 'Main'
     items.extend([
+        ['Pixel size:Pixel size', '1.0', float, '', 'PLAIN', category, ''],
         ['Min resolution(A)', '30', float, '', 'PLAIN', category, ''],
         ['Max resolution(A)', '5', float, '', 'PLAIN', category, ''],
         ['Min defocus(A)', '5000', float, '', 'PLAIN', category, ''],
@@ -1105,7 +1106,6 @@ def default_ctffind_4_v4_1_8():
     category = 'Rare'
     items.extend([
         ['Spherical aberration:Cs', '2.7', float, '', 'PLAIN', category, ''],
-        ['Pixel size:Pixel size', '1.0', float, '', 'PLAIN', category, ''],
         ['Acceleration voltage:voltage', '300.0', float, '', 'PLAIN', category, ''],
         ['Phase shift:Phase Plate', ['False', 'True'], bool, '', 'COMBO', category, ''],
         ['High accuracy', ['True', 'False'], bool, '', 'COMBO', category, ''],
@@ -1177,7 +1177,7 @@ def default_unblur_v1_0_0():
         ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
         ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
 
-        ['Pixel size of image (A):Pixel size', '1.0', float, '', 'PLAIN', 'Rare', 'Pixel size in A of input stack in angstrom.'],
+        ['Pixel size of image (A):Pixel size', '1.0', float, '', 'PLAIN', 'Main', 'Pixel size in A of input stack in angstrom.'],
         ['Output binning factor:Bin superres', '1', float, '', 'PLAIN', 'Advanced', 'Binning performed in Fourier space, default 1.0.'],
         ['Exposure per frame (e/A^2)', '0', float, '', 'PLAIN', 'Main', 'Frame dose in e/A^2. If not specified, dose weighting will be skipped.'],
         ['Acceleration voltage:voltage', '300', float, '', 'PLAIN', 'Rare', 'High tension in kV needed for dose weighting.  Default is 300.'],
@@ -1378,6 +1378,7 @@ def default_motion_cor_2_v1_3_0():
         #Main
     category = 'Main'
     items.extend([
+        ['-PixSize:Pixel size', '0', float, '', 'PLAIN', category, 'Pixel size in A of input stack in angstrom. If not specified, dose weighting will be skipped.'],
         ['-FmDose', '0', float, '', 'PLAIN', category, 'Frame dose in e/A^2. If not specified, dose weighting will be skipped.'],
         ['-Patch', '0 0 0', [int, int, int], '', 'PLAIN', category, '1. It follows by  number of patches in x and y dimensions, and overlapping in percentage of adjacent patches.  2. The default values are 0 0 0, meaning only full-frame based alignment is performed.'],
         ])
@@ -1395,7 +1396,6 @@ def default_motion_cor_2_v1_3_0():
         #Main
     category = 'Rare'
     items.extend([
-        ['-PixSize:Pixel size', '0', float, '', 'PLAIN', category, 'Pixel size in A of input stack in angstrom. If not specified, dose weighting will be skipped.'],
         ['-kV:voltage', '300', float, '', 'PLAIN', category, 'High tension in kV needed for dose weighting.  Default is 300.'],
         ['-FtBin:Bin superres', '1', float, '', 'PLAIN', category, 'Binning performed in Fourier space, default 1.0.'],
         ['-Bft', '500 150', [float, float], '', 'PLAIN', category, 'B-Factor for alignment, default 100.'],
@@ -1439,12 +1439,12 @@ def default_input():
         ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
         ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['Software', ['EPU >=1.9', 'EPU >=1.8', 'Latitude S', 'Just Stack'], str, '', 'COMBO', 'Main', 'Software used for data collection.'],
-        ['Type', ['Stack', 'Frames'], str, '', 'COMBO', 'Main', 'Stack type used for data collection.'],
-        ['Camera', ['K2', 'K3', 'Falcon3', 'Falcon2'], str, '', 'COMBO', 'Main', 'Camera used for data collection.'],
+        ['Camera', ['K3', 'K2', 'Falcon3', 'Falcon2'], str, '', 'COMBO', 'Main', 'Camera used for data collection.'],
         ['Input project path for frames', '', str, '', 'DIR/SEARCH', 'Main', 'Project directory path (containing the Images-Discs1 folder in case of an EPU session) containing the micrograph movie files of the data collection (mrc, tif, tiff, ...)'],
         ['Input project path for jpg', '', str, '', 'DIR/SEARCH', 'Main', 'Project directory path (containing the Images-Discs1 folder in case of an EPU session) containing the Meta files of the data collection (jpg, xml, ... files). Can be the same as "Input project path for frames".'],
         ['Input frames extension', ['mrc', 'dm4', 'tif', 'tiff'], str, '', 'COMBO', 'Main', 'Extension of the original micrograph movies.'],
-        ['Number of frames', '0', int, '', 'PLAIN', 'Main', 'Expected number of frames of the input micrograph movies. This is used to verify that the micrograph movie is not corrupted.'],
+        ['Number of frames', '0', int, '', 'PLAIN', 'Main', 'Expected number of frames of the input micrograph movies. This is used to verify that the micrograph movie is not corrupted. Use -1 to skip frame checking and take them as they are. Faster option and recommended for the "Just Stack" option.'],
+        ['Type', ['Stack', 'Frames'], str, '', 'COMBO', 'Rare', 'Stack type used for data collection.'],
         ]
     return items
 
