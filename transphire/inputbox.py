@@ -81,6 +81,7 @@ class InputBox(QDialog):
 
         layout.addWidget(self.label)
         layout.addWidget(self.edit)
+        layout.addStretch(1)
 
         if is_stop:
             self.abort = QCheckBox('Abort running processes?', self)

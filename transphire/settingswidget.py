@@ -17,7 +17,7 @@
 """
 import os
 import sys
-from PyQt5.QtWidgets import QWidget, QLabel, QFileDialog, QVBoxLayout, QComboBox, QLineEdit, QHBoxLayout, QPushButton, QAction
+from PyQt5.QtWidgets import QWidget, QLabel, QFileDialog, QVBoxLayout, QComboBox, QLineEdit, QHBoxLayout, QPushButton, QAction, QStyle
 from PyQt5.QtCore import pyqtSlot, pyqtSignal, Qt
 from PyQt5.QtGui import QKeySequence
 from transphire import transphire_utils as tu
@@ -106,6 +106,11 @@ class SettingsWidget(QWidget):
 
         self.tooltip = '{0}\nDefault: \'{1}\''.format(self.tooltip, self.default)
 
+        additional_widget = []
+        self.add_widgets = []
+        if self.typ != 'COMBO':
+            additional_widget.append((self.enlarge, QStyle.SP_TitleBarNormalButton, 'Open the text field in "Enlarged mode".'))
+
         if self.typ == 'PLAIN' or self.typ == 'PASSWORD':
             self.edit = QLineEdit(self.name, self)
             self.edit.setToolTip(self.tooltip)
@@ -117,7 +122,7 @@ class SettingsWidget(QWidget):
 
             self.tooltip = '{0}\n\nShortcuts:\nCtrl + Shift + Return -> Open enlarged view'.format(self.tooltip)
 
-        elif self.typ == 'FILE' or self.typ == 'FILE/SEARCH':
+        elif self.typ in ('FILE', 'FILE/SEARCH'):
             input_file_names.append(self.name)
             self.edit = QLineEdit(self.name, self)
             self.edit.textChanged.connect(self.change_tooltip)
@@ -126,13 +131,17 @@ class SettingsWidget(QWidget):
             self.edit.returnPressed.connect(self._find_file)
             self.tooltip = '{0}\n\nShortcuts:\nCtrl + Shift + Return -> Open file dialog\nCtrl + Return -> Open enlarged view'.format(self.tooltip)
 
-        elif self.typ == 'DIR' or self.typ == 'DIR/SEARCH':
+            additional_widget.append((self._find_file, QStyle.SP_DialogOpenButton, 'Open the "Find file" dialog.'))
+
+        elif self.typ in ('DIR', 'DIR/SEARCH'):
             self.edit = QLineEdit(self.name, self)
             self.edit.textChanged.connect(self.change_tooltip)
             self.edit.setText(self.default)
             self.edit.setPlaceholderText('Press shift+return')
             self.edit.returnPressed.connect(self._find_dir)
             self.tooltip = '{0}\n\nShortcuts:\nCtrl + Shift + Return -> Open directory dialog\nCtrl + Return -> Open enlarged view'.format(self.tooltip)
+
+            additional_widget.append((self._find_dir, QStyle.SP_DialogOpenButton, 'Open the "Find directory" dialog.'))
 
         elif self.typ == 'COMBO':
             self.edit = QComboBox(self)
@@ -174,11 +183,20 @@ class SettingsWidget(QWidget):
         layout_h.setContentsMargins(0, 0, 0, 0)
         layout_h.setSpacing(0)
         layout_h.addWidget(self.edit, stretch=1)
-
         try:
             self.pre_global = self.edit.text()
         except AttributeError:
             self.pre_global = self.edit.currentText()
+
+        for func, icon, tooltip in additional_widget:
+            pb = QPushButton(self)
+            pb.setObjectName('global')
+            pb.setStyleSheet('color: rgba(0, 0, 0 ,0); background-color: rgba(0, 0, 0, 0)')
+            icon = pb.style().standardIcon(icon)
+            pb.setIcon(icon)
+            pb.setToolTip(tooltip)
+            pb.clicked.connect(func)
+            self.add_widgets.append(pb)
 
         if content[1]['name_global'] is not None:
             self.edit.setObjectName('settinger')
@@ -191,11 +209,13 @@ class SettingsWidget(QWidget):
             self.widget_auto.setCheckable(state)
             self.widget_auto.toggled.connect(self._toggle_change)
             self.widget_auto.setChecked(state)
-            layout_h.addWidget(self.widget_auto)
+            layout_h.addWidget(self.widget_auto, stretch=0)
 
             if global_dict is not None and self.key_name != 'Global':
                 global_dict.setdefault(self.name_global, []).append(self)
 
+        for pb in self.add_widgets:
+            layout_h.addWidget(pb, stretch=0)
 
         layout_h.addStretch(1)
         layout.addLayout(layout_h)
@@ -210,6 +230,8 @@ class SettingsWidget(QWidget):
     @pyqtSlot(bool)
     def _toggle_change(self, state):
         self.edit.setEnabled(not state)
+        for entry in self.add_widgets:
+            entry.setEnabled(not state)
         self.action.setEnabled(not state)
         if not state:
             try:
@@ -297,7 +319,7 @@ class SettingsWidget(QWidget):
         in_file = in_file[0]
 
         if in_file != '':
-            self.sender().setText(in_file)
+            self.edit.setText(in_file)
 
     @pyqtSlot()
     def _find_dir(self):
@@ -321,7 +343,7 @@ class SettingsWidget(QWidget):
             options=QFileDialog.DontUseNativeDialog
             )
         if in_dir != '':
-            self.sender().setText(in_dir)
+            self.edit.setText(in_dir)
 
             if '/SEARCH' in self.typ:
                 self.parent.search_for_projects(in_dir)

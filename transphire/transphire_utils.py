@@ -1565,7 +1565,7 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
     QLabel#status_quota {{ max-width: {3}; min-width: {3}; background-color: {0}; min-height: {5}; max-height: {5} }}
     QLabel#setting {{ max-width: {4}; min-width: {4}; background-color: {0}; min-height: {5}; max-height: {5} }}
     QLabel#setting_large {{ max-width: {6}; min-width: {6}; background-color: {0}; min-height: {5}; max-height: {5} }}
-    QLabel#setting_xlarge {{ max-width: {7}; min-width: {7}; background-color: {0}; min-height: {5}; max-height: {5} }}
+    QLabel#setting_xlarge {{ min-width: {7}; background-color: {0}; min-height: {5}; max-height: {5} }}
     """.format(
         'transparent',
         status_name_width,
@@ -1591,13 +1591,13 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
         max-width: {8}; min-width: {8}
         }}
     QLineEdit#setting_xlarge {{
-        max-width: {10}; min-width: {10}
+        min-width: {10}
         }}
     QLineEdit#setting_large:enabled {{
         max-width: {8}; min-width: {8}; background-color: {0}; min-height: {7}; max-height: {7}
         }}
     QLineEdit#setting_xlarge:enabled {{
-        max-width: {10}; min-width: {10}; background-color: {0}; min-height: {7}; max-height: {7}
+        min-width: {10}; background-color: {0}; min-height: {7}; max-height: {7}
         }}
     QLineEdit#noti_edit:enabled {{
         max-width: {2}; min-width: {2}; background-color: {5}; min-height: {7}; max-height: {7}
