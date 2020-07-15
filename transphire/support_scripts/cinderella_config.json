@@ -1,0 +1,16 @@
+{
+	"model": {
+		"input_size": [64,64]
+	},
+ 
+	"train": {
+		"batch_size": 32,
+		"good_path": "XXXGOODXXX",
+		"bad_path": "XXXBADXXX",
+		"pretrained_weights": "",
+		"saved_weights_name": "XXXMODELXXX",
+		"learning_rate": 1e-4,
+		"nb_epoch": 100,
+		"nb_early_stop": 15
+	}
+}
