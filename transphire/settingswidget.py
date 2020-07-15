@@ -191,7 +191,7 @@ class SettingsWidget(QWidget):
         for func, icon, tooltip in additional_widget:
             pb = QPushButton(self)
             pb.setObjectName('global')
-            pb.setStyleSheet('color: rgba(0, 0, 0 ,0); background-color: rgba(0, 0, 0, 0)')
+            pb.setStyleSheet('QPushButton {color: rgba(0, 0, 0 ,0); background-color: rgba(0, 0, 0, 0)}')
             icon = pb.style().standardIcon(icon)
             pb.setIcon(icon)
             pb.setToolTip(tooltip)
