@@ -4797,7 +4797,7 @@ class ProcessThread(object):
                         )
                     if os.path.isfile(viper_model):
                         volume = viper_model.replace(
-                                '{0}/'.format(self.settings['General']['copy_to_work_folder_feedback_0']),
+                                '{0}/'.format(self.settings['copy_to_work_folder_feedback_0']),
                                 ''
                                 )
                         break
