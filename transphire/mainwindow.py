@@ -1093,7 +1093,7 @@ class MainWindow(QMainWindow):
         if error_list and not monitor:
             tu.message('\n'.join(error_list))
             self.enable(True)
-            return None, None
+            return None, None, None
         else:
             pass
 
@@ -1122,7 +1122,7 @@ class MainWindow(QMainWindow):
                     self.project_name_pattern_example
                     )
                 )
-            return None, None
+            return None, None, None
         else:
             pass
 
@@ -1134,7 +1134,7 @@ class MainWindow(QMainWindow):
         if not os.path.exists(settings['project_base']) and monitor:
             self.enable(True)
             tu.message('Project needs to exists in order to start Monitor mode')
-            return None, None
+            return None, None, None
 
         settings['project_folder'] = os.path.join(
             settings['project_base'],
