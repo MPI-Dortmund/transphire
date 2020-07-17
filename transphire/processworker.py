@@ -1056,6 +1056,7 @@ class ProcessWorker(QObject):
         share = entry['group']
         shared_dict_typ = shared_dict['typ'][key]
         number_file = shared_dict_typ['number_file']
+        settings_file = shared_dict_typ['settings_file']
         feedback_lock_file = shared_dict_typ['feedback_lock_file']
         save_file = shared_dict_typ['save_file']
         done_file = shared_dict_typ['done_file']
@@ -1101,6 +1102,14 @@ class ProcessWorker(QObject):
                     )
             except FileNotFoundError:
                 pass
+            if restart_dict['feedback']:
+                try:
+                    shutil.move(
+                        settings_file,
+                        self.settings['restart_backup_folder'],
+                        )
+                except FileNotFoundError:
+                    pass
             lines = []
             if check_state == 2 or key in ('Extract', 'Train2d'):
                 for entry in (save_file, done_file):
