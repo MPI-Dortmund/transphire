@@ -47,8 +47,9 @@ class SelectDialog(QWidget):
         None
         """
         super(SelectDialog, self).__init__(parent)
-        self.out_dir = 'OUT'
-        self.e2proc2d_exec = '/opt/self_installed_programs/anaconda3/envs/sphire_local_deps14/bin/e2proc2d.py'
+        self.out_dir = 'CINDERELLA_RETRAIN_OUT'
+        os.makedirs(self.out_dir, exist_ok=True)
+        self.e2proc2d_exec = '/home/em-transfer-user/applications/sphire/v1.3/bin/e2proc2d.py'
         self.sp_cinderella_exec = 'sp_cinderella_train.py'
         self.columns = 10
 
@@ -125,7 +126,7 @@ class SelectDialog(QWidget):
             for i in labels:
                 suffix = '_{}'.format(i) if cinderella else ''
                 for file_name in sorted(glob.glob(os.path.join(sub_folder, 'png{}'.format(suffix), '*'))):
-                    class_id = int(re.search('(\d*)\.\.png', file_name).group(1))-1
+                    class_id = int(re.search('(\d*)\.+png', file_name).group(1))-1
                     class_averages = os.path.join(sub_folder, '' if cinderella else 'ISAC2', 'ordered_class_averages{}.hdf'.format(suffix))
                     button = MyPushButton(i, class_averages, class_id, self)
                     button.setFixedSize(QSize(50, 50))
@@ -216,7 +217,7 @@ class SelectDialog(QWidget):
     @pyqtSlot()
     def retrain(self):
         config_file = os.path.join(os.path.dirname(__file__), 'support_scripts', 'cinderella_config.json')
-        config_out = os.path.join(self.out_dir, 'config.json')
+        config_out = os.path.realpath(os.path.join(self.out_dir, 'config.json'))
         with open(config_file, 'r') as read:
             content = read.read()
         content = content.replace('XXXGOODXXX', os.path.join(self.out_dir, 'good'))
@@ -225,6 +226,8 @@ class SelectDialog(QWidget):
         with open(config_out, 'w') as write:
             write.write(content)
         for i in ('bad', 'good'):
+            out_dir_classes = os.path.join(self.out_dir, i)
+            os.makedirs(out_dir_classes, exist_ok=True)
             index_dict = {}
             widgets = self.add_to_layout(i)
             for widget in widgets:
@@ -233,7 +236,9 @@ class SelectDialog(QWidget):
                 out_file = os.path.join(self.out_dir, '{}_{}_list.txt'.format(os.path.basename(file_name), i))
                 with open(out_file, 'w') as write:
                     write.write('\n'.join(map(str, index_list)))
-                os.system('{} {} {} --list={}'.format(self.e2proc2d_exec, file_name, os.path.join(self.out_dir, i, os.path.basename(file_name)), out_file))
+                cmd = '{} {} {} --list={}'.format(self.e2proc2d_exec, file_name, os.path.join(self.out_dir, i, file_name.replace('/', '_')), out_file)
+                print('Execute:', cmd)
+                os.system(cmd)
         print('{} -c {}'.format(self.sp_cinderella_exec, config_out))
 
 
