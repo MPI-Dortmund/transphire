@@ -37,7 +37,6 @@ def default_auto_sphire_v1_3():
         # MAIN
     category = 'Main'
     items.extend([
-        ['--apix:Pixel size bin', '1.0', float, '', 'PLAIN', category, '', 'Pixel size in A/pixel.'],
         ['--mpi_procs', '24', int, '', 'PLAIN', category, '', 'Number of processors to use.'],
         ['--mpi_submission_command', 'sbatch', str, '', 'PLAIN', category, '', 'Submission command, e.g. sbatch, qsub, ...'],
         ['--mpi_submission_template', '', str, '', 'FILE', category, '', 'Submission template.'],
@@ -74,6 +73,7 @@ def default_auto_sphire_v1_3():
         # Rare
     category = 'Rare'
     items.extend([
+        ['--apix:Pixel size bin', '1.0', float, '', 'PLAIN', category, '', 'Pixel size in A/pixel.'],
         ['--radius:Protein radius', '-1', float, '', 'PLAIN', category, '', 'Protein radius in pixels'],
         ['--phase_plate:Phase Plate', ['False', 'True'], bool, '', 'COMBO', category, '', 'Input is phase_plate.'],
         ['--filament_mode:Filament mode', ['False', 'True'], bool,  '', 'COMBO', category, '', 'Filament mode'],
@@ -477,7 +477,6 @@ def default_cter_v1_0():
         #Main
     category = 'Main'
     items.extend([
-        ['--apix:Pixel size bin', '1.0', float, '', 'PLAIN', category, 'Pixel size [A/Pixels]: The pixel size of input micrograph(s) or images in input particle stack.'],
         ['--f_start', '-1', float, '', 'PLAIN', category, 'Lowest resolution [A]: Lowest resolution to be considered in the CTF estimation. Determined automatically by default.'],
         ['--f_stop', '-1', float, '', 'PLAIN', category, 'Highest resolution [A]: Highest resolution to be considered in the CTF estimation. Determined automatically by default.'],
         ['--defocus_min', '0.3', float, 'Phase plate:True', 'PLAIN', category, 'Minimum defocus search [um]'],
@@ -499,6 +498,7 @@ def default_cter_v1_0():
         #Main
     category = 'Rare'
     items.extend([
+        ['--apix:Pixel size bin', '1.0', float, '', 'PLAIN', category, 'Pixel size [A/Pixels]: The pixel size of input micrograph(s) or images in input particle stack.'],
         ['--Cs:Cs', '2.0', float, '', 'PLAIN', category, 'Microscope spherical aberration (Cs) [mm]: The spherical aberration (Cs) of microscope used for imaging.'],
         ['--voltage:voltage', '300', float, '', 'PLAIN', category, 'Microscope voltage [kV]: The acceleration voltage of microscope used for imaging.'],
         ['Phase plate:Phase Plate', ['False', 'True'], bool, '', 'COMBO', category, 'Volta Phase Plate - fit smplitude contrast.'],
@@ -526,7 +526,6 @@ def default_gctf_v1_06():
         #Main
     category = 'Main'
     items.extend([
-        ['--apix:Pixel size:Pixel size bin', '1.34', float, '', 'PLAIN', category, 'Pixel size'],
         ['--resL', '50', float, '', 'PLAIN', category, 'Lowest Resolution to be used for search, in angstrom'],
         ['--resH', '4', float, '', 'PLAIN', category, 'Highest Resolution to be used for search, in angstrom'],
         ['--phase_shift_L', '0.0', float, 'Phase plate:True', 'PLAIN', category, 'User defined phase shift, lowest phase shift,  in degree; typically, ~90.0 for micrographs using phase plate '],
@@ -554,6 +553,7 @@ def default_gctf_v1_06():
         #Rare
     category = 'Rare'
     items.extend([
+        ['--apix:Pixel size:Pixel size bin', '1.34', float, '', 'PLAIN', category, 'Pixel size'],
         ['--kV:voltage', '300', float, '', 'PLAIN', category, 'High tension in Kilovolt, typically 300, 200 or 120'],
         ['Phase plate:Phase Plate', ['False', 'True'], bool, '', 'COMBO', category, 'Use phase plate options'],
         ['--dstep', '14.0', float, '', 'PLAIN', category, 'Detector size in micrometer; don\'t worry if unknown; just use default.'],
@@ -1017,7 +1017,6 @@ def default_ctffind_4_v4_1_8():
         #Main
     category = 'Main'
     items.extend([
-        ['Pixel size:Pixel size:Pixel size bin', '1.0', float, '', 'PLAIN', category, ''],
         ['Min resolution(A)', '30', float, '', 'PLAIN', category, ''],
         ['Max resolution(A)', '5', float, '', 'PLAIN', category, ''],
         ['Min defocus(A)', '5000', float, '', 'PLAIN', category, ''],
@@ -1026,6 +1025,10 @@ def default_ctffind_4_v4_1_8():
         ['Min phase(rad)', '0', float, 'Phase shift:True', 'PLAIN', category, ''],
         ['Max phase(rad)', '3.15', float, 'Phase shift:True', 'PLAIN', category, ''],
         ['Step phase(rad)', '0.5', float, 'Phase shift:True', 'PLAIN', category, ''],
+        ['Use movies', ['False', 'True'], bool, '', 'COMBO', category, ''],
+        ['Combine frames', '1', int, 'Use movies:True', 'PLAIN', category, ''],
+        ['Movie is gain-corrected?', ['True', 'False'], bool, 'Use movies:True', 'COMBO', category, ''],
+        ['Gain file:Gain', '', str, 'Movie is gain-corrected?:False', 'FILE/SEARCH', category, ''],
         ])
 
         #Advanced
@@ -1033,15 +1036,12 @@ def default_ctffind_4_v4_1_8():
     items.extend([
         ['Amplitude contrast', '0.07', float, '', 'PLAIN', category, ''],
         ['Amplitude spectrum', '512', float, '', 'PLAIN', category, ''],
-        ['Use movies', ['False', 'True'], bool, '', 'COMBO', category, ''],
-        ['Combine frames', '1', int, 'Use movies:True', 'PLAIN', category, ''],
-        ['Movie is gain-corrected?', ['True', 'False'], bool, 'Use movies:True', 'COMBO', category, ''],
-        ['Gain file:Gain', '', str, 'Movie is gain-corrected?:False', 'FILE/SEARCH', category, ''],
         ])
 
         #Rare
     category = 'Rare'
     items.extend([
+        ['Pixel size:Pixel size:Pixel size bin', '1.0', float, '', 'PLAIN', category, ''],
         ['Spherical aberration:Cs', '2.7', float, '', 'PLAIN', category, ''],
         ['Acceleration voltage:voltage', '300.0', float, '', 'PLAIN', category, ''],
         ['Phase shift:Phase Plate', ['False', 'True'], bool, '', 'COMBO', category, ''],
@@ -1111,7 +1111,7 @@ def default_unblur_v1_0_0():
     """
     items = [
 
-        ['Pixel size of image (A):Pixel size', '1.0', float, '', 'PLAIN', 'Main', 'Pixel size in A of input stack in angstrom.'],
+        ['Pixel size of image (A):Pixel size', '1.0', float, '', 'PLAIN', 'Rare', 'Pixel size in A of input stack in angstrom.'],
         ['Output binning factor:Bin X times', '1', float, '', 'PLAIN', 'Advanced', 'Binning performed in Fourier space, default 1.0.'],
         ['Exposure per frame (e/A^2)', '0', float, '', 'PLAIN', 'Main', 'Frame dose in e/A^2. If not specified, dose weighting will be skipped.'],
         ['Acceleration voltage:voltage', '300', float, '', 'PLAIN', 'Rare', 'High tension in kV needed for dose weighting.  Default is 300.'],
@@ -1299,9 +1299,11 @@ def default_motion_cor_2_v1_3_0():
         #Main
     category = 'Main'
     items.extend([
-        ['-PixSize:Pixel size', '0', float, '', 'PLAIN', category, 'Pixel size in A of input stack in angstrom. If not specified, dose weighting will be skipped.'],
         ['-FmDose', '0', float, '', 'PLAIN', category, 'Frame dose in e/A^2. If not specified, dose weighting will be skipped.'],
         ['-Patch', '0 0 0', [int, int, int], '', 'PLAIN', category, '1. It follows by  number of patches in x and y dimensions, and overlapping in percentage of adjacent patches.  2. The default values are 0 0 0, meaning only full-frame based alignment is performed.'],
+        ['-Gain:Gain', '', str, '', 'FILE/SEARCH', category, 'MRC file that stores the gain reference. If not specified, MRC extended header will be visited to look for gain reference.'],
+        ['-RotGain', '0', int, '', 'PLAIN', category, 'Rotate gain reference counter-clockwise.  0 - no rotation, default, 1 - rotate 90 degree, 2 - rotate 180 degree, 3 - rotate 270 degree.'],
+        ['-FlipGain', '0', int, '', 'PLAIN', category, 'Flip gain reference after gain rotation.  0 - no flipping, default, 1 - flip upside down, 2 - flip left right.'],
         ])
 
         #Main
@@ -1309,18 +1311,16 @@ def default_motion_cor_2_v1_3_0():
     items.extend([
         ['-Throw', '0', int, '', 'PLAIN', category, 'Throw initial number of frames, default is 0'],
         ['-Trunc', '0', int, '', 'PLAIN', category, 'Truncate last number of frames, default is 0'],
-        ['-RotGain', '0', int, '', 'PLAIN', category, 'Rotate gain reference counter-clockwise.  0 - no rotation, default, 1 - rotate 90 degree, 2 - rotate 180 degree, 3 - rotate 270 degree.'],
-        ['-FlipGain', '0', int, '', 'PLAIN', category, 'Flip gain reference after gain rotation.  0 - no flipping, default, 1 - flip upside down, 2 - flip left right.'],
         ['-Group', '1', int, '', 'PLAIN', category, 'Group every specified number of frames by adding them together. The alignment is then performed on the summed frames. By default, no grouping is performed.'],
         ])
 
         #Main
     category = 'Rare'
     items.extend([
+        ['-PixSize:Pixel size', '0', float, '', 'PLAIN', category, 'Pixel size in A of input stack in angstrom. If not specified, dose weighting will be skipped.'],
         ['-kV:voltage', '300', float, '', 'PLAIN', category, 'High tension in kV needed for dose weighting.  Default is 300.'],
         ['-FtBin:Bin X times', '1', float, '', 'PLAIN', category, 'Binning performed in Fourier space, default 1.0.'],
         ['-Bft', '500 150', [float, float], '', 'PLAIN', category, 'B-Factor for alignment, default 100.'],
-        ['-Gain:Gain', '', str, '', 'FILE/SEARCH', category, 'MRC file that stores the gain reference. If not specified, MRC extended header will be visited to look for gain reference.'],
         ['-MaskCent', '0 0', [float, float], '', 'PLAIN', category, 'Center of subarea that will be used for alignement, default 0 0 corresponding to the frame center.'],
         ['-MaskSize', '1 1', [float, float], '', 'PLAIN', category, 'The size of subarea that will be used for alignment, default 1.0 1.0 corresponding full size.'],
         ['-Iter', '7', int, '', 'PLAIN', category, 'Maximum iterations for iterative alignment, default 5 iterations.'],
@@ -1383,8 +1383,8 @@ def default_general():
         ['Rename suffix', '', str, 'Rename micrographs:True', 'PLAIN', 'Main', 'Suffix for the renamed micrographs prefix_number_suffix.extension; The separator between number and suffix needs to be specified, too.'],
 
         ['Rename micrographs', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Rename the micrographs.'],
-        ['Project directory', '', str, '', 'DIR', 'Advanced', 'TranSPHIRE project directory used to store all the project folders.'],
-        ['Scratch directory', '', str, '', 'DIR', 'Advanced', 'TranSPHIRE scratch directory used for faster IO during the TranSPHIRE run.'],
+        ['Project directory', '.', str, '', 'DIR', 'Advanced', 'TranSPHIRE project directory used to store all the project folders.'],
+        ['Scratch directory', '.', str, '', 'DIR', 'Advanced', 'TranSPHIRE scratch directory used for faster IO during the TranSPHIRE run.'],
 
         ['Start number', '0', int, 'Rename micrographs:True', 'PLAIN', 'Rare', 'First number to use for the renaming process.'],
         ['Estimated mic number', '10000', int, 'Rename micrographs:True', 'PLAIN', 'Rare', 'Estimated number of micrographs. This is used for the leading number of zeros in the renamed start number.'],
