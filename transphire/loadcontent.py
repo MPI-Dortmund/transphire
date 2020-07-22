@@ -115,6 +115,11 @@ class LoadContent(QWidget):
         else:
             items = content_function()
 
+        items.extend([
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
+        ])
         if is_license:
             items.append(
                 ['IMPORTANT', 'THIS SOFTWARE IS NOT PUBLISHED UNDER AN OPEN-SOURCE LICENSE.\nPLEASE CHECK IF YOU NEED/OWN A LICENSE BEFORE USING THIS APPLICATION.', str, '', 'PLAIN', '', ''],

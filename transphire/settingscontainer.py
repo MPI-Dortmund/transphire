@@ -78,7 +78,11 @@ class SettingsContainer(QWidget):
         layout_main = QVBoxLayout(self)
         layout_main.setContentsMargins(0, 0, 0, 0)
 
-        self.layout_dict = {}
+        self.layout_dict = {
+            'Main_count': 0,
+            'Advanced_count': 0,
+            'Rare_count': 0,
+            }
         important_note = ''
         for entry in content:
             for widget in entry:
@@ -92,6 +96,7 @@ class SettingsContainer(QWidget):
                     elif key == 'IMPORTANT':
                         important_note = widget[key][0]
                     else:
+                        self.layout_dict['{}_count'.format(widget[key][1]['widget_2'])] += 1
                         continue
 
         if important_note:
@@ -114,7 +119,7 @@ class SettingsContainer(QWidget):
             scroll_area = QScrollArea(my_tab_docker)
             scroll_area.setWidgetResizable(True)
             scroll_area.setWidget(widget)
-            my_tab_docker.add_tab(scroll_area, dict_name)
+            my_tab_docker.add_tab(scroll_area, '{}: {}'.format(dict_name, self.layout_dict['{}_count'.format(dict_name)]))
 
         # Global content
         self.content = {}

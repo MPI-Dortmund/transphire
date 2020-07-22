@@ -250,7 +250,6 @@ class SettingsWidget(QWidget):
                     self.pre_global = pre_pre_global
                     return
             except Exception as e:
-                print(e)
                 self.pre_global = pre_pre_global
                 self.sender().setChecked(not state)
                 return
@@ -309,7 +308,7 @@ class SettingsWidget(QWidget):
                 current_bin = int(self.parent.content['Bin X times'].get_settings()['Bin X times'])
                 current_global = str(pixel_size_raw * current_bin)
             except Exception as e:
-                print(e)
+                pass
 
         return current_global
 
