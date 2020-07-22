@@ -576,12 +576,21 @@ class ProcessThread(object):
             pattern = re.compile(remove_pattern)
             combined_content = sorted([entry for entry in content_done + content_save if pattern.search(entry) is None])
 
-            with open(self.shared_dict['typ'][aim]['save_file'], 'w') as write:
-                self.try_write(write, '{0}\n'.format('\n'.join(combined_content)))
-            with open(self.shared_dict['typ'][aim]['done_file'], 'w') as write:
-                pass
-            with open(self.shared_dict['typ'][aim]['list_file'], 'w') as write:
-                pass
+            self.try_write(
+                self.shared_dict['typ'][aim]['save_file'],
+                'w',
+                '{0}\n'.format('\n'.join(combined_content))
+                )
+            self.try_write(
+                self.shared_dict['typ'][aim]['done_file'],
+                'w',
+                ''
+                )
+            self.try_write(
+                self.shared_dict['typ'][aim]['list_file'],
+                'w',
+                ''
+                )
 
             self.shared_dict['typ'][aim]['queue_list_lock'].acquire()
             try:
@@ -1105,16 +1114,20 @@ class ProcessThread(object):
             print('New error message in error file: {0}'.format(
                 self.shared_dict_typ['error_file']
                 ))
-            with open(self.shared_dict_typ['error_file'], 'a') as append:
-                self.try_write(append, '{0}/{1}/{2}-{3}:{4}:{5}\t'.format(*local[0:6]))
-                self.try_write(append, '{0}\n'.format(self.typ))
-                self.try_write(append, '{0}\n'.format(root_name))
-                if self.password:
-                    self.try_write(append, '{0}\n\n\n'.format(
+            content = []
+            content.append('{0}/{1}/{2}-{3}:{4}:{5}\t'.format(*local[0:6]))
+            content.append('{0}\n'.format(self.typ))
+            content.append('{0}\n'.format(root_name))
+            if self.password:
+                content.append(
+                    '{0}\n\n\n'.format(
                         str(msg).replace(self.password, 'SUDOPASSWORD')
-                        ))
-                else:
-                    self.try_write(append, '{0}\n\n\n'.format(str(msg)))
+                        )
+                    )
+            else:
+                content.append('{0}\n\n\n'.format(str(msg)))
+
+            self.try_write(self.shared_dict_typ['error_file'], 'a', ''.join(content))
         finally:
             self.shared_dict_typ['error_lock'].release()
 
@@ -1150,8 +1163,7 @@ class ProcessThread(object):
             pass
 
         if not is_present or allow_dublicate:
-            with open(file_name, 'a') as append:
-                self.try_write(append, '{0}\n'.format(root_name))
+            self.try_write(file_name, 'a', '{0}\n'.format(root_name))
         else:
             pass
 
@@ -1316,8 +1328,7 @@ class ProcessThread(object):
                     else:
                         pass
 
-            with open(file_name, 'w') as write:
-                self.try_write(write, '{0}\n'.format('\n'.join(useable_lines)))
+            self.try_write(file_name, 'w', '{0}\n'.format('\n'.join(useable_lines)))
         finally:
             if lock:
                 self.queue_lock.release()
@@ -1455,8 +1466,7 @@ class ProcessThread(object):
                         self.queue_com['error'].put(message)
                         self.queue_com['notification'].put(message)
                     else:
-                        with open(self.shared_dict_typ['number_file'], 'w') as write:
-                            self.try_write(write, str(self.shared_dict_typ['file_number']))
+                        self.try_write(self.shared_dict_typ['number_file'], 'w', str(self.shared_dict_typ['file_number']))
                 finally:
                     self.shared_dict_typ['count_lock'].release()
 
@@ -1863,8 +1873,7 @@ class ProcessThread(object):
 
             tu.copy(file_entry, new_file)
             log_files.append(new_file)
-            with open(log_file, 'a') as append_file:
-                self.try_write(append_file, '\ncp {0} {1}\n'.format(file_entry, new_file))
+            self.try_write(log_file, 'a', '\ncp {0} {1}\n'.format(file_entry, new_file))
 
         tus.check_outputs(
             zero_list=[],
@@ -1988,11 +1997,9 @@ class ProcessThread(object):
                     else:
                         good_lines.append(line)
 
-            with open(file_name, 'w') as write:
-                self.try_write(write, ''.join(good_lines))
+            self.try_write(file_name, 'w', ''.join(good_lines))
 
-            with open(file_name_bad, 'a') as write:
-                self.try_write(write, ''.join(bad_lines))
+            self.try_write(file_name_bad, 'a', ''.join(bad_lines))
 
         finally:
             self.shared_dict['translate_lock'].release()
@@ -2149,8 +2156,7 @@ class ProcessThread(object):
                 self.shared_dict_typ['spot'] += 1
                 self.shared_dict_typ['spot_dict'][key] = \
                     self.shared_dict_typ['spot']
-                with open(self.settings['spot_file'], 'a') as append:
-                    self.try_write(append, '{0}\t{1}\n'.format(
+                self.try_write(self.settings['spot_file'], 'a', '{0}\t{1}\n'.format(
                         key,
                         self.shared_dict_typ['spot']
                         ))
@@ -2191,25 +2197,21 @@ class ProcessThread(object):
                 ]
 
         template = '{0}\n'
-        with open(file_name, 'a') as write:
-            if first_entry:
-                self.try_write(write, template.format('\n'.join(first_entry)))
-            else:
-                pass
-            self.try_write(write, 
-                template.format(
-                    '\t'.join(
-                        ['{0}'.format(entry) for entry in entries]
-                        )
+        if first_entry:
+            content = [template.format('\n'.join(first_entry))]
+        else:
+            content = []
+        content.append(template.format(
+                '\t'.join(
+                    ['{0}'.format(entry) for entry in entries]
                     )
-                )
+                ))
+        self.try_write(file_name, 'a', ''.join(content))
+
         self.shared_dict['translate_lock'].acquire()
         try:
-            with open(file_name_bad, 'a') as write:
-                if first_entry:
-                    self.try_write(write, template.format('\n'.join(first_entry)))
-                else:
-                    pass
+            if first_entry:
+                self.try_write(file_name_bad, 'a', template.format('\n'.join(first_entry)))
         finally:
             self.shared_dict['translate_lock'].release()
 
@@ -2291,8 +2293,7 @@ class ProcessThread(object):
                         motion_frames['last'] - motion_frames['first'] - 1
                         )
                     ]
-                with open(file_shift, 'w') as write:
-                    self.try_write(write, '{0}\n{0}\n'.format('\t'.join(zeros_list)))
+                self.try_write(file_shift, 'w', '{0}\n{0}\n'.format('\t'.join(zeros_list)))
             else:
                 do_dw = False
 
@@ -3260,8 +3261,7 @@ class ProcessThread(object):
 
             self.shared_dict_typ['queue_list_lock'].acquire()
             try:
-                with open(self.shared_dict_typ['number_file'], 'w') as write:
-                    self.try_write(write, log_prefix)
+                self.try_write(self.shared_dict_typ['number_file'], 'w', log_prefix)
                 for entry in sorted(glob.glob(os.path.join(new_box_dir, '*'))):
                     self.add_to_queue_file(
                         root_name=entry,
@@ -3407,8 +3407,7 @@ class ProcessThread(object):
 
             self.shared_dict['typ']['Picking']['queue_list_lock'].acquire()
             try:
-                with open(self.shared_dict['typ']['Picking']['settings_file'], 'w') as write:
-                    self.try_write(write, '|||'.join([new_model, new_config, str(threshold)]))
+                self.try_write(self.shared_dict['typ']['Picking']['settings_file'], 'w', '|||'.join([new_model, new_config, str(threshold)]))
             finally:
                 self.shared_dict['typ']['Picking']['queue_list_lock'].release()
 
@@ -3443,16 +3442,14 @@ class ProcessThread(object):
             for type_name in ('Extract', 'Class2d'):
                 self.shared_dict['typ'][type_name]['queue_lock'].acquire()
                 try:
-                    with open(self.shared_dict['typ'][type_name]['feedback_lock_file'], 'w') as write:
-                        self.try_write(write, '0')
+                    self.try_write(self.shared_dict['typ'][type_name]['feedback_lock_file'], 'w', '0')
                 finally:
                     self.shared_dict['typ'][type_name]['queue_lock'].release()
 
             with self.settings['do_feedback_loop'].get_lock():
                 self.settings['do_feedback_loop'].value -= 1
 
-            with open(self.settings['feedback_file'], 'w') as write:
-                self.try_write(write, str(self.settings['do_feedback_loop'].value))
+            self.try_write(self.settings['feedback_file'], 'w', str(self.settings['do_feedback_loop'].value))
 
             if self.settings['do_feedback_loop'].value == 0:
                 self.queue_com['status'].put([
@@ -3537,8 +3534,7 @@ class ProcessThread(object):
                 pass
 
             current_idx = old_index + 1
-            with open(self.shared_dict_typ['number_file'], 'w') as write:
-                self.try_write(write, str(current_idx))
+            self.try_write(self.shared_dict_typ['number_file'], 'w', str(current_idx))
 
             for entry in final_lines_to_use:
                 self.shared_dict_typ['queue_list'].remove(entry)
@@ -3547,8 +3543,7 @@ class ProcessThread(object):
                 for type_name in ('Extract', 'Class2d'):
                     self.shared_dict['typ'][type_name]['queue_lock'].acquire()
                     try:
-                        with open(self.shared_dict['typ'][type_name]['feedback_lock_file'], 'w') as write:
-                            self.try_write(write, '1')
+                        self.try_write(self.shared_dict['typ'][type_name]['feedback_lock_file'], 'w', '1')
                     finally:
                         self.shared_dict['typ'][type_name]['queue_lock'].release()
         finally:
@@ -3650,8 +3645,7 @@ class ProcessThread(object):
             self.shared_dict_typ['queue_list_lock'].acquire()
             try:
                 self.shared_dict_typ['queue_list'].extend(final_lines_to_use)
-                with open(self.shared_dict['typ'][self.typ]['feedback_lock_file'], 'w') as write:
-                    self.try_write(write, '0')
+                self.try_write(self.shared_dict['typ'][self.typ]['feedback_lock_file'], 'w', '0')
             finally:
                 self.shared_dict_typ['queue_list_lock'].release()
             self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name_input, 'stop early 4', time.time() - start_prog))
@@ -4339,8 +4333,7 @@ class ProcessThread(object):
                 # Extract a substack from the good class averages.
                 file_name = tu.get_name(root_name)
                 log_prefix = os.path.join(self.settings[folder_name], 'FILES', 'WINDOW_{0}'.format(file_name))
-                with open(self.shared_dict_typ['number_file'], 'w') as write:
-                    self.try_write(write, '|||'.join([str(entry) for entry in [old_shrink_ratio, old_index, volume]]))
+                self.try_write(self.shared_dict_typ['number_file'], 'w', '|||'.join([str(entry) for entry in [old_shrink_ratio, old_index, volume]]))
 
                 add_to_string = '|||'.join(map(str, [0, stack_name, n_particles, 'NONE', 0]))
                 self.add_to_queue_file(
@@ -4417,8 +4410,7 @@ class ProcessThread(object):
 
                 if old_shrink_ratio != -1:
                     assert old_shrink_ratio == float(shrink_ratio), 'Shrink ratios changed! Something is wrong here'
-                with open(self.shared_dict_typ['number_file'], 'w') as write:
-                    self.try_write(write, '|||'.join([str(entry) for entry in [shrink_ratio, old_index, volume]]))
+                self.try_write(self.shared_dict_typ['number_file'], 'w', '|||'.join([str(entry) for entry in [shrink_ratio, old_index, volume]]))
                 add_to_string = '|||'.join(map(str, [feedback_loop, stack_name, n_particles, class_average_file, n_classes]))
                 self.add_to_queue_file(
                     root_name=add_to_string,
@@ -4678,8 +4670,7 @@ class ProcessThread(object):
                     with open(submission_on_work, 'r') as read:
                         content = read.read()
                     submission_on_work = '{0}/submission_script_work.sh'.format(log_prefix)
-                    with open(submission_on_work, 'w') as write:
-                        self.try_write(write, content.replace(
+                    self.try_write(submission_on_work, 'w', content.replace(
                             '{0}/'.format(self.settings['General']['Project directory']),
                             ''
                             ))
@@ -4714,8 +4705,7 @@ class ProcessThread(object):
 
             if self.settings[self.prog_name]['Use SSH'] == 'True':
                 log_file, err_file = tus.get_logfiles('{0}_run_autosphire'.format(log_prefix))
-                with open(err_file, 'w') as write:
-                    pass
+                self.try_write(err_file, 'w', '')
                 start_time = time.time()
                 log = []
                 child = pe.spawnu(cmd)
@@ -4732,8 +4722,7 @@ class ProcessThread(object):
                 log.append(child.after)
                 if idx == 1 and self.settings[self.prog_name]['Need SSH password'] == 'True':
                     print('SSH autoSPHIRE command failed or no password is required!')
-                    with open(err_file, 'w') as write:
-                        self.try_write(write, 'SSH autoSPHIRE command failed or no password is required!')
+                    self.try_write(err_file, 'w', 'SSH autoSPHIRE command failed or no password is required!')
                     self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name_input, 'stop early 4', time.time() - start_prog))
                     raise Exception('SSH autoSPHIRE command failed or no password is required!')
 
@@ -4742,8 +4731,7 @@ class ProcessThread(object):
 
                 elif idx == 0 and self.settings[self.prog_name]['Need SSH password'] == 'False':
                     print('SSH autoSPHIRE command failed or no password is required!')
-                    with open(err_file, 'w') as write:
-                        self.try_write(write, 'SSH autoSPHIRE command failed or no password is required!')
+                    self.try_write(err_file, 'w', 'SSH autoSPHIRE command failed or no password is required!')
                     self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name_input, 'stop early 4', time.time() - start_prog))
                     raise Exception('SSH autoSPHIRE command failed or no password is required!')
 
@@ -4756,9 +4744,11 @@ class ProcessThread(object):
                 log.append(cmd)
 
                 stop_time = time.time()
-                with open(log_file, 'w') as write:
-                    self.try_write(write, '\n'.join(map(str, log)))
-                    self.try_write(write, '\nTime: {0} sec'.format(stop_time - start_time)) 
+                content = [
+                    '\n'.join(map(str, log)),
+                    '\nTime: {0} sec'.format(stop_time - start_time),
+                    ]
+                self.try_write(log_file, 'w', ''.join(content))
             else:
                 log_file, err_file = self.run_command(
                     root_name_input=root_name_input,
@@ -4830,8 +4820,7 @@ class ProcessThread(object):
                     else:
                         pass
 
-            with open(self.shared_dict_typ['number_file'], 'w') as write:
-                self.try_write(write, '|||'.join([str(entry) for entry in [old_shrink_ratio, current_index, volume]]))
+            self.try_write(self.shared_dict_typ['number_file'], 'w', '|||'.join([str(entry) for entry in [old_shrink_ratio, current_index, volume]]))
 
             with open(self.shared_dict_typ['list_file'], 'r') as read:
                 lines = [
@@ -4843,9 +4832,7 @@ class ProcessThread(object):
             for entry in final_lines_to_use:
                 self.shared_dict_typ['queue_list'].remove(entry)
 
-            with open(self.shared_dict_typ['list_file'], 'w') as write:
-                self.try_write(write, '\n'.join(lines))
-                self.try_write(write, '\n')
+            self.try_write(self.shared_dict_typ['list_file'], 'w', '\n'.join(lines) + '\n')
 
         finally:
             self.shared_dict_typ['queue_list_time'] = time.time()
@@ -5259,8 +5246,8 @@ class ProcessThread(object):
 
             self.queue_com['log'].put(tu.create_log(self.name, 'run_command', root_name_input, 'start program'))
             while True:
-                with open(log_file, 'w') as out:
-                    self.try_write(out, command)
+                self.try_write(log_file, 'w', command)
+                with open(log_file, 'a') as out:
                     with open(err_file, 'w') as err:
                         start_time = time.time()
                         self.delete_file_to_delete(file_to_delete)
@@ -5283,15 +5270,14 @@ class ProcessThread(object):
                                     os.getpgid(cmd.pid),
                                     signal.SIGTERM
                                     )
-                                self.delete_file_to_delete(file_to_delete)
-                                stop_time = time.time()
-                                self.try_write(out, '\nTime: {0} sec'.format(stop_time - start_time)) 
-                                raise UserWarning('STOP: abort')
+                                break
                             time.sleep(1)
 
-                        self.delete_file_to_delete(file_to_delete)
-                        stop_time = time.time()
-                        self.try_write(out, '\nTime: {0} sec'.format(stop_time - start_time)) 
+                self.delete_file_to_delete(file_to_delete)
+                stop_time = time.time()
+                self.try_write(err_file, 'a', '\nTime: {0} sec'.format(stop_time - start_time)) 
+                if self.abort.value:
+                    raise UserWarning('STOP: abort')
                 with open(err_file, 'r') as err:
                     if 'Error: All GPUs are in use, quit.' in err.read():
                         continue
@@ -5373,20 +5359,14 @@ class ProcessThread(object):
                         lines = read.readlines()
                     else:
                         lines = read.readlines()[-1]
-                with open(out_file, 'a+') as write:
-                    self.try_write(write, ''.join(lines))
+                self.try_write(out_file, 'a+', ''.join(lines))
             finally:
                 file_lock.release()
             self.file_to_distribute(file_name=in_file)
             self.file_to_distribute(file_name=out_file)
 
     @staticmethod
-    def try_write(file_object, content):
-        for _ in range(5):
-            try:
-                file_object.write(content)
-            except IOError:
-                time.sleep(1)
-            else:
-                return
-        raise BlockingIOError('Failed to write to file!')
+    @tu.rerun_function_in_case_of_error
+    def try_write(file_name, opener, content):
+        with open(file_name, opener) as write:
+            write.write(content)

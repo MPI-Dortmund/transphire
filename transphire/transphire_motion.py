@@ -921,6 +921,7 @@ def create_export_data(export_data, lines):
     lines.append('{0}\n'.format('\t'.join(row_string)))
 
 
+@tu.rerun_function_in_case_of_error
 def create_jpg_file(input_file, data, settings):
     file_name = tu.get_name(input_file)
     data = data[0]

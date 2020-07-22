@@ -23,6 +23,7 @@ import errno
 import json
 import sys
 import shutil
+import time
 
 import numpy as np
 import pandas as pd
@@ -42,6 +43,22 @@ from transphire import transphire_plot as tp
 from transphire import transphire_import as ti
 
 VERSION_RE = re.compile('(.*) >=v([\d.]+)')
+
+
+def rerun_function_in_case_of_error(func):
+    def wrapper(*args, **kwargs):
+        error_code = []
+        for i in range(20):
+            try:
+                return_value = func(*args, **kwargs)
+            except OSError as e:
+                error_code.append(str(e))
+                print(e)
+                time.sleep(0.5)
+            else:
+                return return_value
+        raise BlockingIOError(' --- '.join(error_code))
+    return wrapper
 
 
 def thread_safe(func):

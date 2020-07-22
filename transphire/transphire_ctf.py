@@ -1038,7 +1038,7 @@ def shift_to_contrast(phase_shift):
     return np.tan(np.radians(phase_shift)) / \
         np.sqrt(1.0 + np.tan(np.radians(phase_shift))**2) * 100.0
 
-
+@tu.rerun_function_in_case_of_error
 def create_jpg_file(input_mrc_file, settings, ctf_name):
     file_name = tu.get_name(input_mrc_file)
     input_ctf_file = None

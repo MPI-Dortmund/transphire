@@ -475,6 +475,7 @@ def create_cryolo_v1_0_4_command(
     return ' '.join(command), gpu
 
 
+@tu.rerun_function_in_case_of_error
 def create_box_jpg(file_name, settings, queue_com, name):
     """
     Create jpg files that are overlayed with the box coordinate

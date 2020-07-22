@@ -204,6 +204,7 @@ def create_isac2_1_2_command(class2d_name, stack_name, file_name, output_dir, se
     return ' '.join(command), gpu, check_file
 
 
+@tu.rerun_function_in_case_of_error
 def create_jpg_file(file_name, output_dir):
     files = sorted(glob.glob(os.path.join(output_dir, file_name, 'png', '*')))
     dpi = 300

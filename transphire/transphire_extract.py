@@ -192,7 +192,7 @@ def recursive_file_search(directory, files):
         else:
             files.append(name)
 
-
+@tu.rerun_function_in_case_of_error
 def create_jpg_file(file_name, output_dir):
     files = sorted(glob.glob(os.path.join(output_dir, file_name, 'png', '*')))
     dpi = 300
