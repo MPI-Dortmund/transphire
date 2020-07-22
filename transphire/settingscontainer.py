@@ -18,7 +18,7 @@
 import glob
 import os
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QScrollArea, QLabel
-from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtCore import pyqtSlot, pyqtSignal
 from transphire.settingswidget import SettingsWidget
 from transphire.separator import Separator
 from transphire.tabdocker import TabDocker
@@ -32,6 +32,7 @@ class SettingsContainer(QWidget):
     Inherits:
     QWidget
     """
+    sig_change_use_movie = pyqtSignal(int)
 
     def __init__(self, content, name, global_dict, settings_folder, mount_worker, parent=None, **kwargs):
         """
@@ -47,6 +48,7 @@ class SettingsContainer(QWidget):
         """
         super(SettingsContainer, self).__init__(parent)
 
+        self.parent = parent
         self.name = name
         self.global_dict = None
         self.input_file_names = []
@@ -76,7 +78,11 @@ class SettingsContainer(QWidget):
         layout_main = QVBoxLayout(self)
         layout_main.setContentsMargins(0, 0, 0, 0)
 
-        self.layout_dict = {}
+        self.layout_dict = {
+            'Main_count': 0,
+            'Advanced_count': 0,
+            'Rare_count': 0,
+            }
         important_note = ''
         for entry in content:
             for widget in entry:
@@ -90,6 +96,7 @@ class SettingsContainer(QWidget):
                     elif key == 'IMPORTANT':
                         important_note = widget[key][0]
                     else:
+                        self.layout_dict['{}_count'.format(widget[key][1]['widget_2'])] += 1
                         continue
 
         if important_note:
@@ -112,7 +119,7 @@ class SettingsContainer(QWidget):
             scroll_area = QScrollArea(my_tab_docker)
             scroll_area.setWidgetResizable(True)
             scroll_area.setWidget(widget)
-            my_tab_docker.add_tab(scroll_area, dict_name)
+            my_tab_docker.add_tab(scroll_area, '{}: {}'.format(dict_name, self.layout_dict['{}_count'.format(dict_name)]))
 
         # Global content
         self.content = {}
@@ -138,7 +145,7 @@ class SettingsContainer(QWidget):
                         self.layout_dict['{0}_v'.format(layout_name)].setContentsMargins(0, 0, 0, 0)
                         self.layout_dict[layout_name].addLayout(self.layout_dict['{0}_v'.format(layout_name)])
 
-                    widget = SettingsWidget(
+                    settings_widget = SettingsWidget(
                         content=widget[key],
                         name=name,
                         content_others=content_others,
@@ -147,12 +154,18 @@ class SettingsContainer(QWidget):
                         input_file_names=self.input_file_names,
                         parent=self
                         )
+                    if widget[key][1]['name'] == 'Use movies':
+                        try:
+                            settings_widget.edit.currentIndexChanged.connect(self.sig_change_use_movie.emit)
+                        except AttributeError:
+                            pass
+
                     if group and name not in ('Pipeline'):
                         group, state = group.split(':')
                         self.group.setdefault(group, [])
-                        self.group[group].append([widget, state, widget_name])
-                    self.content[widget_name] = widget
-                    self.layout_dict['{0}_v'.format(layout_name)].addWidget(widget)
+                        self.group[group].append([settings_widget, state, widget_name])
+                    self.content[widget_name] = settings_widget
+                    self.layout_dict['{0}_v'.format(layout_name)].addWidget(settings_widget)
                     self.layout_dict['{0}_idx'.format(layout_name)] += 1
 
         for key in self.group:
@@ -363,9 +376,16 @@ class SettingsContainer(QWidget):
         for key in self.content:
             try:
                 self.content[key].edit.textChanged.connect(self.update_global)
-                self.content[key].edit.textChanged.emit(self.content[key].edit.text())
             except AttributeError:
                 self.content[key].edit.currentTextChanged.connect(self.update_global)
+        self.emit_global()
+
+    @pyqtSlot(int)
+    def emit_global(self, _=None):
+        for key in self.content:
+            try:
+                self.content[key].edit.textChanged.emit(self.content[key].edit.text())
+            except AttributeError:
                 self.content[key].edit.currentTextChanged.emit(self.content[key].edit.currentText())
 
     @pyqtSlot(str)
@@ -375,21 +395,29 @@ class SettingsContainer(QWidget):
 
         for entry in self.global_dict[self.sender().parent().name]:
 
-            if self.sender().parent().name == 'Bin superres' and text == 'False':
-                text = '1'
-            elif self.sender().parent().name == 'Bin superres' and text == 'True':
-                text = '2'
+            is_movie_mode = None
+            try:
+                is_movie_mode = entry.parent.content['Use movies'].get_settings()['Use movies'] == 'True'
+            except KeyError:
+                pass
+
+            if is_movie_mode is None:
+                pass
+            elif is_movie_mode and self.sender().parent().name == 'Pixel size bin':
+                continue
+            elif not is_movie_mode and self.sender().parent().name == 'Pixel size':
+                continue
 
             entry.global_value = text
+            cur_state = entry.edit.blockSignals(True)
             if not entry.edit.isEnabled():
                 try:
                     entry.edit.setText(text)
                 except AttributeError:
                     entry.edit.setCurrentText(text)
 
-            state = entry.widget_auto.isChecked()
-            entry.widget_auto.setChecked(not state)
-            entry.widget_auto.setChecked(state)
+                entry.widget_auto.toggled.emit(True)
+            entry.edit.blockSignals(cur_state)
 
     def search_for_projects(self, project_dir):
         text = self.content['Software'].get_settings()['Software']

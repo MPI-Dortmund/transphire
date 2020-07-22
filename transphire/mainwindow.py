@@ -624,6 +624,12 @@ class MainWindow(QMainWindow):
             else:
                 pass
         self.content['Global'].set_global(global_dict)
+        for key in self.content:
+            try:
+                self.content[key].sig_change_use_movie.connect(self.content['Global'].emit_global)
+            except AttributeError:
+                pass
+
 
         return error_list
 
@@ -954,45 +960,45 @@ class MainWindow(QMainWindow):
         non_global_names_with_global = {}
         for entry in settings_widget:
             for name in sorted(list(entry.keys())):
-                if name == 'Bin superres':
-                    if entry[name] == 'True':
-                        entry[name] = 2
-                    elif entry[name] == 'False':
-                        entry[name] = 1
-                    else:
-                        assert False, (name, entry[name])
-                if name.endswith('_global'):
-                    if entry[name][0] is not None and entry[name][1]:
-                        if key != 'Global':
-                            non_global_names_with_global[entry[name][0]] = name.split('_global')[0]
-                            entry[name.split('_global')[0]] = settings['Global'][entry[name][0]]
-                        elif key == 'Global':
-                            if entry[name][0] == 'GPU':
-                                try:
-                                    nvidia_output = subprocess.check_output(['nvidia-smi', '-L'])
-                                    gpu_devices = re.findall(
-                                        '^GPU \d+: (.+) \(UUID: GPU-.*\)$',
-                                        nvidia_output.decode('utf-8'),
-                                        re.MULTILINE
-                                        )
-                                except subprocess.CalledProcessError:
-                                    gpu_devices = []
-                                if len(set(gpu_devices)) != 1:
-                                    error_list.append('The computer does have different types of GPUs available or the GPU\'s crashed! In order to not make any mistakes, please specify the GPU IDs manually')
-                                entry[name.split('_global')[0]] = ' '.join([str(entry) for entry in range(len(gpu_devices))])
-                            elif entry[name][0] == 'Memory usage':
-                                entry[name.split('_global')[0]] = 0.9 / (max(int(entry['GPU SPLIT']), 1) * 5 / 4)
-                            elif entry[name][0] == 'Memory usage large':
-                                entry[name.split('_global')[0]] = 0.9 / max(int(entry['GPU SPLIT LARGE']), 1)
+                #if name == 'Bin X times?':
+                #    if entry[name] == 'True':
+                #        entry[name] = 2
+                #    elif entry[name] == 'False':
+                #        entry[name] = 1
+                #    else:
+                #        assert False, (name, entry[name])
+                #if name.endswith('_global'):
+                #    if entry[name][0] is not None and entry[name][1]:
+                #        if key != 'Global':
+                #            non_global_names_with_global[entry[name][0]] = name.split('_global')[0]
+                #            entry[name.split('_global')[0]] = settings['Global'][entry[name][0]]
+                #        elif key == 'Global':
+                #            if entry[name][0] == 'GPU':
+                #                try:
+                #                    nvidia_output = subprocess.check_output(['nvidia-smi', '-L'])
+                #                    gpu_devices = re.findall(
+                #                        '^GPU \d+: (.+) \(UUID: GPU-.*\)$',
+                #                        nvidia_output.decode('utf-8'),
+                #                        re.MULTILINE
+                #                        )
+                #                except subprocess.CalledProcessError:
+                #                    gpu_devices = []
+                #                if len(set(gpu_devices)) != 1:
+                #                    error_list.append('The computer does have different types of GPUs available or the GPU\'s crashed! In order to not make any mistakes, please specify the GPU IDs manually')
+                #                entry[name.split('_global')[0]] = ' '.join([str(entry) for entry in range(len(gpu_devices))])
+                #            elif entry[name][0] == 'Memory usage':
+                #                entry[name.split('_global')[0]] = 0.9 / (max(int(entry['GPU SPLIT']), 1) * 5 / 4)
+                #            elif entry[name][0] == 'Memory usage large':
+                #                entry[name.split('_global')[0]] = 0.9 / max(int(entry['GPU SPLIT LARGE']), 1)
 
-                            #elif entry[name][0] == 'GPU SPLIT':
-                            #    entry[name.split('_global')[0]] = '1'
+                #            #elif entry[name][0] == 'GPU SPLIT':
+                #            #    entry[name.split('_global')[0]] = '1'
 
-                        else:
-                            assert False, key
+                #        else:
+                #            assert False, key
 
-                    del entry[name]
-                    continue
+                #    del entry[name]
+                #    continue
 
                 if key in check_list:
                     if name == 'Number of feedbacks' and int(entry[name]) > self.n_feedbacks:
