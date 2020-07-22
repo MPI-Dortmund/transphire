@@ -117,7 +117,7 @@ class LoadContent(QWidget):
 
         if is_license:
             items.append(
-                ['IMPORTANT', 'THIS SOFTWARE IS NOT UNDER AN OPEN-SOURCE LICENSE. PLEASE CHECK IF YOU NEED/OWN A LICENSE BEFORE USING THIS APPLICATION.', str, '', 'PLAIN', '', ''],
+                ['IMPORTANT', 'THIS SOFTWARE IS NOT PUBLISHED UNDER AN OPEN-SOURCE LICENSE.\nPLEASE CHECK IF YOU NEED/OWN A LICENSE BEFORE USING THIS APPLICATION.', str, '', 'PLAIN', '', ''],
                 )
 
 
@@ -143,8 +143,6 @@ class LoadContent(QWidget):
             current_layout.addLayout(layout_h)
             layout_v = None
             for idx, entry in enumerate(items):
-                if entry[self.idx_name] == 'IMPORTANT':
-                    continue
                 if idx % 11 == 0:
                     if layout_v is not None:
                         layout_v.addStretch(1)
@@ -190,7 +188,7 @@ class LoadContent(QWidget):
                     'Others',
                     'Notification_widget',
                     ]
-                if self.typ not in exclude_typ_list and not entry[self.idx_name].startswith('WIDGETS') :
+                if self.typ not in exclude_typ_list and not entry[self.idx_name].startswith('WIDGETS') and not entry[self.idx_name] == 'IMPORTANT':
                     widget_2 = QComboBox(self)
                     widget_2.addItems(['Main', 'Advanced', 'Rare'])
                     combo_idx = widget_2.findText(entry[self.idx_priority])
