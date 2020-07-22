@@ -123,12 +123,12 @@ def default_isac2_1_2():
         # MAIN
     category = 'Main'
     items.extend([
-        ['--CTF', ['True', 'False'], bool, '', 'COMBO', category, 'apply phase-flip for CTF correction: if set the data will be phase-flipped using CTF information included in image headers (default False)'],
         ])
 
         # MAIN
     category = 'Advanced'
     items.extend([
+        ['--CTF', ['True', 'False'], bool, '', 'COMBO', category, 'apply phase-flip for CTF correction: if set the data will be phase-flipped using CTF information included in image headers (default False)'],
         ['Nr. Particles', '20000', int, '', 'PLAIN', category, 'NOT AN ISAC OPTION: Wait to accumulate this number of particles to process.'],
         ['--radius:Protein radius', '-1', int, '', 'PLAIN', category, 'particle radius: there is no default, a sensible number has to be provided, units - pixels (default required int)'],
         ['--VPP:Phase Plate', ['False', 'True'], bool, '--CTF:False', 'COMBO', category, 'Phase Plate data (default False)'],
