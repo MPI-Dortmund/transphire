@@ -32,16 +32,11 @@ def default_auto_sphire_v1_3():
     Return:
     Content items as list
     """
-    items = [
-        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
-        ]
+    items = []
 
         # MAIN
     category = 'Main'
     items.extend([
-        ['--apix:Pixel size', '1.0', float, '', 'PLAIN', category, '', 'Pixel size in A/pixel.'],
         ['--mpi_procs', '24', int, '', 'PLAIN', category, '', 'Number of processors to use.'],
         ['--mpi_submission_command', 'sbatch', str, '', 'PLAIN', category, '', 'Submission command, e.g. sbatch, qsub, ...'],
         ['--mpi_submission_template', '', str, '', 'FILE', category, '', 'Submission template.'],
@@ -78,6 +73,7 @@ def default_auto_sphire_v1_3():
         # Rare
     category = 'Rare'
     items.extend([
+        ['--apix:Pixel size bin', '1.0', float, '', 'PLAIN', category, '', 'Pixel size in A/pixel.'],
         ['--radius:Protein radius', '-1', float, '', 'PLAIN', category, '', 'Protein radius in pixels'],
         ['--phase_plate:Phase Plate', ['False', 'True'], bool, '', 'COMBO', category, '', 'Input is phase_plate.'],
         ['--filament_mode:Filament mode', ['False', 'True'], bool,  '', 'COMBO', category, '', 'Filament mode'],
@@ -102,9 +98,6 @@ def default_compress_command_line():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['--command_compress_path', 'mrc2tif', str, '', 'FILE', 'Main', '', 'Program used to execute compression.'],
         ['--command_compress_option', '-s -c lzw ##INPUT## ##OUTPUT##', str, '', 'PLAIN', 'Main', '', 'Command options used to compress the data. Use ##INPUT## and ##OUTPUT## as variables for the respective files.'],
         ['--command_compress_extension', 'tiff', str, '', 'PLAIN', 'Main', '', 'Output extension for the compressed files.'],
@@ -125,32 +118,28 @@ def default_isac2_1_2():
     Return:
     Content items as list
     """
-    items = [
-        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
-        ]
+    items = []
 
         # MAIN
     category = 'Main'
     items.extend([
-        ['MPI processes', '6', int, '', 'PLAIN', category, 'NOT AN ISAC OPTION: Number of MPI processes to use with ISAC.'],
-        ['--CTF', ['False', 'True'], bool, '', 'COMBO', category, 'apply phase-flip for CTF correction: if set the data will be phase-flipped using CTF information included in image headers (default False)'],
-        ['--VPP:Phase Plate', ['False', 'True'], bool, '--CTF:False', 'COMBO', category, 'Phase Plate data (default False)'],
         ])
 
         # MAIN
     category = 'Advanced'
     items.extend([
+        ['--CTF', ['True', 'False'], bool, '', 'COMBO', category, 'apply phase-flip for CTF correction: if set the data will be phase-flipped using CTF information included in image headers (default False)'],
+        ['Nr. Particles', '20000', int, '', 'PLAIN', category, 'NOT AN ISAC OPTION: Wait to accumulate this number of particles to process.'],
+        ['--radius:Protein radius', '-1', int, '', 'PLAIN', category, 'particle radius: there is no default, a sensible number has to be provided, units - pixels (default required int)'],
+        ['--VPP:Phase Plate', ['False', 'True'], bool, '--CTF:False', 'COMBO', category, 'Phase Plate data (default False)'],
         ['--img_per_grp', '100', int, '', 'PLAIN', category, 'number of images per class (maximum group size, also defines number of classes K=(total number of images)/img_per_grp (default 200)'],
         ['--minimum_grp_size', '60', float, '', 'PLAIN', category, 'minimum size of class (default 60)'],
+        ['MPI processes', '6', int, '', 'PLAIN', category, 'NOT AN ISAC OPTION: Number of MPI processes to use with ISAC.'],
         ])
 
         # MAIN
     category = 'Rare'
     items.extend([
-        ['Nr. Particles', '20000', int, '', 'PLAIN', category, 'NOT AN ISAC OPTION: Wait to accumulate this number of particles to process.'],
-        ['--radius:Protein radius', '-1', int, '', 'PLAIN', category, 'particle radius: there is no default, a sensible number has to be provided, units - pixels (default required int)'],
         ['--target_radius', '29', int, '', 'PLAIN', category, 'target particle radius: actual particle radius on which isac will process data. Images will be shrinked/enlarged to achieve this radius (default 29)'],
         ['--target_nx', '76', int, '', 'PLAIN', category, 'target particle image size: actual image size on which isac will process data. Images will be shrinked/enlarged according to target particle radius and then cut/padded to achieve target_nx size. When xr > 0, the final image size for isac processing is target_nx + xr - 1  (default 76)'],
         ['--thld_err', '0.7', float, '', 'PLAIN', category, 'threshold of pixel error when checking stability: equals root mean square of distances between corresponding pixels from set of found transformations and theirs average transformation, depends linearly on square of radius (parameter target_radius). units - pixels. (default 0.7)'],
@@ -175,9 +164,6 @@ def default_window_1_2():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['--box_size', '256', int, '', 'PLAIN', 'Main', 'Particle box size [Pixels]: The x and y dimensions of square area to be windowed. The box size after resampling is assumed when resample_ratio < 1.0. (default 256)'],
         ['--filament_width:Filament width', '-1', int, '', 'PLAIN', 'Main', 'Filament width [Pixels]: Filament width for the creation of the rectangular mask. Default is one third of the box size. (default -1)'],
 
@@ -201,9 +187,6 @@ def default_cinderella_v0_3_1():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['--weights', '', str, '', 'FILE', 'Main', 'Path network weights.'],
         ['--confidence_threshold', '0.5', float, '', 'PLAIN', 'Main', 'Classes with a confidence higher as that threshold are classified as good.'],
 
@@ -243,9 +226,6 @@ def default_cryolo_train_v1_5_8():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
 
         ['Box size', '205', int, '', 'PLAIN', 'Main', 'Box size used for retraining. Should be quite narrow.'],
 
@@ -277,9 +257,6 @@ def default_cryolo_train_v1_5_4():
     """
     # OLD AND NOT MAINTAINED
     items = [
-        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['Box size', '205', int, '', 'PLAIN', 'Main', 'Box size used for retraining. Should be quite narrow.'],
         ['--warmup', '5', int, '', 'PLAIN', 'Main', 'Number of warmup epochs. Set it to zero if you fine tune a model.'],
         ['--num_cpu', '-1', int, '', 'PLAIN', 'Main', 'Number of CPUs used during training. By default it will use half of the available CPUs.'],
@@ -306,11 +283,7 @@ def default_cryolo_v1_5_8():
     Return:
     Content items as list
     """
-    items = [
-        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
-        ]
+    items = []
 
         #MAIN
     category = 'Main'
@@ -364,13 +337,10 @@ def default_cryolo_v1_4_1():
     """
     # OLD AND NOT MAINTAINED
     items = [
-        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['--conf', '', str, '', 'FILE', 'Main', '', 'Path to configuration file.'],
         ['--weights', '', str, '', 'FILE', 'Main', 'Path to pretrained weights.'],
         ['--threshold', '0.3', float, '', 'PLAIN', 'Main', 'Confidence threshold. Have to be between 0 and 1. The higher, the more conservative.'],
-        ['Pixel size (A/px):Pixel size', '1', float, 'Filter micrographs:True', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Pixel size value. Only used for visual representation.'],
+        ['Pixel size (A/px):Pixel size bin', '1', float, 'Filter micrographs:True', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Pixel size value. Only used for visual representation.'],
         ['Box size', '200', int, '', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Box size value. Only used for visual representation.'],
         ['--filament:Filament mode', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Activate filament mode'],
         ['--filament_width:Filament width', '0', float, '--filament:True', 'PLAIN', 'Main', '(FILAMENT MODE) Filament width (in pixel)'],
@@ -413,13 +383,10 @@ def default_cryolo_v1_2_1():
     """
     # OLD AND NOT MAINTAINED
     items = [
-        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['--conf', '', str, '', 'FILE', 'Main', '', 'Path to configuration file.'],
         ['--weights', '', str, '', 'FILE', 'Main', 'Path to pretrained weights.'],
         ['--threshold', '0.3', float, '', 'PLAIN', 'Main', 'Confidence threshold. Have to be between 0 and 1. As higher, as more conservative.'],
-        ['Pixel size (A/px):Pixel size', '1', float, 'Filter micrographs:True', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Pixel size value. Only used for visual representation.'],
+        ['Pixel size (A/px):Pixel size bin', '1', float, 'Filter micrographs:True', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Pixel size value. Only used for visual representation.'],
         ['Box size', '200', int, '', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Box size value. Only used for visual representation.'],
         ['--filament:Filament mode', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Activate filament mode'],
         ['--filament_width:Filament width', '0', float, '--filament:True', 'PLAIN', 'Main', '(FILAMENT MODE) Filament width (in pixel)'],
@@ -448,13 +415,10 @@ def default_cryolo_v1_1_0():
     """
     # OLD AND NOT MAINTAINED
     items = [
-        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['--conf', '', str, '', 'FILE', 'Main', '', 'Path to configuration file.'],
         ['--weights', '', str, '', 'FILE', 'Main', 'Path to pretrained weights.'],
         ['--threshold', '0.3', float, '', 'PLAIN', 'Main', 'Confidence threshold. Have to be between 0 and 1. As higher, as more conservative.'],
-        ['Pixel size (A/px):Pixel size', '1', float, 'Filter micrographs:True', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Pixel size value. Only used for visual representation.'],
+        ['Pixel size (A/px):Pixel size bin', '1', float, 'Filter micrographs:True', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Pixel size value. Only used for visual representation.'],
         ['Box size', '200', int, '', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Box size value. Only used for visual representation.'],
         ['--filament:Filament mode', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Activate filament mode'],
         ['--filament_width:Filament width', '0', float, '--filament:True', 'PLAIN', 'Main', '(FILAMENT MODE) Filament width (in pixel)'],
@@ -483,13 +447,10 @@ def default_cryolo_v1_0_4():
     """
     # OLD AND NOT MAINTAINED
     items = [
-        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['--conf', '', str, '', 'FILE', 'Main', '', 'Path to configuration file.'],
         ['--weights', '', str, '', 'FILE', 'Main', 'Path to pretrained weights.'],
         ['--threshold', '0.3', float, '', 'PLAIN', 'Main', 'Confidence threshold. Have to be between 0 and 1. As higher, as more conservative.'],
-        ['Pixel size (A/px):Pixel size', '1', float, 'Filter micrographs:True', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Pixel size value. Only used for visual representation.'],
+        ['Pixel size (A/px):Pixel size bin', '1', float, 'Filter micrographs:True', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Pixel size value. Only used for visual representation.'],
         ['Box size', '200', int, '', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Box size value. Only used for visual representation.'],
         ['Filter micrographs', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'NOT A CRYOLO OPTION. Filter option in case one does not want to use the internal filter of crYOLO.'],
         ['Filter value high pass (A)', '9999', float, 'Filter micrographs:True', 'PLAIN', 'Advanced', 'NOT A CRYOLO OPTION. High-pass filter value in angstrom before running crYOLO.'],
@@ -512,16 +473,10 @@ def default_cter_v1_0():
     Return:
     Content items as list
     """
-    items = [
-        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
-        ]
-
+    items = []
         #Main
     category = 'Main'
     items.extend([
-        ['--apix:Pixel size', '1.0', float, '', 'PLAIN', category, 'Pixel size [A/Pixels]: The pixel size of input micrograph(s) or images in input particle stack.'],
         ['--f_start', '-1', float, '', 'PLAIN', category, 'Lowest resolution [A]: Lowest resolution to be considered in the CTF estimation. Determined automatically by default.'],
         ['--f_stop', '-1', float, '', 'PLAIN', category, 'Highest resolution [A]: Highest resolution to be considered in the CTF estimation. Determined automatically by default.'],
         ['--defocus_min', '0.3', float, 'Phase plate:True', 'PLAIN', category, 'Minimum defocus search [um]'],
@@ -543,6 +498,7 @@ def default_cter_v1_0():
         #Main
     category = 'Rare'
     items.extend([
+        ['--apix:Pixel size bin', '1.0', float, '', 'PLAIN', category, 'Pixel size [A/Pixels]: The pixel size of input micrograph(s) or images in input particle stack.'],
         ['--Cs:Cs', '2.0', float, '', 'PLAIN', category, 'Microscope spherical aberration (Cs) [mm]: The spherical aberration (Cs) of microscope used for imaging.'],
         ['--voltage:voltage', '300', float, '', 'PLAIN', category, 'Microscope voltage [kV]: The acceleration voltage of microscope used for imaging.'],
         ['Phase plate:Phase Plate', ['False', 'True'], bool, '', 'COMBO', category, 'Volta Phase Plate - fit smplitude contrast.'],
@@ -565,11 +521,7 @@ def default_gctf_v1_06():
     Return:
     Content items as list
     """
-    items = [
-        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
-        ]
+    items = []
 
         #Main
     category = 'Main'
@@ -601,7 +553,7 @@ def default_gctf_v1_06():
         #Rare
     category = 'Rare'
     items.extend([
-        ['--apix:Pixel size', '1.34', float, '', 'PLAIN', category, 'Pixel size'],
+        ['--apix:Pixel size:Pixel size bin', '1.34', float, '', 'PLAIN', category, 'Pixel size'],
         ['--kV:voltage', '300', float, '', 'PLAIN', category, 'High tension in Kilovolt, typically 300, 200 or 120'],
         ['Phase plate:Phase Plate', ['False', 'True'], bool, '', 'COMBO', category, 'Use phase plate options'],
         ['--dstep', '14.0', float, '', 'PLAIN', category, 'Detector size in micrometer; don\'t worry if unknown; just use default.'],
@@ -647,10 +599,7 @@ def default_gctf_v1_18():
     """
     # WEIRD AND NOT MAINTAINED
     items = [
-        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
-        ['--apix:Pixel size', '1.34', float, '', 'PLAIN', 'Main', 'Pixel size'],
+        ['--apix:Pixel size:Pixel size bin', '1.34', float, '', 'PLAIN', 'Main', 'Pixel size'],
         ['--dstep', '14.0', float, '', 'PLAIN', 'Main', 'Detector size in micrometer; don\'t worry if unknown; just use default.'],
         ['--kV:voltage', '300', float, '', 'PLAIN', 'Main', 'High tension in Kilovolt, typically 300, 200 or 120'],
         ['--cs:Cs', '2.7', float, '', 'PLAIN', 'Main', 'Spherical aberration, in  millimeter'],
@@ -719,9 +668,6 @@ def default_path():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '10', int, '', 'PLAIN', 'Main', ''],
-        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', 'Main', ''],
-        ['WIDGETS RARE', '10', int, '', 'PLAIN', 'Main', ''],
         ['chimerax', 'chimerax', str, '', 'FILE', 'Main', ''],
         ['IMOD header', 'header', str, '', 'FILE', 'Main', ''],
         ['IMOD newstack', 'newstack', str, '', 'FILE', 'Main', ''],
@@ -817,9 +763,6 @@ def default_notification():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['Project quota warning (%)', '90', float, '', 'PLAIN', 'Main', ''],
         ['Project quota stop (%)', '97', float, '', 'PLAIN', 'Main', ''],
         ['Scratch quota warning (%)', '90', float, '', 'PLAIN', 'Main', ''],
@@ -900,9 +843,6 @@ def default_pipeline():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         [
             'Meta',
             '1',
@@ -1072,15 +1012,11 @@ def default_ctffind_4_v4_1_8():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ]
 
         #Main
     category = 'Main'
     items.extend([
-        ['Pixel size:Pixel size', '1.0', float, '', 'PLAIN', category, ''],
         ['Min resolution(A)', '30', float, '', 'PLAIN', category, ''],
         ['Max resolution(A)', '5', float, '', 'PLAIN', category, ''],
         ['Min defocus(A)', '5000', float, '', 'PLAIN', category, ''],
@@ -1089,6 +1025,10 @@ def default_ctffind_4_v4_1_8():
         ['Min phase(rad)', '0', float, 'Phase shift:True', 'PLAIN', category, ''],
         ['Max phase(rad)', '3.15', float, 'Phase shift:True', 'PLAIN', category, ''],
         ['Step phase(rad)', '0.5', float, 'Phase shift:True', 'PLAIN', category, ''],
+        ['Use movies', ['False', 'True'], bool, '', 'COMBO', category, ''],
+        ['Combine frames', '1', int, 'Use movies:True', 'PLAIN', category, ''],
+        ['Movie is gain-corrected?', ['True', 'False'], bool, 'Use movies:True', 'COMBO', category, ''],
+        ['Gain file:Gain', '', str, 'Movie is gain-corrected?:False', 'FILE/SEARCH', category, ''],
         ])
 
         #Advanced
@@ -1096,15 +1036,12 @@ def default_ctffind_4_v4_1_8():
     items.extend([
         ['Amplitude contrast', '0.07', float, '', 'PLAIN', category, ''],
         ['Amplitude spectrum', '512', float, '', 'PLAIN', category, ''],
-        ['Use movies', ['False', 'True'], bool, '', 'COMBO', category, ''],
-        ['Combine frames', '1', int, 'Use movies:True', 'PLAIN', category, ''],
-        ['Movie is gain-corrected?', ['True', 'False'], bool, 'Use movies:True', 'COMBO', category, ''],
-        ['Gain file:Gain', '', str, 'Movie is gain-corrected?:False', 'FILE/SEARCH', category, ''],
         ])
 
         #Rare
     category = 'Rare'
     items.extend([
+        ['Pixel size:Pixel size:Pixel size bin', '1.0', float, '', 'PLAIN', category, ''],
         ['Spherical aberration:Cs', '2.7', float, '', 'PLAIN', category, ''],
         ['Acceleration voltage:voltage', '300.0', float, '', 'PLAIN', category, ''],
         ['Phase shift:Phase Plate', ['False', 'True'], bool, '', 'COMBO', category, ''],
@@ -1173,12 +1110,9 @@ def default_unblur_v1_0_0():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
 
-        ['Pixel size of image (A):Pixel size', '1.0', float, '', 'PLAIN', 'Main', 'Pixel size in A of input stack in angstrom.'],
-        ['Output binning factor:Bin superres', '1', float, '', 'PLAIN', 'Advanced', 'Binning performed in Fourier space, default 1.0.'],
+        ['Pixel size of image (A):Pixel size', '1.0', float, '', 'PLAIN', 'Rare', 'Pixel size in A of input stack in angstrom.'],
+        ['Output binning factor:Bin X times', '1', float, '', 'PLAIN', 'Advanced', 'Binning performed in Fourier space, default 1.0.'],
         ['Exposure per frame (e/A^2)', '0', float, '', 'PLAIN', 'Main', 'Frame dose in e/A^2. If not specified, dose weighting will be skipped.'],
         ['Acceleration voltage:voltage', '300', float, '', 'PLAIN', 'Rare', 'High tension in kV needed for dose weighting.  Default is 300.'],
         ['Pre-exposure amount (e/A^2)', '0', float, '', 'PLAIN', 'Advanced', 'Initial dose in e/A^2 received before stack is acquired'],
@@ -1218,9 +1152,6 @@ def default_motion_cor_2_v1_0_0():
     """
     # OLD AND NOT MAINTAINED
     items = [
-        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
 
         #Main
         ['-FmDose', '0', float, '', 'PLAIN', 'Main', 'Frame dose in e/A^2. If not specified, dose weighting will be skipped.'],
@@ -1236,7 +1167,7 @@ def default_motion_cor_2_v1_0_0():
         ['-PixSize:Pixel size', '0', float, '', 'PLAIN', 'Main', 'Pixel size in A of input stack in angstrom. If not specified, dose weighting will be skipped.'],
         ['-kV:voltage', '300', float, '', 'PLAIN', 'Main', 'High tension in kV needed for dose weighting.  Default is 300.'],
         ['-Gain:Gain', '', str, '', 'FILE/SEARCH', 'Main', 'MRC file that stores the gain reference. If not specified, MRC extended header will be visited to look for gain reference.'],
-        ['-FtBin:Bin superres', '1', float, '', 'PLAIN', 'Advanced', 'Binning performed in Fourier space, default 1.0.'],
+        ['-FtBin:Bin X times', '1', float, '', 'PLAIN', 'Advanced', 'Binning performed in Fourier space, default 1.0.'],
         ['-Bft', '100', float, '', 'PLAIN', 'Main', 'B-Factor for alignment, default 100.'],
         ['-MaskCent', '0 0', [float, float], '', 'PLAIN', 'Advanced', 'Center of subarea that will be used for alignement, default 0 0 corresponding to the frame center.'],
         ['-MaskSize', '1 1', [float, float], '', 'PLAIN', 'Advanced', 'The size of subarea that will be used for alignment, default 1.0 1.0 corresponding full size.'],
@@ -1272,9 +1203,6 @@ def default_motion_cor_2_v1_0_5():
     """
     # OLD AND NOT MAINTAINED
     items = [
-        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['-FmDose', '0', float, '', 'PLAIN', 'Main', 'Frame dose in e/A^2. If not specified, dose weighting will be skipped.'],
         ['-PixSize:Pixel size', '0', float, '', 'PLAIN', 'Main', 'Pixel size in A of input stack in angstrom. If not specified, dose weighting will be skipped.'],
         ['-kV:voltage', '300', float, '', 'PLAIN', 'Main', 'High tension in kV needed for dose weighting.  Default is 300.'],
@@ -1291,7 +1219,7 @@ def default_motion_cor_2_v1_0_5():
         ['-Tol', '0.5', float, '', 'PLAIN', 'Advanced', 'Tolerance for iterative alignment, default 0.5 pixel.'],
         ['-PhaseOnly', '0', int, '', 'PLAIN', 'Advanced', 'Only phase is used in cross correlation.  default is 0, i.e., false.'],
         ['-StackZ', '0', int, '', 'PLAIN', 'Advanced', 'Number of frames per stack. If not specified, it will be loaded from MRC header.'],
-        ['-FtBin:Bin superres', '1', float, '', 'PLAIN', 'Advanced', 'Binning performed in Fourier space, default 1.0.'],
+        ['-FtBin:Bin X times', '1', float, '', 'PLAIN', 'Advanced', 'Binning performed in Fourier space, default 1.0.'],
         ['-InitDose', '0', float, '', 'PLAIN', 'Advanced', 'Initial dose received before stack is acquired'],
         ['-Group', '1', int, '', 'PLAIN', 'Advanced', 'Group every specified number of frames by adding them together. The alignment is then performed on the summed frames. By default, no grouping is performed.'],
         ['-FmRef', '-1', int, '', 'PLAIN', 'Advanced', 'Specify which frame to be the reference to which all other frames are aligned. By default (-1) the the central frame is chosen. The central frame is at N/2 based upon zero indexing where N is the number of frames that will be summed, i.e., not including the frames thrown away.'],
@@ -1321,9 +1249,6 @@ def default_motion_cor_2_v1_1_0():
     """
     # OLD AND NOT MAINTAINED
     items = [
-        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['-FmDose', '0', float, '', 'PLAIN', 'Main', 'Frame dose in e/A^2. If not specified, dose weighting will be skipped.'],
         ['-PixSize:Pixel size', '0', float, '', 'PLAIN', 'Main', 'Pixel size in A of input stack in angstrom. If not specified, dose weighting will be skipped.'],
         ['-kV:voltage', '300', float, '', 'PLAIN', 'Main', 'High tension in kV needed for dose weighting.  Default is 300.'],
@@ -1340,7 +1265,7 @@ def default_motion_cor_2_v1_1_0():
         ['-Tol', '0.5', float, '', 'PLAIN', 'Advanced', 'Tolerance for iterative alignment, default 0.5 pixel.'],
         ['-PhaseOnly', '0', int, '', 'PLAIN', 'Advanced', 'Only phase is used in cross correlation.  default is 0, i.e., false.'],
         ['-StackZ', '0', int, '', 'PLAIN', 'Advanced', 'Number of frames per stack. If not specified, it will be loaded from MRC header.'],
-        ['-FtBin:Bin superres', '1', float, '', 'PLAIN', 'Advanced', 'Binning performed in Fourier space, default 1.0.'],
+        ['-FtBin:Bin X times', '1', float, '', 'PLAIN', 'Advanced', 'Binning performed in Fourier space, default 1.0.'],
         ['-InitDose', '0', float, '', 'PLAIN', 'Advanced', 'Initial dose received before stack is acquired'],
         ['-Group', '1', int, '', 'PLAIN', 'Advanced', 'Group every specified number of frames by adding them together. The alignment is then performed on the summed frames. By default, no grouping is performed.'],
         ['-FmRef', '-1', int, '', 'PLAIN', 'Advanced', 'Specify which frame to be the reference to which all other frames are aligned. By default (-1) the the central frame is chosen. The central frame is at N/2 based upon zero indexing where N is the number of frames that will be summed, i.e., not including the frames thrown away.'],
@@ -1369,18 +1294,16 @@ def default_motion_cor_2_v1_3_0():
     Return:
     Content items as list
     """
-    items = [
-        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
-        ]
+    items = []
 
         #Main
     category = 'Main'
     items.extend([
-        ['-PixSize:Pixel size', '0', float, '', 'PLAIN', category, 'Pixel size in A of input stack in angstrom. If not specified, dose weighting will be skipped.'],
         ['-FmDose', '0', float, '', 'PLAIN', category, 'Frame dose in e/A^2. If not specified, dose weighting will be skipped.'],
         ['-Patch', '0 0 0', [int, int, int], '', 'PLAIN', category, '1. It follows by  number of patches in x and y dimensions, and overlapping in percentage of adjacent patches.  2. The default values are 0 0 0, meaning only full-frame based alignment is performed.'],
+        ['-Gain:Gain', '', str, '', 'FILE/SEARCH', category, 'MRC file that stores the gain reference. If not specified, MRC extended header will be visited to look for gain reference.'],
+        ['-RotGain', '0', int, '', 'PLAIN', category, 'Rotate gain reference counter-clockwise.  0 - no rotation, default, 1 - rotate 90 degree, 2 - rotate 180 degree, 3 - rotate 270 degree.'],
+        ['-FlipGain', '0', int, '', 'PLAIN', category, 'Flip gain reference after gain rotation.  0 - no flipping, default, 1 - flip upside down, 2 - flip left right.'],
         ])
 
         #Main
@@ -1388,18 +1311,16 @@ def default_motion_cor_2_v1_3_0():
     items.extend([
         ['-Throw', '0', int, '', 'PLAIN', category, 'Throw initial number of frames, default is 0'],
         ['-Trunc', '0', int, '', 'PLAIN', category, 'Truncate last number of frames, default is 0'],
-        ['-RotGain', '0', int, '', 'PLAIN', category, 'Rotate gain reference counter-clockwise.  0 - no rotation, default, 1 - rotate 90 degree, 2 - rotate 180 degree, 3 - rotate 270 degree.'],
-        ['-FlipGain', '0', int, '', 'PLAIN', category, 'Flip gain reference after gain rotation.  0 - no flipping, default, 1 - flip upside down, 2 - flip left right.'],
         ['-Group', '1', int, '', 'PLAIN', category, 'Group every specified number of frames by adding them together. The alignment is then performed on the summed frames. By default, no grouping is performed.'],
         ])
 
         #Main
     category = 'Rare'
     items.extend([
+        ['-PixSize:Pixel size', '0', float, '', 'PLAIN', category, 'Pixel size in A of input stack in angstrom. If not specified, dose weighting will be skipped.'],
         ['-kV:voltage', '300', float, '', 'PLAIN', category, 'High tension in kV needed for dose weighting.  Default is 300.'],
-        ['-FtBin:Bin superres', '1', float, '', 'PLAIN', category, 'Binning performed in Fourier space, default 1.0.'],
+        ['-FtBin:Bin X times', '1', float, '', 'PLAIN', category, 'Binning performed in Fourier space, default 1.0.'],
         ['-Bft', '500 150', [float, float], '', 'PLAIN', category, 'B-Factor for alignment, default 100.'],
-        ['-Gain:Gain', '', str, '', 'FILE/SEARCH', category, 'MRC file that stores the gain reference. If not specified, MRC extended header will be visited to look for gain reference.'],
         ['-MaskCent', '0 0', [float, float], '', 'PLAIN', category, 'Center of subarea that will be used for alignement, default 0 0 corresponding to the frame center.'],
         ['-MaskSize', '1 1', [float, float], '', 'PLAIN', category, 'The size of subarea that will be used for alignment, default 1.0 1.0 corresponding full size.'],
         ['-Iter', '7', int, '', 'PLAIN', category, 'Maximum iterations for iterative alignment, default 5 iterations.'],
@@ -1435,9 +1356,6 @@ def default_input():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['Software', ['EPU >=1.9', 'EPU >=1.8', 'Latitude S', 'Just Stack'], str, '', 'COMBO', 'Main', 'Software used for data collection.'],
         ['Camera', ['K3', 'K2', 'Falcon3', 'Falcon2'], str, '', 'COMBO', 'Main', 'Camera used for data collection.'],
         ['Input project path for frames', '', str, '', 'DIR/SEARCH', 'Main', 'Project directory path (containing the Images-Discs1 folder in case of an EPU session) containing the micrograph movie files of the data collection (mrc, tif, tiff, ...)'],
@@ -1460,16 +1378,13 @@ def default_general():
     Content items as list
     """
     items = [
-        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
         ['Project name', '', str, '', 'PLAIN', 'Main', 'Project name.'],
         ['Rename prefix', '', str, 'Rename micrographs:True', 'PLAIN', 'Main', 'prefix for the renamed micrographs prefix_number_suffix.extension; The separator between prefix and number needs to be specified, too.'],
         ['Rename suffix', '', str, 'Rename micrographs:True', 'PLAIN', 'Main', 'Suffix for the renamed micrographs prefix_number_suffix.extension; The separator between number and suffix needs to be specified, too.'],
 
         ['Rename micrographs', ['True', 'False'], bool, '', 'COMBO', 'Advanced', 'Rename the micrographs.'],
-        ['Project directory', '', str, '', 'DIR', 'Advanced', 'TranSPHIRE project directory used to store all the project folders.'],
-        ['Scratch directory', '', str, '', 'DIR', 'Advanced', 'TranSPHIRE scratch directory used for faster IO during the TranSPHIRE run.'],
+        ['Project directory', '.', str, '', 'DIR', 'Advanced', 'TranSPHIRE project directory used to store all the project folders.'],
+        ['Scratch directory', '.', str, '', 'DIR', 'Advanced', 'TranSPHIRE scratch directory used for faster IO during the TranSPHIRE run.'],
 
         ['Start number', '0', int, 'Rename micrographs:True', 'PLAIN', 'Rare', 'First number to use for the renaming process.'],
         ['Estimated mic number', '10000', int, 'Rename micrographs:True', 'PLAIN', 'Rare', 'Estimated number of micrographs. This is used for the leading number of zeros in the renamed start number.'],
@@ -1514,9 +1429,6 @@ def default_copy(settings_folder):
     valid_sub_items = tu.get_unique_types()
 
     items = [
-        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', '', ''],
         ['Copy to work', copy_to_work, bool, '', 'COMBO', 'Main', 'Copy data to the work drive.'],
         ['Copy to backup', copy_to_backup, bool, '', 'COMBO', 'Main', 'Copy data to the backup drive.'],
         ['Copy to hdd', copy_to_hdd, bool, '', 'COMBO', 'Main', 'Copy data to an external hard disc.'],
@@ -1556,11 +1468,9 @@ def default_copy(settings_folder):
 
 def default_global():
     items = [
-        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
-        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
-        ['Bin superres', ['True', 'False'], bool, '', 'COMBO', 'Main', 'Bin superresolution datasets by a factor of 2 automatically.'],
+        ['Bin X times', ['1', '2'], int, '', 'COMBOX', 'Main', 'Bin the data during motioncorrection by a factor of X. Superresolution data is often binned 2 times.'],
         ['Pixel size', '1.0', float, '', 'PLAIN', 'Main', '', 'Pixel size in A/pixel.'],
+        ['Pixel size bin:Pixel size:Bin X times', '2.0', float, '', 'PLAIN', 'Main', '', 'Pixel size in A/pixel.'],
         ['Cs', '2.0', float, '', 'PLAIN', 'Main', 'Microscope spherical aberration (Cs) [mm]: The spherical aberration (Cs) of microscope used for imaging.'],
         ['Phase Plate', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Use phase plate options'],
         ['Filament mode', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Input is filamentous data.'],
@@ -1571,8 +1481,8 @@ def default_global():
         ['GPU:GPU', '0', str, '', 'PLAIN', 'Main', 'Specifiy which gpu\'s should be used. ON-THE-FLY finds the number of GPU\'s dynaically.'],
         ['GPU SPLIT', '2', int, '', 'PLAIN', 'Main', 'Define the number of GPU splits.'],
         ['GPU SPLIT LARGE', '0', int, '', 'PLAIN', 'Main', 'Define the number of GPU splits.'],
-        ['Memory usage:Memory usage', '0.4', float, '', 'PLAIN', 'Main', 'Specifiy how much GPU memory should be used.'],
-        ['Memory usage large:Memory usage large', '0.9', float, '', 'PLAIN', 'Main', 'Specifiy how much GPU memory should be used.'],
+        ['Memory usage:GPU SPLIT', '0.9', float, '', 'PLAIN', 'Main', 'Specifiy how much GPU memory should be used.'],
+        ['Memory usage large:GPU SPLIT LARGE', '0.9', float, '', 'PLAIN', 'Main', 'Specifiy how much GPU memory should be used.'],
         ['Defect', '', str, '', 'FILE/SEARCH', 'Advanced', '', '1. Defect file that stores entries of defects on camera.  2. Each entry corresponds to a rectangular region in image.  The pixels in such a region are replaced by neighboring good pixel values.  3. Each entry contains 4 integers x, y, w, h representing the x, y coordinates, width, and heights, respectively.'],
         ['Dark', '', str, '', 'FILE/SEARCH', 'Advanced', '', '1. MRC file that stores the dark reference. If not specified, dark subtraction will be skipped.  2. If -RotGain and/or -FlipGain is specified, the dark reference will also be rotated and/or flipped.'],
         ]

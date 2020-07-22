@@ -110,7 +110,10 @@ class SelectWidget(QWidget):
     @pyqtSlot()
     def handle_change(self):
         current_idx = self.buttons['Image'].currentIndex()
-        sender_text = self.sender().text() if self.sender() is not None else 'None'
+        try:
+            sender_text = self.sender().text() if self.sender() is not None else 'None'
+        except AttributeError:
+            sender_text = 'None'
         if sender_text == self.first_text:
             current_idx = 0
         elif sender_text == self.last_text:

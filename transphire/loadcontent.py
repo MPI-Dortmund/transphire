@@ -115,9 +115,14 @@ class LoadContent(QWidget):
         else:
             items = content_function()
 
+        items.extend([
+        ['WIDGETS MAIN', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS ADVANCED', '10', int, '', 'PLAIN', '', ''],
+        ['WIDGETS RARE', '10', int, '', 'PLAIN', '', ''],
+        ])
         if is_license:
             items.append(
-                ['IMPORTANT', 'THIS SOFTWARE IS NOT UNDER AN OPEN-SOURCE LICENSE. PLEASE CHECK IF YOU NEED/OWN A LICENSE BEFORE USING THIS APPLICATION.', str, '', 'PLAIN', '', ''],
+                ['IMPORTANT', 'THIS SOFTWARE IS NOT PUBLISHED UNDER AN OPEN-SOURCE LICENSE.\nPLEASE CHECK IF YOU NEED/OWN A LICENSE BEFORE USING THIS APPLICATION.', str, '', 'PLAIN', '', ''],
                 )
 
 
@@ -143,8 +148,6 @@ class LoadContent(QWidget):
             current_layout.addLayout(layout_h)
             layout_v = None
             for idx, entry in enumerate(items):
-                if entry[self.idx_name] == 'IMPORTANT':
-                    continue
                 if idx % 11 == 0:
                     if layout_v is not None:
                         layout_v.addStretch(1)
@@ -158,7 +161,7 @@ class LoadContent(QWidget):
 
                 # Behaviour based on typ
 
-                if entry[self.idx_type] == 'COMBO':
+                if entry[self.idx_type] in ('COMBO', 'COMBOX'):
                     widget = QComboBox(self)
                     widget.addItems(entry[self.idx_values])
                     widget.setCurrentIndex(0)
@@ -190,7 +193,7 @@ class LoadContent(QWidget):
                     'Others',
                     'Notification_widget',
                     ]
-                if self.typ not in exclude_typ_list and not entry[self.idx_name].startswith('WIDGETS') :
+                if self.typ not in exclude_typ_list and not entry[self.idx_name].startswith('WIDGETS') and not entry[self.idx_name] == 'IMPORTANT':
                     widget_2 = QComboBox(self)
                     widget_2.addItems(['Main', 'Advanced', 'Rare'])
                     combo_idx = widget_2.findText(entry[self.idx_priority])
@@ -201,13 +204,16 @@ class LoadContent(QWidget):
                     widget_2 = None
 
                 try:
-                    global_name = entry[self.idx_name].split(':')[self.idx_name_global]
+                    global_name = entry[self.idx_name].split(':')[self.idx_name_global:]
+                    if not global_name:
+                        raise IndexError
                 except IndexError:
                     global_name = None
                     widget_3 = None
                 else:
-                    if global_name not in global_items:
-                        assert False, (global_name, 'not in ', global_items)
+                    for entry_global in global_name:
+                        if entry_global not in global_items:
+                            assert False, (entry_global, 'not in ', global_items)
                     widget_3 = QPushButton(self)
                     widget_3.setCheckable(True)
                     widget_3.setText('GLOBAL')
