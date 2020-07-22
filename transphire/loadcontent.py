@@ -158,7 +158,7 @@ class LoadContent(QWidget):
 
                 # Behaviour based on typ
 
-                if entry[self.idx_type] == 'COMBO':
+                if entry[self.idx_type] in ('COMBO', 'COMBOX'):
                     widget = QComboBox(self)
                     widget.addItems(entry[self.idx_values])
                     widget.setCurrentIndex(0)
@@ -201,13 +201,16 @@ class LoadContent(QWidget):
                     widget_2 = None
 
                 try:
-                    global_name = entry[self.idx_name].split(':')[self.idx_name_global]
+                    global_name = entry[self.idx_name].split(':')[self.idx_name_global:]
+                    if not global_name:
+                        raise IndexError
                 except IndexError:
                     global_name = None
                     widget_3 = None
                 else:
-                    if global_name not in global_items:
-                        assert False, (global_name, 'not in ', global_items)
+                    for entry_global in global_name:
+                        if entry_global not in global_items:
+                            assert False, (entry_global, 'not in ', global_items)
                     widget_3 = QPushButton(self)
                     widget_3.setCheckable(True)
                     widget_3.setText('GLOBAL')

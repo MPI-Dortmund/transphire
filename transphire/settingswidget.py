@@ -22,6 +22,7 @@ from PyQt5.QtCore import pyqtSlot, pyqtSignal, Qt
 from PyQt5.QtGui import QKeySequence
 from transphire import transphire_utils as tu
 from transphire import inputbox
+import subprocess
 
 
 class SettingsWidget(QWidget):
@@ -108,7 +109,7 @@ class SettingsWidget(QWidget):
 
         additional_widget = []
         self.add_widgets = []
-        if self.typ != 'COMBO':
+        if self.typ not in ('COMBO', 'COMBOX'):
             additional_widget.append((self.enlarge, QStyle.SP_TitleBarNormalButton, 'Open the text field in "Enlarged mode".'))
 
         if self.typ == 'PLAIN' or self.typ == 'PASSWORD':
@@ -143,13 +144,18 @@ class SettingsWidget(QWidget):
 
             additional_widget.append((self._find_dir, QStyle.SP_DialogOpenButton, 'Open the "Find directory" dialog.'))
 
-        elif self.typ == 'COMBO':
+        elif self.typ in ('COMBO', 'COMBOX'):
             self.edit = QComboBox(self)
             self.edit.currentTextChanged.connect(self.change_tooltip)
             self.edit.currentIndexChanged.connect(lambda: self.sig_index_changed.emit(self.name))
             self.edit.addItems(self.values)
             self.edit.setCurrentIndex(self.edit.findText(self.default))
             self.change_color_if_true()
+            if self.typ == 'COMBOX':
+                self.edit.setEditable(True)
+                self.edit.setInsertPolicy(QComboBox.NoInsert)
+                self.edit.editTextChanged.connect(self.change_tooltip)
+                self.edit.editTextChanged.connect(lambda: self.sig_index_changed.emit(self.name))
 
         else:
             print('SettingsWidget:', self.typ, 'Not known! Stopping here!')
@@ -198,7 +204,7 @@ class SettingsWidget(QWidget):
             pb.clicked.connect(func)
             self.add_widgets.append(pb)
 
-        if content[1]['name_global'] is not None:
+        if self.name_global is not None:
             self.edit.setObjectName('settinger')
             self.tooltip = '{0}\n\nGlobal value: {{global_value}}'.format(self.tooltip)
 
@@ -211,8 +217,9 @@ class SettingsWidget(QWidget):
             self.widget_auto.setChecked(state)
             layout_h.addWidget(self.widget_auto, stretch=0)
 
-            if global_dict is not None and self.key_name != 'Global':
-                global_dict.setdefault(self.name_global, []).append(self)
+            for global_name in self.name_global:
+                if global_dict is not None:
+                    global_dict.setdefault(global_name, []).append(self)
 
         for pb in self.add_widgets:
             layout_h.addWidget(pb, stretch=0)
@@ -229,10 +236,32 @@ class SettingsWidget(QWidget):
 
     @pyqtSlot(bool)
     def _toggle_change(self, state):
+        pre_pre_global = self.pre_global
+        if state and self.edit.isEnabled() == True:
+            try:
+                self.pre_global = self.edit.text()
+            except AttributeError:
+                self.pre_global = self.edit.currentText()
+        if self.key_name == 'Global' and state:
+            try:
+                current_global = self.get_current_global()
+                if not current_global:
+                    self.sender().setChecked(not state)
+                    self.pre_global = pre_pre_global
+                    return
+            except Exception as e:
+                print(e)
+                self.pre_global = pre_pre_global
+                self.sender().setChecked(not state)
+                return
+        elif state:
+            current_global = self.global_value
+
         self.edit.setEnabled(not state)
         for entry in self.add_widgets:
             entry.setEnabled(not state)
         self.action.setEnabled(not state)
+
         if not state:
             try:
                 self.edit.setText(self.pre_global)
@@ -244,13 +273,46 @@ class SettingsWidget(QWidget):
 
         else:
             try:
-                self.pre_global = self.edit.text()
-                self.edit.setText(self.global_value)
+                self.edit.setText(current_global)
             except AttributeError:
-                self.pre_global = self.edit.currentText()
-                self.edit.insertItem(0, self.global_value)
-                self.edit.setCurrentText(self.global_value)
+                self.edit.insertItem(0, current_global)
+                self.edit.setCurrentText(current_global)
             self.edit.setStyleSheet(tu.get_style('global'))
+
+    def get_current_global(self):
+        current_global = self.pre_global
+        if self.name == 'GPU':
+            try:
+                nvidia_output = subprocess.check_output(['nvidia-smi', '-L'])
+                gpu_devices = re.findall(
+                    '^GPU \d+: (.+) \(UUID: GPU-.*\)$',
+                    nvidia_output.decode('utf-8'),
+                    re.MULTILINE
+                    )
+            except subprocess.CalledProcessError:
+                gpu_devices = []
+            if len(set(gpu_devices)) != 1:
+                tu.message('The computer does have different types of GPUs available or no GPUs available or the GPU\'s crashed! In order to not make any mistakes, please specify the GPU IDs manually')
+                return False
+            else:
+                current_global = ' '.join([str(entry) for entry in range(len(gpu_devices))])
+
+        elif self.name in ('Memory usage', 'Memory usage large'):
+            try:
+                current_global = str(float(self.pre_global) / max(int(self.global_value), 1))
+            except Exception as e:
+                pass
+
+        elif self.name == 'Pixel size bin':
+            try:
+                pixel_size_raw = float(self.parent.content['Pixel size'].get_settings()['Pixel size'])
+                current_bin = int(self.parent.content['Bin X times'].get_settings()['Bin X times'])
+                current_global = str(pixel_size_raw * current_bin)
+            except Exception as e:
+                print(e)
+
+        return current_global
+
 
     @pyqtSlot(str)
     def change_tooltip(self, text):
@@ -261,7 +323,7 @@ class SettingsWidget(QWidget):
 
     @pyqtSlot()
     def enlarge(self):
-        if self.typ == 'COMBO':
+        if self.typ in ('COMBO', 'COMBOX'):
             return
         else:
             input_box = inputbox.InputBox(is_password=bool(self.typ == 'PASSWORD'), parent=self)
@@ -415,7 +477,8 @@ class SettingsWidget(QWidget):
             is_auto = self.widget_auto.isChecked()
         else:
             is_auto = None
-        settings['{0}_global'.format(self.name)] = [self.name_global, is_auto]
+        global_name = None if self.name_global is None else self.name_global[0]
+        settings['{0}_global'.format(self.name)] = [global_name, is_auto]
 
         return settings
 
@@ -465,7 +528,7 @@ class SettingsWidget(QWidget):
         if is_checked or widget_auto_checked:
             self.pre_global = text
         else:
-            if self.typ == 'COMBO':
+            if self.typ in ('COMBO', 'COMBOX'):
                 index = self.edit.findText(text)
                 if index == -1:
                     index = 0
