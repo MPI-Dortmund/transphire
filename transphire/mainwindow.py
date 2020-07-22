@@ -954,7 +954,7 @@ class MainWindow(QMainWindow):
         non_global_names_with_global = {}
         for entry in settings_widget:
             for name in sorted(list(entry.keys())):
-                if name == 'Bin superres':
+                if name == 'Is superres':
                     if entry[name] == 'True':
                         entry[name] = 2
                     elif entry[name] == 'False':

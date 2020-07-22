@@ -47,6 +47,7 @@ class SettingsContainer(QWidget):
         """
         super(SettingsContainer, self).__init__(parent)
 
+        self.parent = parent
         self.name = name
         self.global_dict = None
         self.input_file_names = []
@@ -375,9 +376,9 @@ class SettingsContainer(QWidget):
 
         for entry in self.global_dict[self.sender().parent().name]:
 
-            if self.sender().parent().name == 'Bin superres' and text == 'False':
+            if self.sender().parent().name == 'Is superres' and text == 'False':
                 text = '1'
-            elif self.sender().parent().name == 'Bin superres' and text == 'True':
+            elif self.sender().parent().name == 'Is superres' and text == 'True':
                 text = '2'
 
             entry.global_value = text
