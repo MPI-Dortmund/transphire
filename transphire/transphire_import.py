@@ -323,11 +323,15 @@ def import_isac_v1_2(name, name_no_feedback, settings, directory_name, import_na
                 accepted = len([entry for entry in read.readlines() if entry.strip()])
         except FileNotFoundError:
             accepted = 0
+        except Exception as e:
+            print('File corrupt: {} - {}'.format(file_name, str(e)))
         try:
             with open(os.path.join(file_name, 'not_processed_images.txt'), 'r') as read:
                 rejected = len([entry for entry in read.readlines() if entry.strip()])
         except FileNotFoundError:
             rejected = 0
+        except Exception as e:
+            print('File corrupt: {} - {}'.format(file_name, str(e)))
         classes = len([entry for entry in glob.glob(
             '{0}/png/*'.format(os.path.dirname(file_name))
             )])
@@ -396,6 +400,8 @@ def import_cinderella_v0_3_1(name, name_no_feedback, settings, directory_name, i
                     )
         except FileNotFoundError:
             continue
+        except Exception as e:
+            print('File corrupt: {} - {}'.format(file_name, str(e)))
         if match is not None:
             useable_files.append([file_name, int(match.group(1)), int(match.group(2)), int(match.group(3)), int(match.group(4))])
 
@@ -469,6 +475,8 @@ def import_window_v1_2(name, name_no_feedback, settings, directory_name, import_
                     )
         except FileNotFoundError:
             continue
+        except Exception as e:
+            print('File corrupt: {} - {}'.format(file_name, str(e)))
         if match is not None:
             useable_files.append([file_name, match.group(1), match.group(2)])
 
@@ -547,6 +555,8 @@ def import_ctffind_v4_1_8(name, name_no_feedback, settings, directory_name, impo
             continue
         except IOError:
             continue
+        except Exception as e:
+            print('File corrupt: {} - {}'.format(file_name, str(e)))
         else:
             if data_name.size > 0:
                 useable_files.append([file_name, data_name])
@@ -654,6 +664,8 @@ def import_gctf_v1_06(name, name_no_feedback, settings, directory_name, import_n
             continue
         except IOError:
             continue
+        except Exception as e:
+            print('File corrupt: {} - {}'.format(file_name, str(e)))
         else:
             if data_name.size > 0:
                 useable_files.append([file_name, data_name])
@@ -760,6 +772,8 @@ def import_cter_v1_0(name, name_no_feedback, settings, directory_name, import_na
             continue
         except IOError:
             continue
+        except Exception as e:
+            print('File corrupt: {} - {}'.format(file_name, str(e)))
         else:
             if data_name.size > 0:
                 useable_files.append([file_name, data_name])
@@ -865,6 +879,8 @@ def import_motion_cor_2_v1_0_0(name, name_no_feedback, settings, directory_name,
             continue
         except IOError:
             continue
+        except Exception as e:
+            print('File corrupt: {} - {}'.format(file_name, str(e)))
         else:
             if array.size > 0:
                 useable_files.append(file_name)
@@ -1010,6 +1026,8 @@ def import_cryolo_v1_0_4(name, name_no_feedback, settings, directory_name, impor
             useable_files.append([os.path.splitext(os.path.basename(file_name))[0], 0, np.array([0])])
         except IOError:
             continue
+        except Exception as e:
+            print('File corrupt: {} - {}'.format(file_name, str(e)))
         else:
             if file_name.endswith('.cbox') and data_imported.size != 0:
                 data_cbox = np.atleast_2d(data_imported)[:, 4]
@@ -1088,6 +1106,8 @@ def import_unblur_v1_0_0(name, name_no_feedback, settings, directory_name, impor
             continue
         except IOError:
             continue
+        except Exception as e:
+            print('File corrupt: {} - {}'.format(file_name, str(e)))
         else:
             if len(re_comp.findall(content)) > 0:
                 useable_files.append(file_name)

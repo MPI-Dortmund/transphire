@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import traceback as tb
 import os
 import multiprocessing as mp
 from PyQt5.QtCore import pyqtSignal, QObject, pyqtSlot
@@ -114,6 +115,7 @@ class PlotWorker(QObject):
                     data = p.starmap(self.calculate_array_now, valid_entries)
             except Exception as e:
                 print(e)
+                print(tb.format_exc())
             else:
                 self.send_data(data)
         self.sig_new_round.emit()
