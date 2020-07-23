@@ -1090,6 +1090,13 @@ class ProcessWorker(QObject):
                 pass
             try:
                 shutil.move(
+                    self.settings['{}_folder_feedback_{}'.format(key.lower(), self.settings['do_feedback_loop'].value)],
+                    self.settings['restart_backup_folder'],
+                    )
+            except FileNotFoundError:
+                pass
+            try:
+                shutil.move(
                     self.settings['{}_folder_feedback_0'.format(key.lower())],
                     self.settings['restart_backup_folder'],
                     )
