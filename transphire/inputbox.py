@@ -32,7 +32,7 @@ class InputBox(QDialog):
     None
     """
 
-    def __init__(self, is_password, restart_names=None, is_stop=False, parent=None):
+    def __init__(self, is_password, restart_names=None, is_stop=False, settings=None, parent=None):
         """
         Initialise layout of the widget.
 
@@ -44,6 +44,8 @@ class InputBox(QDialog):
         None
         """
         super(InputBox, self).__init__(parent)
+        self.settings = settings
+
         if restart_names is None:
             restart_names = np.array([])
         central_raw_layout = QVBoxLayout(self)
@@ -107,6 +109,12 @@ class InputBox(QDialog):
 
     @pyqtSlot(int)
     def handle_check(self, state):
+        ctf_name = self.settings['Copy']['CTF']
+        is_movie = False
+        try:
+            is_movie = self.settings[ctf_name]['Use movies'] == 'True'
+        except KeyError:
+            pass
         sender = self.sender()
         key = sender.text().split()[1]
         if key not in ('Compress', 'feedback'):
@@ -117,6 +125,8 @@ class InputBox(QDialog):
                     self.restart_content[input_key].setChecked(state)
                     self.restart_content[input_key].blockSignals(cur_state)
                     is_checked = 1 if state else 0
+                elif key in ('Motion') and input_key in ('CTF') and is_movie:
+                    continue
                 elif key in ('CTF', 'Picking') and input_key in ('CTF', 'Picking'):
                     if not state and not is_checked:
                         is_checked = 1 if self.restart_content[input_key].isChecked() else 0
@@ -128,9 +138,13 @@ class InputBox(QDialog):
                     self.restart_content[input_key].setEnabled(not is_checked)
                     self.restart_content[input_key].blockSignals(cur_state)
             if key == 'Motion' and not state:
-                if self.restart_content['feedback'].isChecked():
-                    self.restart_content['feedback'].setCheckState(0)
-                    self.restart_content['feedback'].setCheckState(2)
+                check_states = ['feedback']
+                if is_movie:
+                    check_states.append('CTF')
+                for name in check_states:
+                    if self.restart_content[name].isChecked():
+                        self.restart_content[name].setCheckState(0)
+                        self.restart_content[name].setCheckState(2)
 
         elif key == 'feedback':
             if self.restart_content['Picking'].isEnabled() or self.restart_content['Picking'].checkState() == 2:

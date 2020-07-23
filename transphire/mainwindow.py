@@ -1260,6 +1260,7 @@ class MainWindow(QMainWindow):
                 text1='Output project folder already exists!',
                 text2='Do you really want to continue the old run?\nType: "YES!"',
                 is_restart=True,
+                settings=settings,
                 )
         else:
             result = True
@@ -1340,7 +1341,7 @@ class MainWindow(QMainWindow):
             tu.message('Input needs to be "YES!" to work')
             self.enable(True)
 
-    def continue_dialog(self, text1, text2, is_stop=False, is_restart=False):
+    def continue_dialog(self, text1, text2, is_stop=False, is_restart=False, settings=None):
         """
         Check if the user wants to run the continue mode.
 
@@ -1360,6 +1361,7 @@ class MainWindow(QMainWindow):
             parent=self,
             is_stop=is_stop,
             restart_names=restart_names,
+            settings=settings,
             )
         dialog.setText(text1, text2)
         result = dialog.exec_()
