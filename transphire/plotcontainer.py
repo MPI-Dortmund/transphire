@@ -148,7 +148,7 @@ class PlotContainer(QMainWindow):
     @pyqtSlot()
     def reset_plot(self):
         for entry in self.content:
-            entry.setup_values()
+            entry.do_data_reset()
 
     @pyqtSlot()
     def set_floating(self):

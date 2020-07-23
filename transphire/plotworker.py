@@ -34,6 +34,7 @@ class PlotWorker(QObject):
     sig_notification - Emitted, if phase plate limit is reached. (text|str)
     """
     sig_data = pyqtSignal(str, str, object, str, object)
+    sig_reset = pyqtSignal()
     sig_visible = pyqtSignal(bool, str)
     sig_calculate = pyqtSignal()
     sig_reset_list = pyqtSignal()
@@ -57,6 +58,7 @@ class PlotWorker(QObject):
 
     @pyqtSlot()
     def reset_list(self):
+        self.sig_reset.emit()
         self.settings = []
 
     @pyqtSlot(object)
