@@ -173,7 +173,10 @@ class MainWindow(QMainWindow):
             settings_folder,
             'PROJECT_SETTINGS'
             )
-        tu.mkdir_p(self.project_settings_folder)
+        try:
+            tu.mkdir_p(self.project_settings_folder)
+        except PermissionError:
+            print('Settings directory is not writable.')
         self.mount_directory = mount_directory
         self.template_name = template_name
         self.temp_save = '{0}/temp_save_{1}'.format(

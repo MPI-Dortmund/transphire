@@ -291,6 +291,9 @@ class SettingsWidget(QWidget):
                     )
             except subprocess.CalledProcessError:
                 gpu_devices = []
+            except Exception as e:
+                print(e)
+                gpu_devices = []
             if len(set(gpu_devices)) != 1:
                 tu.message('The computer does have different types of GPUs available or no GPUs available or the GPU\'s crashed! In order to not make any mistakes, please specify the GPU IDs manually')
                 return False
