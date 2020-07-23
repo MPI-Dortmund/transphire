@@ -592,6 +592,8 @@ class PlotWidget(QWidget):
                 return_value
             self.force_update(do_message=True)
 
+        self.do_data_reset()
+
     def update_data(self, do_message=False):
         if self.plot_typ in ('values', 'histogram'):
             mask_y = np.logical_and(
@@ -705,6 +707,29 @@ class PlotWidget(QWidget):
 
             update = True
         return update
+
+    @pyqtSlot()
+    def do_data_reset(self):
+        self._cur_min_x = 0.5
+        self._cur_max_x = 0.6
+        self._cur_min_y = 0.5
+        self._cur_max_y = 0.6
+
+        self._applied_min_x = 0.5
+        self._applied_max_x = 0.6
+        self._applied_min_y = 0.5
+        self._applied_max_y = 0.6
+
+        for canvas in self._canvas_list:
+            canvas.mpl_canvas.axes.set_xlim(
+                self._applied_min_x,
+                self._applied_max_x
+                )
+            canvas.mpl_canvas.axes.set_ylim(
+                self._applied_min_y,
+                self._applied_max_y
+                )
+            canvas.mpl_canvas.draw()
 
     @pyqtSlot()
     def update_figure(self, do_message=False):
