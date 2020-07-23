@@ -1479,7 +1479,7 @@ def default_global():
         ['voltage', '300.0', float, '', 'PLAIN', 'Main', 'High tension in kV needed for dose weighting.  Default is 300.'],
         ['Protein radius', '-1', int, '', 'PLAIN', 'Main', 'particle radius: there is no default, a sensible number has to be provided, units - pixels (default required int)'],
         ['GPU:GPU', '0', str, '', 'PLAIN', 'Main', 'Specifiy which gpu\'s should be used. ON-THE-FLY finds the number of GPU\'s dynaically.'],
-        ['GPU SPLIT', '2', int, '', 'PLAIN', 'Main', 'Define the number of GPU splits.'],
+        ['GPU SPLIT', '0', int, '', 'PLAIN', 'Main', 'Define the number of GPU splits.'],
         ['GPU SPLIT LARGE', '0', int, '', 'PLAIN', 'Main', 'Define the number of GPU splits.'],
         ['Memory usage:GPU SPLIT', '0.9', float, '', 'PLAIN', 'Main', 'Specifiy how much GPU memory should be used.'],
         ['Memory usage large:GPU SPLIT LARGE', '0.9', float, '', 'PLAIN', 'Main', 'Specifiy how much GPU memory should be used.'],
