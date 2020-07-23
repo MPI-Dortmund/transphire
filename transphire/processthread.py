@@ -1911,8 +1911,13 @@ class ProcessThread(object):
             if var:
                 if 'Compress' in compare or \
                         'Motion' in compare or \
-                        'CTF_frames' in compare:
-                    self.add_to_queue(aim=aim_name, root_name='|||'.join([new_stack, set_name]))
+                        'CTF' in compare:
+                    string_list = []
+                    if 'CTF' in compare:
+                        string_list.append('CTF_frames')
+                    string_list.extend([new_stack, set_name])
+
+                    self.add_to_queue(aim=aim_name, root_name='|||'.join(string_list))
                 else:
                     self.add_to_queue(
                         aim=aim_name,
@@ -2705,16 +2710,22 @@ class ProcessThread(object):
                                     )
                             else:
                                 pass
-                        elif 'CTF_frames' in compare or 'CTF_sum' in compare or 'Picking' in compare:
+                        elif 'CTF' in compare or 'Picking' in compare:
+
                             if motion_idx == 0:
                                 sum_file = sum_files[0]
                                 if sum_dw_files:
                                     dw_file = sum_dw_files[0]
                                 else:
                                     dw_file = 'None'
+
+                                string_list = []
+                                if 'CTF' in compare:
+                                    string_list.append('CTF_sum')
+                                string_list.extend([sum_file, dw_file, file_input])
                                 self.add_to_queue(
                                     aim=aim_name,
-                                    root_name=';;;'.join([sum_file, dw_file, file_input])
+                                    root_name=';;;'.join(string_list)
                                     )
                             else:
                                 pass
@@ -2741,19 +2752,26 @@ class ProcessThread(object):
         root_name_input = root_name
         start_prog = time.time()
         self.queue_com['log'].put(tu.create_log(self.name, 'run_ctf', root_name_input, 'start process'))
+        ctf_mode = None
         if '|||' in root_name:
-            root_name_raw, set_name = root_name.split('|||')
+            ctf_mode, root_name_raw, set_name = root_name.split('|||')
             root_name = root_name_raw
         else:
             set_name = None
             root_name_raw = root_name
         # Split is file_sum, file_dw_sum, file_frames
         try:
-            file_sum, file_dw, file_input = root_name.split(';;;')
+            ctf_mode, file_sum, file_dw, file_input = root_name.split(';;;')
         except ValueError:
             file_input = root_name
             file_sum = root_name
             file_dw = 'None'
+
+        assert ctf_mode is not None, ctf_mode
+        if self.settings['Copy'][ctf_mode] != 'True':
+            self.queue_com['log'].put(tu.create_log(self.name, 'run_ctf', root_name_input, 'stop early 1'))
+            return None
+
         try:
             if self.settings[self.settings['Copy']['CTF']]['Use movies'] == 'True':
                 if not os.path.isfile(file_input):

@@ -1128,7 +1128,13 @@ class ProcessWorker(QObject):
                             pass
 
             remove_patterns = ['THIS IS A DUMMY PATTERN!']
-            if check_state == 1 and key == 'Extract':
+            if check_state in (1, 2) and key == 'CTF':
+                if restart_dict['Motion'] == 0:
+                    remove_patterns = [
+                        '^CTF_sum',
+                        ]
+
+            elif check_state == 1 and key == 'Extract':
                 if restart_dict['Picking'] == 1 and restart_dict['CTF'] == 1:
                     # Reset Motion correction and therefore picking and CTF
                     remove_patterns = [

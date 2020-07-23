@@ -862,7 +862,7 @@ def default_pipeline():
             int,
             'Find;' +
             'Motion:Motion,' +
-            'CTF_frames:CTF,' +
+            'CTF:CTF,' +
             'Compress:Compress,' +
             'Meta to work:Copy to work:Copy_to_work,' +
             'Meta to backup:Copy to backup:Copy_to_backup,' +
@@ -879,7 +879,7 @@ def default_pipeline():
             '12',
             int,
             'Motion;' +
-            'CTF_sum:CTF,' +
+            'CTF:CTF,' +
             'Picking:Picking,' +
             'Extract:Extract,' +
             'Train2d:Train2d,' +
