@@ -5293,7 +5293,7 @@ class ProcessThread(object):
 
                 self.delete_file_to_delete(file_to_delete)
                 stop_time = time.time()
-                self.try_write(err_file, 'a', '\nTime: {0} sec'.format(stop_time - start_time)) 
+                self.try_write(log_file, 'a', '\nTime: {0} sec'.format(stop_time - start_time)) 
                 if self.abort.value:
                     raise UserWarning('STOP: abort')
                 with open(err_file, 'r') as err:
