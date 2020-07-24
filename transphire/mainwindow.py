@@ -1021,6 +1021,12 @@ class MainWindow(QMainWindow):
 
                 #    del entry[name]
                 #    continue
+                if name.endswith('_global'):
+                    del entry[name]
+                    continue
+                if name == 'GPU SPLIT':
+                    del entry[name]
+                    continue
 
                 if key in check_list:
                     if name == 'Number of feedbacks' and int(entry[name]) > self.n_feedbacks:
