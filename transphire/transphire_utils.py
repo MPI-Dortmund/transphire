@@ -615,7 +615,7 @@ def get_function_dict():
             'allow_empty': [],
             }
 
-    function_dict['General'] = {
+    function_dict['Output'] = {
             'plot': None,
             'plot_data': None,
             'content': tc.default_general,
@@ -1029,16 +1029,16 @@ def get_content_gui(content, template_name, n_feedbacks):
             'layout': 'Settings',
             },
         {
-            'name': 'Global',
+            'name': 'Output',
             'widget': SettingsContainer,
-            'content': content[template_name]['Global'],
+            'content': content[template_name]['Output'],
+            'content_others': content[template_name]['Others'],
             'layout': 'Settings',
             },
         {
-            'name': 'General',
+            'name': 'Global',
             'widget': SettingsContainer,
-            'content': content[template_name]['General'],
-            'content_others': content[template_name]['Others'],
+            'content': content[template_name]['Global'],
             'layout': 'Settings',
             },
         {

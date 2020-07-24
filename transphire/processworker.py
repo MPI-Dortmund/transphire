@@ -558,8 +558,8 @@ class ProcessWorker(QObject):
             color = 'Running'
         queue_com['status'].put([
             '{0:02d}|{1:02d}'.format(
-                int(self.settings['General']['Number of feedbacks']) - self.settings['do_feedback_loop'].value,
-                int(self.settings['General']['Number of feedbacks'])
+                int(self.settings['Output']['Number of feedbacks']) - self.settings['do_feedback_loop'].value,
+                int(self.settings['Output']['Number of feedbacks'])
                 ),
             [status],
             'Feedbacks',
@@ -612,35 +612,35 @@ class ProcessWorker(QObject):
         self.emit_plot_signals(folder_list=folder_list, monitor=False)
 
         # Define file number and check if file already exists
-        if self.settings['General']['Rename micrographs'] == 'True':
+        if self.settings['Output']['Rename micrographs'] == 'True':
             try:
                 with open(shared_dict['typ']['Find']['number_file'], 'r') as read:
                     shared_dict['typ']['Find']['file_number'] = int(read.readline())
             except FileNotFoundError:
-                shared_dict['typ']['Find']['file_number'] = int(self.settings['General']['Start number']) - 1
+                shared_dict['typ']['Find']['file_number'] = int(self.settings['Output']['Start number']) - 1
                 message = '{0}: New run detected - Set start number to {1}\n'.format(
                     'Find',
-                    self.settings['General']['Start number'],
+                    self.settings['Output']['Start number'],
                     )
             else:
-                if self.settings['General']['Start number'] != '0' and \
-                        int(self.settings['General']['Start number']) > int(shared_dict['typ']['Find']['file_number']):
+                if self.settings['Output']['Start number'] != '0' and \
+                        int(self.settings['Output']['Start number']) > int(shared_dict['typ']['Find']['file_number']):
                     message = '{0}: Filenumber {1} provided and larger than last file_number {2}!\nContinue with {1}\n'.format(
                         'Find',
-                        self.settings['General']['Start number'],
+                        self.settings['Output']['Start number'],
                         shared_dict['typ']['Find']['file_number'],
                         )
-                    shared_dict['typ']['Find']['file_number'] = int(self.settings['General']['Start number']) - 1
+                    shared_dict['typ']['Find']['file_number'] = int(self.settings['Output']['Start number']) - 1
 
-                elif self.settings['General']['Start number'] != '0' and \
-                        int(self.settings['General']['Start number']) <= int(shared_dict['typ']['Find']['file_number']):
+                elif self.settings['Output']['Start number'] != '0' and \
+                        int(self.settings['Output']['Start number']) <= int(shared_dict['typ']['Find']['file_number']):
                     self.stop = True
                     message = '{0}: Filenumber {1} provided and smaller equals the last file_number {2}!\nPlease adjust the Start number to a valid, i.e. not used yet, value or 0\n'.format(
                         'Find',
-                        self.settings['General']['Start number'],
+                        self.settings['Output']['Start number'],
                         shared_dict['typ']['Find']['file_number'],
                         )
-                elif self.settings['General']['Start number'] == '0':
+                elif self.settings['Output']['Start number'] == '0':
                     message = '{0}: Continue run detected! Continue with file number: {1}'.format(
                         'Find',
                         shared_dict['typ']['Find']['file_number'],
@@ -654,15 +654,15 @@ class ProcessWorker(QObject):
 
         #####
 #
-#        shared_dict['typ']['Find']['file_number'] = int(self.settings['General']['Start number']) - 1
+#        shared_dict['typ']['Find']['file_number'] = int(self.settings['Output']['Start number']) - 1
 #
-#        if self.settings['General']['Rename micrographs'] == 'True':
+#        if self.settings['Output']['Rename micrographs'] == 'True':
 #            new_name = '{0}/{1}{2:0{3}d}{4}'.format(
 #                self.settings['meta_folder'],
-#                self.settings['General']['Rename prefix'],
+#                self.settings['Output']['Rename prefix'],
 #                shared_dict['typ']['Find']['file_number']+1,
-#                len(self.settings['General']['Estimated mic number']),
-#                self.settings['General']['Rename suffix']
+#                len(self.settings['Output']['Estimated mic number']),
+#                self.settings['Output']['Rename suffix']
 #                )
 #
 #            if os.path.exists('{0}_krios_sum.mrc'.format(new_name)):
@@ -672,7 +672,7 @@ class ProcessWorker(QObject):
 #                        shared_dict['typ']['Find']['file_number'] = int(read.readline())
 #                except FileNotFoundError:
 #                    shared_dict['typ']['Find']['file_number'] = 0
-#                if self.settings['General']['Increment number'] == 'True':
+#                if self.settings['Output']['Increment number'] == 'True':
 #                    message = '{0}: Filenumber {1} already exists!\n'.format(
 #                        'Find',
 #                        old_filenumber+1
@@ -779,8 +779,8 @@ class ProcessWorker(QObject):
 
         queue_com['status'].put([
             '{0:02d}|{1:02d}'.format(
-                int(self.settings['General']['Number of feedbacks']) - self.settings['do_feedback_loop'].value,
-                int(self.settings['General']['Number of feedbacks'])
+                int(self.settings['Output']['Number of feedbacks']) - self.settings['do_feedback_loop'].value,
+                int(self.settings['Output']['Number of feedbacks'])
                 ),
             ['Not running'],
             'Feedbacks',
@@ -917,7 +917,7 @@ class ProcessWorker(QObject):
         select2d_name = self.settings['Copy']['Select2d']
         class2d_name = self.settings['Copy']['Class2d']
         extract_name = self.settings['Copy']['Extract']
-        if int(self.settings['General']['Number of feedbacks']) != 0:
+        if int(self.settings['Output']['Number of feedbacks']) != 0:
             if 'Later' in (train2d_name, select2d_name, extract_name, class2d_name):
                 self.sig_error.emit('Number of feedbacks provided and Extract, Class2d, Select2d, or Train2d set to Later. Remember that particle extraction and subsequent runs will stall until a Extract, Class2d, Select2d, or Train2d  program is provided.')
             if 'False' in (train2d_name, select2d_name, extract_name, class2d_name):

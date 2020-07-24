@@ -35,10 +35,10 @@ def get_mic_number(array, settings, as_int=True):
         out_type = int
     else:
         out_type = str
-    if settings['General']['Rename micrographs'] == 'True':
+    if settings['Output']['Rename micrographs'] == 'True':
         number_list = []
-        prefix = settings['General']['Rename prefix']
-        suffix = settings['General']['Rename suffix']
+        prefix = settings['Output']['Rename prefix']
+        suffix = settings['Output']['Rename suffix']
         for entry in array:
             entry = os.path.basename(entry)
             if suffix == '':

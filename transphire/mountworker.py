@@ -132,8 +132,8 @@ class MountWorker(QObject):
         Return:
         None
         """
-        if settings['General']['Project directory']:
-            self.project_directory = settings['General']['Project directory']
+        if settings['Output']['Project directory']:
+            self.project_directory = settings['Output']['Project directory']
         else:
             self.project_directory = '.'
 
@@ -142,8 +142,8 @@ class MountWorker(QObject):
         else:
             self.project_quota_limit = 95
 
-        if settings['General']['Scratch directory']:
-            self.scratch_directory = settings['General']['Scratch directory']
+        if settings['Output']['Scratch directory']:
+            self.scratch_directory = settings['Output']['Scratch directory']
         else:
             self.scratch_directory = '.'
 

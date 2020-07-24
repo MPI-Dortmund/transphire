@@ -73,15 +73,15 @@ class PlotWorker(QObject):
         Returns:
         None
         """
-        small_settings = {'General': {}, 'Path': {}}
+        small_settings = {'Output': {}, 'Path': {}}
         for name, name_no_feedback, directory_name, settings, current_name in settings:
             if name_no_feedback not in ('Later', 'False'):
-                small_settings['General']['Project directory']= settings['General']['Project directory']
+                small_settings['Output']['Project directory']= settings['Output']['Project directory']
                 small_settings['Path']['chimerax']= settings['Path']['chimerax']
                 small_settings['copy_to_work_folder_feedback_0']= settings['copy_to_work_folder_feedback_0']
-                small_settings['General']['Rename prefix'] = settings['General']['Rename prefix']
-                small_settings['General']['Rename suffix'] = settings['General']['Rename suffix']
-                small_settings['General']['Rename micrographs'] = settings['General']['Rename micrographs']
+                small_settings['Output']['Rename prefix'] = settings['Output']['Rename prefix']
+                small_settings['Output']['Rename suffix'] = settings['Output']['Rename suffix']
+                small_settings['Output']['Rename micrographs'] = settings['Output']['Rename micrographs']
                 self.settings.append([name, name_no_feedback, directory_name, small_settings, current_name])
 
         self.calculate_array()

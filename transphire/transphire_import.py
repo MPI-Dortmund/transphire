@@ -1225,7 +1225,7 @@ def import_auto_sphire_v1_3(name, name_no_feedback, settings, directory_name, im
     """
 
     mount_work = directory_name.replace(
-        settings['General']['Project directory'],
+        settings['Output']['Project directory'],
         settings['copy_to_work_folder_feedback_0'],
         )
     directory_names = glob.glob(os.path.join(mount_work, '{0}*_FILES'.format(import_name)))

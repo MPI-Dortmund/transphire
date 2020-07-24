@@ -665,10 +665,10 @@ class MainWindow(QMainWindow):
         Return:
         None
         """
-        general_settings = self.content['General'].get_settings()
+        general_settings = self.content['Output'].get_settings()
         notification_settings = self.content['Notification'].get_settings()
         global_settings = {
-            'General': general_settings[0],
+            'Output': general_settings[0],
             'Notification': notification_settings[0]
             }
         self.workers['mount'].sig_set_settings.emit(global_settings)
@@ -1093,7 +1093,7 @@ class MainWindow(QMainWindow):
         # Load settings to pass them to the working threads
         error_list = []
         check_list = [
-            'General',
+            'Output',
             'Notification'
             ]
         first_round = ['Global']
@@ -1141,7 +1141,7 @@ class MainWindow(QMainWindow):
 
         if not re.match(
                 self.project_name_pattern,
-                settings['General']['Project name']
+                settings['Output']['Project name']
                 ) and not monitor:
             self.enable(True)
             tu.message(
@@ -1156,8 +1156,8 @@ class MainWindow(QMainWindow):
 
         # Project folder names
         settings['project_base'] = os.path.join(
-            settings['General']['Project directory'],
-            settings['General']['Project name']
+            settings['Output']['Project directory'],
+            settings['Output']['Project name']
             )
         if not os.path.exists(settings['project_base']) and monitor:
             self.enable(True)
@@ -1170,8 +1170,8 @@ class MainWindow(QMainWindow):
             )
 
         settings['scratch_folder'] = os.path.join(
-            settings['General']['Scratch directory'],
-            settings['General']['Project name'],
+            settings['Output']['Scratch directory'],
+            settings['Output']['Project name'],
             'TranSPHIRE_results'
             )
         folder_dict = {
@@ -1191,7 +1191,7 @@ class MainWindow(QMainWindow):
                 value
                 )
 
-        settings['do_feedback_loop'] = int(settings['General']['Number of feedbacks'])
+        settings['do_feedback_loop'] = int(settings['Output']['Number of feedbacks'])
         settings['feedback_file'] = os.path.join(settings['log_folder'], 'feedback_log')
         settings['spot_file'] = os.path.join(settings['log_folder'], 'spot_dict.txt')
         settings['data_frame'] = os.path.join(settings['project_folder'], 'data_frame.csv')
@@ -1239,7 +1239,7 @@ class MainWindow(QMainWindow):
                 else:
                     folder_name = '{0:03d}_{1}'.format(idx, prog_name.replace(' ', '_').replace('>=', ''))
 
-                for index in range(int(settings['General']['Number of feedbacks']) + 1):
+                for index in range(int(settings['Output']['Number of feedbacks']) + 1):
                     if index == 0:
                         folder_name_tmp = folder_name
                     elif no_feedback:
@@ -1249,13 +1249,13 @@ class MainWindow(QMainWindow):
                             '000_Feedback_results',
                             '{0}_feedback_{1}'.format(
                                 folder_name,
-                                int(settings['General']['Number of feedbacks']) - index + 1
+                                int(settings['Output']['Number of feedbacks']) - index + 1
                                 )
                             )
 
                     folder_setting_name = '{0}_folder_feedback_{1}'.format(entry.lower(), index)
                     folder_setting = os.path.join(base_dir, folder_name_tmp)
-                    prog_name_feedback = '{} feedback {}'.format(prog_name, int(settings['General']['Number of feedbacks']) - index + 1) if index != 0 else prog_name
+                    prog_name_feedback = '{} feedback {}'.format(prog_name, int(settings['Output']['Number of feedbacks']) - index + 1) if index != 0 else prog_name
                     settings['plot_emit'].append([prog_name, prog_name_feedback, entry, folder_setting])
 
                     if prog_name == settings['Copy'][entry.replace('_', ' ')]:
@@ -1340,14 +1340,14 @@ class MainWindow(QMainWindow):
             _, message = self.save(
                 file_name=os.path.join(
                     settings['set_folder'],
-                    settings['General']['Project name']
+                    settings['Output']['Project name']
                     ),
                 do_message=False
                 )
             _, message = self.save(
                 file_name=os.path.join(
                     self.project_settings_folder,
-                    settings['General']['Project name']
+                    settings['Output']['Project name']
                     ),
                 do_message=False
                 )

@@ -1442,13 +1442,13 @@ class ProcessThread(object):
                 try:
                     self.shared_dict_typ['file_number'] += 1
 
-                    if self.settings['General']['Rename micrographs'] == 'True':
+                    if self.settings['Output']['Rename micrographs'] == 'True':
                         new_name_meta = '{0}/{1}{2:0{3}.0f}{4}'.format(
                             self.settings['meta_folder'],
-                            self.settings['General']['Rename prefix'],
+                            self.settings['Output']['Rename prefix'],
                             self.shared_dict_typ['file_number'],
-                            len(self.settings['General']['Estimated mic number']),
-                            self.settings['General']['Rename suffix']
+                            len(self.settings['Output']['Estimated mic number']),
+                            self.settings['Output']['Rename suffix']
                             )
                     else:
                         new_name_meta = os.path.join(
@@ -1748,20 +1748,20 @@ class ProcessThread(object):
 
         self.shared_dict_typ['count_lock'].acquire()
         try:
-            if self.settings['General']['Rename micrographs'] == 'True':
+            if self.settings['Output']['Rename micrographs'] == 'True':
                 new_name_stack = '{0}/{1}{2:0{3}.0f}{4}'.format(
                     self.settings['stack_folder'],
-                    self.settings['General']['Rename prefix'],
+                    self.settings['Output']['Rename prefix'],
                     number,
-                    len(self.settings['General']['Estimated mic number']),
-                    self.settings['General']['Rename suffix']
+                    len(self.settings['Output']['Estimated mic number']),
+                    self.settings['Output']['Rename suffix']
                     )
                 new_name_meta = '{0}/{1}{2:0{3}.0f}{4}'.format(
                     self.settings['meta_folder'],
-                    self.settings['General']['Rename prefix'],
+                    self.settings['Output']['Rename prefix'],
                     number,
-                    len(self.settings['General']['Estimated mic number']),
-                    self.settings['General']['Rename suffix']
+                    len(self.settings['Output']['Estimated mic number']),
+                    self.settings['Output']['Rename suffix']
                     )
             else:
                 new_name_stack = os.path.join(
@@ -1786,7 +1786,7 @@ class ProcessThread(object):
                     self.queue_lock.release()
             else:
                 self.shared_dict_typ['file_number'] = int(
-                    self.settings['General']['Start number']
+                    self.settings['Output']['Start number']
                     )
             message = '{0}: Filenumber {1} already exists!\n'.format(
                 self.name,
@@ -3472,8 +3472,8 @@ class ProcessThread(object):
             if self.settings['do_feedback_loop'].value == 0:
                 self.queue_com['status'].put([
                     '{0:02d}|{1:02d}'.format(
-                        int(self.settings['General']['Number of feedbacks']) - self.settings['do_feedback_loop'].value,
-                        int(self.settings['General']['Number of feedbacks'])
+                        int(self.settings['Output']['Number of feedbacks']) - self.settings['do_feedback_loop'].value,
+                        int(self.settings['Output']['Number of feedbacks'])
                         ),
                     ['Done'],
                     'Feedbacks',
@@ -3482,8 +3482,8 @@ class ProcessThread(object):
             else:
                 self.queue_com['status'].put([
                     '{0:02d}|{1:02d}'.format(
-                        int(self.settings['General']['Number of feedbacks']) - self.settings['do_feedback_loop'].value,
-                        int(self.settings['General']['Number of feedbacks'])
+                        int(self.settings['Output']['Number of feedbacks']) - self.settings['do_feedback_loop'].value,
+                        int(self.settings['Output']['Number of feedbacks'])
                         ),
                     ['Running'],
                     'Feedbacks',
@@ -4684,18 +4684,18 @@ class ProcessThread(object):
                 execute_command.append('cd')
                 execute_command.append('/{0}'.format(self.settings['Mount'][mount_name]['current_folder']))
                 execute_command.append(';')
-                if self.settings['General']['Project directory'] != '.':
+                if self.settings['Output']['Project directory'] != '.':
                     with open(submission_on_work, 'r') as read:
                         content = read.read()
                     submission_on_work = '{0}/submission_script_work.sh'.format(log_prefix)
                     self.try_write(submission_on_work, 'w', content.replace(
-                            '{0}/'.format(self.settings['General']['Project directory']),
+                            '{0}/'.format(self.settings['Output']['Project directory']),
                             ''
                             ))
 
                     new_file = os.path.join(
                         os.path.dirname(submission_on_work).replace(
-                            '{0}/'.format(self.settings['General']['Project directory']),
+                            '{0}/'.format(self.settings['Output']['Project directory']),
                             ''
                             ),
                         os.path.basename(submission_on_work),
@@ -4790,7 +4790,7 @@ class ProcessThread(object):
 
             meridien_dir = '{0}/0002_MERIDIEN'.format(log_prefix)
             meridien_dir = meridien_dir.replace(
-                    self.settings['General']['Project directory'],
+                    self.settings['Output']['Project directory'],
                     os.path.relpath(self.settings['copy_to_work_folder_feedback_0'])
                     )
 
@@ -4799,7 +4799,7 @@ class ProcessThread(object):
                     if self.stop.value:
                         break
                     viper_model = '{0}/0001_RVIPER_ADJUSTMENT/vol3d_ref_moon_eliminated.hdf'.format(log_prefix).replace(
-                        self.settings['General']['Project directory'],
+                        self.settings['Output']['Project directory'],
                         os.path.relpath(self.settings['copy_to_work_folder_feedback_0'])
                         )
                     if os.path.isfile(viper_model):
@@ -4864,10 +4864,10 @@ class ProcessThread(object):
             mount_name = self.settings['Copy'][my_typ]
             sudo = self.settings['Mount'][mount_name]['Need sudo for copy?']
             protocol = self.settings['Mount'][mount_name]['Protocol']
-            if self.settings['General']['Project directory'] != '.':
+            if self.settings['Output']['Project directory'] != '.':
                 new_suffix = os.path.join(
                     os.path.dirname(copy_file_name).replace(
-                        self.settings['General']['Project directory'],
+                        self.settings['Output']['Project directory'],
                         ''
                         ),
                     os.path.basename(copy_file_name),
