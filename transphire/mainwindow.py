@@ -1022,9 +1022,8 @@ class MainWindow(QMainWindow):
                 #    del entry[name]
                 #    continue
                 if name.endswith('_global'):
-                    del entry[name]
-                    continue
-                if name == 'GPU SPLIT':
+                    if entry[name][0] is not None and entry[name][1] and key != 'Global':
+                        non_global_names_with_global[entry[name][0]] = name.split('_global')[0]
                     del entry[name]
                     continue
 
