@@ -1389,6 +1389,10 @@ def look_and_feel(app, font=None, adjust_width=None, adjust_height=None, default
         max-width: {4};
         max-height: {5};
         }}
+    QTabBar::tab:disabled {{
+        color: lightgrey;
+        background-color: darkgrey
+        }}
 
     QTabBar#vertical::tab {{
         max-width: {5};

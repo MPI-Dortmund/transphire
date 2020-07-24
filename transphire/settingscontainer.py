@@ -33,6 +33,7 @@ class SettingsContainer(QWidget):
     QWidget
     """
     sig_change_use_movie = pyqtSignal(int)
+    sig_adjust_tab = pyqtSignal(object, str)
 
     def __init__(self, content, name, global_dict, settings_folder, mount_worker, parent=None, **kwargs):
         """
@@ -154,6 +155,13 @@ class SettingsContainer(QWidget):
                         input_file_names=self.input_file_names,
                         parent=self
                         )
+
+                    if self.name == 'Copy':
+                        try:
+                            settings_widget.edit.currentTextChanged.connect(self.prepare_send_adjust)
+                        except AttributeError:
+                            pass
+
                     if widget[key][1]['name'] == 'Use movies':
                         try:
                             settings_widget.edit.currentIndexChanged.connect(self.sig_change_use_movie.emit)
@@ -178,6 +186,10 @@ class SettingsContainer(QWidget):
                 self.layout_dict[dict_name].addStretch(1)
             except AttributeError:
                 pass
+
+    @pyqtSlot(str)
+    def prepare_send_adjust(self, text):
+        self.sig_adjust_tab.emit(self.sender(), text)
 
     @pyqtSlot(str)
     def change_state(self, name):

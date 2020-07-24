@@ -588,6 +588,9 @@ class MainWindow(QMainWindow):
                     self.content[key]
                     )
 
+            if key == 'Copy':
+                self.content[key].sig_adjust_tab.connect(self.hide_tab)
+
             if key == 'Button':
                 self.content[key].sig_load.connect(self.load)
                 self.content[key].sig_save.connect(self.save)
@@ -634,6 +637,19 @@ class MainWindow(QMainWindow):
 
 
         return error_list
+
+    @pyqtSlot(object, str)
+    def hide_tab(self, sender, text):
+        current_key = sender.parent().name
+        for idx, widget in reversed(list(enumerate(self.content[current_key].widgets))):
+            if text in ('Later', 'False'):
+                val = True
+            else:
+                val = text == widget.name
+            index = self.content[current_key].indexOf(widget)
+            self.content[current_key].setTabEnabled(index, val)
+            if val:
+                self.content[current_key].setCurrentIndex(index)
 
     def check_quota(self):
         """

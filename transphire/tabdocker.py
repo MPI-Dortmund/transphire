@@ -81,6 +81,7 @@ class TabDocker(QWidget):
             self.name = kwargs['name']
         except KeyError:
             self.name = None
+        self.widgets = []
 
         layout_tmp = QVBoxLayout(self)
         self.parent_widget = QWidget(self)
@@ -160,7 +161,7 @@ class TabDocker(QWidget):
         """
         return self.tab_widget.currentIndex()
 
-    def add_tab(self, widget, name):
+    def add_tab(self, widget, name, add_widgets=True):
         """
         Add a new tab to the TabDocker
 
@@ -177,6 +178,8 @@ class TabDocker(QWidget):
             pass
         current_state = self.tab_widget.blockSignals(True)
         index = self.tab_widget.addTab(widget, name)
+        if add_widgets:
+            self.widgets.append(widget)
         self.tab_widget.blockSignals(current_state)
         self.tab_widget.setTabToolTip(index, name)
 
@@ -286,14 +289,27 @@ class TabDocker(QWidget):
             }
         self.tab_widget.setTabPosition(tab_position_dict[position])
 
+    def setTabEnabled(self, index, state):
+        """
+        Set the tab position index to the enable state.
+
+        Arguments:
+        index - Tab position index
+        state - State (True or False)
+
+        Returns:
+        None
+        """
+        self.tab_widget.setTabEnabled(index, state)
+
     def order_tabs(self):
         current_state = self.tab_widget.blockSignals(True)
         widget_tuple = tuple([(self.widget(idx).name, self.widget(idx)) for idx in range(self.count())])
         for idx in reversed(range(self.count())):
             self.removeTab(idx)
+
         for name, widget in sorted(widget_tuple):
-            self.add_tab(widget, name)
-        widget_tuple = tuple([(self.widget(idx).name, self.widget(idx)) for idx in range(self.count())])
+            self.add_tab(widget, name, add_widgets=False)
         self.tab_widget.blockSignals(current_state)
 
     def enable_tab(self, visible):
