@@ -304,12 +304,20 @@ class TabDocker(QWidget):
 
     def order_tabs(self):
         current_state = self.tab_widget.blockSignals(True)
-        widget_tuple = tuple([(self.widget(idx).name, self.widget(idx)) for idx in range(self.count())])
+        widget_tuple = tuple([
+            (
+                self.widget(idx).name,
+                self.widget(idx),
+                self.tab_widget.isTabEnabled(idx)
+                )
+            for idx in range(self.count())
+            ])
         for idx in reversed(range(self.count())):
             self.removeTab(idx)
 
-        for name, widget in sorted(widget_tuple):
+        for idx, (name, widget, state) in enumerate(sorted(widget_tuple)):
             self.add_tab(widget, name, add_widgets=False)
+            self.setTabEnabled(idx, state)
         self.tab_widget.blockSignals(current_state)
 
     def enable_tab(self, visible):

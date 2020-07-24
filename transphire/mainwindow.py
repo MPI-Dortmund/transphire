@@ -634,22 +634,26 @@ class MainWindow(QMainWindow):
                 self.content[key].sig_change_use_movie.connect(self.content['Global'].emit_global)
             except AttributeError:
                 pass
-
+        self.content['Copy'].emit_signals()
 
         return error_list
 
     @pyqtSlot(object, str)
     def hide_tab(self, sender, text):
         current_key = sender.parent().name
-        for idx, widget in reversed(list(enumerate(self.content[current_key].widgets))):
-            if text in ('Later', 'False'):
-                val = True
-            else:
-                val = text == widget.name
-            index = self.content[current_key].indexOf(widget)
-            self.content[current_key].setTabEnabled(index, val)
-            if val:
-                self.content[current_key].setCurrentIndex(index)
+        try:
+            for idx, widget in reversed(list(enumerate(self.content[current_key].widgets))):
+                if text in ('Later', 'False'):
+                    val = True
+                else:
+                    val = text == widget.name
+                index = self.content[current_key].indexOf(widget)
+                self.content[current_key].setTabEnabled(index, val)
+                if val:
+                    self.content[current_key].setCurrentIndex(index)
+            self.content[current_key].order_tabs()
+        except KeyError:
+            pass
 
     def check_quota(self):
         """

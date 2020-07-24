@@ -865,7 +865,7 @@ def reduce_programs(exclude_set=None):
             pass
 
     for key, value in content.items():
-        content[key] = list(reversed(value))
+        content[key] = list(sorted(value))
 
     return content
 
@@ -899,6 +899,8 @@ def reduce_copy_entries(exclude_set, content):
                 if sorted(values) == ['False', 'Later']:
                     sub_item[list(sub_item)[0]][0] = 'False'
                     exclude_set.add(list(sub_item)[0])
+                else:
+                    sub_item[list(sub_item)[0]][0] = values[0]
 
 
 def reduce_path_widget(exclude_set, content):

@@ -187,6 +187,15 @@ class SettingsContainer(QWidget):
             except AttributeError:
                 pass
 
+    def emit_signals(self):
+        for key in self.content:
+            try:
+                self.content[key].edit.currentTextChanged.emit(
+                    self.content[key].edit.currentText()
+                    )
+            except AttributeError as e:
+                pass
+
     @pyqtSlot(str)
     def prepare_send_adjust(self, text):
         self.sig_adjust_tab.emit(self.sender(), text)
