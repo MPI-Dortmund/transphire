@@ -1230,13 +1230,14 @@ def check_outputs(zero_list, non_zero_list, exists_list, folder, command):
     Returns:
     None
     """
-    template = 'Command failed:\n{0}\nfor\n{1}.\nPlease check the logfiles in\n{2}!'
+    template = '{0} - Command failed:\n{1}\nfor\n{2}.\nPlease check the logfiles in\n{3}!'
     for file_path in non_zero_list:
         try:
             size = os.path.getsize(file_path)
-        except OSError:
+        except OSError as e:
             raise Exception(
                 template.format(
+                    str(e),
                     command,
                     file_path,
                     folder
@@ -1246,6 +1247,7 @@ def check_outputs(zero_list, non_zero_list, exists_list, folder, command):
             if size == 0:
                 raise Exception(
                     template.format(
+                        'SIZE ERROR 1',
                         command,
                         file_path,
                         folder
@@ -1257,9 +1259,10 @@ def check_outputs(zero_list, non_zero_list, exists_list, folder, command):
     for file_path in zero_list:
         try:
             size = os.path.getsize(file_path)
-        except OSError:
+        except OSError as e:
             raise Exception(
                 template.format(
+                    str(e),
                     command,
                     file_path,
                     folder
@@ -1269,6 +1272,7 @@ def check_outputs(zero_list, non_zero_list, exists_list, folder, command):
             if size > 0:
                 raise Exception(
                     template.format(
+                        'SIZE ERROR 2',
                         command,
                         file_path,
                         folder
@@ -1281,6 +1285,7 @@ def check_outputs(zero_list, non_zero_list, exists_list, folder, command):
         if not os.path.exists(file_path):
             raise Exception(
                 template.format(
+                    'Exist error',
                     command,
                     file_path,
                     folder
