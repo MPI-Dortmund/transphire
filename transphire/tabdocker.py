@@ -318,6 +318,8 @@ class TabDocker(QWidget):
         for idx, (name, widget, state) in enumerate(sorted(widget_tuple)):
             self.add_tab(widget, name, add_widgets=False)
             self.setTabEnabled(idx, state)
+            if state:
+                self.setCurrentIndex(idx)
         self.tab_widget.blockSignals(current_state)
 
     def enable_tab(self, visible):

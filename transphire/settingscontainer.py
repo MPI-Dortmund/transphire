@@ -430,15 +430,13 @@ class SettingsContainer(QWidget):
                 continue
 
             entry.global_value = text
-            cur_state = entry.edit.blockSignals(True)
-            if not entry.edit.isEnabled():
+            if entry.widget_auto.isChecked():
                 try:
                     entry.edit.setText(text)
                 except AttributeError:
                     entry.edit.setCurrentText(text)
 
                 entry.widget_auto.toggled.emit(True)
-            entry.edit.blockSignals(cur_state)
 
     def search_for_projects(self, project_dir):
         text = self.content['Software'].get_settings()['Software']
