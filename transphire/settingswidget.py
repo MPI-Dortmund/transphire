@@ -267,7 +267,6 @@ class SettingsWidget(QWidget):
                 self.edit.setText(self.pre_global)
                 self.edit.setStyleSheet(tu.get_style('unchanged'))
             except AttributeError:
-                self.edit.removeItem(0)
                 self.edit.setCurrentText(self.pre_global)
                 self.change_color_if_true()
 
@@ -275,7 +274,6 @@ class SettingsWidget(QWidget):
             try:
                 self.edit.setText(current_global)
             except AttributeError:
-                self.edit.insertItem(0, current_global)
                 self.edit.setCurrentText(current_global)
             self.edit.setStyleSheet(tu.get_style('global'))
 
