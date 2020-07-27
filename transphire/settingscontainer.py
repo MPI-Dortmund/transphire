@@ -409,6 +409,11 @@ class SettingsContainer(QWidget):
             except AttributeError:
                 self.content[key].edit.currentTextChanged.emit(self.content[key].edit.currentText())
 
+    @pyqtSlot(str, str)
+    def set_new_model(self, weigths, threshold):
+        self.content['--config'].edit.setText(config)
+        self.content['--config'].edit.setText(config)
+
     @pyqtSlot(str)
     def update_global(self, text):
         if self.sender().parent().name not in self.global_dict:
@@ -541,4 +546,3 @@ class SettingsContainer(QWidget):
                 continue
             else:
                 SettingsContainer.recursive_search(folder_name, match, matches)
-

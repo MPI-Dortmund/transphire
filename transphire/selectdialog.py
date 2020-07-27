@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import subprocess
 import json
 import numpy as np
 import re
@@ -37,6 +38,7 @@ class SelectDialog(QWidget):
     None
     """
     sig_start = pyqtSignal(object)
+    sig_new_config = pyqtSignal(str, str)
 
     def __init__(self, *args, parent=None, **kwargs):
         """
@@ -57,6 +59,7 @@ class SelectDialog(QWidget):
         self.neutral_name = 'neutral'
         self.bad_name = 'bad'
         self.good_name = 'good'
+        self.model_out = None
         self.layouts = {}
         self.labels = {}
         self.button_dict = {}
@@ -76,10 +79,28 @@ class SelectDialog(QWidget):
         layout.addLayout(layout_h1)
         layout_h2 = QHBoxLayout()
         layout.addLayout(layout_h2)
-        btn_done = QPushButton('Retrain with given information', self)
+        layout_h3 = QHBoxLayout()
+        layout.addLayout(layout_h3)
+
+        btn_done = QPushButton('Retrain', self)
         btn_done.clicked.connect(self.retrain)
-        layout.addWidget(btn_done)
+        layout_h3.addWidget(btn_done)
         self.content.append(btn_done)
+
+        layout_h3.addStretch(1)
+
+        label_threshold = QLabel('Threshold', self)
+        layout_h3.addWidget(label_threshold)
+        self.content.append(label_threshold)
+
+        self.threshold_repick = QLineEdit('0.5', self)
+        layout_h3.addWidget(self.threshold_repick)
+        self.content.append(self.threshold_repick)
+
+        self.button_repick = QPushButton('Repick', self)
+        self.button_repick.clicked.connect(self.repick)
+        layout_h3.addWidget(self.button_repick)
+        self.content.append(self.button_repick)
 
         self.edit = QLineEdit(str(self.columns), self)
         self.edit.editingFinished.connect(self.adjust_all_layouts)
@@ -108,12 +129,11 @@ class SelectDialog(QWidget):
 
         self.sig_start.connect(self.start_retrain)
         self.adjust_all_layouts()
-        self.enable(True) # It is inverted to match with mainwindow behaviour
+        self.enable(False)
 
     def enable(self, var, use_all=None):
-        #Inverted
         for entry in self.content:
-            entry.setEnabled(not var)
+            entry.setEnabled(var)
 
     @pyqtSlot(object)
     @pyqtSlot()
@@ -241,33 +261,32 @@ class SelectDialog(QWidget):
             self.widgets[layout_name].append(just_add)
             self.layouts[layout_name].addWidget(just_add)
             return
-        else:
-            layout_count = self.layouts[layout_name].count()
-            for i in reversed(range(layout_count)):
-                item = self.layouts[layout_name].itemAt(i)
-                if isinstance(item, QSpacerItem):
-                    self.layouts[layout_name].removeItem(item)
-                elif isinstance(item, QWidgetItem):
-                    if clear:
-                        #self.layouts[layout_name].removeItem(item)
-                        item.widget().setParent(None)
-                elif isinstance(item, QHBoxLayout):
-                    for j in reversed(range(item.count())):
-                        item_j = item.itemAt(j)
-                        if isinstance(item_j, QSpacerItem):
-                            item.removeItem(item_j)
-                            continue
-                        elif isinstance(item_j, QWidgetItem):
-                            if clear:
-                                item_j.widget().setParent(None)
-                        elif item_j is None:
-                            pass
-                        else:
-                            assert False, item_j
-                    #self.layouts[layout_name].removeItem(item)
-                    item.setParent(None)
-                else:
-                    assert False, item
+
+        layout_count = self.layouts[layout_name].count()
+        for i in reversed(range(layout_count)):
+            item = self.layouts[layout_name].itemAt(i)
+            if isinstance(item, QSpacerItem):
+                self.layouts[layout_name].removeItem(item)
+            elif isinstance(item, QWidgetItem):
+                self.layouts[layout_name].removeItem(item)
+                if clear:
+                    item.widget().setParent(None)
+            elif isinstance(item, QHBoxLayout):
+                for j in reversed(range(item.count())):
+                    item_j = item.itemAt(j)
+                    if isinstance(item_j, QSpacerItem):
+                        item.removeItem(item_j)
+                        continue
+                    elif isinstance(item_j, QWidgetItem):
+                        if clear:
+                            item_j.widget().setParent(None)
+                    elif item_j is None:
+                        pass
+                    else:
+                        assert False, item_j
+                self.layouts[layout_name].removeItem(item)
+            else:
+                assert False, item
 
         if clear:
             self.widgets[layout_name] = []
@@ -324,9 +343,10 @@ class SelectDialog(QWidget):
             )
         with open(config_file, 'r') as read:
             content = read.read()
+        self.model_out = os.path.join(self.log_folder, 'model.h5')
         content = content.replace('XXXGOODXXX', self.good_folder)
         content = content.replace('XXXBADXXX', self.bad_folder)
-        content = content.replace('XXXMODELXXX', os.path.join(self.log_folder, 'model.h5'))
+        content = content.replace('XXXMODELXXX', self.model_out)
         with open(config_out, 'w') as write:
             write.write(content)
 
@@ -357,8 +377,26 @@ class SelectDialog(QWidget):
                     out_file
                     )
                 print('Execute:', cmd)
-                os.system(cmd)
-        print('{} -c {}'.format(self.sp_cinderella_exec, config_out))
+                try:
+                    subprocess.call(cmd.split())
+                except Exception as e:
+                    print(e)
+        cmd = '{} -c {}'.format(self.sp_cinderella_exec, config_out)
+        print('Execute:', cmd)
+        try:
+            subprocess.call(cmd.split())
+        except Exception as e:
+            print(e)
+        else:
+            self.repick()
+
+    @pyqtSlot()
+    def repick(self):
+        print('repick')
+
+    @pyqtSlot()
+    def confirm(self):
+        self.sig_new_config.emit(self.model_out, self.threshold)
 
 
 class MyPushButton(QPushButton):

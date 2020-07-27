@@ -589,6 +589,11 @@ class MainWindow(QMainWindow):
                     self.content[key]
                     )
 
+            if key.startswith('Cinderella'):
+                self.content['Retrain'].sig_new_config.connect(
+                    self.content[key].set_new_model
+                    )
+
             if key == 'Copy':
                 self.content[key].sig_adjust_tab.connect(self.hide_tab)
 

@@ -406,6 +406,8 @@ class SettingsWidget(QWidget):
             options=QFileDialog.DontUseNativeDialog
             )
         if in_dir != '':
+            if slef.name == 'Project name':
+                in_dir = os.path.basename(in_dir)
             self.edit.setText(in_dir)
 
             if '/SEARCH' in self.typ:
