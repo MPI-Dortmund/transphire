@@ -61,6 +61,7 @@ class SelectDialog(QWidget):
         self.bad_name = 'bad'
         self.good_name = 'good'
         self.input_name = 'input_files'
+        self.model_name = 'model.h5'
         self.model_out = None
         self.layouts = {}
         self.labels = {}
@@ -149,7 +150,7 @@ class SelectDialog(QWidget):
         self.clear()
         self.log_folder = os.path.join(self.settings['log_folder'], 'Retrain')
         self.classes_folder = os.path.join(self.log_folder, '{0}')
-        self.model_out = os.path.join(self.classes_folder, 'model.h5')
+        self.model_out = os.path.join(self.classes_folder, self.model_name)
 
         self.good_folder = os.path.join(self.classes_folder, self.good_name)
         self.bad_folder = os.path.join(self.classes_folder, self.bad_name)
