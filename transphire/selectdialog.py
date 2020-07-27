@@ -18,6 +18,7 @@
 import subprocess
 import json
 import numpy as np
+import datetime
 import re
 import os
 import glob
@@ -64,13 +65,17 @@ class SelectDialog(QWidget):
         self.labels = {}
         self.button_dict = {}
 
+        self.time_string = None
+        self.current_model = None
+
         self.log_folder = None
         self.good_folder = None
         self.bad_folder = None
         self.classes_folder = None
         self.settings_file = None
         self.e2proc2d_exec = None
-        self.sp_cinderella_exec = None
+        self.sp_cinderella_train_exec = None
+        self.sp_cinderella_predict_exec = None
 
         layout = QVBoxLayout(self)
         layout_h0 = QHBoxLayout()
@@ -142,17 +147,19 @@ class SelectDialog(QWidget):
             self.settings = settings
         self.clear()
         self.log_folder = os.path.join(self.settings['log_folder'], 'Retrain')
-        self.good_folder = os.path.join(self.log_folder, self.good_name)
-        self.bad_folder = os.path.join(self.log_folder, self.bad_name)
-        self.classes_folder = os.path.join(self.log_folder, 'Classes')
+        self.classes_folder = os.path.join(self.log_folder, '{0}')
+        self.model_out = os.path.join(self.classes_folder, 'model.h5')
+
+        self.good_folder = os.path.join(self.classes_folder, self.good_name)
+        self.bad_folder = os.path.join(self.classes_folder, self.bad_name)
+
         self.settings_file = os.path.join(self.log_folder, 'tmp_settings.json')
         self.e2proc2d_exec = self.settings['Path']['e2proc2d.py']
-        self.sp_cinderella_exec = self.settings['Path']['sp_cinderella_train.py']
+        self.sp_cinderella_train_exec = self.settings['Path']['sp_cinderella_train.py']
+        self.sp_cinderella_predict_exec = self.settings['Path'][self.settings['Copy']['Select2d']]
 
         for folder_name in (
                 self.log_folder,
-                self.good_folder,
-                self.bad_folder,
                 ):
             tu.mkdir_p(folder_name)
 
@@ -221,7 +228,10 @@ class SelectDialog(QWidget):
             pass
 
         for file_name, buttons in button_dict.items():
-            update = os.path.getmtime(file_name) < os.path.getmtime(self.settings_file)
+            try:
+                update = os.path.getmtime(file_name) < os.path.getmtime(self.settings_file)
+            except FileNotFoundError:
+                update = False
 
             for button in buttons:
                 if update:
@@ -333,9 +343,17 @@ class SelectDialog(QWidget):
 
     @pyqtSlot()
     def retrain(self):
+        self.time_string = datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
+        classes_folder = self.classes_folder.format(self.time_string)
+        good_folder = self.good_folder.format(self.time_string)
+        bad_folder = self.bad_folder.format(self.time_string)
+        model_out = self.model_out.format(self.time_string)
+
+        self.current_model = model_out
+
         config_file = os.path.join(
             os.path.dirname(__file__),
-            'support_scripts',
+            'templates',
             'cinderella_config.json'
             )
         config_out = os.path.realpath(
@@ -343,15 +361,13 @@ class SelectDialog(QWidget):
             )
         with open(config_file, 'r') as read:
             content = read.read()
-        self.model_out = os.path.join(self.log_folder, 'model.h5')
-        content = content.replace('XXXGOODXXX', self.good_folder)
-        content = content.replace('XXXBADXXX', self.bad_folder)
-        content = content.replace('XXXMODELXXX', self.model_out)
+        content = content.replace('XXXGOODXXX', good_folder)
+        content = content.replace('XXXBADXXX', bad_folder)
+        content = content.replace('XXXMODELXXX', model_out)
         with open(config_out, 'w') as write:
             write.write(content)
 
-        for current_name in (self.bad_name, self.good_name):
-            out_dir_classes = os.path.join(self.classes_folder, current_name)
+        for current_name, out_dir_classes in ((self.bad_name, bad_folder), (self.good_name, good_folder)):
             os.makedirs(out_dir_classes, exist_ok=True)
             index_dict = {}
             widgets = self.add_to_layout(current_name)
@@ -361,8 +377,8 @@ class SelectDialog(QWidget):
                     )
             for file_name, index_list in index_dict.items():
                 out_file = os.path.join(
-                    self.log_folder,
-                    '{}_{}_list.txt'.format(os.path.basename(file_name), current_name)
+                    classes_folder,
+                    '{}_{}_list.txt'.format(file_name.replace('/', '_'), current_name)
                     )
                 with open(out_file, 'w') as write:
                     write.write('\n'.join(map(str, index_list)))
@@ -370,8 +386,7 @@ class SelectDialog(QWidget):
                     self.e2proc2d_exec,
                     file_name,
                     os.path.join(
-                        self.log_folder,
-                        current_name,
+                        out_dir_classes,
                         file_name.replace('/', '_')
                         ),
                     out_file
@@ -381,14 +396,15 @@ class SelectDialog(QWidget):
                     subprocess.call(cmd.split())
                 except Exception as e:
                     print(e)
-        cmd = '{} -c {}'.format(self.sp_cinderella_exec, config_out)
+        cmd = '{} -c {}'.format(self.sp_cinderella_train_exec, config_out)
         print('Execute:', cmd)
         try:
-            subprocess.call(cmd.split())
+            idx = subprocess.call(cmd.split())
         except Exception as e:
             print(e)
         else:
-            self.repick()
+            if not idx:
+                self.repick()
 
     @pyqtSlot()
     def repick(self):
