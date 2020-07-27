@@ -193,7 +193,7 @@ class SettingsContainer(QWidget):
                 self.content[key].edit.currentTextChanged.emit(
                     self.content[key].edit.currentText()
                     )
-            except AttributeError as e:
+            except AttributeError:
                 pass
 
     @pyqtSlot(str)
@@ -411,8 +411,8 @@ class SettingsContainer(QWidget):
 
     @pyqtSlot(str, str)
     def set_new_model(self, weigths, threshold):
-        self.content['--config'].edit.setText(config)
-        self.content['--config'].edit.setText(config)
+        self.content['--weigths'].edit.setText(weigths)
+        self.content['--confidence_threshold'].edit.setText(threshold)
 
     @pyqtSlot(str)
     def update_global(self, text):
@@ -435,13 +435,17 @@ class SettingsContainer(QWidget):
                 continue
 
             entry.global_value = text
-            if entry.widget_auto.isChecked():
-                try:
-                    entry.edit.setText(text)
-                except AttributeError:
-                    entry.edit.setCurrentText(text)
+            try:
+                if entry.widget_auto.isChecked():
+                    try:
+                        entry.edit.setText(text)
+                    except AttributeError:
+                        entry.edit.setCurrentText(text)
 
-                entry.widget_auto.toggled.emit(True)
+                    entry.widget_auto.toggled.emit(True)
+            except AttributeError:
+                pass
+
 
     def search_for_projects(self, project_dir):
         text = self.content['Software'].get_settings()['Software']

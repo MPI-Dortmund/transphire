@@ -354,7 +354,7 @@ class SelectDialog(QWidget):
             out_dir_classes = os.path.join(self.classes_folder, current_name)
             os.makedirs(out_dir_classes, exist_ok=True)
             index_dict = {}
-            widgets = self.add_to_layout(i)
+            widgets = self.add_to_layout(current_name)
             for widget in widgets:
                 index_dict.setdefault(widget.isac_class_averages, []).append(
                     widget.isac_class_id
