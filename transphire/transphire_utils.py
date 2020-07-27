@@ -38,6 +38,7 @@ from transphire.buttoncontainer import ButtonContainer
 from transphire.notificationcontainer import NotificationContainer
 from transphire.plotcontainer import PlotContainer
 from transphire.tabdocker import TabDocker
+from transphire.selectdialog import SelectDialog
 from transphire import transphire_content as tc
 from transphire import transphire_plot as tp
 from transphire import transphire_import as ti
@@ -1014,6 +1015,11 @@ def get_content_gui(content, template_name, n_feedbacks):
         {
             'name': 'Settings',
             'widget': TabDocker,
+            'layout': 'TAB1',
+            },
+        {
+            'name': 'Retrain',
+            'widget': SelectDialog,
             'layout': 'TAB1',
             },
         {

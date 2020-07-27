@@ -21,6 +21,7 @@ import datetime
 import sys
 import os
 import re
+import copy
 import pexpect as pe
 import subprocess
 from PyQt5.QtWidgets import (
@@ -389,7 +390,7 @@ class MainWindow(QMainWindow):
     @pyqtSlot()
     def set_visualisation(self):
         self.content['TAB1'].setCurrentIndex(0)
-        self.content['TAB1'].setCurrentIndex(2)
+        self.content['TAB1'].setCurrentIndex(3)
 
     @pyqtSlot()
     def new_round_plot(self):
@@ -949,8 +950,7 @@ class MainWindow(QMainWindow):
             self.content['Button'].start_monitor_button.setVisible(False)
             self.content['Button'].stop_monitor_button.setVisible(True)
             self.content['Button'].stop_monitor_button.setEnabled(True)
-        else:
-            pass
+            self.content['Retrain'].sig_start.emit(copy.deepcopy(settings))
 
     def _extract_settings(self, key, settings, error_list, check_list, external_files):
         try:
@@ -1362,6 +1362,7 @@ class MainWindow(QMainWindow):
             self.workers['mount'].set_settings(settings=settings)
             self.save_temp_settings()
             tu.message(message)
+            self.content['Retrain'].sig_start.emit(copy.deepcopy(settings))
         else:
             tu.message('Input needs to be "YES!" to work')
             self.enable(True)

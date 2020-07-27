@@ -679,6 +679,7 @@ def default_path():
         ['mpirun', 'mpirun', str, '', 'FILE', 'Main', ''],
         ['cryolo_gui.py', 'cryolo_gui.py', str, '', 'FILE', 'Main', ''],
         ['cryolo_evaluation.py', 'cryolo_evaluation.py', str, '', 'FILE', 'Main', ''],
+        ['sp_cinderella_train.py', 'sp_cinderella_train.py', str, '', 'FILE', 'Main', ''],
         ]
     items_old = []
 
