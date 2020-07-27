@@ -46,6 +46,12 @@ from transphire import transphire_import as ti
 VERSION_RE = re.compile('(.*) >=v([\d.]+)')
 
 
+def symlink_rel(src, dst):
+    rel_path_src = os.path.relpath(src, os.path.dirname(dst))
+    os.symlink(rel_path_src, dst)
+    return os.path.join(rel_path_src, dst)
+
+
 def rerun_function_in_case_of_error(func):
     def wrapper(*args, **kwargs):
         error_code = []

@@ -60,6 +60,7 @@ class SelectDialog(QWidget):
         self.neutral_name = 'neutral'
         self.bad_name = 'bad'
         self.good_name = 'good'
+        self.input_name = 'input_files'
         self.model_out = None
         self.layouts = {}
         self.labels = {}
@@ -349,6 +350,9 @@ class SelectDialog(QWidget):
         bad_folder = self.bad_folder.format(self.time_string)
         model_out = self.model_out.format(self.time_string)
 
+        original_folder = os.path.join(classes_folder, self.input_name)
+        tu.mkdir_p(original_folder)
+
         self.current_model = model_out
 
         config_file = os.path.join(
@@ -376,6 +380,10 @@ class SelectDialog(QWidget):
                     widget.isac_class_id
                     )
             for file_name, index_list in index_dict.items():
+                out_symlink = os.path.join(original_folder, file_name.replace('/', '_'))
+                if not os.path.islink(out_symlink):
+                    tu.symlink_rel(file_name, out_symlink)
+
                 out_file = os.path.join(
                     classes_folder,
                     '{}_{}_list.txt'.format(file_name.replace('/', '_'), current_name)
