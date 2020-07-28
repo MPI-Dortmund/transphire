@@ -69,7 +69,6 @@ class SelectDialog(QWidget):
         self.labels = {}
         self.button_dict = {}
 
-        self.time_string = None
         self.current_model = None
 
         self.log_folder = None
@@ -111,16 +110,24 @@ class SelectDialog(QWidget):
         layout_h3.addWidget(self.button_repick)
         self.content.append(self.button_repick)
 
+        btn = QPushButton('Set', self)
+        btn.clicked.connect(self.set_settings)
+        layout_h3.addWidget(btn)
+        self.content.append(btn)
+
         self.edit = QLineEdit(str(self.columns), self)
         self.edit.editingFinished.connect(self.adjust_all_layouts)
         layout_h0.addWidget(QLabel('Columns:', self))
         layout_h0.addWidget(self.edit)
+        self.content.append(self.edit)
         self.combo_text = QComboBox(self)
         self.combo_text.currentTextChanged.connect(self.set_current_folder)
         layout_h0.addWidget(self.combo_text)
+        self.content.append(self.combo_text)
         btn_update = QPushButton('Update', self)
         btn_update.clicked.connect(self.start_retrain)
         layout_h0.addWidget(btn_update)
+        self.content.append(btn_update)
 
         for current_name in (self.good_name, self.neutral_name, self.bad_name):
             self.labels[current_name] = QLabel(current_name, self)
@@ -142,6 +149,17 @@ class SelectDialog(QWidget):
         self.sig_start.connect(self.start_retrain)
         self.adjust_all_layouts()
         self.enable(False)
+
+    @pyqtSlot()
+    def set_settings(self):
+        try:
+            name, threshold = self.combo_text.currentText().rsplit('_', 1)
+        except ValueError:
+            tu.message('Please provide a repicking run and not {}.'.format(self.default_project_name))
+            return
+        model = os.path.join(self.log_folder, name, self.model_name)
+        self.sig_new_config.emit(model, threshold)
+        tu.message('Set model: {}\nSet threshold: {}'.format(model, threshold))
 
     def enable(self, var, use_all=None):
         for entry in self.content:
@@ -208,7 +226,7 @@ class SelectDialog(QWidget):
                                     )
                                 )
                             if os.path.isdir(entry) and not
-                            entry.startswith('jpg')
+                            os.path.basename(entry).startswith('jpg')
                             ])
                     except IndexError:
                         pass
@@ -224,7 +242,7 @@ class SelectDialog(QWidget):
                                     )
                                 )
                             if os.path.isdir(entry) and not
-                            entry.startswith('jpg')
+                            os.path.basename(entry).startswith('jpg')
                             ])
                     except IndexError:
                         pass
@@ -235,8 +253,6 @@ class SelectDialog(QWidget):
                     class_2d_folder.remove(entry)
         else:
             select_2d_folder.append(os.path.join(self.log_folder, input_folder))
-        print('class2d', class_2d_folder)
-        print('select2d', select_2d_folder)
         self.fill(class_2d_folder)
         self.fill(select_2d_folder, cinderella=True)
         self.adjust_all_layouts()
@@ -384,11 +400,11 @@ class SelectDialog(QWidget):
 
     @pyqtSlot()
     def retrain(self):
-        self.time_string = datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
-        classes_folder = self.classes_folder.format(self.time_string)
-        good_folder = self.good_folder.format(self.time_string)
-        bad_folder = self.bad_folder.format(self.time_string)
-        model_out = self.model_out.format(self.time_string)
+        time_string = datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
+        classes_folder = self.classes_folder.format(time_string)
+        good_folder = self.good_folder.format(time_string)
+        bad_folder = self.bad_folder.format(time_string)
+        model_out = self.model_out.format(time_string)
 
         original_folder = os.path.join(classes_folder, self.input_name)
         tu.mkdir_p(original_folder)
@@ -452,15 +468,33 @@ class SelectDialog(QWidget):
             print(e)
         else:
             if not idx:
-                self.repick()
+                self.repick(time_string)
 
     @pyqtSlot()
-    def repick(self):
-        classes_folder = self.classes_folder.format(self.time_string)
+    def repick(self, time_string=None):
+        try:
+            if time_string is None:
+                classes_folder = os.path.join(self.log_folder, self.combo_text.currentText().rsplit('_', 1)[0])
+            else:
+                classes_folder = self.classes_folder.format(time_string)
+        except ValueError:
+            tu.message('Could not find model for current entry: {}.\nPlease provide a repicking run as starting point.'.format(self.combo_text.currentText()))
+            return
+
+        if not os.path.isdir(classes_folder):
+            print(classes_folder)
+            tu.message('Could not find model for current combo: {}.\nPlease provide a repicking run as starting point.'.format(self.combo_text.currentText()))
+            return
+
         original_folder = os.path.join(classes_folder, self.input_name)
-        model_out = self.current_model
+        model_out = os.path.join(classes_folder, self.model_name)
         threshold = float(self.threshold_repick.text())
         output_folder = '{}_{}'.format(classes_folder, threshold)
+
+        if not os.path.isfile(model_out):
+            print(classes_folder)
+            tu.message('Could not find model for current combo: {}.\nPlease provide a repicking run as starting point.'.format(self.combo_text.currentText()))
+            return
 
         try:
             shutil.rmtree(output_folder)

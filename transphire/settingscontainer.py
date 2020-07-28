@@ -410,8 +410,8 @@ class SettingsContainer(QWidget):
                 self.content[key].edit.currentTextChanged.emit(self.content[key].edit.currentText())
 
     @pyqtSlot(str, str)
-    def set_new_model(self, weigths, threshold):
-        self.content['--weigths'].edit.setText(weigths)
+    def set_new_model(self, weights, threshold):
+        self.content['--weights'].edit.setText(weights)
         self.content['--confidence_threshold'].edit.setText(threshold)
 
     @pyqtSlot(str)
