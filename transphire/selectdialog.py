@@ -20,6 +20,7 @@ import json
 import numpy as np
 import datetime
 import re
+import shutil
 import os
 import glob
 from transphire import transphire_utils as tu
@@ -62,6 +63,7 @@ class SelectDialog(QWidget):
         self.good_name = 'good'
         self.input_name = 'input_files'
         self.model_name = 'model.h5'
+        self.default_project_name = 'Project'
         self.model_out = None
         self.layouts = {}
         self.labels = {}
@@ -113,6 +115,9 @@ class SelectDialog(QWidget):
         self.edit.editingFinished.connect(self.adjust_all_layouts)
         layout_h0.addWidget(QLabel('Columns:', self))
         layout_h0.addWidget(self.edit)
+        self.combo_text = QComboBox(self)
+        self.combo_text.currentTextChanged.connect(self.set_current_folder)
+        layout_h0.addWidget(self.combo_text)
         btn_update = QPushButton('Update', self)
         btn_update.clicked.connect(self.start_retrain)
         layout_h0.addWidget(btn_update)
@@ -142,14 +147,36 @@ class SelectDialog(QWidget):
         for entry in self.content:
             entry.setEnabled(var)
 
+    @pyqtSlot(str)
+    @pyqtSlot()
+    def set_current_folder(self, text=None):
+        if text is None:
+            text = self.combo_text.currentText()
+        self.start_retrain(input_folder=text)
+
+    def add_combo_item(self, items):
+        current_items = [self.combo_text.itemText(idx) for idx in range(self.combo_text.count())]
+        current_items.extend(items)
+        prev_state = self.combo_text.blockSignals(True)
+        self.combo_text.clear()
+        self.combo_text.addItems(current_items)
+        self.combo_text.blockSignals(prev_state)
+
     @pyqtSlot(object)
     @pyqtSlot()
-    def start_retrain(self, settings=None):
+    def start_retrain(self, settings=None, input_folder=None):
         if settings is not None:
             self.settings = settings
+            file_names = [
+                os.path.basename(entry)
+                for entry in
+                glob.glob(os.path.join(self.settings['log_folder'], 'Retrain', 'RUN_*.*'))
+                ]
+            self.add_combo_item([self.default_project_name])
+            self.add_combo_item(file_names)
         self.clear()
         self.log_folder = os.path.join(self.settings['log_folder'], 'Retrain')
-        self.classes_folder = os.path.join(self.log_folder, '{0}')
+        self.classes_folder = os.path.join(self.log_folder, 'RUN_{0}')
         self.model_out = os.path.join(self.classes_folder, self.model_name)
 
         self.good_folder = os.path.join(self.classes_folder, self.good_name)
@@ -167,37 +194,49 @@ class SelectDialog(QWidget):
 
         class_2d_folder = []
         select_2d_folder = []
-        for key in self.settings:
-            if 'class2d' in key.lower():
-                try:
-                    class_2d_folder.append(
-                        glob.glob(
-                            os.path.join(
-                                self.settings[key],
-                                '*',
+        if input_folder is None or input_folder == self.default_project_name:
+            for key in self.settings:
+                if 'class2d' in key.lower():
+                    try:
+                        class_2d_folder.extend([
+                            entry
+                            for entry in
+                            glob.glob(
+                                os.path.join(
+                                    self.settings[key],
+                                    '*',
+                                    )
                                 )
-                            )[0]
-                        )
-                except IndexError:
-                    pass
-            elif 'select2d' in key.lower():
-                try:
-                    select_2d_folder.append(
-                        glob.glob(
-                            os.path.join(
-                                self.settings[key],
-                                '*',
+                            if os.path.isdir(entry) and not
+                            entry.startswith('jpg')
+                            ])
+                    except IndexError:
+                        pass
+                elif 'select2d' in key.lower():
+                    try:
+                        select_2d_folder.extend([
+                            entry
+                            for entry in
+                            glob.glob(
+                                os.path.join(
+                                    self.settings[key],
+                                    '*',
+                                    )
                                 )
-                            )[0]
-                        )
-                except IndexError:
-                    pass
+                            if os.path.isdir(entry) and not
+                            entry.startswith('jpg')
+                            ])
+                    except IndexError:
+                        pass
 
-        select_basenames = tuple([os.path.basename(entry) for entry in select_2d_folder])
-        for entry in class_2d_folder[:]:
-            if os.path.basename(entry) in select_basenames:
-                class_2d_folder.remove(entry)
-
+            select_basenames = tuple([os.path.basename(entry) for entry in select_2d_folder])
+            for entry in class_2d_folder[:]:
+                if os.path.basename(entry) in select_basenames:
+                    class_2d_folder.remove(entry)
+        else:
+            select_2d_folder.append(os.path.join(self.log_folder, input_folder))
+        print('class2d', class_2d_folder)
+        print('select2d', select_2d_folder)
         self.fill(class_2d_folder)
         self.fill(select_2d_folder, cinderella=True)
         self.adjust_all_layouts()
@@ -417,7 +456,59 @@ class SelectDialog(QWidget):
 
     @pyqtSlot()
     def repick(self):
-        print('repick')
+        classes_folder = self.classes_folder.format(self.time_string)
+        original_folder = os.path.join(classes_folder, self.input_name)
+        model_out = self.current_model
+        threshold = float(self.threshold_repick.text())
+        output_folder = '{}_{}'.format(classes_folder, threshold)
+
+        try:
+            shutil.rmtree(output_folder)
+        except Exception:
+            pass
+
+        cmd = '{} -i {} -o {} -w {} -t {}'.format(
+            self.sp_cinderella_predict_exec,
+            original_folder,
+            output_folder,
+            model_out,
+            threshold,
+            )
+        print('Execute:', cmd)
+        try:
+            subprocess.call(cmd.split())
+        except Exception as e:
+            print(e)
+
+        for entry in glob.glob(os.path.join(output_folder, '*.txt')):
+            if not entry.endswith('_index_confidence.txt'):
+                continue
+
+            file_name = entry.rsplit('_index_confidence.txt', 1)[0]
+            for suffix in ('_good', '_bad'):
+                out_folder = os.path.join(output_folder, 'png{}'.format(suffix))
+                in_file = '{}{}.hdf'.format(file_name, suffix)
+                tu.mkdir_p(out_folder)
+                cmd = '{} {} {} --unstack'.format(
+                    self.e2proc2d_exec,
+                    in_file,
+                    os.path.join(
+                        out_folder,
+                        '{}.png'.format(os.path.basename(in_file))
+                        ),
+                    )
+                print('Execute:', cmd)
+                try:
+                    subprocess.call(cmd.split())
+                except Exception as e:
+                    print(e)
+
+
+        self.add_combo_item([os.path.basename(output_folder)])
+        cur_text = self.combo_text.blockSignals(True)
+        self.combo_text.setCurrentText(os.path.basename(output_folder))
+        self.combo_text.blockSignals(cur_text)
+        self.combo_text.currentTextChanged.emit(os.path.basename(output_folder))
 
     @pyqtSlot()
     def confirm(self):
