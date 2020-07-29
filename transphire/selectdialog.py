@@ -120,10 +120,13 @@ class SelectDialog(QWidget):
         layout_h0.addWidget(QLabel('Columns:', self))
         layout_h0.addWidget(self.edit)
         self.content.append(self.edit)
+
         self.combo_text = QComboBox(self)
+        self.combo_text.setSizeAdjustPolicy(QComboBox.AdjustToContents)
         self.combo_text.currentTextChanged.connect(self.set_current_folder)
         layout_h0.addWidget(self.combo_text)
         self.content.append(self.combo_text)
+
         btn_update = QPushButton('Update', self)
         btn_update.clicked.connect(self.start_retrain)
         layout_h0.addWidget(btn_update)

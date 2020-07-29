@@ -147,6 +147,7 @@ class SettingsWidget(QWidget):
 
         elif self.typ in ('COMBO', 'COMBOX'):
             self.edit = QComboBox(self)
+            self.edit.setSizeAdjustPolicy(QComboBox.AdjustToContents)
             self.edit.currentTextChanged.connect(self.change_tooltip)
             self.edit.currentIndexChanged.connect(lambda: self.sig_index_changed.emit(self.name))
             self.edit.addItems(self.values)

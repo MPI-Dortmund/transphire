@@ -63,6 +63,10 @@ class SelectWidget(QWidget):
             qt_label = QLabel(label + ':', self)
             layout.addWidget(qt_label)
             layout.addWidget(self.buttons[label])
+            try:
+                self.buttons[label].setSizeAdjustPolicy(QComboBox.AdjustToContents)
+            except AttributeError:
+                pass
 
         fields = [
             [self.prev_text, QPushButton],
