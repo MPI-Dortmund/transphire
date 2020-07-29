@@ -329,12 +329,7 @@ class ProcessWorker(QObject):
             if self.stop:
                 break
             else:
-                for i in range(10):
-                    time.sleep(3 / 10)
-                    if self.stop:
-                        break
-            if self.stop:
-                break
+                time.sleep(3)
 
     def run_process(self,
             typ_dict,
