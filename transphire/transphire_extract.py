@@ -137,7 +137,7 @@ def create_window_1_2_command(extract_name, file_sum, file_box, file_ctf, output
     command.append(settings['Path']['e2proc2d.py'])
     file_name = os.path.basename(output_dir)
     command.append(os.path.join(output_dir, '{0}_ptcls.mrcs'.format(file_name)))
-    command.append(os.path.join(output_dir, 'png', '{0}.png').format(file_name))
+    command.append(os.path.join(output_dir, 'png', '{0}_ptcls.mrcs.png').format(file_name))
     command.append('--meanshrink=4')
     command.append('--unstack')
     return ' '.join(command)
