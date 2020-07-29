@@ -1324,11 +1324,12 @@ class MainWindow(QMainWindow):
                 )
             with open(os.path.join(settings['set_folder'], 'used_settings.json'), 'w') as write:
                 json.dump(settings, write, indent=1)
+            settings_copy = copy.deepcopy(settings)
             self.workers['process'].sig_start.emit(settings, restart_dict)
-            self.workers['mount'].set_settings(settings=settings)
+            self.workers['mount'].set_settings(settings=settings_copy)
             self.save_temp_settings()
             tu.message(message)
-            self.content['Retrain'].sig_start.emit(copy.deepcopy(settings))
+            self.content['Retrain'].sig_start.emit(settings_copy)
         else:
             tu.message('Input needs to be "YES!" to work')
             self.enable(True)
