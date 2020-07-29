@@ -57,7 +57,8 @@ class SelectDialog(QWidget):
         self.columns = 10
         self.settings = None
         self.content = []
-        self.widgets = {}
+        self.widgets_dict = {}
+        self.widgets = []
         self.neutral_name = 'neutral'
         self.bad_name = 'bad'
         self.good_name = 'good'
@@ -65,7 +66,7 @@ class SelectDialog(QWidget):
         self.model_name = 'model.h5'
         self.default_project_name = 'Project'
         self.model_out = None
-        self.idx_dict = {}
+        self.current_index = 0
         self.layouts = {}
         self.labels = {}
         self.button_dict = {}
@@ -135,8 +136,7 @@ class SelectDialog(QWidget):
 
         for current_name in (self.good_name, self.neutral_name, self.bad_name):
             self.labels[current_name] = QLabel(current_name, self)
-            self.widgets[current_name] = []
-            self.idx_dict[current_name] = 0
+            self.widgets_dict[current_name] = []
             layout_h1.addWidget(self.labels[current_name])
 
             widget = QWidget(self)
@@ -260,10 +260,10 @@ class SelectDialog(QWidget):
             select_2d_folder.append(os.path.join(self.log_folder, input_folder))
         self.fill(class_2d_folder)
         self.fill(select_2d_folder, cinderella=True)
-        for label_name in self.idx_dict:
-            for idx in reversed(range(self.idx_dict[label_name], len(self.widgets[label_name]))):
-                button = self.widgets[label_name][idx]
-                self.widgets[label_name].remove(button)
+        for label_name in self.labels:
+            for idx in reversed(range(self.current_index, len(self.widgets))):
+                button = self.widgets[idx]
+                self.widgets.remove(button)
                 button.setParent(None)
         self.adjust_all_layouts()
 
@@ -282,19 +282,18 @@ class SelectDialog(QWidget):
                     class_id = int(match.group(2))-1
                     class_averages = os.path.join(sub_folder, '' if cinderella else 'ISAC2', match.group(1))
                     try:
-                        button = self.widgets[label_name][self.idx_dict[label_name]]
+                        button = self.widgets[self.current_index]
                         button.isac_class_averages = class_averages
                         button.isac_class_id = class_id
                         button.current_label = label_name
-                        do_add = False
                     except KeyError:
                         button = MyPushButton(label_name, class_averages, class_id, self)
                         button.sig_click.connect(self.handle_change)
-                        do_add = True
+                        self.widgets.append(button)
                     except IndexError:
                         button = MyPushButton(label_name, class_averages, class_id, self)
                         button.sig_click.connect(self.handle_change)
-                        do_add = True
+                        self.widgets.append(button)
                     button.setIconSize(QSize(50, 50))
                     button.setToolTip('Class averages: {}\nClass id: {}'.format(class_averages, class_id))
                     button.setIcon(QIcon(file_name))
@@ -302,8 +301,8 @@ class SelectDialog(QWidget):
                     button_dict.setdefault(
                         class_averages,
                         []
-                        ).append((button, do_add))
-                    self.idx_dict[label_name] += 1
+                        ).append(button)
+                    self.current_index += 1
 
         try:
             with open(self.settings_file, 'r') as read:
@@ -317,7 +316,7 @@ class SelectDialog(QWidget):
             except FileNotFoundError:
                 update = False
 
-            for button, do_add in buttons:
+            for button in buttons:
                 if update:
                     try:
                         button.current_layout = self.button_dict[self.combo_text.currentText()][file_name][str(button.isac_class_id)]
@@ -325,7 +324,7 @@ class SelectDialog(QWidget):
                         pass
                 self.add_to_layout(
                     button.current_layout,
-                    just_add=(button, do_add),
+                    just_add=button,
                     )
 
     @pyqtSlot(object, object)
@@ -352,9 +351,8 @@ class SelectDialog(QWidget):
 
     def add_to_layout(self, layout_name, add=None, remove=None, clear=False, just_add=None):
         if just_add:
-            if just_add[1]:
-                self.widgets[layout_name].append(just_add[0])
-            self.layouts[layout_name].addWidget(just_add[0])
+            self.widgets_dict[layout_name].append(just_add)
+            self.layouts[layout_name].addWidget(just_add)
             return
 
         layout_count = self.layouts[layout_name].count()
@@ -385,30 +383,31 @@ class SelectDialog(QWidget):
                 assert False, item
 
         if clear:
-            self.idx_dict[layout_name] = 0
+            self.widgets_dict[layout_name] = []
+            self.current_index = 0
             return
         if remove is not None:
-            self.widgets[layout_name].remove(remove)
+            self.widgets_dict[layout_name].remove(remove)
         if add is not None:
-            self.widgets[layout_name].append(add)
+            self.widgets_dict[layout_name].append(add)
 
         self.labels[layout_name].setText(
-            '{}: {}'.format(layout_name, len(self.widgets[layout_name]))
+            '{}: {}'.format(layout_name, len(self.widgets_dict[layout_name]))
             )
         a = np.array(
             [
                 (entry.isac_class_averages, entry.isac_class_id)
-                for entry in self.widgets[layout_name]
+                for entry in self.widgets_dict[layout_name]
                 ],
             dtype='U5000,i8'
             )
         indices = np.argsort(a, order=['f0', 'f1'])
-        self.widgets[layout_name] = np.array(
-            self.widgets[layout_name], dtype=np.object
+        self.widgets_dict[layout_name] = np.array(
+            self.widgets_dict[layout_name], dtype=np.object
             )[indices].tolist()
 
         layout = None
-        for i in range(len(self.widgets[layout_name])):
+        for i in range(len(self.widgets_dict[layout_name])):
             i_hor = i % self.columns
             if i_hor == 0:
                 if layout is not None:
@@ -416,22 +415,22 @@ class SelectDialog(QWidget):
                 layout = QHBoxLayout()
                 self.layouts[layout_name].addLayout(layout)
 
-            layout.addWidget(self.widgets[layout_name][i])
+            layout.addWidget(self.widgets_dict[layout_name][i])
             self.button_dict.setdefault(
                 self.combo_text.currentText(), {}
                 ).setdefault(
-                    self.widgets[layout_name][i].isac_class_averages,
+                    self.widgets_dict[layout_name][i].isac_class_averages,
                     {}
-                    )[str(self.widgets[layout_name][i].isac_class_id)] = layout_name
+                    )[str(self.widgets_dict[layout_name][i].isac_class_id)] = layout_name
 
         if layout is not None:
             layout.addStretch(1)
         self.layouts[layout_name].addStretch(1)
 
-        if self.widgets[layout_name]:
+        if self.widgets_dict[layout_name]:
             with open(self.settings_file, 'w') as write:
                 json.dump(self.button_dict, write, indent=1)
-        return self.widgets[layout_name]
+        return self.widgets_dict[layout_name]
 
     def clear(self):
         for name in self.layouts:
