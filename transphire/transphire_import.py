@@ -792,8 +792,8 @@ def import_cter_v1_0(name, name_no_feedback, settings, directory_name, import_na
         useable_files = [
             file_name
             for file_name in sorted(useable_files)
-            if tu.get_name(file_name) in useable_files_jpg and
-            tu.get_name(file_name) in useable_files_json
+            if tu.get_name(file_name[0]) in useable_files_jpg and
+            tu.get_name(file_name[0]) in useable_files_json
             ]
 
     data = np.zeros(
@@ -810,8 +810,8 @@ def import_cter_v1_0(name, name_no_feedback, settings, directory_name, import_na
     data_original.fill(0)
 
     jpg_json_data = []
-    for entry in sorted(useable_files):
-        file_name_base = tu.get_name(file_name)
+    for file_name in sorted(useable_files):
+        file_name_base = tu.get_name(file_name[0])
         jpgs = glob.glob(os.path.join(directory_name, 'jpg*', '{}.jpg'.format(file_name_base)))
         json = glob.glob(os.path.join(directory_name, 'json*', '{}.json'.format(file_name_base)))
         jpg_json_data.append(';;;'.join(jpgs + json))
