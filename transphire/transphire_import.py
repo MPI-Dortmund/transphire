@@ -776,7 +776,7 @@ def import_cter_v1_0(name, name_no_feedback, settings, directory_name, import_na
             print('File corrupt: {} - {}'.format(file_name, str(e)))
         else:
             if data_name.size > 0:
-                useable_files.append([file_name, data_name])
+                useable_files.append([os.path.dirname(file_name), data_name])
             else:
                 continue
 
