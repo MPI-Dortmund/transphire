@@ -279,6 +279,8 @@ class SelectDialog(QWidget):
                 suffix = '_{}'.format(label_name) if cinderella else ''
                 for file_name in sorted(glob.glob(os.path.join(sub_folder, 'png{}'.format(suffix), '*'))):
                     match = re.search('/([^/]*)-(\d*)\.+png', file_name)
+                    if match is None:
+                        continue
                     class_id = int(match.group(2))-1
                     class_averages = os.path.join(sub_folder, '' if cinderella else 'ISAC2', match.group(1))
                     try:
