@@ -930,9 +930,8 @@ class MainWindow(QMainWindow):
         self.content['Button'].start_monitor_button.setEnabled(False)
         self.content['Button'].stop_monitor_button.setEnabled(False)
 
-        self.workers['plotting'].sig_reset_list.emit()
-
         if start:
+            self.workers['plotting'].sig_reset_list.emit()
             settings, _, _ = self.get_start_settings(monitor=True)
             if settings is None:
                 tu.message('Please fill non emtpy entries.')
@@ -1407,11 +1406,11 @@ class MainWindow(QMainWindow):
         """
         if abort:
             self.workers['process'].abort = True
-        self.workers['process'].stop = True
-        self.content['Button'].start_monitor_button.setEnabled(False)
-        self.content['Button'].stop_monitor_button.setEnabled(False)
-        self.content['Button'].start_button.setEnabled(False)
-        self.content['Button'].stop_button.setEnabled(False)
+        if self.workers['process'] == False:
+            self.workers['process'].stop = True
+            self.content['Button'].start_monitor_button.setEnabled(False)
+            self.content['Button'].stop_monitor_button.setEnabled(False)
+            self.content['Button'].start_button.setEnabled(False)
 
     @pyqtSlot()
     def _finished(self):
