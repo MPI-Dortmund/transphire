@@ -3663,6 +3663,9 @@ class ProcessThread(object):
             self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name_input, 'stop early 4', time.time() - start_prog))
             raise
         else:
+            self.queue_com['notification'].put(
+                'New class averages arrived. :)'
+                )
             skip_list = False
             if skip_list:
                 pass
