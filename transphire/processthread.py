@@ -3308,7 +3308,7 @@ class ProcessThread(object):
                     error = True
                 else:                
                     with open(self.shared_dict_typ['number_file'], 'r') as read:
-                        log_prefix = read.read()
+                        log_prefix = read.read().strip()
 
                 for entry in box_files:
                     matches = self.all_in_queue_file(self.typ, tu.get_name(entry), lock=False)
