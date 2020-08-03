@@ -193,7 +193,7 @@ class SettingsContainer(QWidget):
                 self.content[key].edit.currentTextChanged.emit(
                     self.content[key].edit.currentText()
                     )
-            except AttributeError as e:
+            except AttributeError:
                 pass
 
     @pyqtSlot(str)
@@ -409,6 +409,11 @@ class SettingsContainer(QWidget):
             except AttributeError:
                 self.content[key].edit.currentTextChanged.emit(self.content[key].edit.currentText())
 
+    @pyqtSlot(str, str)
+    def set_new_model(self, weights, threshold):
+        self.content['--weights'].edit.setText(weights)
+        self.content['--confidence_threshold'].edit.setText(threshold)
+
     @pyqtSlot(str)
     def update_global(self, text):
         if self.sender().parent().name not in self.global_dict:
@@ -430,13 +435,17 @@ class SettingsContainer(QWidget):
                 continue
 
             entry.global_value = text
-            if entry.widget_auto.isChecked():
-                try:
-                    entry.edit.setText(text)
-                except AttributeError:
-                    entry.edit.setCurrentText(text)
+            try:
+                if entry.widget_auto.isChecked():
+                    try:
+                        entry.edit.setText(text)
+                    except AttributeError:
+                        entry.edit.setCurrentText(text)
 
-                entry.widget_auto.toggled.emit(True)
+                    entry.widget_auto.toggled.emit(True)
+            except AttributeError:
+                pass
+
 
     def search_for_projects(self, project_dir):
         text = self.content['Software'].get_settings()['Software']
@@ -541,4 +550,3 @@ class SettingsContainer(QWidget):
                 continue
             else:
                 SettingsContainer.recursive_search(folder_name, match, matches)
-

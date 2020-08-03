@@ -679,6 +679,7 @@ def default_path():
         ['mpirun', 'mpirun', str, '', 'FILE', 'Main', ''],
         ['cryolo_gui.py', 'cryolo_gui.py', str, '', 'FILE', 'Main', ''],
         ['cryolo_evaluation.py', 'cryolo_evaluation.py', str, '', 'FILE', 'Main', ''],
+        ['sp_cinderella_train.py', 'sp_cinderella_train.py', str, '', 'FILE', 'Main', ''],
         ]
     items_old = []
 
@@ -1378,7 +1379,7 @@ def default_general():
     Content items as list
     """
     items = [
-        ['Project name', '', str, '', 'PLAIN', 'Main', 'Project name.'],
+        ['Project name', '', str, '', 'DIR', 'Main', 'Project name.'],
         ['Rename prefix', '', str, 'Rename micrographs:True', 'PLAIN', 'Main', 'prefix for the renamed micrographs prefix_number_suffix.extension; The separator between prefix and number needs to be specified, too.'],
         ['Rename suffix', '', str, 'Rename micrographs:True', 'PLAIN', 'Main', 'Suffix for the renamed micrographs prefix_number_suffix.extension; The separator between number and suffix needs to be specified, too.'],
 

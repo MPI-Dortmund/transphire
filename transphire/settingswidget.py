@@ -147,6 +147,7 @@ class SettingsWidget(QWidget):
 
         elif self.typ in ('COMBO', 'COMBOX'):
             self.edit = QComboBox(self)
+            self.edit.setSizeAdjustPolicy(QComboBox.AdjustToContents)
             self.edit.currentTextChanged.connect(self.change_tooltip)
             self.edit.currentIndexChanged.connect(lambda: self.sig_index_changed.emit(self.name))
             self.edit.addItems(self.values)
@@ -250,7 +251,7 @@ class SettingsWidget(QWidget):
                     self.sender().setChecked(not state)
                     self.pre_global = pre_pre_global
                     return
-            except Exception as e:
+            except Exception:
                 self.pre_global = pre_pre_global
                 self.sender().setChecked(not state)
                 return
@@ -301,7 +302,7 @@ class SettingsWidget(QWidget):
         elif self.name in ('Memory usage', 'Memory usage large'):
             try:
                 current_global = str(float(self.pre_global) / max(int(self.global_value), 1))
-            except Exception as e:
+            except Exception:
                 pass
 
         elif self.name == 'Pixel size bin':
@@ -309,7 +310,7 @@ class SettingsWidget(QWidget):
                 pixel_size_raw = float(self.parent.content['Pixel size'].get_settings()['Pixel size'])
                 current_bin = int(self.parent.content['Bin X times'].get_settings()['Bin X times'])
                 current_global = str(pixel_size_raw * current_bin)
-            except Exception as e:
+            except Exception:
                 pass
 
         return current_global
@@ -406,6 +407,8 @@ class SettingsWidget(QWidget):
             options=QFileDialog.DontUseNativeDialog
             )
         if in_dir != '':
+            if self.name == 'Project name':
+                in_dir = os.path.basename(in_dir)
             self.edit.setText(in_dir)
 
             if '/SEARCH' in self.typ:

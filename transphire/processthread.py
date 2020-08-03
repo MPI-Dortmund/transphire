@@ -3164,12 +3164,6 @@ class ProcessThread(object):
         self.remove_from_queue_file(matches_in_queue, self.shared_dict_typ['list_file'])
         self.queue_com['log'].put(tu.create_log(self.name, 'run_extract', root_name_input, 'stop process', time.time() - start_prog))
 
-    @staticmethod
-    def symlink_rel(src, dst):
-        rel_path_src = os.path.relpath(src, os.path.dirname(dst))
-        os.symlink(rel_path_src, dst)
-        return os.path.join(rel_path_src, dst)
-
     def run_train2d(self, root_name):
         """
         Run Particle extraction.
@@ -3271,7 +3265,7 @@ class ProcessThread(object):
             n_max_micrographs = int(self.settings[self.settings['Copy']['Train2d']]['Maximum micrographs'])
 
             for file_name in sorted(np.random.permutation(glob.glob(os.path.join(box_dir, '*')))[:n_max_micrographs]):
-                self.symlink_rel(
+                tu.symlink_rel(
                     file_name,
                     file_name.replace(box_dir, new_box_dir).replace('_original.box', '.box')
                     )
@@ -3669,6 +3663,9 @@ class ProcessThread(object):
             self.queue_com['log'].put(tu.create_log(self.name, 'run_auto3d', root_name_input, 'stop early 4', time.time() - start_prog))
             raise
         else:
+            self.queue_com['notification'].put(
+                'New class averages arrived. :)'
+                )
             skip_list = False
             if skip_list:
                 pass

@@ -38,11 +38,18 @@ from transphire.buttoncontainer import ButtonContainer
 from transphire.notificationcontainer import NotificationContainer
 from transphire.plotcontainer import PlotContainer
 from transphire.tabdocker import TabDocker
+from transphire.selectdialog import SelectDialog
 from transphire import transphire_content as tc
 from transphire import transphire_plot as tp
 from transphire import transphire_import as ti
 
 VERSION_RE = re.compile('(.*) >=v([\d.]+)')
+
+
+def symlink_rel(src, dst):
+    rel_path_src = os.path.relpath(src, os.path.dirname(dst))
+    os.symlink(rel_path_src, dst)
+    return os.path.join(rel_path_src, dst)
 
 
 def rerun_function_in_case_of_error(func):
@@ -1014,6 +1021,11 @@ def get_content_gui(content, template_name, n_feedbacks):
         {
             'name': 'Settings',
             'widget': TabDocker,
+            'layout': 'TAB1',
+            },
+        {
+            'name': 'Retrain',
+            'widget': SelectDialog,
             'layout': 'TAB1',
             },
         {

@@ -21,6 +21,7 @@ import datetime
 import sys
 import os
 import re
+import copy
 import pexpect as pe
 import subprocess
 from PyQt5.QtWidgets import (
@@ -389,7 +390,7 @@ class MainWindow(QMainWindow):
     @pyqtSlot()
     def set_visualisation(self):
         self.content['TAB1'].setCurrentIndex(0)
-        self.content['TAB1'].setCurrentIndex(2)
+        self.content['TAB1'].setCurrentIndex(3)
 
     @pyqtSlot()
     def new_round_plot(self):
@@ -586,6 +587,11 @@ class MainWindow(QMainWindow):
             else:
                 self.layout[layout].addWidget(
                     self.content[key]
+                    )
+
+            if key.startswith('Cinderella'):
+                self.content['Retrain'].sig_new_config.connect(
+                    self.content[key].set_new_model
                     )
 
             if key == 'Copy':
@@ -924,9 +930,8 @@ class MainWindow(QMainWindow):
         self.content['Button'].start_monitor_button.setEnabled(False)
         self.content['Button'].stop_monitor_button.setEnabled(False)
 
-        self.workers['plotting'].sig_reset_list.emit()
-
         if start:
+            self.workers['plotting'].sig_reset_list.emit()
             settings, _, _ = self.get_start_settings(monitor=True)
             if settings is None:
                 tu.message('Please fill non emtpy entries.')
@@ -949,8 +954,7 @@ class MainWindow(QMainWindow):
             self.content['Button'].start_monitor_button.setVisible(False)
             self.content['Button'].stop_monitor_button.setVisible(True)
             self.content['Button'].stop_monitor_button.setEnabled(True)
-        else:
-            pass
+            self.content['Retrain'].sig_start.emit(copy.deepcopy(settings))
 
     def _extract_settings(self, key, settings, error_list, check_list, external_files):
         try:
@@ -982,45 +986,6 @@ class MainWindow(QMainWindow):
         non_global_names_with_global = {}
         for entry in settings_widget:
             for name in sorted(list(entry.keys())):
-                #if name == 'Bin X times?':
-                #    if entry[name] == 'True':
-                #        entry[name] = 2
-                #    elif entry[name] == 'False':
-                #        entry[name] = 1
-                #    else:
-                #        assert False, (name, entry[name])
-                #if name.endswith('_global'):
-                #    if entry[name][0] is not None and entry[name][1]:
-                #        if key != 'Global':
-                #            non_global_names_with_global[entry[name][0]] = name.split('_global')[0]
-                #            entry[name.split('_global')[0]] = settings['Global'][entry[name][0]]
-                #        elif key == 'Global':
-                #            if entry[name][0] == 'GPU':
-                #                try:
-                #                    nvidia_output = subprocess.check_output(['nvidia-smi', '-L'])
-                #                    gpu_devices = re.findall(
-                #                        '^GPU \d+: (.+) \(UUID: GPU-.*\)$',
-                #                        nvidia_output.decode('utf-8'),
-                #                        re.MULTILINE
-                #                        )
-                #                except subprocess.CalledProcessError:
-                #                    gpu_devices = []
-                #                if len(set(gpu_devices)) != 1:
-                #                    error_list.append('The computer does have different types of GPUs available or the GPU\'s crashed! In order to not make any mistakes, please specify the GPU IDs manually')
-                #                entry[name.split('_global')[0]] = ' '.join([str(entry) for entry in range(len(gpu_devices))])
-                #            elif entry[name][0] == 'Memory usage':
-                #                entry[name.split('_global')[0]] = 0.9 / (max(int(entry['GPU SPLIT']), 1) * 5 / 4)
-                #            elif entry[name][0] == 'Memory usage large':
-                #                entry[name.split('_global')[0]] = 0.9 / max(int(entry['GPU SPLIT LARGE']), 1)
-
-                #            #elif entry[name][0] == 'GPU SPLIT':
-                #            #    entry[name.split('_global')[0]] = '1'
-
-                #        else:
-                #            assert False, key
-
-                #    del entry[name]
-                #    continue
                 if name.endswith('_global'):
                     if entry[name][0] is not None and entry[name][1] and key != 'Global':
                         non_global_names_with_global[entry[name][0]] = name.split('_global')[0]
@@ -1358,10 +1323,12 @@ class MainWindow(QMainWindow):
                 )
             with open(os.path.join(settings['set_folder'], 'used_settings.json'), 'w') as write:
                 json.dump(settings, write, indent=1)
+            settings_copy = copy.deepcopy(settings)
             self.workers['process'].sig_start.emit(settings, restart_dict)
-            self.workers['mount'].set_settings(settings=settings)
+            self.workers['mount'].set_settings(settings=settings_copy)
             self.save_temp_settings()
             tu.message(message)
+            self.content['Retrain'].sig_start.emit(settings_copy)
         else:
             tu.message('Input needs to be "YES!" to work')
             self.enable(True)
@@ -1439,11 +1406,11 @@ class MainWindow(QMainWindow):
         """
         if abort:
             self.workers['process'].abort = True
-        self.workers['process'].stop = True
-        self.content['Button'].start_monitor_button.setEnabled(False)
-        self.content['Button'].stop_monitor_button.setEnabled(False)
-        self.content['Button'].start_button.setEnabled(False)
-        self.content['Button'].stop_button.setEnabled(False)
+        if self.workers['process'] == False:
+            self.workers['process'].stop = True
+            self.content['Button'].start_monitor_button.setEnabled(False)
+            self.content['Button'].stop_monitor_button.setEnabled(False)
+            self.content['Button'].start_button.setEnabled(False)
 
     @pyqtSlot()
     def _finished(self):
