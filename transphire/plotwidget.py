@@ -596,7 +596,7 @@ class PlotWidget(QWidget):
                 return_value
             self.force_update(do_message=True)
 
-        self.do_data_reset()
+        self.force_update()
 
     def update_data(self, do_message=False):
         if self.plot_typ in ('values', 'histogram'):
