@@ -716,26 +716,27 @@ class PlotWidget(QWidget):
 
     @pyqtSlot()
     def do_data_reset(self):
-        self._cur_min_x = 0.5
-        self._cur_max_x = 0.6
-        self._cur_min_y = 0.5
-        self._cur_max_y = 0.6
+        if self.plot_typ in ('values', 'histogram'):
+            self._cur_min_x = 0.5
+            self._cur_max_x = 0.6
+            self._cur_min_y = 0.5
+            self._cur_max_y = 0.6
 
-        self._applied_min_x = 0.5
-        self._applied_max_x = 0.6
-        self._applied_min_y = 0.5
-        self._applied_max_y = 0.6
+            self._applied_min_x = 0.5
+            self._applied_max_x = 0.6
+            self._applied_min_y = 0.5
+            self._applied_max_y = 0.6
 
-        for canvas in self._canvas_list:
-            canvas.mpl_canvas.axes.set_xlim(
-                self._applied_min_x,
-                self._applied_max_x
-                )
-            canvas.mpl_canvas.axes.set_ylim(
-                self._applied_min_y,
-                self._applied_max_y
-                )
-            canvas.mpl_canvas.draw()
+            for canvas in self._canvas_list:
+                canvas.mpl_canvas.axes.set_xlim(
+                    self._applied_min_x,
+                    self._applied_max_x
+                    )
+                canvas.mpl_canvas.axes.set_ylim(
+                    self._applied_min_y,
+                    self._applied_max_y
+                    )
+                canvas.mpl_canvas.draw()
 
     @pyqtSlot()
     def update_figure(self, do_message=False):
@@ -788,23 +789,24 @@ class PlotWidget(QWidget):
                             self._applied_max_y
                             )
                         canvas.mpl_canvas.draw()
-                        if plot_idx == 0:
-                            output_name = os.path.join(
-                                self._directory_name,
-                                'overview_plots',
-                                '{0}_{1}.png'.format(
-                                    self.plot_label,
-                                    self.plot_typ,
-                                    )
-                                )
-                            try:
-                                tu.mkdir_p(os.path.dirname(output_name))
-                                canvas.fig.savefig(output_name)
-                            except:
-                                pass
                     else:
                         canvas.mpl_canvas.update()
                         canvas.mpl_canvas.flush_events()
+                    if plot_idx == 0:
+                        output_name = os.path.join(
+                            self._directory_name,
+                            'overview_plots',
+                            '{0}_{1}.png'.format(
+                                self.label,
+                                self.plot_typ,
+                                )
+                            )
+                        try:
+                            tu.mkdir_p(os.path.dirname(output_name))
+                            canvas.mpl_canvas.fig.savefig(output_name)
+                        except Exception as e:
+                            print(e)
+                            pass
 
             elif self.plot_typ in ('image'):
                 self.update_image()
