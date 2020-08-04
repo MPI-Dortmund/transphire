@@ -27,7 +27,7 @@ import matplotlib
 matplotlib.use('QT5Agg')
 
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QPushButton, QLineEdit, QLabel, QCheckBox
-from PyQt5.QtCore import pyqtSlot, pyqtSignal, Qt, QCoreApplication
+from PyQt5.QtCore import pyqtSlot, pyqtSignal, Qt
 from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
     NavigationToolbar2QT as NavigationToolbar
@@ -470,6 +470,7 @@ class PlotWidget(QWidget):
         self._ydata = np.array([])
         self._data = None
         self._basenames = None
+        self._directory_name = None
         self._color = '#68a3c3'
 
         self._cur_min_x = 0
@@ -571,6 +572,7 @@ class PlotWidget(QWidget):
 
     @pyqtSlot(str, str, object, str, object)
     def set_settings(self, name, name_no_feedback, data, directory_name, settings):
+        self._directory_name = directory_name
         self._data = data
         self._basenames = np.array([os.path.basename(entry) for entry in data['file_name']])
         if self.plot_typ in ('values', 'histogram'):
@@ -786,6 +788,20 @@ class PlotWidget(QWidget):
                             self._applied_max_y
                             )
                         canvas.mpl_canvas.draw()
+                        if plot_idx == 0:
+                            output_name = os.path.join(
+                                self._directory_name,
+                                'overview_plots',
+                                '{0}_{1}.png'.format(
+                                    self.plot_label,
+                                    self.plot_typ,
+                                    )
+                                )
+                            try:
+                                tu.mkdir_p(os.path.dirname(output_name))
+                                canvas.fig.savefig(output_name)
+                            except:
+                                pass
                     else:
                         canvas.mpl_canvas.update()
                         canvas.mpl_canvas.flush_events()

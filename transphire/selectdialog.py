@@ -24,7 +24,7 @@ import shutil
 import os
 import glob
 from transphire import transphire_utils as tu
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QDialogButtonBox, QWidget, QLineEdit, QFileDialog, QCheckBox, QHBoxLayout, QComboBox, QScrollArea, QSpacerItem, QWidgetItem
+from PyQt5.QtWidgets import QVBoxLayout, QLabel, QPushButton, QWidget, QLineEdit, QHBoxLayout, QComboBox, QScrollArea, QSpacerItem, QWidgetItem
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSlot, Qt, QSize, pyqtSignal
 

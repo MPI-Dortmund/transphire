@@ -143,7 +143,6 @@ def create_cinderella_0_3_1_command(
     command.append(';')
     command.append("a=$(PATH=$(dirname $(which {0})):${{PATH}}".format(settings['Path']['sp_header.py']))
     command.append(settings['Path']['sp_header.py'])
-    file_name = os.path.basename(file_input)
     command.append(os.path.join(file_output, 'ordered_class_averages_bad.hdf'))
     command.append('--params n_objects')
     command.append('--print')
@@ -159,7 +158,6 @@ def create_cinderella_0_3_1_command(
     command.append(';')
     command.append("a=$(PATH=$(dirname $(which {0})):${{PATH}}".format(settings['Path']['sp_header.py']))
     command.append(settings['Path']['sp_header.py'])
-    file_name = os.path.basename(file_input)
     command.append(os.path.join(file_output, 'ordered_class_averages_good.hdf'))
     command.append('--params n_objects')
     command.append('--print')
@@ -177,7 +175,6 @@ def create_cinderella_0_3_1_command(
 
     command.append("PATH=$(dirname $(which {0})):${{PATH}}".format(settings['Path']['e2proc2d.py']))
     command.append(settings['Path']['e2proc2d.py'])
-    file_name = os.path.basename(file_input)
     command.append(os.path.join(file_output, 'ordered_class_averages_good.hdf'))
     command.append(os.path.join(file_output, 'png_good', 'ordered_class_averages_good.hdf.png'))
     command.append('--unstack')
@@ -185,7 +182,6 @@ def create_cinderella_0_3_1_command(
 
     command.append("PATH=$(dirname $(which {0})):${{PATH}}".format(settings['Path']['e2proc2d.py']))
     command.append(settings['Path']['e2proc2d.py'])
-    file_name = os.path.basename(file_input)
     command.append(os.path.join(file_output, 'ordered_class_averages_bad.hdf'))
     command.append(os.path.join(file_output, 'png_bad', 'ordered_class_averages_bad.hdf.png'))
     command.append('--unstack')

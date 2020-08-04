@@ -23,7 +23,6 @@ import os
 import re
 import copy
 import pexpect as pe
-import subprocess
 from PyQt5.QtWidgets import (
     QMainWindow,
     QHBoxLayout,
