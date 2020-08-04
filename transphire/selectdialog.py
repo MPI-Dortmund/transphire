@@ -81,6 +81,7 @@ class SelectDialog(QWidget):
         self.e2proc2d_exec = None
         self.sp_cinderella_train_exec = None
         self.sp_cinderella_predict_exec = None
+        self.set_enable = False
 
         layout = QVBoxLayout(self)
         layout_h0 = QHBoxLayout()
@@ -167,6 +168,8 @@ class SelectDialog(QWidget):
         tu.message('Set model: {}\nSet threshold: {}'.format(model, threshold))
 
     def enable(self, var, use_all=None):
+        if not self.set_enable:
+            var = False
         for entry in self.content:
             entry.setEnabled(var)
 
@@ -208,7 +211,13 @@ class SelectDialog(QWidget):
         self.settings_file = os.path.join(self.log_folder, 'tmp_settings.json')
         self.e2proc2d_exec = self.settings['Path']['e2proc2d.py']
         self.sp_cinderella_train_exec = self.settings['Path']['sp_cinderella_train.py']
-        self.sp_cinderella_predict_exec = self.settings['Path'][self.settings['Copy']['Select2d']]
+        try:
+            self.sp_cinderella_predict_exec = self.settings['Path'][self.settings['Copy']['Select2d']]
+        except KeyError:
+            self.set_enable = False
+            return
+        else:
+            self.set_enable = True
 
         for folder_name in (
                 self.log_folder,
