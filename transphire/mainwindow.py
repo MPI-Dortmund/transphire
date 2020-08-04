@@ -1405,7 +1405,7 @@ class MainWindow(QMainWindow):
         """
         if abort:
             self.workers['process'].abort = True
-        if self.workers['process'] == False:
+        if self.workers['process'].stop == False:
             self.workers['process'].stop = True
             self.content['Button'].start_monitor_button.setEnabled(False)
             self.content['Button'].stop_monitor_button.setEnabled(False)
