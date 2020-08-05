@@ -24,7 +24,7 @@ import shutil
 import os
 import glob
 from transphire import transphire_utils as tu
-from PyQt5.QtWidgets import QVBoxLayout, QLabel, QPushButton, QWidget, QLineEdit, QHBoxLayout, QComboBox, QScrollArea, QSpacerItem, QWidgetItem
+from PyQt5.QtWidgets import QVBoxLayout, QLabel, QPushButton, QWidget, QLineEdit, QHBoxLayout, QComboBox, QScrollArea, QSpacerItem, QWidgetItem, QCheckBox
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSlot, Qt, QSize, pyqtSignal
 
@@ -134,6 +134,11 @@ class SelectDialog(QWidget):
         btn_update.clicked.connect(self.start_retrain)
         layout_h0.addWidget(btn_update)
         self.content.append(btn_update)
+
+        self.prefer_isac_checkbox = QCheckBox('Prefer ISAC', self)
+        self.prefer_isac_checkbox.setToolTip('If Project is selected, prefer ISAC over Cinderella runs. This will put all classes in the neutral position')
+        layout_h0.addWidget(self.prefer_isac_checkbox)
+        self.content.append(self.prefer_isac_checkbox)
 
         for current_name in (self.good_name, self.neutral_name, self.bad_name):
             self.labels[current_name] = QLabel(current_name, self)
@@ -261,10 +266,16 @@ class SelectDialog(QWidget):
                     except IndexError:
                         pass
 
-            select_basenames = tuple([os.path.basename(entry) for entry in select_2d_folder])
-            for entry in class_2d_folder[:]:
-                if os.path.basename(entry) in select_basenames:
-                    class_2d_folder.remove(entry)
+            if self.prefer_isac_checkbox.isChecked():
+                select_basenames = tuple([os.path.basename(entry) for entry in class_2d_folder])
+                for entry in select_2d_folder[:]:
+                    if os.path.basename(entry) in select_basenames:
+                        select_2d_folder.remove(entry)
+            else:
+                select_basenames = tuple([os.path.basename(entry) for entry in select_2d_folder])
+                for entry in class_2d_folder[:]:
+                    if os.path.basename(entry) in select_basenames:
+                        class_2d_folder.remove(entry)
         else:
             select_2d_folder.append(os.path.join(self.log_folder, input_folder))
         self.fill(class_2d_folder)
