@@ -296,7 +296,7 @@ class SelectDialog(QWidget):
                         button = self.widgets[self.current_index]
                         button.isac_class_averages = class_averages
                         button.isac_class_id = class_id
-                        button.current_label = label_name
+                        button.current_layout = label_name
                     except KeyError:
                         button = MyPushButton(label_name, class_averages, class_id, self)
                         button.sig_click.connect(self.handle_change)
