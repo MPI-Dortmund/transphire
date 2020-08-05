@@ -185,7 +185,7 @@ class SelectDialog(QWidget):
         current_items.extend(items)
         prev_state = self.combo_text.blockSignals(True)
         self.combo_text.clear()
-        self.combo_text.addItems(current_items)
+        self.combo_text.addItems(sorted(list(set(current_items))))
         self.combo_text.blockSignals(prev_state)
 
     @pyqtSlot(object)
