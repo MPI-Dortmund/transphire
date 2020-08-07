@@ -313,6 +313,21 @@ class SettingsWidget(QWidget):
             except Exception:
                 pass
 
+        elif self.name == 'Box size':
+            try:
+                current_radius = float(self.parent.content['Protein radius'].get_settings()['Protein radius'])
+                good_box_size = [16, 24, 32, 36, 40, 44, 48, 52, 56, 60, 64, 72, 84, 96, 100, 104, 112, 120, 128, 132, 140, 168, 180, 192, 196, 208, 216, 220, 224, 240, 256, 260, 288, 300, 320, 352, 360, 384, 416, 440, 448, 480, 512, 540, 560, 576, 588, 600, 630, 640, 648, 672, 686, 700, 720, 750, 756, 768, 784, 800, 810, 840, 864, 882, 896, 900, 960, 972, 980, 1000, 1008, 1024]
+                box_size = int(current_radius * 3)
+                good_box_size.append(box_size)
+                good_box_size = sorted(good_box_size)
+
+                try:
+                    current_global = str(good_box_size[good_box_size.index(box_size)+1])
+                except IndexError:
+                    current_global = str(box_size)
+            except Exception:
+                pass
+
         return current_global
 
 

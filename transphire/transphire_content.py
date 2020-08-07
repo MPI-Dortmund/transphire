@@ -164,7 +164,7 @@ def default_window_1_2():
     Content items as list
     """
     items = [
-        ['--box_size', '256', int, '', 'PLAIN', 'Main', 'Particle box size [Pixels]: The x and y dimensions of square area to be windowed. The box size after resampling is assumed when resample_ratio < 1.0. (default 256)'],
+        ['--box_size:Box size', '256', int, '', 'PLAIN', 'Rare', 'Particle box size [Pixels]: The x and y dimensions of square area to be windowed. The box size after resampling is assumed when resample_ratio < 1.0. (default 256)'],
         ['--filament_width:Filament width', '-1', int, '', 'PLAIN', 'Main', 'Filament width [Pixels]: Filament width for the creation of the rectangular mask. Default is one third of the box size. (default -1)'],
 
         ['--skip_invert', ['False', 'True'], bool, '', 'COMBO', 'Rare', 'Skip invert image contrast: Use this option for negative staining data. By default, the image contrast is inverted for cryo data. (default False)'],
@@ -227,7 +227,7 @@ def default_cryolo_train_v1_5_8():
     """
     items = [
 
-        ['Box size', '205', int, '', 'PLAIN', 'Main', 'Box size used for retraining. Should be quite narrow.'],
+        ['Box size:Box size', '205', int, '', 'PLAIN', 'Main', 'Box size used for retraining. Should be quite narrow.'],
 
         ['--warmup', '5', int, '', 'PLAIN', 'Rare', 'Number of warmup epochs. Set it to zero if you fine tune a model.'],
         ['--num_cpu', '-1', int, '', 'PLAIN', 'Rare', 'Number of CPUs used during training. By default it will use half of the available CPUs.'],
@@ -257,7 +257,7 @@ def default_cryolo_train_v1_5_4():
     """
     # OLD AND NOT MAINTAINED
     items = [
-        ['Box size', '205', int, '', 'PLAIN', 'Main', 'Box size used for retraining. Should be quite narrow.'],
+            ['Box size:Box size', '205', int, '', 'PLAIN', 'Main', 'Box size used for retraining. Should be quite narrow.'],
         ['--warmup', '5', int, '', 'PLAIN', 'Main', 'Number of warmup epochs. Set it to zero if you fine tune a model.'],
         ['--num_cpu', '-1', int, '', 'PLAIN', 'Main', 'Number of CPUs used during training. By default it will use half of the available CPUs.'],
         ['--early', '10', int, '', 'PLAIN', 'Main', 'Number of CPUs used during training. By default it will use half of the available CPUs.'],
@@ -310,7 +310,7 @@ def default_cryolo_v1_5_8():
         #Rare
     category = 'Rare'
     items.extend([
-        ['Box size:Protein radius', '200', int, '', 'PLAIN', category, 'NOT A CRYOLO OPTION. Box size value in pixels. Only used for visual representation.'],
+        ['Box size:Box size', '200', int, '', 'PLAIN', category, 'NOT A CRYOLO OPTION. Box size value in pixels. Only used for visual representation.'],
         ['--filament:Filament mode', ['False', 'True'], bool, '', 'COMBO', category, 'Activate filament mode'],
         ['--filament_width:Filament width', '0', float, '--filament:True', 'PLAIN', category, '(FILAMENT MODE) Filament width (in pixel)'],
         ['--patch', '-1', int, '', 'PLAIN', category, 'Number of patches. (-1 uses the patch size specified in the configuration file.)'],
@@ -341,7 +341,7 @@ def default_cryolo_v1_4_1():
         ['--weights', '', str, '', 'FILE', 'Main', 'Path to pretrained weights.'],
         ['--threshold', '0.3', float, '', 'PLAIN', 'Main', 'Confidence threshold. Have to be between 0 and 1. The higher, the more conservative.'],
         ['Pixel size (A/px):Pixel size bin', '1', float, 'Filter micrographs:True', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Pixel size value. Only used for visual representation.'],
-        ['Box size', '200', int, '', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Box size value. Only used for visual representation.'],
+        ['Box size:Box size', '200', int, '', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Box size value. Only used for visual representation.'],
         ['--filament:Filament mode', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Activate filament mode'],
         ['--filament_width:Filament width', '0', float, '--filament:True', 'PLAIN', 'Main', '(FILAMENT MODE) Filament width (in pixel)'],
         ['--nomerging', ['False', 'True'], bool, '', 'COMBO', 'Main', '(FILAMENT MODE) The filament mode does not merge filaments'],
@@ -387,7 +387,7 @@ def default_cryolo_v1_2_1():
         ['--weights', '', str, '', 'FILE', 'Main', 'Path to pretrained weights.'],
         ['--threshold', '0.3', float, '', 'PLAIN', 'Main', 'Confidence threshold. Have to be between 0 and 1. As higher, as more conservative.'],
         ['Pixel size (A/px):Pixel size bin', '1', float, 'Filter micrographs:True', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Pixel size value. Only used for visual representation.'],
-        ['Box size', '200', int, '', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Box size value. Only used for visual representation.'],
+        ['Box size:Box size', '200', int, '', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Box size value. Only used for visual representation.'],
         ['--filament:Filament mode', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Activate filament mode'],
         ['--filament_width:Filament width', '0', float, '--filament:True', 'PLAIN', 'Main', '(FILAMENT MODE) Filament width (in pixel)'],
         ['--box_distance', '0', int, '--filament:True', 'PLAIN', 'Main', '(FILAMENT MODE) Distance between two boxes(in pixel)'],
@@ -419,7 +419,7 @@ def default_cryolo_v1_1_0():
         ['--weights', '', str, '', 'FILE', 'Main', 'Path to pretrained weights.'],
         ['--threshold', '0.3', float, '', 'PLAIN', 'Main', 'Confidence threshold. Have to be between 0 and 1. As higher, as more conservative.'],
         ['Pixel size (A/px):Pixel size bin', '1', float, 'Filter micrographs:True', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Pixel size value. Only used for visual representation.'],
-        ['Box size', '200', int, '', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Box size value. Only used for visual representation.'],
+        ['Box size:Box size', '200', int, '', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Box size value. Only used for visual representation.'],
         ['--filament:Filament mode', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Activate filament mode'],
         ['--filament_width:Filament width', '0', float, '--filament:True', 'PLAIN', 'Main', '(FILAMENT MODE) Filament width (in pixel)'],
         ['--box_distance', '0', int, '--filament:True', 'PLAIN', 'Main', '(FILAMENT MODE) Distance between two boxes(in pixel)'],
@@ -451,7 +451,7 @@ def default_cryolo_v1_0_4():
         ['--weights', '', str, '', 'FILE', 'Main', 'Path to pretrained weights.'],
         ['--threshold', '0.3', float, '', 'PLAIN', 'Main', 'Confidence threshold. Have to be between 0 and 1. As higher, as more conservative.'],
         ['Pixel size (A/px):Pixel size bin', '1', float, 'Filter micrographs:True', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Pixel size value. Only used for visual representation.'],
-        ['Box size', '200', int, '', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Box size value. Only used for visual representation.'],
+        ['Box size:Box size', '200', int, '', 'PLAIN', 'Main', 'NOT A CRYOLO OPTION. Box size value. Only used for visual representation.'],
         ['Filter micrographs', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'NOT A CRYOLO OPTION. Filter option in case one does not want to use the internal filter of crYOLO.'],
         ['Filter value high pass (A)', '9999', float, 'Filter micrographs:True', 'PLAIN', 'Advanced', 'NOT A CRYOLO OPTION. High-pass filter value in angstrom before running crYOLO.'],
         ['Filter value low pass (A)', '10', float, 'Filter micrographs:True', 'PLAIN', 'Advanced', 'NOT A CRYOLO OPTION. Low-pass filter value in angstrom before running crYOLO.'],
@@ -1479,6 +1479,7 @@ def default_global():
         ['Gain', '', str, '', 'FILE/SEARCH', 'Main', '', 'MRC file that stores the gain reference. If not specified, MRC extended header will be visited to look for gain reference.'],
         ['voltage', '300.0', float, '', 'PLAIN', 'Main', 'High tension in kV needed for dose weighting.  Default is 300.'],
         ['Protein radius', '-1', int, '', 'PLAIN', 'Main', 'particle radius: there is no default, a sensible number has to be provided, units - pixels (default required int)'],
+        ['Box size:Protein radius', '-1', int, '', 'PLAIN', 'Main', 'particle radius: there is no default, a sensible number has to be provided, units - pixels (default required int)'],
         ['GPU:GPU', '0', str, '', 'PLAIN', 'Main', 'Specifiy which gpu\'s should be used. ON-THE-FLY finds the number of GPU\'s dynaically.'],
         ['GPU SPLIT', '0', int, '', 'PLAIN', 'Main', 'Define the number of GPU splits.'],
         ['GPU SPLIT LARGE', '0', int, '', 'PLAIN', 'Main', 'Define the number of GPU splits.'],
