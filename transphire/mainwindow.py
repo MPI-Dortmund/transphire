@@ -1150,7 +1150,7 @@ class MainWindow(QMainWindow):
             'tar_folder': 'XXX_Tar_file_folder',
             'stack_folder': '000_Import',
             'meta_folder': '000_Import_meta',
-            'set_folder_raw': 'XXX_Sets',
+            'set_folder_raw': 'XXX_Settings',
             'restart_backup_folder': 'XXX_Restart_Backup',
             'software_meta_folder': '000_Session_meta',
             }
