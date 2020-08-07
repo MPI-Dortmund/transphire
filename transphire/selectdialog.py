@@ -24,7 +24,7 @@ import shutil
 import os
 import glob
 from transphire import transphire_utils as tu
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QDialogButtonBox, QWidget, QLineEdit, QFileDialog, QCheckBox, QHBoxLayout, QComboBox, QScrollArea, QSpacerItem, QWidgetItem
+from PyQt5.QtWidgets import QVBoxLayout, QLabel, QPushButton, QWidget, QLineEdit, QHBoxLayout, QComboBox, QScrollArea, QSpacerItem, QWidgetItem, QCheckBox
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSlot, Qt, QSize, pyqtSignal
 
@@ -64,8 +64,10 @@ class SelectDialog(QWidget):
         self.good_name = 'good'
         self.input_name = 'input_files'
         self.model_name = 'model.h5'
+        self.config_name = 'config.json'
         self.default_project_name = 'Project'
         self.model_out = None
+        self.config_out = None
         self.current_index = 0
         self.layouts = {}
         self.labels = {}
@@ -81,6 +83,7 @@ class SelectDialog(QWidget):
         self.e2proc2d_exec = None
         self.sp_cinderella_train_exec = None
         self.sp_cinderella_predict_exec = None
+        self.set_enable = False
 
         layout = QVBoxLayout(self)
         layout_h0 = QHBoxLayout()
@@ -129,10 +132,15 @@ class SelectDialog(QWidget):
         layout_h0.addWidget(self.combo_text)
         self.content.append(self.combo_text)
 
-        btn_update = QPushButton('Update', self)
-        btn_update.clicked.connect(self.start_retrain)
-        layout_h0.addWidget(btn_update)
-        self.content.append(btn_update)
+        self.btn_update = QPushButton('Update', self)
+        self.btn_update.clicked.connect(self.start_retrain)
+        layout_h0.addWidget(self.btn_update)
+        self.content.append(self.btn_update)
+
+        self.prefer_isac_checkbox = QCheckBox('Prefer ISAC', self)
+        self.prefer_isac_checkbox.setToolTip('If Project is selected, prefer ISAC over Cinderella runs. This will put all classes in the neutral position')
+        layout_h0.addWidget(self.prefer_isac_checkbox)
+        self.content.append(self.prefer_isac_checkbox)
 
         for current_name in (self.good_name, self.neutral_name, self.bad_name):
             self.labels[current_name] = QLabel(current_name, self)
@@ -167,14 +175,30 @@ class SelectDialog(QWidget):
         tu.message('Set model: {}\nSet threshold: {}'.format(model, threshold))
 
     def enable(self, var, use_all=None):
+        if not self.set_enable:
+            var = False
         for entry in self.content:
             entry.setEnabled(var)
+
+        if var:
+            var = False
+            if self.combo_text.currentText() == self.default_project_name:
+                var = True
+            self.btn_update.setEnabled(var)
+            self.prefer_isac_checkbox.setEnabled(var)
 
     @pyqtSlot(str)
     @pyqtSlot()
     def set_current_folder(self, text=None):
         if text is None:
             text = self.combo_text.currentText()
+
+        var = False
+        if text == self.default_project_name:
+            var = True
+        print(text, var)
+        self.btn_update.setEnabled(var)
+        self.prefer_isac_checkbox.setEnabled(var)
         self.start_retrain(input_folder=text)
 
     def add_combo_item(self, items):
@@ -182,12 +206,14 @@ class SelectDialog(QWidget):
         current_items.extend(items)
         prev_state = self.combo_text.blockSignals(True)
         self.combo_text.clear()
-        self.combo_text.addItems(current_items)
+        self.combo_text.addItems(sorted(list(set(current_items))))
         self.combo_text.blockSignals(prev_state)
 
     @pyqtSlot(object)
     @pyqtSlot()
     def start_retrain(self, settings=None, input_folder=None):
+        if settings is None and input_folder is None:
+            return
         if settings is not None:
             self.settings = settings
             file_names = [
@@ -198,9 +224,11 @@ class SelectDialog(QWidget):
             self.add_combo_item([self.default_project_name])
             self.add_combo_item(file_names)
         self.clear()
+        self.project_folder = self.settings['project_folder']
         self.log_folder = os.path.join(self.settings['log_folder'], 'Retrain')
         self.classes_folder = os.path.join(self.log_folder, 'RUN_{0}')
         self.model_out = os.path.join(self.classes_folder, self.model_name)
+        self.config_out = os.path.join(self.classes_folder, self.config_name)
 
         self.good_folder = os.path.join(self.classes_folder, self.good_name)
         self.bad_folder = os.path.join(self.classes_folder, self.bad_name)
@@ -208,7 +236,13 @@ class SelectDialog(QWidget):
         self.settings_file = os.path.join(self.log_folder, 'tmp_settings.json')
         self.e2proc2d_exec = self.settings['Path']['e2proc2d.py']
         self.sp_cinderella_train_exec = self.settings['Path']['sp_cinderella_train.py']
-        self.sp_cinderella_predict_exec = self.settings['Path'][self.settings['Copy']['Select2d']]
+        try:
+            self.sp_cinderella_predict_exec = self.settings['Path'][self.settings['Copy']['Select2d']]
+        except KeyError:
+            self.set_enable = False
+            return
+        else:
+            self.set_enable = True
 
         for folder_name in (
                 self.log_folder,
@@ -252,10 +286,16 @@ class SelectDialog(QWidget):
                     except IndexError:
                         pass
 
-            select_basenames = tuple([os.path.basename(entry) for entry in select_2d_folder])
-            for entry in class_2d_folder[:]:
-                if os.path.basename(entry) in select_basenames:
-                    class_2d_folder.remove(entry)
+            if self.prefer_isac_checkbox.isChecked():
+                select_basenames = tuple([os.path.basename(entry) for entry in class_2d_folder])
+                for entry in select_2d_folder[:]:
+                    if os.path.basename(entry) in select_basenames:
+                        select_2d_folder.remove(entry)
+            else:
+                select_basenames = tuple([os.path.basename(entry) for entry in select_2d_folder])
+                for entry in class_2d_folder[:]:
+                    if os.path.basename(entry) in select_basenames:
+                        class_2d_folder.remove(entry)
         else:
             select_2d_folder.append(os.path.join(self.log_folder, input_folder))
         self.fill(class_2d_folder)
@@ -287,7 +327,7 @@ class SelectDialog(QWidget):
                         button = self.widgets[self.current_index]
                         button.isac_class_averages = class_averages
                         button.isac_class_id = class_id
-                        button.current_label = label_name
+                        button.current_layout = label_name
                     except KeyError:
                         button = MyPushButton(label_name, class_averages, class_id, self)
                         button.sig_click.connect(self.handle_change)
@@ -450,6 +490,7 @@ class SelectDialog(QWidget):
         good_folder = self.good_folder.format(time_string)
         bad_folder = self.bad_folder.format(time_string)
         model_out = self.model_out.format(time_string)
+        config_out = self.config_out.format(time_string)
 
         original_folder = os.path.join(classes_folder, self.input_name)
         tu.mkdir_p(original_folder)
@@ -460,9 +501,6 @@ class SelectDialog(QWidget):
             os.path.dirname(__file__),
             'templates',
             'cinderella_config.json'
-            )
-        config_out = os.path.realpath(
-            os.path.join(self.log_folder, 'config.json')
             )
         with open(config_file, 'r') as read:
             content = read.read()
@@ -484,13 +522,16 @@ class SelectDialog(QWidget):
                     widget.isac_class_id
                     )
             for file_name, index_list in index_dict.items():
-                out_symlink = os.path.join(original_folder, file_name.replace('/', '_'))
+                out_filename = file_name.replace(self.log_folder, '').replace(self.project_folder, '').replace('/', '_')
+                out_symlink = os.path.join(original_folder, out_filename)
+                print(out_filename)
+                print(out_symlink)
                 if not os.path.islink(out_symlink):
                     tu.symlink_rel(file_name, out_symlink)
 
                 out_file = os.path.join(
                     classes_folder,
-                    '{}_{}_list.txt'.format(file_name.replace('/', '_'), current_name)
+                    '{}_{}_list.txt'.format(out_filename, current_name)
                     )
                 with open(out_file, 'w') as write:
                     write.write('\n'.join(map(str, index_list)))
@@ -499,7 +540,7 @@ class SelectDialog(QWidget):
                     file_name,
                     os.path.join(
                         out_dir_classes,
-                        file_name.replace('/', '_')
+                        out_filename
                         ),
                     out_file
                     )

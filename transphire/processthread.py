@@ -4699,17 +4699,16 @@ class ProcessThread(object):
                         )
                 else:
                     new_file = submission_on_work
+                cmd.append("'{0}'".format(' '.join(execute_command)))
             else:
-                cmd.append(self.settings[self.prog_name]['--mpi_submission_command'])
                 new_file = submission_on_work
+                execute_command.append('rm -rf')
+                execute_command.append(os.path.join(os.path.dirname(new_file), '00*'))
+                execute_command.append(';')
+                execute_command.append(self.settings[self.prog_name]['--mpi_submission_command'])
+                execute_command.append('/'.join([entry for entry in new_file.split('/') if entry]))
+                cmd.append("{0}".format(' '.join(execute_command)))
 
-            execute_command.append('rm -rf')
-            execute_command.append(os.path.join(os.path.dirname(new_file), '00*'))
-            execute_command.append(';')
-            execute_command.append(self.settings[self.prog_name]['--mpi_submission_command'])
-            execute_command.append('/'.join([entry for entry in new_file.split('/') if entry]))
-
-            cmd.append("'{0}'".format(' '.join(execute_command)))
             cmd = ' '.join(cmd)
 
             copy_files = []
@@ -4771,7 +4770,7 @@ class ProcessThread(object):
                     log_prefix='{0}_run_autosphire'.format(log_prefix),
                     block_gpu=False,
                     gpu_list=[],
-                    shell=False
+                    shell=True
                     )
 
                 zero_list = [err_file]
@@ -4859,8 +4858,12 @@ class ProcessThread(object):
         for copy_file_name in copy_file:
             mount_folder_name = '{0}_folder_feedback_0'.format(my_typ.lower())
             mount_name = self.settings['Copy'][my_typ]
-            sudo = self.settings['Mount'][mount_name]['Need sudo for copy?']
-            protocol = self.settings['Mount'][mount_name]['Protocol']
+            try:
+                sudo = self.settings['Mount'][mount_name]['Need sudo for copy?']
+                protocol = self.settings['Mount'][mount_name]['Protocol']
+            except KeyError as e:
+                assert mount_name in ('Later', 'False'), mount_name
+                continue
             if self.settings['Output']['Project directory'] != '.':
                 new_suffix = os.path.join(
                     os.path.dirname(copy_file_name).replace(

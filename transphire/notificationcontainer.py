@@ -549,6 +549,9 @@ class NotificationContainer(QWidget):
         except urllib3.exceptions.ReadTimeoutError:
             print('Telegram bot not acessable!')
             return None
+        except Exception as e:
+            print(e)
+            return None
 
         for line in page_dict:
             try:
