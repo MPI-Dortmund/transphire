@@ -42,10 +42,10 @@ def get_mic_number(array, settings, as_int=True):
         for entry in array:
             entry = os.path.basename(entry)
             if suffix == '':
-                first_part_split = entry.split('.')
+                first_part_split = entry.rsplit('.', 1)
             else:
-                first_part_split = entry.split(suffix)
-            first_part = suffix.join(first_part_split[:-1])
+                first_part_split = entry.rsplit(suffix, 1)
+            first_part = first_part_split[0]
             if prefix == '':
                 number = first_part
             else:

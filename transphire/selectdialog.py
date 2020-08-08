@@ -83,7 +83,7 @@ class SelectDialog(QWidget):
         self.e2proc2d_exec = None
         self.sp_cinderella_train_exec = None
         self.sp_cinderella_predict_exec = None
-        self.set_enable = False
+        self.set_enable = None
 
         layout = QVBoxLayout(self)
         layout_h0 = QHBoxLayout()
@@ -175,8 +175,7 @@ class SelectDialog(QWidget):
         tu.message('Set model: {}\nSet threshold: {}'.format(model, threshold))
 
     def enable(self, var, use_all=None):
-        if not self.set_enable:
-            tu.message('In order to use the retrain tool, please provide a program in Copy->Select2d and press: Monitor Start -> Monitor Stop')
+        if not self.set_enable and var and self.set_enable is not None:
             var = False
         for entry in self.content:
             entry.setEnabled(var)
@@ -212,8 +211,6 @@ class SelectDialog(QWidget):
     @pyqtSlot(object)
     @pyqtSlot()
     def start_retrain(self, settings=None, input_folder=None):
-        if settings is None and input_folder is None:
-            return
         if settings is not None:
             self.settings = settings
             file_names = [
@@ -239,6 +236,7 @@ class SelectDialog(QWidget):
         try:
             self.sp_cinderella_predict_exec = self.settings['Path'][self.settings['Copy']['Select2d']]
         except KeyError:
+            print('In order to use the retrain tool, please provide a program in Copy->Select2d and press: Monitor Start -> Monitor Stop')
             self.set_enable = False
             return
         else:
