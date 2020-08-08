@@ -176,6 +176,7 @@ class SelectDialog(QWidget):
 
     def enable(self, var, use_all=None):
         if not self.set_enable:
+            tu.message('In order to use the retrain tool, please provide a program in Copy->Select2d and press: Monitor Start -> Monitor Stop')
             var = False
         for entry in self.content:
             entry.setEnabled(var)
@@ -196,7 +197,6 @@ class SelectDialog(QWidget):
         var = False
         if text == self.default_project_name:
             var = True
-        print(text, var)
         self.btn_update.setEnabled(var)
         self.prefer_isac_checkbox.setEnabled(var)
         self.start_retrain(input_folder=text)
@@ -298,6 +298,7 @@ class SelectDialog(QWidget):
                         class_2d_folder.remove(entry)
         else:
             select_2d_folder.append(os.path.join(self.log_folder, input_folder))
+
         self.fill(class_2d_folder)
         self.fill(select_2d_folder, cinderella=True)
         for label_name in self.labels:
