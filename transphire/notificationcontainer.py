@@ -386,6 +386,8 @@ class NotificationContainer(QWidget):
                                     name,
                                     err
                                     ))
+                        except telepot.exception.TooManyRequestsError:
+                            print('Could not send: {}'.format(text))
                         except telepot.exception.TelegramError as err:
                             if user_id in self.block_list:
                                 pass

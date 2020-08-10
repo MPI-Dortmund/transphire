@@ -698,8 +698,8 @@ class ProcessThread(object):
                     'The process will continue, but check the error file!',
                     '{0}'.format(self.shared_dict_typ['error_file'])
                     ])
-                self.queue_com['notification'].put(message_notification)
                 if time.time() - self.time_last_error > 1800:
+                    self.queue_com['notification'].put(message_notification)
                     self.queue_com['error'].put(message_error)
                     self.time_last_error = time.time()
                 else:
@@ -932,8 +932,8 @@ class ProcessThread(object):
                     'The process will continue, but check the error file!',
                     '{0}'.format(self.shared_dict_typ['error_file'])
                     ])
-                self.queue_com['notification'].put(message_notification)
                 if time.time() - self.time_last_error > 1800:
+                    self.queue_com['notification'].put(message_notification)
                     self.queue_com['error'].put(message_error)
                     self.time_last_error = time.time()
                 else:
@@ -983,8 +983,8 @@ class ProcessThread(object):
                     'The process will continue, but check the error file!',
                     '{0}'.format(self.shared_dict_typ['error_file'])
                     ])
-                self.queue_com['notification'].put(message_notification)
                 if time.time() - self.time_last_error > 1800:
+                    self.queue_com['notification'].put(message_notification)
                     self.queue_com['error'].put(message_error)
                     self.time_last_error = time.time()
                 else:
@@ -1291,8 +1291,8 @@ class ProcessThread(object):
             message,
             self.name,
             )
-        self.queue_com['notification'].put(message_notification)
         if time.time() - self.time_last_error > 1800:
+            self.queue_com['notification'].put(message_notification)
             self.queue_com['error'].put(message_error)
             self.time_last_error = time.time()
         else:
@@ -5361,11 +5361,11 @@ class ProcessThread(object):
         message_notification = '\n'.join([message_notification, message_const])
         message_error = '\n'.join([message_error, message_const])
         if time.time() - self.time_last_error > 1800:
+            self.queue_com['notification'].put(message_notification)
             self.queue_com['error'].put(message_error)
             self.time_last_error = time.time()
         else:
             pass
-        self.queue_com['notification'].put(message_notification)
         self.write_error(msg=message_error, root_name=file_name)
 
     def create_combines(self, combine_list):

@@ -1211,7 +1211,7 @@ class ProcessWorker(QObject):
                                         pass
                                     else:
                                         good_lines.append(line)
-                    lines = np.unique(good_lines).tolist()
+                    lines = [entry for entry in np.unique(good_lines) if os.path.exists(entry)]
                     with open(save_file, 'w') as write:
                         write.write('\n'.join(lines) + '\n')
 
