@@ -604,8 +604,8 @@ def import_ctffind_v4_1_8(name, name_no_feedback, settings, directory_name, impo
         file_names.append(match_re.search(content, re.S).group(1))
 
         file_name_base = tu.get_name(file_name)
-        jpgs = [os.path.join(directory_name, jpg_name, '{}.jpg'.format(file_name_base)) for jpg_name in jpg_dirs]
-        json = [os.path.join(directory_name, json_name, '{}.json'.format(file_name_base)) for json_name in json_dirs]
+        jpgs = [os.path.join(jpg_name, '{}.jpg'.format(file_name_base)) for jpg_name in jpg_dirs]
+        json = [os.path.join(json_name, '{}.json'.format(file_name_base)) for json_name in json_dirs]
         jpg_json_data.append(';;;'.join(jpgs + json))
 
     data_original['file_name'] = file_names
