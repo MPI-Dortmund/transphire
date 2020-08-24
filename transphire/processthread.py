@@ -2642,6 +2642,7 @@ class ProcessThread(object):
                 sum_file=sum_file,
                 dw_file=dw_file,
                 stack_file=file_input,
+                set_name=set_name,
                 )
             output_name_mic_combined = output_combine[0]
             output_name_star_combined = output_combine[1]
@@ -4862,7 +4863,7 @@ class ProcessThread(object):
                 sudo = self.settings['Mount'][mount_name]['Need sudo for copy?']
                 protocol = self.settings['Mount'][mount_name]['Protocol']
             except KeyError as e:
-                assert mount_name in ('Later', 'False'), mount_name
+                assert mount_name in ('Later', 'False'), (mount_name, e)
                 continue
             if self.settings['Output']['Project directory'] != '.':
                 new_suffix = os.path.join(

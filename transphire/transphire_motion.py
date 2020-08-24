@@ -612,6 +612,7 @@ def combine_motion_outputs(
         sum_file,
         dw_file,
         stack_file,
+        set_name,
         ):
     """
     Combine the motion outputs to one micrograph and one relion star file.
@@ -686,65 +687,55 @@ def combine_motion_outputs(
     #with open(log_file, 'r') as read:
     #    data_read = read.read()
 
-    size_x = None
-    size_y = None
-    size_z = None
-    gain_var = None
-    defect_var = None
-    bin_var = None
-    pixel_size_var = None
-    dose_var = None
-    init_dose_var = None
-    voltage_var = None
-    throw_var = None
-    dark_var = None
+    var_dict = {
+        'size_x': None,
+        'size_y': None,
+        'size_z': None,
+        'gain_var': None,
+        'defect_var': None,
+        'bin_var': None,
+        'pixel_size_var': None,
+        'dose_var': None,
+        'init_dose_var': None,
+        'voltage_var': None,
+        'throw_var': None,
+        }
 
-    _, size_x, size_y, size_z = ts.check_nr_frames([stack_file], settings, force=True)
+    _, var_dict['size_x'], var_dict['size_y'], var_dict['size_z'] = ts.check_nr_frames([stack_file], settings, force=True)
     movie_name = stack_file
     if motion_name.startswith('MotionCor2'):
         if tu.is_higher_version(motion_name, '1.0.0'):
-            #stack_size = re.search(
-            #    r'^Stack[ ]+size:[ ]+([0-9]+)[ ]+([0-9]+)[ ]+([0-9]+)$',
-            #    data_read,
-            #    re.MULTILINE
-            #    )
-            #movie_name = re.search( r'^-(?:InTiff|InMrc)[ ]+([^ ]+)$', data_read, re.MULTILINE).group(1)
-
-            gain_var = motion_settings['-Gain']
-            defect_var = motion_settings['-DefectFile']
-            bin_var = motion_settings['-FtBin']
-            pixel_size_var = motion_settings['-PixSize']
-            dose_var = motion_settings['-FmDose']
-            init_dose_var = motion_settings['-InitDose']
-            voltage_var = motion_settings['-kV']
-            throw_var = int(motion_settings['-Throw']) + 1
-            dark_var = motion_settings['-Dark']
+            var_dict['gain_var'] = motion_settings['-Gain']
+            var_dict['defect_var'] = motion_settings['-DefectFile']
+            var_dict['bin_var'] = motion_settings['-FtBin']
+            var_dict['pixel_size_var'] = motion_settings['-PixSize']
+            var_dict['dose_var'] = motion_settings['-FmDose']
+            var_dict['init_dose_var'] = motion_settings['-InitDose']
+            var_dict['voltage_var'] = motion_settings['-kV']
+            var_dict['throw_var'] = int(motion_settings['-Throw']) + 1
 
     elif motion_name.startswith('Unblur'):
         if tu.is_higher_version(motion_name, '1.0.0'):
+            var_dict['gain_var'] = motion_settings['Gain image filename']
+            var_dict['defect_var'] = False
+            var_dict['bin_var'] = motion_settings['Output binning factor']
+            var_dict['pixel_size_var'] = motion_settings['Pixel size of image (A)']
+            var_dict['dose_var'] = motion_settings['Exposure per frame (e/A^2)']
+            var_dict['init_dose_var'] = motion_settings['Pre-exposure amount (e/A^2)']
+            var_dict['voltage_var'] = motion_settings['Acceleration voltage']
+            var_dict['throw_var'] = int(motion_settings['First frame to use for sum'])
 
-            gain_var = motion_settings['Gain image filename']
-            defect_var = False
-            bin_var = motion_settings['Output binning factor']
-            pixel_size_var = motion_settings['Pixel size of image (A)']
-            dose_var = motion_settings['Exposure per frame (e/A^2)']
-            init_dose_var = motion_settings['Pre-exposure amount (e/A^2)']
-            voltage_var = motion_settings['Acceleration voltage']
-            throw_var = int(motion_settings['First frame to use for sum'])
-            dark_var = False
+    for key, value in var_dict.items():
+        if value is None:
+            assert False, (var_dict, key, value)
 
-    assert size_x is not None
-    assert size_y is not None
-    assert size_z is not None
-    assert gain_var is not None
-    assert defect_var is not None
-    assert bin_var is not None
-    assert pixel_size_var is not None
-    assert dose_var is not None
-    assert init_dose_var is not None
-    assert voltage_var is not None
-    assert throw_var is not None
-    assert dark_var is not None
+        try:
+            external_log, json_key = value.split('|||')
+        except ValueError:
+            continue
+        with open(settings[external_log], 'r') as read:
+            log_data = json.load(read)
+        var_dict[key] = log_data[set_name][motion_name][json_key]['new_file']
 
     compress_name = settings['Copy']['Compress']
     if compress_name == 'False' or settings['Input']['Input frames extension'] in ('tiff', 'tif'):
@@ -762,21 +753,21 @@ def combine_motion_outputs(
         '',
         'data_general',
         '',
-        '_rlnImageSizeX {0}'.format(size_x),
-        '_rlnImageSizeY {0}'.format(size_y),
-        '_rlnImageSizeZ {0}'.format(size_z),
+        '_rlnImageSizeX {0}'.format(var_dict['size_x']),
+        '_rlnImageSizeY {0}'.format(var_dict['size_y']),
+        '_rlnImageSizeZ {0}'.format(var_dict['size_z']),
         '_rlnMicrographMovieName {0}'.format(movie_name.replace(project_base, '')),
         ]
-    if gain_var:
-        new_gain = gain_var
+    if var_dict['gain_var']:
+        new_gain = var_dict['gain_var']
         data_meta.extend([
             '_rlnMicrographGainName {0}'.format(new_gain.replace(project_base, '')),
             ])
     else:
         new_gain = None
 
-    if defect_var:
-        new_defect = defect_var
+    if var_dict['defect_var']:
+        new_defect = var_dict['defect_var']
         data_meta.extend([
             '_rlnMicrographDefectFile {0}'.format(new_defect.replace(project_base, '')),
             ])
@@ -784,23 +775,23 @@ def combine_motion_outputs(
         new_defect = None
 
     data_meta.extend([
-        '_rlnMicrographBinning {0}'.format(bin_var),
+        '_rlnMicrographBinning {0}'.format(var_dict['bin_var']),
         ])
     data_meta.extend([
-        '_rlnMicrographOriginalPixelSize {0}'.format(pixel_size_var),
+        '_rlnMicrographOriginalPixelSize {0}'.format(var_dict['pixel_size_var']),
         ])
     data_meta.extend([
-        '_rlnMicrographDoseRate {0}'.format(dose_var),
+        '_rlnMicrographDoseRate {0}'.format(var_dict['dose_var']),
         ])
     data_meta.extend([
-        '_rlnMicrographPreExposure {0}'.format(init_dose_var),
+        '_rlnMicrographPreExposure {0}'.format(var_dict['init_dose_var']),
         ])
     data_meta.extend([
-        '_rlnVoltage {0}'.format(voltage_var),
+        '_rlnVoltage {0}'.format(var_dict['voltage_var']),
         ])
 
     data_meta.extend([
-        '_rlnMicrographStartFrame {0}'.format(throw_var),
+        '_rlnMicrographStartFrame {0}'.format(var_dict['throw_var']),
         '_rlnMotionModelVersion 0',
         '',
         'data_global_shift',
@@ -819,9 +810,9 @@ def combine_motion_outputs(
     sum_total = 0
     sum_early = 0
     sum_late = 0
-    frame_cutoff = float(motion_settings['dose cutoff']) - float(init_dose_var)
+    frame_cutoff = float(motion_settings['dose cutoff']) - float(var_dict['init_dose_var'])
     try:
-        frame_cutoff /= float(dose_var)
+        frame_cutoff /= float(var_dict['dose_var'])
     except ZeroDivisionError:
         data_meta = ['-FmDose needs to be specified in order to use the meta files']
     else:
