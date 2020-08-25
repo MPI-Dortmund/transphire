@@ -733,6 +733,8 @@ def combine_motion_outputs(
             external_log, json_key = value.split('|||')
         except ValueError:
             continue
+        except AttributeError:
+            continue
         with open(settings[external_log], 'r') as read:
             log_data = json.load(read)
         var_dict[key] = log_data[set_name][motion_name][json_key]['new_file']
