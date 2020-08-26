@@ -377,8 +377,8 @@ class ViewWidget(QWidget):
         check_hide.clicked.connect(self.sig_hide.emit)
         layout.addWidget(check_hide, stretch=0)
 
-        self.widgets['Mean'].setStyleSheet('color: {}'.format(LIGHTRED))
-        self.widgets['Median'].setStyleSheet('color: {}'.format(LIGHTBLUE))
+        self.widgets['Mean'].setStyleSheet('color: {}'.format(LIGHTBLUE))
+        self.widgets['Median'].setStyleSheet('color: {}'.format(LIGHTRED))
 
     def update_label(self, label_dict):
         for key, value in label_dict.items():
