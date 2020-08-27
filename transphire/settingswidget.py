@@ -74,6 +74,11 @@ class SettingsWidget(QWidget):
         self.global_value = 'ON-THE-FLY'
         self.widget_auto = None
         self.mount_directory = mount_directory
+        try:
+            dependency_name, dependency_value = content[1]['group'].split(':')
+        except ValueError:
+            dependency_name = None
+            dependency_value = None
 
         if self.name == 'Project name':
             pattern = None
@@ -107,6 +112,8 @@ class SettingsWidget(QWidget):
             self.tooltip = self.name
 
         self.tooltip = '{0}\nDefault: \'{1}\''.format(self.tooltip, self.default)
+        if dependency_name is not None:
+            self.tooltip += '\n\nDependency: \'{0}\' is \'{1}\''.format(dependency_name, dependency_value)
 
         additional_widget = []
         self.add_widgets = []
