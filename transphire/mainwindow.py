@@ -756,8 +756,15 @@ class MainWindow(QMainWindow):
         Return:
         None
         """
-        for key in settings:
-            if key == 'End':
+        keys = list(settings.keys())
+
+        # Move Global to the very end if available to let the dependencies work properly
+        try:
+            keys.append(keys.pop(keys.index('Global')))
+        except ValueError:
+            pass
+        for key in keys:
+            if key in ('End',):
                 continue
             else:
                 try:
