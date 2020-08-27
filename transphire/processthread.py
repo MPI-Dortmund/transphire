@@ -2071,20 +2071,24 @@ class ProcessThread(object):
             pass
         else:
             xml_values = {
-                '_pipeCoordX': [r'.*<X>(.*?)</X>.*'],
-                '_pipeCoordY': [r'.*<Y>(.*?)</Y>.*'],
-                '_pipeCoordZ': [r'.*<Z>(.*?)</Z>.*'],
-                '_pipeVoltage': [r'.*<AccelerationVoltage>(.*?)</AccelerationVoltage>.*'],
-                '_pipeDefocusMicroscope': [r'.*<Defocus>(.*?)</Defocus>.*'],
-                '_pipeAppliedDefocusMicroscope': [r'.*<a:Key>AppliedDefocus</a:Key><a:Value .*?>(.*?)</a:Value>.*'],
-                '_pipeDose': [r'.*<a:Key>Dose</a:Key><a:Value .*?>(.*?)</a:Value>.*'],
-                '_pipePhasePlate': [r'.*<a:Key>PhasePlateUsed</a:Key><a:Value .*?>(.*?)</a:Value>.*'],
-                '_pipeSuperResolutionFactor': [r'.*<a:Key>SuperResolutionFactor</a:Key><a:Value .*?>(.*?)</a:Value>.*'],
-                '_pipePixelSize': [r'.*<pixelSize><x><numericValue>(.*?)</numericValue>.*'],
-                '_pipeNrFractions': [r'.*<b:NumberOffractions>(.*?)</b:NumberOffractions>.*', r'<b:StartFrameNumber>'],
-                '_pipeExposureTime': [r'.*<camera>.*?<ExposureTime>(.*?)</ExposureTime>.*'],
-                '_pipeHeight': [r'.*<ReadoutArea.*?<a:height>(.*?)</a:height>.*'],
-                '_pipeWidth': [r'.*<ReadoutArea.*?<a:width>(.*?)</a:width>.*'],
+                '_pipeCoordX': [r'.*<X>(.*?)</X>.*'], # https://regex101.com/r/tnWRzx/1/
+                '_pipeCoordY': [r'.*<Y>(.*?)</Y>.*'], # https://regex101.com/r/tnWRzx/2/
+                '_pipeCoordZ': [r'.*<Z>(.*?)</Z>.*'], # https://regex101.com/r/tnWRzx/3
+                '_pipeVoltage': [r'.*<AccelerationVoltage>(.*?)</AccelerationVoltage>.*'], # https://regex101.com/r/tnWRzx/4
+                '_pipeDefocusMicroscope': [r'.*<Defocus>(.*?)</Defocus>.*'], # https://regex101.com/r/tnWRzx/4/
+                '_pipeAppliedDefocusMicroscope': [r'.*<a:Key>AppliedDefocus</a:Key><a:Value .*?>(.*?)</a:Value>.*'], # https://regex101.com/r/tnWRzx/5
+                '_pipeDose': [r'.*<a:Key>Dose</a:Key><a:Value .*?>(.*?)</a:Value>.*'], # https://regex101.com/r/tnWRzx/6
+                '_pipePhasePlate': [r'.*<a:Key>PhasePlateUsed</a:Key><a:Value .*?>(.*?)</a:Value>.*'], # https://regex101.com/r/tnWRzx/7/
+                '_pipeSuperResolutionFactor': [r'.*<a:Key>SuperResolutionFactor</a:Key><a:Value .*?>(.*?)</a:Value>.*'], # https://regex101.com/r/tnWRzx/8
+                '_pipePixelSize': [r'.*<pixelSize><x><numericValue>(.*?)</numericValue>.*'], # https://regex101.com/r/tnWRzx/9
+                '_pipeNrFractions': [r'.*<b:NumberOffractions>(.*?)</b:NumberOffractions>.*', r'<b:StartFrameNumber>'], # https://regex101.com/r/tnWRzx/10
+                '_pipeExposureTime': [r'.*<camera>.*?<ExposureTime>(.*?)</ExposureTime>.*'], # https://regex101.com/r/tnWRzx/11
+                '_pipeHeight': [r'.*<ReadoutArea.*?<a:height>(.*?)</a:height>.*'], # https://regex101.com/r/tnWRzx/12
+                '_pipeWidth': [r'.*<ReadoutArea.*?<a:width>(.*?)</a:width>.*'], # https://regex101.com/r/tnWRzx/13
+                '_pipeBeamShiftX': [r'.*<BeamShift .*?><a:_x>(.*?)</a:_x>.*?</BeamShift>.*'], # https://regex101.com/r/tnWRzx/15
+                '_pipeBeamShiftY': [r'.*<BeamShift .*?>.*?<a:_y>(.*?)</a:_y></BeamShift>.*'], # https://regex101.com/r/tnWRzx/14
+                '_pipeBeamTiltX': [r'.*<BeamTilt .*?><a:_x>(.*?)</a:_x>.*?</BeamTilt>.*'], # https://regex101.com/r/tnWRzx/16
+                '_pipeBeamTiltY': [r'.*<BeamTilt .*?>.*?<a:_y>(.*?)</a:_y></BeamTilt>.*'], # https://regex101.com/r/tnWRzx/17
                 }
             idx = 0
             for xml_key, values in xml_values.items():
