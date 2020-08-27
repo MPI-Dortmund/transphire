@@ -1475,7 +1475,7 @@ def default_global():
         ['Cs', '2.0', float, '', 'PLAIN', 'Main', 'Microscope spherical aberration (Cs) [mm]: The spherical aberration (Cs) of microscope used for imaging.'],
         ['Phase Plate', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Use phase plate options'],
         ['Filament mode', ['False', 'True'], bool, '', 'COMBO', 'Main', 'Input is filamentous data.'],
-        ['Filament width', '-1', bool, '', 'PLAIN', 'Main', 'Input is filamentous data.'],
+        ['Filament width', '-1', bool, 'Filament mode:True', 'PLAIN', 'Main', 'Width of the filament on the micrograph in pixel.'],
         ['Gain', '', str, '', 'FILE/SEARCH', 'Main', '', 'MRC file that stores the gain reference. If not specified, MRC extended header will be visited to look for gain reference.'],
         ['voltage', '300.0', float, '', 'PLAIN', 'Main', 'High tension in kV needed for dose weighting.  Default is 300.'],
         ['Protein radius', '-1', int, '', 'PLAIN', 'Main', 'particle radius: there is no default, a sensible number has to be provided, units - pixels (default required int)'],
