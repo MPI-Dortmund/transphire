@@ -173,9 +173,12 @@ def create_isac2_1_2_command(class2d_name, stack_name, file_name, output_dir, se
 
     ignore_list.append('--CTF')
     ignore_list.append('--VPP')
-    for entry in ignore_list:
-        if settings[class2d_name][entry] == 'True':
-            command.append(entry)
+    if settings[class2d_name]['--CTF'] == 'True' and settings[class2d_name]['--VPP'] == 'True':
+        command.append('--VPP')
+    else:
+        for entry in ignore_list:
+            if settings[class2d_name][entry] == 'True':
+                command.append(entry)
 
     ignore_list.append('Nr. Particles')
     ignore_list.append('MPI processes')
