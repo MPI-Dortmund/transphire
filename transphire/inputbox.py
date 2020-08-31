@@ -93,7 +93,7 @@ class InputBox(QDialog):
         self.restart_content = {}
         if restart_names.size:
             layout.addWidget(QLabel('-----', self))
-            self.restart_content['feedback'] = QCheckBox('Restart feedback', self)
+            self.restart_content['feedback'] = QCheckBox('Restart feedback - Check this if you modified "Number of feedbacks"', self)
             self.restart_content['feedback'].stateChanged.connect(self.handle_check)
             layout.addWidget(self.restart_content['feedback'])
             for entry in restart_names:
