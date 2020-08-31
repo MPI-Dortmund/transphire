@@ -157,6 +157,14 @@ class ProcessThread(object):
             except KeyError:
                 pass
 
+    def wait(self, wait_time=10):
+        for _ in range(wait_time // 1):
+            time.sleep(1)
+            if self.stop.value:
+                break
+        else:
+            time.sleep(wait_time % 1)
+
     def run(self):
         """
         Run the thread.
@@ -198,7 +206,7 @@ class ProcessThread(object):
                         self.typ,
                         tu.get_color('Finished')
                         ])
-                    time.sleep(10)
+                    self.wait(10)
                 continue
             else:
                 pass
@@ -211,7 +219,7 @@ class ProcessThread(object):
                         self.typ,
                         tu.get_color('Skipped')
                         ])
-                    time.sleep(10)
+                    self.wait(10)
                 continue
             else:
                 pass
@@ -224,7 +232,7 @@ class ProcessThread(object):
                         self.typ,
                         tu.get_color('Later')
                         ])
-                    time.sleep(10)
+                    self.wait(10)
                 continue
             else:
                 pass
@@ -238,7 +246,7 @@ class ProcessThread(object):
                     self.typ,
                     tu.get_color('Error')
                     ])
-                time.sleep(10)
+                self.wait(10)
                 continue
 
             if self.check_connection():
@@ -250,7 +258,7 @@ class ProcessThread(object):
                     self.typ,
                     tu.get_color('Error')
                     ])
-                time.sleep(10)
+                self.wait(10)
                 continue
 
             if self.check_full():
@@ -262,11 +270,11 @@ class ProcessThread(object):
                     self.typ,
                     tu.get_color('Error')
                     ])
-                time.sleep(10)
+                self.wait(10)
                 continue
 
             if self.shared_dict_typ['delay_error']:
-                time.sleep(10)
+                self.wait(10)
                 self.shared_dict_typ['delay_error'] = False
                 self.shared_dict_typ['is_error'] = False
 
@@ -290,13 +298,7 @@ class ProcessThread(object):
                         self.typ,
                         tu.get_color('Error')
                         ])
-                i = 0
-                while i < 6:
-                    time.sleep(1)
-                    if self.stop.value:
-                        break
-                    else:
-                        i += 1
+                self.wait(10)
                 self.shared_dict_typ['unknown_error'] = False
                 self.shared_dict_typ['is_error'] = False
                 continue
@@ -546,13 +548,13 @@ class ProcessThread(object):
             self.shared_dict['typ'][aim]['queue_lock'].release()
 
         while self.shared_dict['typ'][aim]['do_update_count'] != 0:
-            time.sleep(0.5)
+            self.wait(0.5)
 
         self.shared_dict['typ'][aim]['queue_lock'].acquire()
         try:
             while not self.shared_dict['queue'][aim].empty():
                 self.shared_dict['queue'][aim].get()
-            time.sleep(1)
+            self.wait(1)
 
             with open(self.shared_dict['typ'][aim]['done_file'], 'r') as read:
                 content_done = [line.strip() for line in read.readlines() if line.strip()]
@@ -718,7 +720,7 @@ class ProcessThread(object):
                     )
                 self.queue_com['notification'].put(message)
                 self.queue_com['error'].put(message)
-        time.sleep(20)
+        self.wait(20)
 
     def start_queue(self, clear_list):
         """
@@ -790,7 +792,7 @@ class ProcessThread(object):
             self.queue_lock.release()
 
         if error:
-            time.sleep(5)
+            self.wait(5)
             return None
         else:
             pass
@@ -1941,7 +1943,7 @@ class ProcessThread(object):
         else:
             pass
 
-        time.sleep(1)
+        self.wait(1)
         self.shared_dict['typ'][self.content_settings['group']]['share_lock'].acquire()
         try:
             self.shared_dict['share'][self.content_settings['group']].remove(root_name)
@@ -4720,7 +4722,7 @@ class ProcessThread(object):
             recursive_file_search(log_prefix, copy_files)
             recursive_file_search('{0}_FILES'.format(log_prefix), copy_files)
             self.copy_extern('Copy_to_work', copy_files)
-            time.sleep(10)
+            self.wait(10)
 
             if self.settings[self.prog_name]['Use SSH'] == 'True':
                 log_file, err_file = tus.get_logfiles('{0}_run_autosphire'.format(log_prefix))
@@ -4810,7 +4812,7 @@ class ProcessThread(object):
                                 )
                         break
                     else:
-                        time.sleep(10)
+                        self.wait(10)
 
             skip_list = False
             if skip_list:
@@ -5258,7 +5260,7 @@ class ProcessThread(object):
                     self.shared_dict['gpu_lock'][main][mutex_idx].release()
                 else:
                     while self.shared_dict['gpu_lock'][main][count_idx].value != 0:
-                        time.sleep(0.05)
+                        self.wait(0.05)
 
         try:
             if self.abort.value:
@@ -5294,7 +5296,7 @@ class ProcessThread(object):
                                     signal.SIGTERM
                                     )
                                 break
-                            time.sleep(1)
+                            self.wait(1)
 
                 self.delete_file_to_delete(file_to_delete)
                 stop_time = time.time()
