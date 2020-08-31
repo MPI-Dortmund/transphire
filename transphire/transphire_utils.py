@@ -754,7 +754,7 @@ def message(text):
     Return:
     None
     """
-    final_text = split_maximum(text, 80)
+    final_text = split_maximum(text, 80, ' ')
     dialog = MessageBox(is_question=False)
     dialog.setText(None, final_text)
     dialog.exec_()
