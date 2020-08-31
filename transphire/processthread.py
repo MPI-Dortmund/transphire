@@ -158,7 +158,7 @@ class ProcessThread(object):
                 pass
 
     def wait(self, wait_time=10):
-        for _ in range(wait_time // 1):
+        for _ in range(int(wait_time)):
             time.sleep(1)
             if self.stop.value:
                 break
