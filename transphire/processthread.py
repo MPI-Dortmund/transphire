@@ -4572,10 +4572,12 @@ class ProcessThread(object):
 
             if self.settings[self.prog_name]['--skip_meridien'] == 'True':
                 cmd.append('--skip_meridien')
+                cmd.append('--skip_sharpening_meridien')
                 volume = 'SKIP_MERIDIEN'
 
             if os.path.exists(output_classes) and volume == 'XXXNoneXXX':
                 cmd.append('--skip_meridien')
+                cmd.append('--skip_sharpening_meridien')
                 cmd.append('--rviper_input_stack={0}'.format(output_classes))
                 cmd.append('--adjust_rviper_resample={0}'.format(1/old_shrink_ratio))
             elif volume != 'XXXNoneXXX':
@@ -4686,26 +4688,28 @@ class ProcessThread(object):
                     ))
 
                 execute_command.append('cd')
-                execute_command.append('/{0}'.format(self.settings['Mount'][mount_name]['current_folder']))
+                execute_command.append('/{0}'.format(os.path.join(
+                    self.settings['Mount'][mount_name]['current_folder'],
+                    self.settings['Output']['Project name'],
+                    )))
                 execute_command.append(';')
-                if self.settings['Output']['Project directory'] != '.':
-                    with open(submission_on_work, 'r') as read:
-                        content = read.read()
-                    submission_on_work = '{0}/submission_script_work.sh'.format(log_prefix)
-                    self.try_write(submission_on_work, 'w', content.replace(
-                            '{0}/'.format(self.settings['Output']['Project directory']),
-                            ''
-                            ))
+                execute_command.append(self.settings[self.prog_name]['--mpi_submission_command'])
+                with open(submission_on_work, 'r') as read:
+                    content = read.read()
+                submission_on_work = '{0}/submission_script_work.sh'.format(log_prefix)
+                self.try_write(submission_on_work, 'w', content.replace(
+                        '{0}/'.format(self.settings['project_base']),
+                        ''
+                        ))
 
-                    new_file = os.path.join(
-                        os.path.dirname(submission_on_work).replace(
-                            '{0}/'.format(self.settings['Output']['Project directory']),
-                            ''
-                            ),
-                        os.path.basename(submission_on_work),
-                        )
-                else:
-                    new_file = submission_on_work
+                new_file = os.path.join(
+                    os.path.dirname(submission_on_work).replace(
+                        '{0}/'.format(self.settings['project_base']),
+                        ''
+                        ),
+                    os.path.basename(submission_on_work),
+                    )
+                execute_command.append(new_file)
                 cmd.append("'{0}'".format(' '.join(execute_command)))
             else:
                 new_file = submission_on_work
