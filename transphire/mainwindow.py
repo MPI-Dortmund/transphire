@@ -22,6 +22,7 @@ import sys
 import os
 import re
 import copy
+import shutil
 import pexpect as pe
 from PyQt5.QtWidgets import (
     QMainWindow,
