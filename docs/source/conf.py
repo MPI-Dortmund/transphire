@@ -32,7 +32,9 @@ sys.path.insert(0, os.path.abspath('../../transphire/'))
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = ['sphinx.ext.autodoc',
-    'sphinx.ext.viewcode']
+    'sphinx.ext.viewcode',
+    'sphinx.ext.autosectionlabel',
+    ]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
