@@ -1,5 +1,3 @@
-.. include:: abbreviations.rst
-
 Welcome to TranSPHIRE's documentation!
 ======================================
 
