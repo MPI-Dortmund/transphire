@@ -1186,8 +1186,8 @@ class MainWindow(QMainWindow):
         # Move Error files from previous run
         try:
             shutil.move(
-                self.settings['error_folder'],
-                self.settings['restart_backup_folder'],
+                settings['error_folder'],
+                settings['restart_backup_folder'],
                 )
         except FileNotFoundError:
             pass
