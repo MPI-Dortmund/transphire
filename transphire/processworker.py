@@ -1102,6 +1102,8 @@ class ProcessWorker(QObject):
                     )
             except FileNotFoundError:
                 pass
+            except shutil.Error:
+                pass
             try:
                 shutil.move(
                     number_file,

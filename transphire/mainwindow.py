@@ -22,6 +22,7 @@ import sys
 import os
 import re
 import copy
+import shutil
 import pexpect as pe
 from PyQt5.QtWidgets import (
     QMainWindow,
@@ -1185,8 +1186,8 @@ class MainWindow(QMainWindow):
         # Move Error files from previous run
         try:
             shutil.move(
-                self.settings['error_folder'],
-                self.settings['restart_backup_folder'],
+                settings['error_folder'],
+                settings['restart_backup_folder'],
                 )
         except FileNotFoundError:
             pass
