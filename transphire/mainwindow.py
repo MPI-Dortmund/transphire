@@ -1182,6 +1182,15 @@ class MainWindow(QMainWindow):
         folder_dict['set_folder'] = settings['set_folder']
         folder_dict['restart_backup_folder'] = settings['restart_backup_folder']
 
+        # Move Error files from previous run
+        try:
+            shutil.move(
+                self.settings['error_folder'],
+                self.settings['restart_backup_folder'],
+                )
+        except FileNotFoundError:
+            pass
+
         names = [
             entry.replace('_entries', '')
             for entry in settings['Copy']
