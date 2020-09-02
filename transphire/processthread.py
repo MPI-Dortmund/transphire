@@ -4687,13 +4687,6 @@ class ProcessThread(object):
                     device,
                     ))
 
-                execute_command.append('cd')
-                execute_command.append('/{0}'.format(os.path.join(
-                    self.settings['Mount'][mount_name]['current_folder'],
-                    self.settings['Output']['Project name'],
-                    )))
-                execute_command.append(';')
-                execute_command.append(self.settings[self.prog_name]['--mpi_submission_command'])
                 with open(submission_on_work, 'r') as read:
                     content = read.read()
                 submission_on_work = '{0}/submission_script_work.sh'.format(log_prefix)
@@ -4709,6 +4702,17 @@ class ProcessThread(object):
                         ),
                     os.path.basename(submission_on_work),
                     )
+
+                execute_command.append('cd')
+                execute_command.append('/{0}'.format(os.path.join(
+                    self.settings['Mount'][mount_name]['current_folder'],
+                    self.settings['Output']['Project name'],
+                    )))
+                execute_command.append(';')
+                execute_command.append('rm -rf')
+                execute_command.append(os.path.join(os.path.dirname(new_file), '00*'))
+                execute_command.append(';')
+                execute_command.append(self.settings[self.prog_name]['--mpi_submission_command'])
                 execute_command.append(new_file)
                 cmd.append("'{0}'".format(' '.join(execute_command)))
             else:
@@ -4797,9 +4801,9 @@ class ProcessThread(object):
 
             meridien_dir = '{0}/0002_MERIDIEN'.format(log_prefix)
             meridien_dir = meridien_dir.replace(
-                    self.settings['Output']['Project directory'],
-                    os.path.relpath(self.settings['copy_to_work_folder_feedback_0'])
-                    )
+                self.settings['Output']['Project directory'],
+                os.path.relpath(self.settings['copy_to_work_folder_feedback_0'])
+                )
 
             if volume == 'XXXNoneXXX' and int(feedback_loop) == 0:
                 while True:
@@ -4847,17 +4851,18 @@ class ProcessThread(object):
 
             self.try_write(self.shared_dict_typ['number_file'], 'w', '|||'.join([str(entry) for entry in [old_shrink_ratio, current_index, volume]]))
 
-            with open(self.shared_dict_typ['list_file'], 'r') as read:
-                lines = [
-                    entry.strip()
-                    for entry in read.readlines()
-                    if entry.strip() and entry.strip() not in final_lines_to_use
-                    ]
+            if volume != 'XXXNoneXXX':
+                with open(self.shared_dict_typ['list_file'], 'r') as read:
+                    lines = [
+                        entry.strip()
+                        for entry in read.readlines()
+                        if entry.strip() and entry.strip() not in final_lines_to_use
+                        ]
 
-            for entry in final_lines_to_use:
-                self.shared_dict_typ['queue_list'].remove(entry)
+                for entry in final_lines_to_use:
+                    self.shared_dict_typ['queue_list'].remove(entry)
 
-            self.try_write(self.shared_dict_typ['list_file'], 'w', '\n'.join(lines) + '\n')
+                self.try_write(self.shared_dict_typ['list_file'], 'w', '\n'.join(lines) + '\n')
 
         finally:
             self.shared_dict_typ['queue_list_time'] = time.time()
