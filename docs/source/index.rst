@@ -3,16 +3,15 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to transphire's documentation!
-======================================
+.. include:: general/abbreviations.rst
+.. include:: general/welcome.rst
 
 .. toctree::
-   :maxdepth: 3
-   :caption: Contents:
+    :maxdepth: 3
+    :caption: Contents:
 
-   intro
-   examples
-   transphire
+    general/installation
+    transphire
 
 
 
