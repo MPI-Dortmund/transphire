@@ -4814,13 +4814,19 @@ class ProcessThread(object):
                         os.path.relpath(self.settings['copy_to_work_folder_feedback_0'])
                         )
                     if os.path.isfile(viper_model):
-                        volume = viper_model.replace(
-                                '{0}/'.format(self.settings['copy_to_work_folder_feedback_0']),
+                        new_volume = viper_model.replace(
+                                os.path.join(
+                                    self.settings['copy_to_work_folder_feedback_0'],
+                                    self.settings['Output']['Project name'],
+                                    '',
+                                    ),
                                 ''
                                 )
                         break
                     else:
                         self.wait(10)
+            else:
+                new_volume = volume
 
             skip_list = False
             if skip_list:
@@ -4849,7 +4855,7 @@ class ProcessThread(object):
                     else:
                         pass
 
-            self.try_write(self.shared_dict_typ['number_file'], 'w', '|||'.join([str(entry) for entry in [old_shrink_ratio, current_index, volume]]))
+            self.try_write(self.shared_dict_typ['number_file'], 'w', '|||'.join([str(entry) for entry in [old_shrink_ratio, current_index, new_volume]]))
 
             if volume != 'XXXNoneXXX':
                 with open(self.shared_dict_typ['list_file'], 'r') as read:
