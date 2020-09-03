@@ -3,4 +3,9 @@
 Tutorial
 ========
 
-.. include:: introduction.rst
+.. toctree::
+    :maxdepth: 3
+    :caption: Contents:
+
+    introduction
+
