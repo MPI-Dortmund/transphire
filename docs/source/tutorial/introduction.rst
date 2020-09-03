@@ -348,5 +348,3 @@ The text next to the **Load template** button indicates that the correct templat
 
 Now adjust the settings to match the needs for your facility.
 This helps especially beginner users to avoid making errors during setup.
-
-For the tutorial data set you can download the template from **here**.

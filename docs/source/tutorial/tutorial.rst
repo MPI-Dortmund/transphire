@@ -8,4 +8,5 @@ Tutorial
     :caption: Contents:
 
     introduction
+    trpc4
 
