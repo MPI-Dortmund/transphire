@@ -1322,7 +1322,8 @@ def check_for_outlier(dict_name, data, file_name, settings):
             last_values_median = np.median(data[key][-lower_median:])
             warning_low, warning_high = settings['Notification']['{0} {1} warning'.format(dict_name, key)].split()
             skip_low, skip_high = settings['Notification']['{0} {1} skip'.format(dict_name, key)].split()
-        except Exception:
+        except Exception as e:
+            print(e)
             continue
 
         if float(warning_low) <= last_values_median and last_values_median <= float(warning_high):

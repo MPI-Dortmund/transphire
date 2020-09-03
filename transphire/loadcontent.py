@@ -68,6 +68,7 @@ class LoadContent(QWidget):
         self.layout = QVBoxLayout(self)
         self.layout_old = None
         self.content = []
+        self.label_dict = {}
         self.layout.setContentsMargins(0, 0, 0, 0)
 
         self.idx_name = 0
@@ -157,7 +158,8 @@ class LoadContent(QWidget):
                         layout_h.addWidget(Separator(typ='vertical', color='white'), stretch=0)
                     layout_v = QVBoxLayout()
                     layout_h.addLayout(layout_v, stretch=1)
-                layout_v.addWidget(QLabel(entry[self.idx_name].split(':')[self.idx_name_name], self), stretch=0)
+                label_name = entry[self.idx_name].split(':')[self.idx_name_name]
+                layout_v.addWidget(QLabel(label_name, self), stretch=0)
 
                 # Behaviour based on typ
 
@@ -185,6 +187,8 @@ class LoadContent(QWidget):
                     widget.setEnabled(False)
                 else:
                     raise IOError('{0}: {1} not known!'.format(entry[self.idx_name], entry[self.idx_type]))
+                assert label_name not in self.label_dict, (label_name, self.label_dict)
+                self.label_dict[label_name] = widget
                 widget.setObjectName('setting')
 
                 exclude_typ_list = [
@@ -487,6 +491,11 @@ class LoadContent(QWidget):
                 else:
                     pass
 
+    def _find_label(self, widget):
+        for key, value in self.label_dict.items():
+            if value == widget:
+                return key
+
     @pyqtSlot()
     def _find_file(self):
         """
@@ -499,7 +508,7 @@ class LoadContent(QWidget):
         None
         """
         in_file = QFileDialog.getOpenFileName(
-            caption='Find file: {0}'.format(self.typ),
+            caption='Find file: {0} - {1}'.format(self.typ, self._find_label(self.sender())),
             directory=os.getcwd(),
             options=QFileDialog.DontUseNativeDialog
             )
@@ -521,7 +530,7 @@ class LoadContent(QWidget):
         None
         """
         in_dir = QFileDialog.getExistingDirectory(
-            caption='Find directory: {0}'.format(self.typ),
+            caption='Find directory: {0} - {1}'.format(self.typ, self._find_label(self.sender())),
             directory=os.getcwd(),
             options=QFileDialog.DontUseNativeDialog
             )
