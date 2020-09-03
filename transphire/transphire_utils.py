@@ -448,6 +448,7 @@ def get_function_dict():
             'license': False,
             'category': 'External software',
             'allow_empty': [],
+            'old': False,
             }
     function_dict['Gctf >=v1.18'] = copy_mod.deepcopy(function_dict['Gctf >=v1.06'])
     function_dict['Gctf >=v1.18']['content'] = tc.default_gctf_v1_18
@@ -713,11 +714,15 @@ def get_function_dict():
             'allow_empty': [],
             }
     for key in function_dict:
+        if 'old' in function_dict[key]:
+            continue
+
         try:
             prog_name, _ = VERSION_RE.search(key).groups()
             newest_key = find_latest_version(prog_name, function_dict)
         except AttributeError:
             newest_key = key
+
         if newest_key == key:
             function_dict[key]['old'] = False
         else:
