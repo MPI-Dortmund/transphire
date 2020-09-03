@@ -159,45 +159,51 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Cryo-EM post-datacollection pipeline')
     parser.add_argument(
         '--root_directory',
-        default=os.environ['HOME'],
+        default=os.environ.get('TRANSPHIRE_ROOT_DIRECTORY', os.environ.get('HOME', '.')),
         type=str,
         nargs='?',
         help='Directory where transphire is started'
         )
     parser.add_argument(
         '--settings_directory',
-        default='.transphire_settings',
+        default=os.environ.get('TRANSPHIRE_SETTINGS_DIRECTORY', 'transphire_settings'),
         type=str,
         nargs='?',
         help='Folder containing the settings'
         )
     parser.add_argument(
         '--mount_directory',
-        default='mounted',
+        default=os.environ.get('TRANSPHIRE_SETTINGS_DIRECTORY', 'transphire_mounts'),
         type=str,
         nargs='?',
         help='Folder containing the mount points'
         )
     parser.add_argument(
         '--font',
-        default=None,
+        default=os.environ.get('TRANSPHIRE_FONT_SIZE', None),
         type=float,
         nargs='?',
         help='Font size in px (default 5)'
         )
     parser.add_argument(
         '--adjust_width',
-        default=None,
+        default=os.environ.get('TRANSPHIRE_ADJUST_WIDTH', None),
         type=float,
         nargs='?',
         help='Width adjustment value (default 1)'
         )
     parser.add_argument(
         '--adjust_height',
-        default=None,
+        default=os.environ.get('TRANSPHIRE_ADJUST_HEIGHT', None),
         type=float,
         nargs='?',
         help='Height adjustment value (default 1)'
+        )
+    parser.add_argument(
+        '--n_feedbacks',
+        default=os.environ.get('TRANSPHIRE_N_FEEDBACKS', 10),
+        type=int,
+        help='Maximum number of allowed feedbacks, do not change unless you want to do more feedbacks which is not recommended at this point. (default 10)'
         )
     parser.add_argument(
         '--edit_settings',
@@ -206,22 +212,16 @@ def parse_args():
         help='Show settings dialog (default False)'
         )
     parser.add_argument(
-        '--n_feedbacks',
-        default=5,
-        type=int,
-        help='Maximum number of allowed feedbacks, do not change unless you want to do more feedbacks which is not recommended at this point. (default 5)'
+        '--version',
+        default=False,
+        action='store_true',
+        help='Show the current TranSPHIRE version.'
         )
     parser.add_argument(
         '--kill',
         default=False,
         action='store_true',
         help='Kill all running from the current user TranSPHIRE instances.'
-        )
-    parser.add_argument(
-        '--version',
-        default=False,
-        action='store_true',
-        help='Show the current TranSPHIRE version.'
         )
 
     return vars(parser.parse_args())

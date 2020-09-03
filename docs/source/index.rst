@@ -10,7 +10,11 @@
     :maxdepth: 3
     :caption: Contents:
 
+    general/welcome
+    general/prerequisites
     general/installation
+    tutorial/tutorial
+    general/how_to_contribute
     transphire
 
 

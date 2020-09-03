@@ -1,42 +1,56 @@
+.. include:: abbreviations.rst
+
 Welcome to TranSPHIRE's documentation!
 ======================================
 
-TranSPHIRE is an automated pre-processing tool designed for on-the-fly processing during data aquisition and coveres the inital steps of the |SPA| pipeline:
+TranSPHIRE is an automated pre-processing tool designed for on-the-fly processing during data aquisition.
+It is an open source project published under the `GPLv3 license <https://github.com/MPI-Dortmund/transphire/blob/master/LICENSE>`__ and the code is available on `GitHub <https://github.com/MPI-Dortmund/transphire>`__.
 
-**Pre-processing**
+TranSPHIREcoveres the inital steps of the |SPA| pipeline.
+
+
+Pre-processing
+**************
+
 
     - Motion correction (Outputs can be used to run particle polishing in Relion)
-        - MotionCor2 (Not free for commercial use)
-        - Unblur
+        - |MotionCor2| - |NOTFREE|
+        - |Unblur|
 
     - CTF estimation
-        - SPHIRE CTER
-        - CTFFIND
-        - GCtf
+        - |SPHIRE| |CTER|
+        - |CTFFIND4|
+        - |GCtf|
 
     - Particle picking
-        - SPHIRE crYOLO (Not free for commercial use)
+        - |SPHIRE| |crYOLO| - |NOTFREE|
 
     - Particle extraction
-        - SPHIRE sp_window.py
+        - |SPHIRE| |WINDOW|
 
-**Processing**
+
+Processing
+**********
+
 
     - 2D classification
-        - SPHIRE GPU ISAC
+        - |SPHIRE| |GPUISAC|
 
     - 2D class selection
-        - SPHIRE Cinderella
+        - |SPHIRE| |Cinderella|
 
     - 3D initial model estimation
-        - SPHIRE RVIPER
+        - |SPHIRE| |RVIPER|
 
     - 3D refinement
-        - SPHIRE MERIDIEN
+        - |SPHIRE| |MERIDIEN|
+
+
+Feedback loop
+*************
+
 
 Additionally, TranSPHIRE implements a new ``Feedback loop`` that automatically re-trains and therefore adapts the model used for particle picking to the data set at hand.
-
-**Feedback loop**
 
     1. Particle picking
     2. Particle extraction
@@ -47,3 +61,44 @@ Additionally, TranSPHIRE implements a new ``Feedback loop`` that automatically r
     7. Re-training of the picking model
     8. ``1.`` with the re-trained model
 
+
+Hardware recommendations
+************************
+
+
+Hardware recommendations can be found at the :ref:`hardware-recommendations-page` page.
+
+
+Installation
+************
+
+
+The installation instructions can be found at the :ref:`installation-page` page.
+
+
+Tutorial
+********
+
+
+The tutorial can be found at the :ref:`tutorial-page` page.
+
+
+Contribute
+**********
+
+
+If you want to contribute to the TranSPHIRE project, please checkout the :ref:`how-to-contribute-page` page.
+
+
+License
+*******
+
+
+TranSPHIRE is an open source project published under the `GPLv3 license <https://github.com/MPI-Dortmund/transphire/blob/master/LICENSE>`__.
+
+
+Code availability
+*****************
+
+
+The source code is available on `GitHub <https://github.com/MPI-Dortmund/transphire>`__.
