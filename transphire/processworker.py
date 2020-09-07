@@ -539,6 +539,13 @@ class ProcessWorker(QObject):
                     )
             except FileNotFoundError:
                 pass
+            try:
+                shutil.move(
+                    self.settings['feedback_file'],
+                    self.settings['restart_backup_folder'],
+                    )
+            except FileNotFoundError:
+                pass
         else:
             keep_list.append('000_Feedback_results')
             try:
