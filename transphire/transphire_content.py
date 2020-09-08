@@ -780,9 +780,10 @@ def default_notification():
         ])
     for name in tu.get_unique_types():
         try:
-            for key in dtype_dict[name]:
-                key = key[0]
+            for (key, dtype) in dtype_dict[name]:
                 if key in skip_set:
+                    continue
+                elif dtype not in ('<f8', '<i8'):
                     continue
                 else:
                     items.append(

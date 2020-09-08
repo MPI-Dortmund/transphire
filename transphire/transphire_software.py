@@ -1313,16 +1313,22 @@ def check_for_outlier(dict_name, data, file_name, settings):
         print('file_name', file_name)
         raise
 
-    for key in dtype_dict[dict_name]:
-        key = key[0]
-        if key == 'confidence' and dict_name == 'Picking':
+    for (key, dtype) in dtype_dict[dict_name]:
+        if dtype not in ('<f8', '<i8'):
             continue
 
         try:
             last_values_median = np.median(data[key][-lower_median:])
             warning_low, warning_high = settings['Notification']['{0} {1} warning'.format(dict_name, key)].split()
             skip_low, skip_high = settings['Notification']['{0} {1} skip'.format(dict_name, key)].split()
+        except KeyError as e:
+            continue
         except Exception as e:
+            print('Exception')
+            print('lower_median', lower_median)
+            print('dict_name', dict_name)
+            print('key', key)
+            print('data', data)
             print(e)
             continue
 
