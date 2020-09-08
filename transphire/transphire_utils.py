@@ -348,16 +348,35 @@ def copy(file_in, file_out):
     None
     """
 
-    mkdir_p(os.path.dirname(file_out))
-    try:
-        shutil.copy2(file_in, file_out)
-    except PermissionError:
-        print('Error with {0}! Switching to copyfile!'.format(file_in))
-        shutil.copyfile(file_in, file_out)
-    else:
-        umask = os.umask(0)
-        os.umask(umask)
-        os.chmod(file_out, 0o666 & ~umask)
+    if os.path.isfile(file_in):
+        mkdir_p(os.path.dirname(file_out))
+        try:
+            shutil.copy2(file_in, file_out)
+        except PermissionError:
+            print('Error with {0}! Switching to copyfile!'.format(file_in))
+            shutil.copyfile(file_in, file_out)
+        else:
+            umask = os.umask(0)
+            os.umask(umask)
+            os.chmod(file_out, 0o666 & ~umask)
+    elif os.path.isdir(file_in):
+        copytree(file_in, file_out)
+
+def copytree(root_src_dir, root_dst_dir):
+    if os.path.exists(root_dst_dir):
+        root_dst_dir = os.path.join(root_dst_dir, os.path.basename(root_src_dir))
+        mkdir_p(root_dst_dir)
+
+    for src_dir, dirs, files in os.walk(root_src_dir):
+        dst_dir = src_dir.replace(root_src_dir, root_dst_dir, 1)
+        if not os.path.exists(dst_dir):
+            mkdir_p(dst_dir)
+        for file_ in files:
+            src_file = os.path.join(src_dir, file_)
+            dst_file = os.path.join(dst_dir, file_)
+            if os.path.exists(dst_file):
+                os.remove(dst_file)
+            copy(src_file, dst_file)
 
 
 def get_function_dict():
