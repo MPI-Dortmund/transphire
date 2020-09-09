@@ -4808,25 +4808,35 @@ class ProcessThread(object):
             if volume == 'XXXNoneXXX' and int(feedback_loop) == 0:
                 while True:
                     if self.stop.value:
-                        break
-                    viper_model = '{0}/0001_RVIPER_ADJUSTMENT/vol3d_ref_moon_eliminated.hdf'.format(log_prefix).replace(
-                        self.settings['Output']['Project directory'],
-                        os.path.relpath(self.settings['copy_to_work_folder_feedback_0'])
-                        )
-                    if os.path.isfile(viper_model):
-                        new_volume = viper_model.replace(
-                                os.path.join(
-                                    self.settings['copy_to_work_folder_feedback_0'],
-                                    self.settings['Output']['Project name'],
-                                    '',
-                                    ),
-                                ''
-                                )
-                        break
+                        raise Exception('Program stopped')
+
+                    if self.settings[self.prog_name]['Use SSH'] == 'True':
+                        viper_model = '{0}/0001_RVIPER_ADJUSTMENT/vol3d_ref_moon_eliminated.hdf'.format(log_prefix).replace(
+                            self.settings['Output']['Project directory'],
+                            os.path.relpath(self.settings['copy_to_work_folder_feedback_0'])
+                            )
+                        print('viper_model2', viper_model)
+                        if os.path.isfile(viper_model):
+                            new_volume = viper_model.replace(
+                                    os.path.join(
+                                        self.settings['copy_to_work_folder_feedback_0'],
+                                        self.settings['Output']['Project name'],
+                                        '',
+                                        ),
+                                    ''
+                                    )
+                            break
                     else:
-                        self.wait(10)
+                        viper_model = '{0}/0001_RVIPER_ADJUSTMENT/vol3d_ref_moon_eliminated.hdf'.format(log_prefix)
+                        print('viper_model1', viper_model)
+                        if os.path.isfile(viper_model):
+                            new_volume = viper_model
+                            break
+
+                    self.wait(10)
             else:
                 new_volume = volume
+            print('new_volume', new_volume)
 
             skip_list = False
             if skip_list:
@@ -5286,7 +5296,7 @@ class ProcessThread(object):
 
             self.queue_com['log'].put(tu.create_log(self.name, 'run_command', root_name_input, 'start program'))
             while True:
-                self.try_write(log_file, 'w', command)
+                self.try_write(log_file, 'w', '{}\n'.format(command))
                 with open(log_file, 'a') as out:
                     with open(err_file, 'w') as err:
                         start_time = time.time()
