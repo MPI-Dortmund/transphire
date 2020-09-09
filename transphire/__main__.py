@@ -173,7 +173,7 @@ def parse_args():
         )
     parser.add_argument(
         '--mount_directory',
-        default=os.environ.get('TRANSPHIRE_SETTINGS_DIRECTORY', 'transphire_mounts'),
+        default=os.environ.get('TRANSPHIRE_MOUNT_DIRECTORY', 'transphire_mounts'),
         type=str,
         nargs='?',
         help='Folder containing the mount points'
