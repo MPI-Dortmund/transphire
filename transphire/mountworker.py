@@ -790,7 +790,7 @@ def check_existence(mount_directory, mount_folder):
     Check existence of the mount folder and create it if it does not
 
     Arguments:
-    mount_folder - Folder to check
+    mount_folder - tolder to check
 
     Return:
     True, if the mount folder exists

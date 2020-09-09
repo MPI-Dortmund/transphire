@@ -737,14 +737,14 @@ class MainWindow(QMainWindow):
         for key in settings:
             try:
                 self.content[key].set_design(settings[key])
-            except KeyError:
+            except KeyError as e:
                 try: # This block has been introduced for backwards compatibility changes.
                     new_key = key.replace(' v', ' >=v')
                     self.content[new_key].set_design(settings[key])
                 except KeyError:
                     print('Key', key, 'no longer exists')
                     continue
-            except AttributeError:
+            except AttributeError as e:
                 pass
 
     def set_settings(self, settings):
@@ -1168,6 +1168,8 @@ class MainWindow(QMainWindow):
                 value
                 )
 
+        continue_mode = os.path.exists(settings['restart_backup_folder'])
+
         settings['do_feedback_loop'] = int(settings['Output']['Number of feedbacks'])
         settings['feedback_file'] = os.path.join(settings['log_folder'], 'feedback_log')
         settings['spot_file'] = os.path.join(settings['log_folder'], 'spot_dict.txt')
@@ -1184,13 +1186,24 @@ class MainWindow(QMainWindow):
         folder_dict['restart_backup_folder'] = settings['restart_backup_folder']
 
         # Move Error files from previous run
-        try:
-            shutil.move(
-                settings['error_folder'],
-                settings['restart_backup_folder'],
-                )
-        except FileNotFoundError:
-            pass
+        if continue_mode:
+            tu.mkdir_p(settings['restart_backup_folder'])
+            try:
+                tu.copy(
+                    settings['error_folder'],
+                    settings['restart_backup_folder'],
+                    )
+                shutil.rmtree(settings['error_folder'])
+            except FileNotFoundError:
+                pass
+            # Copy Queue files from previous run
+            try:
+                tu.copy(
+                    settings['queue_folder'],
+                    settings['restart_backup_folder'],
+                    )
+            except FileNotFoundError:
+                pass
 
         names = [
             entry.replace('_entries', '')

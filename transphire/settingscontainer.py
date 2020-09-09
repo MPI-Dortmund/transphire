@@ -306,6 +306,8 @@ class SettingsContainer(QWidget):
             except KeyError:
                 if self.name == 'Path':
                     continue
+                elif key == 'IMPORTANT':
+                    continue
                 else:
                     raise
 

@@ -18,6 +18,7 @@
 .. |CTER| replace:: `CTER <http://sphire.mpg.de/wiki/doku.php?id=pipeline:cter:sxcter>`__
 .. |WINDOW| replace:: `WINDOW <http://sphire.mpg.de/wiki/doku.php?id=pipeline:window:sxwindow>`__
 .. |RVIPER| replace:: `RVIPER <http://sphire.mpg.de/wiki/doku.php?id=pipeline:viper:sxrviper>`__
-.. |MERIDIEN| replace:: `RVIPER <http://sphire.mpg.de/wiki/doku.php?id=pipeline:meridien:sxmeridien>`__
+.. |MERIDIEN| replace:: `MERIDIEN <http://sphire.mpg.de/wiki/doku.php?id=pipeline:meridien:sxmeridien>`__
+.. |CHIMERAX| replace:: `CHIMERAX <https://www.cgl.ucsf.edu/chimerax/>`__
 
 .. |NOTFREE| replace:: (Not free for commercial use, a license needs to be bought separately)

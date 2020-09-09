@@ -539,6 +539,13 @@ class ProcessWorker(QObject):
                     )
             except FileNotFoundError:
                 pass
+            try:
+                shutil.move(
+                    self.settings['feedback_file'],
+                    self.settings['restart_backup_folder'],
+                    )
+            except FileNotFoundError:
+                pass
         else:
             keep_list.append('000_Feedback_results')
             try:
@@ -1119,8 +1126,10 @@ class ProcessWorker(QObject):
                         )
                 except FileNotFoundError:
                     pass
+
+            special_cases = ('Extract', 'Train2d', 'CTF')
             lines = []
-            if check_state == 2 or key in ('Extract', 'Train2d'):
+            if check_state == 2 or key in special_cases:
                 for entry in (save_file, done_file):
                     if os.path.exists(entry):
                         with open(entry, 'r') as read:
@@ -1129,9 +1138,9 @@ class ProcessWorker(QObject):
                         with open(entry, 'w'):
                             pass
 
-            remove_patterns = ['THIS IS A DUMMY PATTERN!']
+            remove_patterns = []
             if check_state in (1, 2) and key == 'CTF':
-                if restart_dict['Motion'] == 0:
+                if restart_dict['Motion'] != 0:
                     remove_patterns = [
                         '^CTF_sum',
                         ]
@@ -1172,6 +1181,8 @@ class ProcessWorker(QObject):
                     remove_patterns = [
                         '.*\.hdf'
                         ]
+            else:
+                assert key not in special_cases, key
 
             for pattern in remove_patterns:
                 lines = sorted([entry for entry in lines if re.search(pattern, entry) is None])

@@ -6,7 +6,7 @@ Welcome to TranSPHIRE's documentation!
 TranSPHIRE is an automated pre-processing tool designed for on-the-fly processing during data aquisition.
 It is an open source project published under the `GPLv3 license <https://github.com/MPI-Dortmund/transphire/blob/master/LICENSE>`__ and the code is available on `GitHub <https://github.com/MPI-Dortmund/transphire>`__.
 
-TranSPHIREcoveres the inital steps of the |SPA| pipeline.
+TranSPHIRE coveres the inital steps of the |SPA| pipeline.
 
 
 Pre-processing

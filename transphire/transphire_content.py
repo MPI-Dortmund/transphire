@@ -765,9 +765,9 @@ def default_notification():
     """
     items = [
         ['Project quota warning (%)', '90', float, '', 'PLAIN', 'Main', ''],
-        ['Project quota stop (%)', '97', float, '', 'PLAIN', 'Main', ''],
+        ['Project quota stop (%)', '95', float, '', 'PLAIN', 'Main', ''],
         ['Scratch quota warning (%)', '90', float, '', 'PLAIN', 'Main', ''],
-        ['Scratch quota stop (%)', '97', float, '', 'PLAIN', 'Main', ''],
+        ['Scratch quota stop (%)', '95', float, '', 'PLAIN', 'Main', ''],
         ['Time until notification', '25', float, '', 'PLAIN', 'Main', ''],
         ['Nr. of values used for median', '5', int, '', 'PLAIN', 'Main', ''],
         ]
@@ -780,16 +780,17 @@ def default_notification():
         ])
     for name in tu.get_unique_types():
         try:
-            for key in dtype_dict[name]:
-                key = key[0]
+            for (key, dtype) in dtype_dict[name]:
                 if key in skip_set:
+                    continue
+                elif dtype not in ('<f8', '<i8'):
                     continue
                 else:
                     items.append(
-                        ['{0} warning'.format(key), '-inf inf', [float, float], '', 'PLAIN', 'Main', ''],
+                        ['{0} {1} warning'.format(name, key), '-inf inf', [float, float], '', 'PLAIN', 'Main', ''],
                         )
                     items.append(
-                        ['{0} skip'.format(key), '-inf inf', [float, float], '', 'PLAIN', 'Main', ''],
+                        ['{0} {1} skip'.format(name, key), '-inf inf', [float, float], '', 'PLAIN', 'Main', ''],
                         )
         except KeyError:
             pass
@@ -1088,7 +1089,7 @@ def default_mount(hdd=None):
         ['Need folder extension?', ['False', 'True'], bool, '', 'COMBO', '', ''],
         ['Default user', '', str, '', 'PLAIN', '', ''],
         ['Is df giving the right quota?', ['True', 'False'], bool, '', 'COMBO', '', ''],
-        ['Target UID exists here and on target?', ['True', 'False'], bool, '', 'COMBO', '', ''],
+        ['Target UID exists here and on target?', ['False', 'True'], bool, '', 'COMBO', '', ''],
         ['Need sudo for mount?', ['False', 'True'], bool, '', 'COMBO', '', ''],
         ['Need sudo for copy?', ['False', 'True'], bool, '', 'COMBO', '', ''],
         ['SSH address', '', str, '', 'PLAIN', '', ''],

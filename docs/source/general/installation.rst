@@ -65,6 +65,7 @@ Utilities and packages
 
 - |SPHIRE| version >= 1.4
 - |IMOD| version >= 4.9
+- |CHIMERAX| version >= 1.0 - |NOTFREE|
 
 .. note::
     The |SPHIRE| installation automatically installs all necessary tools for
@@ -82,6 +83,8 @@ Utilities and packages
 
     This script will replace the `shebang <https://en.wikipedia.org/wiki/Shebang_(Unix)>`__ line of the |SPHIRE| executables to avoid collision with other python interpreters in your PATH.
 
+.. note::
+    for the |IMOD| installation, you need to make sure that the IMOD source file is sourced in order to run properly.
 
 Motion correction
 ^^^^^^^^^^^^^^^^^
