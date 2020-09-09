@@ -99,6 +99,8 @@ def create_window_1_2_command(extract_name, file_sum, file_box, file_ctf, output
         pass
 
     command = []
+    command.append('rm -rf {0}'.format(output_dir))
+    command.append(';')
     # Add SPHIRE to the PATH
     command.append("PATH=$(dirname $(which {0})):${{PATH}}".format(settings['Path'][extract_name]))
     # Start the program
