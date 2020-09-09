@@ -4815,7 +4815,6 @@ class ProcessThread(object):
                             self.settings['Output']['Project directory'],
                             os.path.relpath(self.settings['copy_to_work_folder_feedback_0'])
                             )
-                        print('viper_model2', viper_model)
                         if os.path.isfile(viper_model):
                             new_volume = viper_model.replace(
                                     os.path.join(
@@ -4828,7 +4827,6 @@ class ProcessThread(object):
                             break
                     else:
                         viper_model = '{0}/0001_RVIPER_ADJUSTMENT/vol3d_ref_moon_eliminated.hdf'.format(log_prefix)
-                        print('viper_model1', viper_model)
                         if os.path.isfile(viper_model):
                             new_volume = viper_model
                             break
@@ -4836,7 +4834,6 @@ class ProcessThread(object):
                     self.wait(10)
             else:
                 new_volume = volume
-            print('new_volume', new_volume)
 
             skip_list = False
             if skip_list:
