@@ -393,7 +393,7 @@ class MountWorker(QObject):
         mount_folder = os.path.join(self.mount_directory, device)
 
         check_existence(self.mount_directory, mount_folder)
-        if os.listdir(mount_folder):
+        if [_ for _ in os.listdir(mount_folder) if _ != 'hdd_test']:
             self.sig_info.emit('First unmount {0}'.format(device))
             return None
         else:
@@ -425,10 +425,18 @@ class MountWorker(QObject):
             if os.path.exists('{0}{1}'.format(entry, number))
             ]
 
+        test_name = 'hdd_test'
+        folder_test = os.path.join(mount_folder, test_name)
         for entry in existing_partitions:
-            test_name = 'hdd_test'
-            folder_test = os.path.join(mount_folder, test_name)
-            os.mkdir(folder_test)
+            try:
+                os.mkdir(folder_test)
+            except FileExistsError:
+                try:
+                    os.rmdir(folder_test)
+                    os.mkdir(folder_test)
+                except OSError:
+                    self.sig_info.emit('Check folder {0} and remove it manually.'.format(folder_test))
+                    return None
 
             cmd = "sudo -S -k mount.exfat -o uid={0} {1} {2}".format(
                 os.environ['USER'],
@@ -437,14 +445,14 @@ class MountWorker(QObject):
                 )
             idx, value = self._start_process(cmd)
 
-            if value == 'ERROR: Do you have sudo rights for mounting?':
-                cmd = "sudo -S -k mount.ntfs -o uid={0} {1} {2}".format(
+            if 'ERROR' in value:
+                cmd = "sudo -S -k mount.ntfs {1} {2}".format(
                     os.environ['USER'],
                     entry,
                     folder_test
                     )
                 idx, value = self._start_process(cmd)
-                if value == 'ERROR: Do you have sudo rights for mounting?':
+                if 'ERROR' in value:
                     cmd = "sudo -S -k mount -o uid={0} {1} {2}".format(
                         os.environ['USER'],
                         entry,
@@ -456,7 +464,6 @@ class MountWorker(QObject):
             else:
                 pass
 
-
             if idx == 0 and 'ERROR' not in value:
                 if shutil.disk_usage(folder_test).total > 1e12:
                     useable_partitions.append(entry)
@@ -464,7 +471,7 @@ class MountWorker(QObject):
                     self.sig_info.emit(
                         '{0}: Partition smaller then 1TB'.format(entry)
                         )
-                self.sig_umount.emit(device, test_name, None)
+                self.sig_umount.emit(device, test_name, '', None)
             else:
                 self.sig_info.emit('{0}: Mounting error - {1}'.format(entry, value))
                 if os.path.exists(folder_test):
@@ -475,7 +482,7 @@ class MountWorker(QObject):
         if useable_partitions:
             for idx, entry in enumerate(useable_partitions):
                 device_name = 'HDD_{0}'.format(idx)
-                folder_name = '{0}/{1}'.format(mount_folder, device_name)
+                folder_name = os.path.join(mount_folder, device_name)
                 os.mkdir(folder_name)
 
                 cmd = "sudo -S -k mount.exfat -o uid={0} {1} {2}".format(
@@ -485,14 +492,14 @@ class MountWorker(QObject):
                     )
                 idx, value = self._start_process(cmd)
 
-                if value == 'ERROR: Do you have sudo rights for mounting?':
-                    cmd = "sudo -S -k mount.ntfs -o uid={0} {1} {2}".format(
+                if 'ERROR' in value:
+                    cmd = "sudo -S -k mount.ntfs {1} {2}".format(
                         os.environ['USER'],
                         entry,
                         folder_name
                         )
                     idx, value = self._start_process(cmd)
-                    if value == 'ERROR: Do you have sudo rights for mounting?':
+                    if 'ERROR' in value:
                         cmd = "sudo -S -k mount -o uid={0} {1} {2}".format(
                             os.environ['USER'],
                             entry,
@@ -591,7 +598,7 @@ class MountWorker(QObject):
                 )
 
             idx, value = self._start_process(cmd)
-            if value == 'ERROR: Do you have sudo rights for mounting?':
+            if 'ERROR' in value:
                 cmd = "sudo -S -k mount {0} {1}/{2}/ {3}".format(
                     ','.join(options),
                     server,
@@ -681,10 +688,10 @@ class MountWorker(QObject):
             self.refresh_quota()
             return None
 
-        if 'hdd' in device_folder and 'HDD' in device_folder:
-            mount_folder = '{0}/{1}/{2}'.format(self.mount_directory, device_folder, device)
+        if 'HDD' == os.path.basename(device_folder):
+            mount_folder = os.path.join(self.mount_directory, device_folder, device)
         else:
-            mount_folder = '{0}/{1}'.format(self.mount_directory, device_folder)
+            mount_folder = os.path.join(self.mount_directory, device_folder)
 
         if not check_existence(self.mount_directory, mount_folder):
             try:
@@ -773,6 +780,9 @@ class MountWorker(QObject):
             else:
                 value = child.before
             child.interact()
+
+        if child.before.strip():
+            idx = 1
         return idx, value
 
 def check_existence(mount_directory, mount_folder):

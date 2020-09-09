@@ -151,21 +151,21 @@ class MountWidget(QWidget):
         None
         """
         # Mount external hdd
-        if mountworker.check_existence(
-            self.mount_worker.mount_directory,
-            os.path.join(
-                self.mount_worker.mount_directory,
-                self.mount_folder
-                )
-            ):
-            self.mount_worker.sig_info.emit(
-                'First unmount {0}'.format(self.mount_folder)
-                )
-            return None
 
         if self.typ == 'Copy_to_hdd':
             self.mount_worker.sig_mount_hdd.emit(self.mount_folder)
         else:
+            if mountworker.check_existence(
+                self.mount_worker.mount_directory,
+                os.path.join(
+                    self.mount_worker.mount_directory,
+                    self.mount_folder
+                    )
+                ):
+                self.mount_worker.sig_info.emit(
+                    'First unmount {0}'.format(self.mount_folder)
+                    )
+                return None
             user, password, folder = self._check_user(
                 login=bool(self.login == 'True')
                 )
@@ -200,7 +200,7 @@ class MountWidget(QWidget):
         None
         """
         if self.typ == 'Copy_to_hdd':
-            hdd_folder = '{0}/{1}'.format(
+            hdd_folder = os.path.join(
                 self.mount_worker.mount_directory,
                 self.mount_folder
                 )
@@ -224,6 +224,7 @@ class MountWidget(QWidget):
                     self.mount_worker.sig_umount.emit(
                         self.mount_folder,
                         entry,
+                        self.fixed_folder,
                         self.thread_object
                         )
             elif hdd_name.startswith('HDD_'):
@@ -231,6 +232,7 @@ class MountWidget(QWidget):
                     self.mount_worker.sig_umount.emit(
                         self.mount_folder,
                         hdd_name,
+                        self.fixed_folder,
                         self.thread_object
                         )
                 else:
@@ -299,8 +301,8 @@ class MountWidget(QWidget):
             elif text == 'all':
                 return text
             else:
-                tu.message('Input needs to be "all" or "hdd_{number}" or "hdd {number}')
+                tu.message('Input needs to be "all" or "hdd_(number)" or "hdd (number)')
                 return None
         else:
-            tu.message('Input needs to be "all" or "hdd_{number} or "hdd {number}"')
+            tu.message('Input needs to be "all" or "hdd_(number) or "hdd (number)"')
             return None
