@@ -1211,16 +1211,12 @@ class MainWindow(QMainWindow):
             if entry.endswith('_entries') and
             entry.replace('_entries', '').replace('_', ' ') in settings['Copy']
             ]
-        names.append('Copy_to_hdd')
         idx = 0
         settings['plot_emit'] = []
         for entry in names:
             base_dir2 = None
             no_feedback = False
-            if 'copy_to_hdd' in entry.lower():
-                base_dir = self.mount_directory
-                no_feedback = True
-            elif 'copy_to_' in entry.lower():
+            if 'copy_to_' in entry.lower():
                 base_dir = self.mount_directory
                 no_feedback = True
             else:
@@ -1231,9 +1227,7 @@ class MainWindow(QMainWindow):
             entry_name = '{}_entries'.format(entry)
             prog_name_entries = settings['Copy'][entry_name] if entry_name in settings['Copy'] else [entry]
             for prog_name in prog_name_entries:
-                if 'copy_to_hdd' in entry.lower():
-                    folder_name = entry.lower()
-                elif 'copy_to_' in entry.lower():
+                if 'copy_to_' in entry.lower():
                     folder_name = prog_name.replace(' ', '_').replace('>=', '')
                 else:
                     folder_name = '{0:03d}_{1}'.format(idx, prog_name.replace(' ', '_').replace('>=', ''))
