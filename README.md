@@ -1,4 +1,7 @@
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2553388.svg)](https://doi.org/10.5281/zenodo.2553388)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4024186.svg)](https://doi.org/10.5281/zenodo.4024186)
+
+The documentation of TranSPHIRE moved to [here](https://transphire.readthedocs.io).
+
 
 # Transphire
 
