@@ -14,6 +14,7 @@
     general/prerequisites
     general/installation
     tutorial/tutorial
+    general/faq
     general/how_to_contribute
     transphire
 

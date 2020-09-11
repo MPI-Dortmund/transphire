@@ -63,7 +63,7 @@ In the future, we will work on a dependency installer tool.
 Utilities and packages
 ^^^^^^^^^^^^^^^^^^^^^^
 
-- |SPHIRE| version >= 1.4
+- |SPHIRE| version >= 1.4 / |EMAN2| version >= 2.31
 - |IMOD| version >= 4.9
 - |CHIMERAX| version >= 1.0 - |NOTFREE|
 

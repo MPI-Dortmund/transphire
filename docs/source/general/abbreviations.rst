@@ -8,6 +8,7 @@
 .. |Unblur| replace:: `Unblur <https://cistem.org/>`__
 .. |CTFFIND4| replace:: `CTFFIND4 <https://grigoriefflab.umassmed.edu/ctf_estimation_ctffind_ctftilt>`__
 .. |SPHIRE| replace:: `SPHIRE <http://www.sphire.mpg.de/>`__
+.. |EMAN2| replace:: `SPHIRE <https://blake.bcm.edu/emanwiki/EMAN2>`__
 .. |GCtf| replace:: `GCtf <https://www2.mrc-lmb.cam.ac.uk/research/locally-developed-software/zhang-software/>`__
 .. |IMOD| replace:: `IMOD <https://bio3d.colorado.edu/imod/>`__
 
