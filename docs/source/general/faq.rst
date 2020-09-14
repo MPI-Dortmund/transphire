@@ -14,6 +14,20 @@ In addition to the TranSPHIRE related questions, we provide an in-depth |SPHIRE|
 There, not only |SPHIRE| related topics are discussed, but also general tips and tricks for |SPA|.
 
 
+How can I handle multiple gain references in one session?
+*********************************************************
+
+TranSPHIRE assigns the provided gain reference while finding new files and assigns the currently used gain with the found image.
+Therefore, every input image is linked to it's respective gain reference.
+To set a new gain reference for new images, press the **Stop** button, provide the new gain reference, and click the **Start** button to continue.
+
+
+What is the output folder structure of TranSPHIRE?
+**************************************************
+
+For a detailed explanation about the output folders of TranSPHIRE, please visit :ref:`outputs-page`.
+
+
 How to create a template for faster setup?
 ******************************************
 
