@@ -19,7 +19,7 @@
 
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../../transphire/'))
+sys.path.insert(0, os.path.abspath('../..'))
 
 
 # -- General configuration ------------------------------------------------
@@ -50,7 +50,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'transphire'
-copyright = '2020, Markus Stabrin'
+copyright = '2020, Max Plank Institute of molecular physiology'
 author = 'Markus Stabrin'
 
 # The version info for the project you're documenting, acts as replacement for
