@@ -805,7 +805,7 @@ def create_export_data(export_data, lines, maximum_string):
             else:
                 length = maximum_string[name]
                 row_string.append('{0:{1}s}'.format(value, length))
-        lines.append('{0}\n'.format('\t'.join(row_string)))
+        lines.append('{0}\n'.format(' '.join(row_string)))
 
 
 def to_partres_file(data, ctf_name, ctf_settings, project_folder, ctf_folder, sum_file, pixel_size_adjust):

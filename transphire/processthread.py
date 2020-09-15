@@ -2221,7 +2221,7 @@ class ProcessThread(object):
         else:
             content = []
         content.append(template.format(
-                '\t'.join(
+                '  '.join(
                     ['{0}'.format(entry) for entry in entries]
                     )
                 ))

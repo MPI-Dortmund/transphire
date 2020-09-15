@@ -911,7 +911,7 @@ def create_export_data(export_data, lines):
             row_string.append('{0: 14f}'.format(value))
         else:
             row_string.append('{0:s}'.format(value))
-    lines.append('{0}\n'.format('\t'.join(row_string)))
+    lines.append('{0}\n'.format(' '.join(row_string)))
 
 
 @tu.rerun_function_in_case_of_error

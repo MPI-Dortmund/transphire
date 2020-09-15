@@ -14,6 +14,12 @@ In addition to the TranSPHIRE related questions, we provide an in-depth |SPHIRE|
 There, not only |SPHIRE| related topics are discussed, but also general tips and tricks for |SPA|.
 
 
+Frames and jpg/meta files are stored in different locations, is that a problem?
+**************************************************************************
+
+No, TranSPHIRE offers the possibility to provide a path to the frames and a path to the jpg/meta data.
+If you setup the TranSPHIRE session after the first images has been collected, TranSPHIRE will try to search for the respective directories itself.
+
 How can I handle multiple gain references in one session?
 *********************************************************
 
