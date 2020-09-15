@@ -2143,6 +2143,10 @@ class ProcessThread(object):
             first_entry = []
         else:
             first_entry = [
+                '',
+                'data_transphire',
+                '',
+                'loop_',
                 '_pipeRootName #1',
                 '_pipeNewName #2',
                 '_pipeHoleNumber #3',
@@ -2195,9 +2199,13 @@ class ProcessThread(object):
         except ValueError:
             if first_entry:
                 first_entry = [
-                    '_pipeRootName',
-                    '_pipeRootDir',
-                    '_pipeNewName'
+                    '',
+                    'data_transphire',
+                    '',
+                    'loop_',
+                    '_pipeRootName #1',
+                    '_pipeRootDir #2',
+                    '_pipeNewName #3'
                     ]
             else:
                 pass
