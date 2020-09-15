@@ -1,5 +1,4 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QDialog
-from transphire import tabdocker
 
 
 class LogViewerDialog(QDialog):
@@ -28,3 +27,5 @@ class LogViewerDialog(QDialog):
 
     def add_tab(self, widget, name):
         self.tabs.add_tab(widget, name)
+
+from . import tabdocker

@@ -25,8 +25,6 @@ import re
 import glob
 import copy as cp
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
-from transphire.processthread import ProcessThread
-from transphire import transphire_utils as tu
 import multiprocessing as mp
 import multiprocessing.managers
 import queue
@@ -1289,3 +1287,6 @@ class ProcessWorker(QObject):
             for entry in prepend_list:
                 share_list.append(entry.split('|||')[-1])
                 queue.put(entry)
+
+from .processthread import ProcessThread
+from . import transphire_utils as tu

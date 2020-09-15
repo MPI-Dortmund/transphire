@@ -19,10 +19,6 @@ import glob
 import os
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QScrollArea, QLabel
 from PyQt5.QtCore import pyqtSlot, pyqtSignal
-from transphire.settingswidget import SettingsWidget
-from transphire.separator import Separator
-from transphire.tabdocker import TabDocker
-from transphire import transphire_utils as tu
 
 
 class SettingsContainer(QWidget):
@@ -552,3 +548,8 @@ class SettingsContainer(QWidget):
                 continue
             else:
                 SettingsContainer.recursive_search(folder_name, match, matches)
+
+from .settingswidget import SettingsWidget
+from .separator import Separator
+from .tabdocker import TabDocker
+from . import transphire_utils as tu

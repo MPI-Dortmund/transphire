@@ -16,8 +16,8 @@ except pkg_resources.DistributionNotFound:
     try:
         pip_path = '{0}/pip'.format([path for path in sys.path if '/bin' in path][0])
         pip_output = os.popen('{0} freeze'.format(pip_path)).read()
-        transphire = re.search(r'(transphire==[0-9\.]*)', pip_output)
-        __version__ = transphire.group(1).split('==')[1]
+        transphire_match = re.search(r'(transphire==[0-9\.]*)', pip_output)
+        __version__ = transphire_match.group(1).split('==')[1]
     except:
         __version__ = 'XX.XX.XX'
         print('Could not find version number! Please install this project with setup.py!')

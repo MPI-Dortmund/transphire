@@ -25,8 +25,6 @@ import mrcfile as mrc
 import matplotlib
 matplotlib.use('QT5Agg')
 import matplotlib.image as mi
-from transphire import transphire_import as ti
-from transphire import transphire_utils as tu
 
 
 def get_ctf_command(file_sum, file_input, new_name, settings, queue_com, set_name, name):
@@ -1181,3 +1179,6 @@ def create_jpg_file(input_mrc_file, settings, ctf_name):
                 })
         with open(json_file, 'w') as write:
             json.dump(json_dict, write, indent=1)
+
+from . import transphire_import as ti
+from . import transphire_utils as tu

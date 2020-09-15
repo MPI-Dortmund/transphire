@@ -19,10 +19,6 @@ import os
 from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QWidget, QLabel
 from PyQt5.QtGui import QImage
 from PyQt5.QtCore import pyqtSlot, pyqtSignal
-from transphire.statuswidget import StatusWidget
-from transphire.separator import Separator
-from transphire import transphire_utils as tu
-from transphire import logviewer as lv
 
 
 class StatusContainer(QWidget):
@@ -298,3 +294,8 @@ class StatusContainer(QWidget):
         None
         """
         self.content[device].sig_change_info_quota.emit(text, color)
+
+from .statuswidget import StatusWidget
+from .separator import Separator
+from . import transphire_utils as tu
+from . import logviewer as lv

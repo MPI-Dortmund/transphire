@@ -4,9 +4,6 @@ import shutil
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QPushButton, QWidget, QComboBox, QLabel
 from PyQt5.QtCore import pyqtSlot
 
-from transphire import transphire_utils as tu
-from transphire.inputbox import InputBox
-
 class TemplateDialog(QDialog):
     """
     TemplateDialog dialog.
@@ -144,3 +141,7 @@ class TemplateDialog(QDialog):
                     self.combo_box.clear()
                     self.combo_box.addItems(self.templates)
                     self.combo_box.setCurrentText(text)
+
+from . import transphire_utils as tu
+from .inputbox import InputBox
+

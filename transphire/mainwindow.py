@@ -33,17 +33,6 @@ from PyQt5.QtWidgets import (
     )
 from PyQt5.QtCore import QThread, pyqtSlot, QCoreApplication, QTimer, pyqtSignal
 
-# Objects
-from transphire.mountworker import MountWorker
-from transphire.processworker import ProcessWorker
-from transphire.inputbox import InputBox
-from transphire.plotworker import PlotWorker
-from transphire.separator import Separator
-from transphire.tabdocker import TabDocker
-from transphire.mountcalculator import MountCalculator
-from transphire import transphire_utils as tu
-from transphire import transphire_import as ti
-
 
 class MainWindow(QMainWindow):
     """
@@ -1525,3 +1514,14 @@ class MainWindow(QMainWindow):
             thread.wait()
         print('Bye Bye')
         super(MainWindow, self).closeEvent(event)
+
+# Objects
+from .mountworker import MountWorker
+from .processworker import ProcessWorker
+from .inputbox import InputBox
+from .plotworker import PlotWorker
+from .separator import Separator
+from .tabdocker import TabDocker
+from .mountcalculator import MountCalculator
+from . import transphire_utils as tu
+from . import transphire_import as ti

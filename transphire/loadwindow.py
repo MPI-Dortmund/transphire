@@ -22,12 +22,6 @@ import copy
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QPushButton, QWidget, QComboBox, QLineEdit, QLabel, QHBoxLayout
 from PyQt5.QtCore import pyqtSlot
 
-from transphire.loadcontentcontainer import LoadContentContainer
-from transphire.separator import Separator
-from transphire.tabdocker import TabDocker
-from transphire.templatedialog import TemplateDialog
-from transphire import transphire_utils as tu
-
 
 class DefaultSettings(QDialog):
     """
@@ -463,3 +457,9 @@ class DefaultSettings(QDialog):
                                         else:
                                             pass
         return content, apply
+
+from .loadcontentcontainer import LoadContentContainer
+from .separator import Separator
+from .tabdocker import TabDocker
+from .templatedialog import TemplateDialog
+from . import transphire_utils as tu

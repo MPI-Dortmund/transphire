@@ -29,10 +29,6 @@ from PyQt5.QtWidgets import (
     QFileDialog
     )
 from PyQt5.QtCore import pyqtSignal, pyqtSlot
-from transphire.separator import Separator
-from transphire import transphire_utils as tu
-from transphire import transphire_content as tc
-from transphire import tabdocker
 
 
 class LoadContent(QWidget):
@@ -536,3 +532,8 @@ class LoadContent(QWidget):
             )
         if in_dir != '':
             self.sender().setText(in_dir)
+
+from .separator import Separator
+from . import transphire_utils as tu
+from . import transphire_content as tc
+from . import tabdocker

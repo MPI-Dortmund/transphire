@@ -24,7 +24,6 @@ import matplotlib
 matplotlib.use('qt5agg')
 import matplotlib.pyplot as plt
 import matplotlib.image as img
-from transphire import transphire_utils as tu
 
 def create_stack_combine_command(class2d_name, file_names, file_name, output_dir, settings, queue_com, name):
     """
@@ -292,3 +291,4 @@ def recursive_file_search(directory, files):
         else:
             files.append(name)
 
+from . import transphire_utils as tu

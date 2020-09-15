@@ -23,7 +23,6 @@ import re
 import shutil
 import os
 import glob
-from transphire import transphire_utils as tu
 from PyQt5.QtWidgets import QVBoxLayout, QLabel, QPushButton, QWidget, QLineEdit, QHBoxLayout, QComboBox, QScrollArea, QSpacerItem, QWidgetItem, QCheckBox
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSlot, Qt, QSize, pyqtSignal
@@ -649,3 +648,4 @@ class MyPushButton(QPushButton):
         if event.button() in (Qt.RightButton, Qt.LeftButton):
             self.sig_click.emit(self, event)
 
+from . import transphire_utils as tu

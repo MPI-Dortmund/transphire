@@ -19,7 +19,6 @@ import traceback as tb
 import os
 import multiprocessing as mp
 from PyQt5.QtCore import pyqtSignal, QObject, pyqtSlot
-from transphire import transphire_utils as tu
 
 
 class PlotWorker(QObject):
@@ -138,3 +137,5 @@ class PlotWorker(QObject):
                 return None
             else:
                 return [name, name_no_feedback, data, directory_name, settings]
+
+from . import transphire_utils as tu

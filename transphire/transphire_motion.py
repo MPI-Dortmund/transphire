@@ -25,8 +25,6 @@ import mrcfile as mrc
 import matplotlib
 matplotlib.use('QT5Agg')
 import matplotlib.image as mi
-from transphire import transphire_utils as tu
-from transphire import transphire_software as ts
 
 
 def get_motion_default(settings, motion_frames, queue_com, name):
@@ -1034,3 +1032,6 @@ def create_jpg_file(input_file, data, settings):
         mi.imsave(jpg_file_1, arr_1, cmap='gist_gray')
     if arr_2 is not None:
         mi.imsave(jpg_file_2, arr_2, cmap='gist_gray')
+
+from . import transphire_utils as tu
+from . import transphire_software as ts

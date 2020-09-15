@@ -23,9 +23,6 @@ from email.mime.text import MIMEText
 import telepot
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QHBoxLayout
 from PyQt5.QtCore import pyqtSlot, pyqtSignal
-from transphire.notificationwidget import NotificationWidget
-from transphire.emaildialog import EmailDialog
-from transphire import transphire_utils as tu
 
 
 class NotificationContainer(QWidget):
@@ -610,3 +607,7 @@ class NotificationContainer(QWidget):
                 name,
                 err
                 ))
+
+from .notificationwidget import NotificationWidget
+from .emaildialog import EmailDialog
+from . import transphire_utils as tu

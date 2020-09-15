@@ -19,7 +19,6 @@
 import re
 import shutil
 import os
-from transphire import transphire_utils as tu
 
 
 def create_substack_command(class_average_name, input_stack, isac_dir, output_dir, settings):
@@ -185,3 +184,4 @@ def create_train_command(sum_folder, box_folder, output_dir, name, settings):
                 )
 
     return ' '.join(command), check_files, block_gpu, gpu.split(), shell, weight_file, config_file
+from . import transphire_utils as tu

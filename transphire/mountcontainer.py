@@ -16,7 +16,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QHBoxLayout
-from transphire.mountwidget import MountWidget
 
 
 class MountContainer(QWidget):
@@ -150,3 +149,5 @@ class MountContainer(QWidget):
                 self.content[key].setEnabled(var)
             else:
                 self.content[key].setEnabled(var)
+
+from .mountwidget import MountWidget

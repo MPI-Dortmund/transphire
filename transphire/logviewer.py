@@ -1,8 +1,6 @@
 from PyQt5.QtWidgets import QPlainTextEdit, QWidget, QHBoxLayout, QVBoxLayout, QPushButton, QLineEdit
 from PyQt5.QtGui import QTextOption, QTextCursor
 from PyQt5.QtCore import pyqtSlot, QTimer
-from transphire import transphire_utils as tu
-from transphire import logviewerdialog
 import glob
 import os
 import getpass
@@ -200,3 +198,6 @@ class LogViewer(QWidget):
         for button, _ in self.buttons.values():
             button.setEnabled(state)
             button.blockSignals(not state)
+
+from . import transphire_utils as tu
+from . import logviewerdialog

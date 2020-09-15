@@ -32,15 +32,6 @@ import subprocess as sp
 import numpy as np
 import pexpect as pe
 import hyperspy.io_plugins.digital_micrograph as hidm
-from transphire import transphire_utils as tu
-from transphire import transphire_software as tus
-from transphire import transphire_motion as tum
-from transphire import transphire_ctf as tuc
-from transphire import transphire_picking as tup
-from transphire import transphire_extract as tue
-from transphire import transphire_class2d as tuclass2d
-from transphire import transphire_select2d as tselect2d
-from transphire import transphire_train2d as ttrain2d
 
 
 class ProcessThread(object):
@@ -5425,3 +5416,13 @@ class ProcessThread(object):
     def try_write(file_name, opener, content):
         with open(file_name, opener) as write:
             write.write(content)
+
+from . import transphire_utils as tu
+from . import transphire_software as tus
+from . import transphire_motion as tum
+from . import transphire_ctf as tuc
+from . import transphire_picking as tup
+from . import transphire_extract as tue
+from . import transphire_class2d as tuclass2d
+from . import transphire_select2d as tselect2d
+from . import transphire_train2d as ttrain2d

@@ -19,8 +19,6 @@ import glob
 import os
 from PyQt5.QtWidgets import QHBoxLayout, QWidget, QPushButton, QApplication, QVBoxLayout, QLabel, QComboBox
 from PyQt5.QtCore import pyqtSlot, pyqtSignal
-from transphire.loadwindow import DefaultSettings
-from transphire import transphire_utils as tu
 
 
 class ButtonContainer(QWidget):
@@ -350,3 +348,6 @@ class ButtonContainer(QWidget):
             "along with this program.  If not, see <http://www.gnu.org/licenses/>.\n"
             )
         tu.message(text)
+
+from .loadwindow import DefaultSettings
+from . import transphire_utils as tu

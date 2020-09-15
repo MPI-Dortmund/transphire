@@ -30,19 +30,6 @@ import pandas as pd
 
 from PyQt5.QtGui import QFont
 
-from transphire.messagebox import MessageBox
-from transphire.mountcontainer import MountContainer
-from transphire.statuscontainer import StatusContainer
-from transphire.settingscontainer import SettingsContainer
-from transphire.buttoncontainer import ButtonContainer
-from transphire.notificationcontainer import NotificationContainer
-from transphire.plotcontainer import PlotContainer
-from transphire.tabdocker import TabDocker
-from transphire.selectdialog import SelectDialog
-from transphire import transphire_content as tc
-from transphire import transphire_plot as tp
-from transphire import transphire_import as ti
-
 VERSION_RE = re.compile('(.*) >=v([\d.]+)')
 
 
@@ -1821,3 +1808,16 @@ def rebin(arr, new_shape):
     shape = (new_shape[0], arr.shape[0] // new_shape[0],
              new_shape[1], arr.shape[1] // new_shape[1])
     return arr.reshape(shape).mean(-1).mean(1)
+
+from .messagebox import MessageBox
+from .mountcontainer import MountContainer
+from .statuscontainer import StatusContainer
+from .settingscontainer import SettingsContainer
+from .buttoncontainer import ButtonContainer
+from .notificationcontainer import NotificationContainer
+from .plotcontainer import PlotContainer
+from .tabdocker import TabDocker
+from .selectdialog import SelectDialog
+from . import transphire_content as tc
+from . import transphire_plot as tp
+from . import transphire_import as ti

@@ -25,7 +25,6 @@ import matplotlib
 matplotlib.use('qt5agg')
 import matplotlib.pyplot as plt
 import matplotlib.image as img
-from transphire import transphire_utils as tu
 
 def get_extract_command(file_sum, file_box, file_ctf, output_dir, settings, queue_com, name):
     """
@@ -260,3 +259,5 @@ def get_particle_number(log_file, settings, queue_com, name):
                 )
             raise IOError(message)
     return n_particles
+
+from . import transphire_utils as tu

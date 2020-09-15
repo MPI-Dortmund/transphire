@@ -21,8 +21,6 @@ import sys
 from PyQt5.QtWidgets import QWidget, QLabel, QFileDialog, QVBoxLayout, QComboBox, QLineEdit, QHBoxLayout, QPushButton, QAction, QStyle
 from PyQt5.QtCore import pyqtSlot, pyqtSignal, Qt
 from PyQt5.QtGui import QKeySequence
-from transphire import transphire_utils as tu
-from transphire import inputbox
 import subprocess
 
 
@@ -564,3 +562,6 @@ class SettingsWidget(QWidget):
                 self.edit.setCurrentIndex(index)
             else:
                 self.edit.setText(text)
+
+from . import transphire_utils as tu
+from . import inputbox

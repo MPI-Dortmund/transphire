@@ -17,7 +17,6 @@
 """
 from PyQt5.QtCore import pyqtSlot, Qt, QEvent
 from PyQt5.QtWidgets import QMainWindow, QDockWidget, QTabWidget, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QStyle, QPushButton
-from transphire.plotwidget import PlotWidget
 
 
 class TwinContainer(QWidget):
@@ -290,3 +289,5 @@ class PlotContainer(QMainWindow):
         for aim_idx in aim_indices:
             aim_container = aim_docker.widget(aim_idx)
             aim_container.activate_tab(compare_name)
+
+from .plotwidget import PlotWidget

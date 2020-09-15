@@ -25,9 +25,6 @@ from PyQt5.QtWidgets import (
     QLineEdit
     )
 from PyQt5.QtCore import pyqtSlot
-from transphire.framewidget import FrameWidget
-from transphire.separator import Separator
-from transphire import transphire_utils as tu
 
 
 class FrameContainer(QWidget):
@@ -271,3 +268,7 @@ class FrameContainer(QWidget):
         self.button.setEnabled(var)
         for entry in self.content:
             entry.setEnabled(var)
+
+from .framewidget import FrameWidget
+from .separator import Separator
+from . import transphire_utils as tu

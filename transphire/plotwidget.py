@@ -32,7 +32,6 @@ from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
     NavigationToolbar2QT as NavigationToolbar
     )
-from transphire import transphire_utils as tu
 warnings.filterwarnings('ignore')
 
 LIGHTRED = '#ff726f'
@@ -1063,3 +1062,5 @@ class PlotWidget(QWidget):
                 markersize=6,
                 ))
             self._image_ref.append([canvas.axes.legend(loc='best')])
+
+from . import transphire_utils as tu

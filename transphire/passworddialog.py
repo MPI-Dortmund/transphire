@@ -19,7 +19,6 @@ import os
 import pexpect as pe
 from PyQt5.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QLineEdit, QWidget
 from PyQt5.QtCore import pyqtSlot
-from transphire import transphire_utils as tu
 
 
 class PasswordDialog(QDialog):
@@ -154,3 +153,5 @@ class PasswordDialog(QDialog):
 
         else:
             self.accept()
+
+from . import transphire_utils as tu

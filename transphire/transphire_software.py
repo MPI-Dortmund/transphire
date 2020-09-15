@@ -24,8 +24,6 @@ import numpy as np
 import traceback as tb
 import subprocess
 from hyperspy.io_plugins.digital_micrograph import DigitalMicrographReader
-from transphire import transphire_import as ti
-from transphire import transphire_utils as tu
 
 
 def extract_time_and_grid_information(root_name, settings, queue_com, name):
@@ -1368,7 +1366,7 @@ def get_logfiles(log_prefix):
     Name of log file, Name of error file
     """
     tu.mkdir_p(os.path.dirname(log_prefix))
-    template = '{0}_transphire.{{0}}'.format(log_prefix)
+    template = '{0}_.{{0}}'.format(log_prefix)
 
     if os.path.exists(template.format('log')):
         log_prefix_faulty = os.path.join(os.path.dirname(log_prefix), 'FAULTY', os.path.basename(log_prefix))
@@ -1381,3 +1379,6 @@ def get_logfiles(log_prefix):
         tu.copy(template.format('err'), template_faulty.format('err', idx))
 
     return template.format('log'), template.format('err')
+
+from . import transphire_import as ti
+from . import transphire_utils as tu

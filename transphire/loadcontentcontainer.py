@@ -22,11 +22,6 @@ import copy
 from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QComboBox, QLabel
 from PyQt5.QtCore import pyqtSlot
 
-from transphire.tabdocker import TabDocker
-from transphire.loadcontent import LoadContent
-from transphire.separator import Separator
-from transphire import transphire_utils as tu
-
 
 class LoadContentContainer(QWidget):
     """
@@ -319,3 +314,8 @@ class LoadContentContainer(QWidget):
                             vals[new_key][1]['name'] = new_key
                             del vals[key]
             self.content[idx].set_settings(entry)
+
+from .tabdocker import TabDocker
+from .loadcontent import LoadContent
+from .separator import Separator
+from . import transphire_utils as tu

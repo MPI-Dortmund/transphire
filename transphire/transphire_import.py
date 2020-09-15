@@ -20,7 +20,6 @@ import os
 import glob
 import re
 import numpy as np
-from transphire import transphire_utils as tu
 
 
 def get_header(input_file):
@@ -385,7 +384,7 @@ def import_isac_v1_2(name, name_no_feedback, settings, directory_name, import_na
 def import_cinderella_v0_3_1(name, name_no_feedback, settings, directory_name, import_name='', send_data=None):
     files = [
         entry for entry in glob.glob(
-        '{0}/{1}*_transphire.log'.format(directory_name, import_name)
+        '{0}/{1}*_.log'.format(directory_name, import_name)
         )
         ]
     useable_files = []
@@ -461,7 +460,7 @@ def import_cinderella_v0_3_1(name, name_no_feedback, settings, directory_name, i
 def import_window_v1_2(name, name_no_feedback, settings, directory_name, import_name='', send_data=None):
     files = [
         entry for entry in glob.glob(
-        '{0}/{1}*_transphire.log'.format(directory_name, import_name)
+        '{0}/{1}*_.log'.format(directory_name, import_name)
         )
         ]
     useable_files = []
@@ -1091,7 +1090,7 @@ def import_unblur_v1_0_0(name, name_no_feedback, settings, directory_name, impor
         [
             entry
             for directory_name in directory_names
-            for entry in glob.glob('{0}/{1}*_transphire.log'.format(directory_name, import_name))
+            for entry in glob.glob('{0}/{1}*_.log'.format(directory_name, import_name))
             ],
         dtype=str
         )
@@ -1289,3 +1288,5 @@ def import_auto_sphire_v1_3(name, name_no_feedback, settings, directory_name, im
         return data, data_original
     else:
         send_data.send((data, data_original))
+
+from . import transphire_utils as tu
