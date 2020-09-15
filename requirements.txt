@@ -6,4 +6,4 @@ telepot
 imageio
 hyperspy
 mrcfile
-pyqt
+PyQt5
