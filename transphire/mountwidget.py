@@ -19,6 +19,8 @@ import os
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QPushButton, QLabel
 from PyQt5.QtCore import pyqtSlot
 
+from . import mountworker
+from . import transphire_utils as tu
 
 class MountWidget(QWidget):
     """
@@ -301,8 +303,6 @@ class MountWidget(QWidget):
             tu.message('Input needs to be "all" or "hdd_(number) or "hdd (number)"')
             return None
 
-from . import mountworker
 from .inputbox import InputBox
 from .passworddialog import PasswordDialog
-from . import transphire_utils as tu
 from .separator import Separator

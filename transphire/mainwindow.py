@@ -33,6 +33,8 @@ from PyQt5.QtWidgets import (
     )
 from PyQt5.QtCore import QThread, pyqtSlot, QCoreApplication, QTimer, pyqtSignal
 
+from . import transphire_utils as tu
+from . import transphire_import as ti
 
 class MainWindow(QMainWindow):
     """
@@ -1523,5 +1525,3 @@ from .plotworker import PlotWorker
 from .separator import Separator
 from .tabdocker import TabDocker
 from .mountcalculator import MountCalculator
-from . import transphire_utils as tu
-from . import transphire_import as ti

@@ -19,6 +19,9 @@
 import glob
 import os
 
+from . import transphire_utils as tu
+from . import transphire_import as ti
+
 
 def default_auto_sphire_v1_3():
     """
@@ -1488,6 +1491,3 @@ def default_global():
         ['Dark', '', str, '', 'FILE/SEARCH', 'Advanced', '', '1. MRC file that stores the dark reference. If not specified, dark subtraction will be skipped.  2. If -RotGain and/or -FlipGain is specified, the dark reference will also be rotated and/or flipped.'],
         ]
     return items
-
-from . import transphire_utils as tu
-from . import transphire_import as ti

@@ -26,6 +26,7 @@ from PyQt5.QtWidgets import (
     )
 from PyQt5.QtCore import pyqtSlot
 
+from . import transphire_utils as tu
 
 class FrameContainer(QWidget):
     """
@@ -271,4 +272,3 @@ class FrameContainer(QWidget):
 
 from .framewidget import FrameWidget
 from .separator import Separator
-from . import transphire_utils as tu

@@ -23,6 +23,9 @@ from PyQt5.QtCore import pyqtSlot, pyqtSignal, Qt
 from PyQt5.QtGui import QKeySequence
 import subprocess
 
+from . import transphire_utils as tu
+from . import inputbox
+
 
 class SettingsWidget(QWidget):
     """
@@ -562,6 +565,3 @@ class SettingsWidget(QWidget):
                 self.edit.setCurrentIndex(index)
             else:
                 self.edit.setText(text)
-
-from . import transphire_utils as tu
-from . import inputbox

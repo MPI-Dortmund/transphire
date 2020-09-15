@@ -19,6 +19,8 @@ import os
 from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QWidget, QLabel
 from PyQt5.QtGui import QImage
 from PyQt5.QtCore import pyqtSlot, pyqtSignal
+from . import transphire_utils as tu
+from . import logviewer as lv
 
 
 class StatusContainer(QWidget):
@@ -297,5 +299,3 @@ class StatusContainer(QWidget):
 
 from .statuswidget import StatusWidget
 from .separator import Separator
-from . import transphire_utils as tu
-from . import logviewer as lv

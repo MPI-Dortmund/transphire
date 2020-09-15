@@ -29,6 +29,8 @@ import multiprocessing as mp
 import multiprocessing.managers
 import queue
 
+from . import transphire_utils as tu
+
 
 class MyManager(multiprocessing.managers.BaseManager):
     pass
@@ -1289,4 +1291,3 @@ class ProcessWorker(QObject):
                 queue.put(entry)
 
 from .processthread import ProcessThread
-from . import transphire_utils as tu

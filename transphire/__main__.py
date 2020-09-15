@@ -24,6 +24,7 @@ import argparse
 import urllib.request
 from PyQt5.QtWidgets import QApplication
 
+from . import transphire_utils as tu
 
 
 def main(font, root_directory, settings_directory, mount_directory, adjust_width, adjust_height, edit_settings, n_feedbacks, version, kill):
@@ -40,7 +41,7 @@ def main(font, root_directory, settings_directory, mount_directory, adjust_width
     None
     """
     if version:
-        print(.__version__)
+        print(__version__)
         return
 
     if kill:
@@ -133,7 +134,7 @@ def main(font, root_directory, settings_directory, mount_directory, adjust_width
         settings_folder=settings_directory,
         template_name=template_name,
         mount_directory=mount_directory,
-        version=.__version__,
+        version=__version__,
         n_feedbacks=n_feedbacks,
         )
     gui.show()
@@ -238,7 +239,7 @@ def check_update():
     """
     Check for TranSHPIRE updates on PyPi
     """
-    current_version = .__version__
+    current_version = __version__
     latest_version = '1.0.0'
     try:
         with urllib.request.urlopen(
@@ -353,7 +354,6 @@ if __name__ == '__main__':
     check_running()
     run_package()
 
-import .
-from . import transphire_utils as tu
+from . import __version__
 from .mainwindow import MainWindow
 from .loadwindow import DefaultSettings

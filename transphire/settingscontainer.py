@@ -20,6 +20,7 @@ import os
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QScrollArea, QLabel
 from PyQt5.QtCore import pyqtSlot, pyqtSignal
 
+from . import transphire_utils as tu
 
 class SettingsContainer(QWidget):
     """
@@ -552,4 +553,3 @@ class SettingsContainer(QWidget):
 from .settingswidget import SettingsWidget
 from .separator import Separator
 from .tabdocker import TabDocker
-from . import transphire_utils as tu

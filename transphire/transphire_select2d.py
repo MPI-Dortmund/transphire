@@ -25,6 +25,8 @@ matplotlib.use('qt5agg')
 import matplotlib.pyplot as plt
 import matplotlib.image as img
 
+from . import transphire_utils as tu
+
 
 def get_select2d_command(file_input, output_dir, settings, queue_com, name):
     """
@@ -261,5 +263,3 @@ def create_jpg_file(file_name, output_dir):
             edgecolor=None
             ) 
         plt.close(fig)
-
-from . import transphire_utils as tu

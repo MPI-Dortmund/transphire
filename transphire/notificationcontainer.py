@@ -24,6 +24,7 @@ import telepot
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QHBoxLayout
 from PyQt5.QtCore import pyqtSlot, pyqtSignal
 
+from . import transphire_utils as tu
 
 class NotificationContainer(QWidget):
     """
@@ -610,4 +611,3 @@ class NotificationContainer(QWidget):
 
 from .notificationwidget import NotificationWidget
 from .emaildialog import EmailDialog
-from . import transphire_utils as tu

@@ -25,6 +25,9 @@ import traceback as tb
 import subprocess
 from hyperspy.io_plugins.digital_micrograph import DigitalMicrographReader
 
+from . import transphire_import as ti
+from . import transphire_utils as tu
+
 
 def extract_time_and_grid_information(root_name, settings, queue_com, name):
     """
@@ -1379,6 +1382,3 @@ def get_logfiles(log_prefix):
         tu.copy(template.format('err'), template_faulty.format('err', idx))
 
     return template.format('log'), template.format('err')
-
-from . import transphire_import as ti
-from . import transphire_utils as tu

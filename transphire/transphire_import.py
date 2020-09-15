@@ -21,6 +21,8 @@ import glob
 import re
 import numpy as np
 
+from . import transphire_utils as tu
+
 
 def get_header(input_file):
     """
@@ -1288,5 +1290,3 @@ def import_auto_sphire_v1_3(name, name_no_feedback, settings, directory_name, im
         return data, data_original
     else:
         send_data.send((data, data_original))
-
-from . import transphire_utils as tu

@@ -20,6 +20,7 @@ import os
 from PyQt5.QtWidgets import QHBoxLayout, QWidget, QPushButton, QApplication, QVBoxLayout, QLabel, QComboBox
 from PyQt5.QtCore import pyqtSlot, pyqtSignal
 
+from . import transphire_utils as tu
 
 class ButtonContainer(QWidget):
     """
@@ -350,4 +351,3 @@ class ButtonContainer(QWidget):
         tu.message(text)
 
 from .loadwindow import DefaultSettings
-from . import transphire_utils as tu

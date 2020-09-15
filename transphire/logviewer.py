@@ -5,6 +5,9 @@ import glob
 import os
 import getpass
 
+from . import transphire_utils as tu
+from . import logviewerdialog
+
 class LogViewer(QWidget):
 
     def __init__(self, show_indicators=False, indicator='', file_name='', parent=None):
@@ -199,5 +202,3 @@ class LogViewer(QWidget):
             button.setEnabled(state)
             button.blockSignals(not state)
 
-from . import transphire_utils as tu
-from . import logviewerdialog

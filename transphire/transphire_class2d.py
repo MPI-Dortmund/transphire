@@ -25,6 +25,8 @@ matplotlib.use('qt5agg')
 import matplotlib.pyplot as plt
 import matplotlib.image as img
 
+from . import transphire_utils as tu
+
 def create_stack_combine_command(class2d_name, file_names, file_name, output_dir, settings, queue_com, name):
     """
     Create the command to combine BDB stacks.
@@ -290,5 +292,3 @@ def recursive_file_search(directory, files):
             recursive_file_search('{0}/'.format(name), files)
         else:
             files.append(name)
-
-from . import transphire_utils as tu

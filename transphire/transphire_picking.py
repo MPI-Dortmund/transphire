@@ -20,6 +20,8 @@ import os
 import imageio
 import numpy as np
 
+from . import transphire_utils as tu
+
 
 def get_picking_command(file_input, new_name, settings, queue_com, name):
     """
@@ -572,5 +574,3 @@ def create_circle(jpg_data, maskcenters, radius):
 
     out[idx_mask_x_abs[valid_mask], idx_mask_y_abs[valid_mask]] = 1
     jpg_data[out, :] = np.array([255, 0, 0])
-
-from . import transphire_utils as tu

@@ -30,6 +30,10 @@ from PyQt5.QtWidgets import (
     )
 from PyQt5.QtCore import pyqtSignal, pyqtSlot
 
+from . import transphire_utils as tu
+from . import transphire_content as tc
+from . import tabdocker
+
 
 class LoadContent(QWidget):
     """
@@ -534,6 +538,3 @@ class LoadContent(QWidget):
             self.sender().setText(in_dir)
 
 from .separator import Separator
-from . import transphire_utils as tu
-from . import transphire_content as tc
-from . import tabdocker

@@ -30,6 +30,10 @@ import pandas as pd
 
 from PyQt5.QtGui import QFont
 
+from . import transphire_content as tc
+from . import transphire_plot as tp
+from . import transphire_import as ti
+
 VERSION_RE = re.compile('(.*) >=v([\d.]+)')
 
 
@@ -1818,6 +1822,3 @@ from .notificationcontainer import NotificationContainer
 from .plotcontainer import PlotContainer
 from .tabdocker import TabDocker
 from .selectdialog import SelectDialog
-from . import transphire_content as tc
-from . import transphire_plot as tp
-from . import transphire_import as ti

@@ -27,6 +27,8 @@ from PyQt5.QtWidgets import QVBoxLayout, QLabel, QPushButton, QWidget, QLineEdit
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSlot, Qt, QSize, pyqtSignal
 
+from . import transphire_utils as tu
+
 
 class SelectDialog(QWidget):
     """
@@ -647,5 +649,3 @@ class MyPushButton(QPushButton):
     def mousePressEvent(self, event):
         if event.button() in (Qt.RightButton, Qt.LeftButton):
             self.sig_click.emit(self, event)
-
-from . import transphire_utils as tu
