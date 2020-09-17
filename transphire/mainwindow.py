@@ -117,7 +117,6 @@ class MainWindow(QMainWindow):
                             timeout=10
                             )
                     except pe.exceptions.TIMEOUT:
-                        print('Wrong sudo password!')
                         tu.message('Wrong sudo password!')
                     else:
                         if idx == 0:
@@ -1278,12 +1277,14 @@ class MainWindow(QMainWindow):
             for name in folder_names:
                 try:
                     tu.mkdir_p(settings[name])
-                except PermissionError:
-                    tu.message('You do not have permission to write to your specified project directory!')
+                except PermissionError as e:
+                    print(e)
+                    tu.message('You do not have permission to write to your specified project directory! Check the Terminal for the actual error message!')
                     self.enable(True)
                     return None
-                except FileNotFoundError:
-                    tu.message('Project name cannot be empty')
+                except FileNotFoundError as e:
+                    print(e)
+                    tu.message('Project name cannot be empty! Check the Terminal for the actual error message!')
                     self.enable(True)
                     return None
 
