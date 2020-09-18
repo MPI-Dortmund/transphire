@@ -390,15 +390,18 @@ class MountWorker(QObject):
         Return:
         None
         """
+        test_name = 'hdd_test'
         mount_folder = os.path.join(self.mount_directory, device)
+        folder_test = os.path.join(mount_folder, test_name)
 
         check_existence(self.mount_directory, mount_folder)
         try:
-            os.rmdir(os.path.join(mount_folder, 'hdd_test'))
+            os.rmdir(folder_test)
         except FileNotFoundError:
             pass
-        except Exception:
-            print('Removal of {0} failed because the directory is not empty! Please unmount and remove manually: sudo umount {0}'.format(os.path.join(mount_folder, 'hdd_test')))
+        except Exception as e:
+            print(e)
+            print('Removal of {0} failed because the directory is not empty or still a mount point! Please unmount and remove manually: sudo umount {0}'.format(folder_test))
             return None
 
         if os.listdir(mount_folder):
@@ -433,8 +436,6 @@ class MountWorker(QObject):
             if os.path.exists('{0}{1}'.format(entry, number))
             ]
 
-        test_name = 'hdd_test'
-        folder_test = os.path.join(mount_folder, test_name)
         for entry in existing_partitions:
             try:
                 os.mkdir(folder_test)
@@ -453,13 +454,13 @@ class MountWorker(QObject):
                 )
             idx, value = self._start_process(cmd)
 
-            if 'ERROR' in value:
+            if 'ERROR' in value or idx != 0:
                 cmd = "sudo -S -k mount.ntfs {0} {1}".format(
                     entry,
                     folder_test
                     )
                 idx, value = self._start_process(cmd)
-                if 'ERROR' in value:
+                if 'ERROR' in value or idx != 0:
                     cmd = "sudo -S -k mount -o uid={0} {1} {2}".format(
                         os.environ['USER'],
                         entry,
@@ -478,7 +479,7 @@ class MountWorker(QObject):
                     self.sig_info.emit(
                         '{0}: Partition smaller then 1TB'.format(entry)
                         )
-                self.sig_umount.emit(device, test_name, '', None)
+                self.umount(device, test_name, '', None)
             else:
                 self.sig_info.emit('{0}: Mounting error - {1}'.format(entry, value))
                 if os.path.exists(folder_test):
@@ -787,7 +788,7 @@ class MountWorker(QObject):
                 value = child.before
             child.interact()
 
-        if child.before.strip():
+        if list(filter(lambda x: x in value, ['Error', 'Failed'])):
             idx = 1
         return idx, value
 
