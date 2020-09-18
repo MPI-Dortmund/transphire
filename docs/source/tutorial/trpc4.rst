@@ -16,7 +16,7 @@ The following instructions can also be found in the included ``README.rst``.
 
 
 Operating systems
-*****************
+^^^^^^^^^^^^^^^^^
 
 The software has been tested on the following operating systems:
 
@@ -26,7 +26,7 @@ CentOS 7
 
 
 Software dependencies
-*********************
+^^^^^^^^^^^^^^^^^^^^^
 
 TranSPHIRE is dependent on different programs:
 
@@ -34,33 +34,33 @@ TranSPHIRE is dependent on different programs:
 Included in this zip file
 +++++++++++++++++++++++++
 
-|TranSPHIRE| version 1.5.0
-|SPHIRE| version 1.3_transphire
-|SPHIRE| |GPUISAC| version 1.1
+| |TranSPHIRE| version 1.5.0
+| |SPHIRE| version 1.3_transphire
+| |SPHIRE| |GPUISAC| version 1.1
 
 
 Not included in this zip file
 +++++++++++++++++++++++++++++
 
-|ANACONDA| / |MINICONDA| environment -- https://www.anaconda.com/
-|IMOD| version 4.9 -- https://bio3d.colorado.edu/imod/ 
-|CHIMERAX| version 1.0 -- https://www.cgl.ucsf.edu/chimerax/
-|MotionCor2| version 1.3.2 -- https://emcore.ucsf.edu/ucsf-software
-|Unblur| cisTEM version 1.0.0-beta -- https://cistem.org/
-|CTFFIND4| version 4.1.14 -- https://grigoriefflab.umassmed.edu/ctf_estimation_ctffind_ctftilt
-|GCtf| version 1.06 -- https://www2.mrc-lmb.cam.ac.uk/research/locally-developed-software/zhang-software/
-|SPHIRE| |crYOLO| version 1.7.4 -- http://cryolo.readthedocs.io/
-|SPHIRE| |Cinderella| version 0.7.0 -- http://sphire.mpg.de/wiki/doku.php?id=auto_2d_class_selection
+| |ANACONDA| / |MINICONDA| environment -- https://www.anaconda.com/
+| |IMOD| version 4.9 -- https://bio3d.colorado.edu/imod/ 
+| |CHIMERAX| version 1.0 -- https://www.cgl.ucsf.edu/chimerax/
+| |MotionCor2| version 1.3.2 -- https://emcore.ucsf.edu/ucsf-software
+| |Unblur| cisTEM version 1.0.0-beta -- https://cistem.org/
+| |CTFFIND4| version 4.1.14 -- https://grigoriefflab.umassmed.edu/ctf_estimation_ctffind_ctftilt
+| |GCtf| version 1.06 -- https://www2.mrc-lmb.cam.ac.uk/research/locally-developed-software/zhang-software/
+| |SPHIRE| |crYOLO| version 1.7.4 -- http://cryolo.readthedocs.io/
+| |SPHIRE| |Cinderella| version 0.7.0 -- http://sphire.mpg.de/wiki/doku.php?id=auto_2d_class_selection
 
 
 Required non-standard hardware
-*****************
+^^^^^^^^^^^^^^^^^
 
 - Nvidia GPU
 
 
 Installation
-************
+^^^^^^^^^^^^
 
 The installation of TranSPHIRE takes about 5 to 20 minutes, depending on the download speed.
 
@@ -92,7 +92,7 @@ Please install the other dependencies from the *Software dependencies* section.
 
 
 Demo
-****
+^^^^
 
 A TRPC4 Demo data set containig 120 micrograph movies is coming within the ZIP file.
 
@@ -187,7 +187,9 @@ A more detailed version of the instructions is currently in preparation at `tran
   - *--symmetry*: c4
   - *input_volume*: click the folder icon and choose the *TRPC4_reference.hdf* file
   - *Use SSH*: False
+
   **Advanced** 
+
   - *Minimum classes*: 0
   - *Minimum particles*: 0
 
