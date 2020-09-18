@@ -393,7 +393,15 @@ class MountWorker(QObject):
         mount_folder = os.path.join(self.mount_directory, device)
 
         check_existence(self.mount_directory, mount_folder)
-        if [_ for _ in os.listdir(mount_folder) if _ != 'hdd_test']:
+        try:
+            os.rmdir(os.path.join(mount_folder, 'hdd_test'))
+        except FileNotFoundError:
+            pass
+        except Exception:
+            print('Removal of {0} failed because the directory is not empty! Please unmount and remove manually: sudo umount {0}'.format(os.path.join(mount_folder, 'hdd_test')))
+            return None
+
+        if os.listdir(mount_folder):
             self.sig_info.emit('First unmount {0}'.format(device))
             return None
         else:
@@ -446,8 +454,7 @@ class MountWorker(QObject):
             idx, value = self._start_process(cmd)
 
             if 'ERROR' in value:
-                cmd = "sudo -S -k mount.ntfs {1} {2}".format(
-                    os.environ['USER'],
+                cmd = "sudo -S -k mount.ntfs {0} {1}".format(
                     entry,
                     folder_test
                     )
@@ -493,8 +500,7 @@ class MountWorker(QObject):
                 idx, value = self._start_process(cmd)
 
                 if 'ERROR' in value:
-                    cmd = "sudo -S -k mount.ntfs {1} {2}".format(
-                        os.environ['USER'],
+                    cmd = "sudo -S -k mount.ntfs {0} {1}".format(
                         entry,
                         folder_name
                         )
