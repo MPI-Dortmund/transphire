@@ -1181,8 +1181,6 @@ class ProcessWorker(QObject):
                     remove_patterns = [
                         '.*\.hdf'
                         ]
-            else:
-                assert key not in special_cases, key
 
             for pattern in remove_patterns:
                 lines = sorted([entry for entry in lines if re.search(pattern, entry) is None])
