@@ -114,7 +114,7 @@ Particle picking
 2D classification
 ^^^^^^^^^^^^^^^^^
 
-- |SPHIRE| |GPUISAC| version >= 2.2
+- |SPHIRE| |GPUISAC| version >= 2.3.1
 
 
 2D class selection
