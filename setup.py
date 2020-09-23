@@ -13,7 +13,7 @@ requirements.remove('PyQt5')
 
 setuptools.setup(
     name='transphire',
-    version='1.5.2',
+    version='1.5.3',
     description='Automated post data aquisition processing tool',
     long_description=long_description,
     url='https://github.com/mstabrin/transphire',
