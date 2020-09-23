@@ -956,7 +956,7 @@ class ProcessWorker(QObject):
                                 "{0}@{1}'s password:".format(self.settings[auto3d_name]['SSH username'], device_name),
                                 pe.EOF
                                 ],
-                            timeout=4
+                            timeout=20
                             )
                     except pe.exceptions.TIMEOUT:
                         self.sig_error.emit('TIMEOUT: SSH "ls" command failed! Username or Password in Auto3d might be wrong or Copy to work is not consistent!!')
@@ -976,7 +976,7 @@ class ProcessWorker(QObject):
                         pass
 
                     try:
-                        child.expect(pe.EOF, timeout=10)
+                        child.expect(pe.EOF, timeout=20)
                     except pe.exceptions.TIMEOUT:
                         self.sig_error.emit('TIMEOUT Password: SSH ls command failed! Username or Password in Auto3d might be wrong or Copy to work is not consistent!!')
                         error = True
