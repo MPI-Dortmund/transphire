@@ -386,7 +386,7 @@ def import_isac_v1_2(name, name_no_feedback, settings, directory_name, import_na
 def import_cinderella_v0_3_1(name, name_no_feedback, settings, directory_name, import_name='', send_data=None):
     files = [
         entry for entry in glob.glob(
-        '{0}/{1}*_.log'.format(directory_name, import_name)
+        '{0}/{1}*_transphire.log'.format(directory_name, import_name)
         )
         ]
     useable_files = []
@@ -462,7 +462,7 @@ def import_cinderella_v0_3_1(name, name_no_feedback, settings, directory_name, i
 def import_window_v1_2(name, name_no_feedback, settings, directory_name, import_name='', send_data=None):
     files = [
         entry for entry in glob.glob(
-        '{0}/{1}*_.log'.format(directory_name, import_name)
+        '{0}/{1}*_transphire.log'.format(directory_name, import_name)
         )
         ]
     useable_files = []
@@ -1092,7 +1092,7 @@ def import_unblur_v1_0_0(name, name_no_feedback, settings, directory_name, impor
         [
             entry
             for directory_name in directory_names
-            for entry in glob.glob('{0}/{1}*_.log'.format(directory_name, import_name))
+            for entry in glob.glob('{0}/{1}*_transphire.log'.format(directory_name, import_name))
             ],
         dtype=str
         )

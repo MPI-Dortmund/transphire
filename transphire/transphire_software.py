@@ -1369,7 +1369,7 @@ def get_logfiles(log_prefix):
     Name of log file, Name of error file
     """
     tu.mkdir_p(os.path.dirname(log_prefix))
-    template = '{0}_.{{0}}'.format(log_prefix)
+    template = '{0}_transphire.{{0}}'.format(log_prefix)
 
     if os.path.exists(template.format('log')):
         log_prefix_faulty = os.path.join(os.path.dirname(log_prefix), 'FAULTY', os.path.basename(log_prefix))
