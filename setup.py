@@ -1,7 +1,15 @@
 import setuptools
 import os
+import re
 
 here = os.path.abspath(os.path.dirname(__file__))
+
+def get_version():
+    init_file = os.path.join(here, 'transphire', '__init__.py')
+    with open(init_file) as read:
+        data = read.read()
+    return re.search("^__version__ = '(.*)'$", data, re.M).group(1)
+
 
 with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
@@ -13,7 +21,7 @@ requirements.remove('PyQt5')
 
 setuptools.setup(
     name='transphire',
-    version='1.5.6',
+    version=get_version(),
     description='Automated post data aquisition processing tool',
     long_description=long_description,
     url='https://github.com/mstabrin/transphire',

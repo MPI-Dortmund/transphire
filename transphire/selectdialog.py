@@ -535,7 +535,7 @@ class SelectDialog(QWidget):
                     )
                 with open(out_file, 'w') as write:
                     write.write('\n'.join(map(str, index_list)))
-                cmd = '{} {} {} --outmode=uint16 --list={}'.format(
+                cmd = '{} {} {} --list={}'.format(
                     self.e2proc2d_exec,
                     file_name,
                     os.path.join(
@@ -612,7 +612,7 @@ class SelectDialog(QWidget):
                 out_folder = os.path.join(output_folder, 'png{}'.format(suffix))
                 in_file = '{}{}.hdf'.format(file_name, suffix)
                 tu.mkdir_p(out_folder)
-                cmd = '{} {} {} --unstack'.format(
+                cmd = '{} {} {} --outmode=uint16 --unstack'.format(
                     self.e2proc2d_exec,
                     in_file,
                     os.path.join(
