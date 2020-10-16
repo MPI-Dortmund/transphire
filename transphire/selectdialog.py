@@ -535,7 +535,7 @@ class SelectDialog(QWidget):
                     )
                 with open(out_file, 'w') as write:
                     write.write('\n'.join(map(str, index_list)))
-                cmd = '{} {} {} --outmode uint16 --list={}'.format(
+                cmd = '{} {} {} --outmode=uint16 --list={}'.format(
                     self.e2proc2d_exec,
                     file_name,
                     os.path.join(
