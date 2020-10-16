@@ -204,6 +204,7 @@ def create_isac2_1_2_command(class2d_name, stack_name, file_name, output_dir, se
     command.append(os.path.join(isac_output_dir, 'ordered_class_averages.hdf'))
     command.append(os.path.join(output_dir, file_name, 'png', 'ordered_class_averages.hdf.png'))
     command.append('--unstack')
+    command.append('--outmode=uint16')
     check_file = os.path.join(isac_output_dir, 'ordered_class_averages.hdf')
     return ' '.join(command), gpu, check_file
 

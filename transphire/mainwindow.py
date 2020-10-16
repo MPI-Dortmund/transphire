@@ -128,7 +128,7 @@ class MainWindow(QMainWindow):
             pass
 
         # Start TranSPHIRE from HOME directory.
-        self.path = os.environ['HOME']
+        self.path = os.getcwd()
 
         # Window title
         self.setWindowTitle(
