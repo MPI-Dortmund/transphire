@@ -179,6 +179,7 @@ def create_cinderella_0_3_1_command(
     command.append(os.path.join(file_output, 'ordered_class_averages_good.hdf'))
     command.append(os.path.join(file_output, 'png_good', 'ordered_class_averages_good.hdf.png'))
     command.append('--unstack')
+    command.append('--outmode=uint16')
     command.append(';')
 
     command.append("PATH=$(dirname $(which {0})):${{PATH}}".format(settings['Path']['e2proc2d.py']))
@@ -186,6 +187,7 @@ def create_cinderella_0_3_1_command(
     command.append(os.path.join(file_output, 'ordered_class_averages_bad.hdf'))
     command.append(os.path.join(file_output, 'png_bad', 'ordered_class_averages_bad.hdf.png'))
     command.append('--unstack')
+    command.append('--outmode=uint16')
 
     return ' '.join(command), gpu_raw
 
