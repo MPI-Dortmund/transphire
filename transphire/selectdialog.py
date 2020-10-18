@@ -252,6 +252,8 @@ class SelectDialog(QWidget):
         select_2d_folder = []
         if input_folder is None or input_folder == self.default_project_name:
             for key in self.settings:
+                if key.startswith('scratch_'):
+                    continue
                 if 'class2d' in key.lower():
                     try:
                         class_2d_folder.extend([
@@ -264,7 +266,8 @@ class SelectDialog(QWidget):
                                     )
                                 )
                             if os.path.isdir(entry) and not
-                            os.path.basename(entry).startswith('jpg')
+                            os.path.basename(entry).startswith('jpg') and not
+                            os.path.basename(entry).startswith('overview_plots')
                             ])
                     except IndexError:
                         pass
@@ -280,7 +283,8 @@ class SelectDialog(QWidget):
                                     )
                                 )
                             if os.path.isdir(entry) and not
-                            os.path.basename(entry).startswith('jpg')
+                            os.path.basename(entry).startswith('jpg') and not
+                            os.path.basename(entry).startswith('overview_plots')
                             ])
                     except IndexError:
                         pass
