@@ -5,4 +5,4 @@ import os
 import re
 
 here = os.path.normcase(__file__)
-__version__ = '1.5.7'
+__version__ = '1.5.8'
