@@ -85,3 +85,12 @@ By default, TranSPHIRE will use the next bigger value of a "good" box size from 
     | particle_radius = 101
     | box_size = 303   # parrticle_radius * 3.
     | final_box_size = 320   # 303 is not in the list of good values, the next larger good value is 320.
+
+How can I see how many particles have been extracted?
+*****************************************************
+
+To check the number of extracted particles click on 
+
+**Visualisation** -> **Plot Extract** -> **Plot per micrograph** -> **accepted** (lower tab row)
+
+Check the **Sum:** field of the data statistics area.
