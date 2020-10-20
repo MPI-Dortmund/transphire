@@ -240,7 +240,10 @@ def find_frames(frames_root, compare_name, settings, queue_com, name, write_erro
                         msg=message,
                         root_name=frames_root
                         )
-                    return None
+                    if len(frames) == 0:
+                        return False
+                    else:
+                        return None
                 else:
                     try:
                         value, _, _, checked_nr_frames = check_nr_frames(
@@ -309,7 +312,10 @@ def find_frames(frames_root, compare_name, settings, queue_com, name, write_erro
                             ),
                         root_name=frames_root
                         )
-                    return None
+                    if len(frames) == 0:
+                        return False
+                    else:
+                        return None
                 else:
                     return True
 
@@ -364,7 +370,10 @@ def find_frames(frames_root, compare_name, settings, queue_com, name, write_erro
                         msg=message,
                         root_name=frames_root
                         )
-                    return None
+                    if len(frames) == 0:
+                        return False
+                    else:
+                        return None
                 else:
                     try:
                         value, _, _, checked_nr_frames = check_nr_frames(
@@ -475,7 +484,10 @@ def find_frames(frames_root, compare_name, settings, queue_com, name, write_erro
                         msg=message,
                         root_name=frames_root
                         )
-                    return None
+                    if len(frames) == 0:
+                        return False
+                    else:
+                        return None
                 else:
                     try:
                         value, _, _, checked_nr_frames = check_nr_frames(
@@ -520,7 +532,10 @@ def find_frames(frames_root, compare_name, settings, queue_com, name, write_erro
                         msg=message,
                         root_name=frames_root
                         )
-                    return None
+                    if len(frames) == 0:
+                        return False
+                    else:
+                        return None
                 else:
                     try:
                         value, _, _, checked_nr_frames = check_nr_frames(
@@ -566,7 +581,10 @@ def find_frames(frames_root, compare_name, settings, queue_com, name, write_erro
                         msg=message,
                         root_name=frames_root
                         )
-                    return None
+                    if len(frames) == 0:
+                        return False
+                    else:
+                        return None
                 else:
                     try:
                         value, _, _, checked_nr_frames = check_nr_frames(
