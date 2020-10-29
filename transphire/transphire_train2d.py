@@ -68,7 +68,7 @@ def create_restack_command(stack_name, output_dir, settings):
     command.append('--rb_box_size={0}'.format(settings[prog_name]['Box size']))
     command.append('--reboxing')
 
-    return ' '.join(command), check_files, block_gpu, gpu_list, shell, os.path.join(output_dir, 'BOX', 'original')
+    return ' '.join(command), check_files, block_gpu, gpu_list, shell, os.path.join(output_dir, 'BOX')
 
 
 def create_eval_command(config_file, weight_file, log_file, settings, name):
@@ -160,6 +160,7 @@ def create_train_command(sum_folder, box_folder, output_dir, name, settings):
     ignore_list.append('Box size')
     ignore_list.append('--train_times')
     ignore_list.append('Maximum micrographs')
+    ignore_list.append('Use centered')
 
     if settings[prog_name]['Split Gpu?'] == 'True':
         try:

@@ -131,10 +131,12 @@ def default_isac2_1_2():
     items.extend([
         ['--CTF', ['True', 'False'], bool, '', 'COMBO', category, 'apply phase-flip for CTF correction: if set the data will be phase-flipped using CTF information included in image headers (default False)'],
         ['Nr. Particles', '20000', int, '', 'PLAIN', category, 'NOT AN ISAC OPTION: Wait to accumulate this number of particles to process.'],
+        ['--filament_width:Filament width', '-1', int, '', 'PLAIN', 'Main', 'Filament width [Pixels]: Filament width for the creation of the rectangular mask. Default is one third of the box size. (default -1)'],
         ['--radius:Protein radius', '-1', int, '', 'PLAIN', category, 'particle radius: there is no default, a sensible number has to be provided, units - pixels (default required int)'],
         ['--VPP:Phase Plate', ['False', 'True'], bool, '--CTF:False', 'COMBO', category, 'Phase Plate data (default False)'],
         ['--img_per_grp', '100', int, '', 'PLAIN', category, 'number of images per class (maximum group size, also defines number of classes K=(total number of images)/img_per_grp (default 200)'],
         ['--minimum_grp_size', '60', float, '', 'PLAIN', category, 'minimum size of class (default 60)'],
+        ['--xr', '1', int, '', 'PLAIN', 'Main', 'x range of the translational search during stability test alignments. This will be set by GPU ISAC. (Default 1)'],
         ['MPI processes', '6', int, '', 'PLAIN', category, 'NOT AN ISAC OPTION: Number of MPI processes to use with ISAC.'],
         ])
 
@@ -229,6 +231,7 @@ def default_cryolo_train_v1_5_8():
     items = [
 
         ['Box size:Box size', '205', int, '', 'PLAIN', 'Main', 'Box size used for retraining. Should be quite narrow.'],
+        ['Use centered', ['False', 'True'], bool, '', 'COMBO', 'Advanced', 'NOT A CRYOLO TRAIN OPTION. Use the centered particles after restacking instead of the uncentered ones. Can be beneficial for helical specimens.'],
 
         ['--warmup', '5', int, '', 'PLAIN', 'Rare', 'Number of warmup epochs. Set it to zero if you fine tune a model.'],
         ['--num_cpu', '-1', int, '', 'PLAIN', 'Rare', 'Number of CPUs used during training. By default it will use half of the available CPUs.'],

@@ -3250,6 +3250,8 @@ class ProcessThread(object):
                 output_dir=log_prefix,
                 settings=self.settings,
                 )
+            used_box_name = 'centered' if self.settings[self.settings['Copy']['Train2d']]['Use centered'] == 'True' else 'original'
+            box_dir = os.path.join(box_dir, used_box_name)
 
             log_file, err_file = self.run_command(
                 root_name_input=root_name_input,
@@ -3275,7 +3277,7 @@ class ProcessThread(object):
                 folder=self.settings[folder_name],
                 command=command
                 )
-            new_box_dir = box_dir.replace('/BOX/original', '/BOX/renamed')
+            new_box_dir = box_dir.replace('/BOX/{}'.format(used_box_name), '/BOX/renamed')
             tu.mkdir_p(new_box_dir)
 
             n_max_micrographs = int(self.settings[self.settings['Copy']['Train2d']]['Maximum micrographs'])
@@ -3283,9 +3285,9 @@ class ProcessThread(object):
             for file_name in sorted(np.random.permutation(glob.glob(os.path.join(box_dir, '*')))[:n_max_micrographs]):
                 tu.symlink_rel(
                     file_name,
-                    file_name.replace(box_dir, new_box_dir).replace('_original.box', '.box')
+                    file_name.replace(box_dir, new_box_dir).replace('_{}.box'.format(used_box_name), '.box')
                     )
-                all_logs.append(file_name.replace(box_dir, new_box_dir).replace('_original.box', '.box'))
+                all_logs.append(file_name.replace(box_dir, new_box_dir).replace('_{}.box'.format(used_box_name), '.box'))
 
             self.shared_dict_typ['queue_list_lock'].acquire()
             try:
