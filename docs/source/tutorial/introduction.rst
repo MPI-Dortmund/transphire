@@ -4,7 +4,7 @@ Presentations
 *************
 
 2020 10 29 - SBGrid Consortium
-`YouTube <https://www.youtube.com/watch?v=RlAxtrRrnlQ>`
+`YouTube <https://www.youtube.com/watch?v=RlAxtrRrnlQ>`_
 
 Basic TranSPHIRE setup
 **********************
