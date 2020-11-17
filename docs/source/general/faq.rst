@@ -94,3 +94,12 @@ To check the number of extracted particles click on
 **Visualisation** -> **Plot Extract** -> **Plot per micrograph** -> **accepted** (lower tab row)
 
 Check the **Sum:** field of the data statistics area.
+
+
+How do I cite TranSPHIRE?
+*************************
+
+To cite TranSPHIRE use the following citation:  
+Stabrin, M., Schoenfeld, F., Wagner, T. et al. TranSPHIRE: automated and feedback-optimized on-the-fly processing for cryo-EM. Nat Commun 11, 5716 (2020). https://doi.org/10.1038/s41467-020-19513-2
+
+Please also properly cite the individual tools that you used during the TranSPHIRE run.

@@ -19,6 +19,14 @@
     transphire
 
 
+Citation
+========
+
+*Main paper:*
+Stabrin, M., Schoenfeld, F., Wagner, T. et al. TranSPHIRE: automated and feedback-optimized on-the-fly processing for cryo-EM. Nat Commun 11, 5716 (2020). https://doi.org/10.1038/s41467-020-19513-2
+
+Please also properly cite the individual tools that you used during the TranSPHIRE run.
+
 
 Indices and tables
 ==================
