@@ -157,4 +157,5 @@ texinfo_documents = [
 ]
 
 
-
+# Disable minus sign expansion
+smart_quotes = False
