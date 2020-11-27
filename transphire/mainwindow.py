@@ -781,6 +781,7 @@ class MainWindow(QMainWindow):
         """
         settings_dict = {}
         idx = -1
+        key = None
         while idx < len(settings)-1:
             idx += 1
             if settings[idx][0] == '###':
@@ -794,7 +795,9 @@ class MainWindow(QMainWindow):
             if len(settings[idx]) == 1:
                 settings[idx].append('')
 
-            if key == 'Frames':
+            if key is None:
+                continue
+            elif key == 'Frames':
                 setting = {}
                 setting[settings[idx][0]] = settings[idx][1]
                 for i in range(3):
