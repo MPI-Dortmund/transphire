@@ -120,6 +120,7 @@ Particle picking
     Just provide the link to the executable |crYOLO| file in the TranSPHIRE GUI.
     Those are usually located in `${_CONDA_ROOT}/envs/CRYOLO\_ENV\_NAME/bin`.
     The information how and in which environment to execute the respective executables is provided in the header.
+    Alternatively, the directory path `${_CONDA_ROOT}/envs/CRYOLO\_ENV\_NAME/bin` can be added to the PATH variable.
 
 
 2D classification
@@ -140,6 +141,7 @@ Particle picking
     Just provide the link to the executable |Cinderella| file in the TranSPHIRE GUI.
     Those are usually located in `${_CONDA_ROOT}/envs/CINDERELLA\_ENV\_NAME/bin`.
     The information how and in which environment to execute the respective executables is provided in the header.
+    Alternatively, the directory path `${_CONDA_ROOT}/envs/CINDERELLA\_ENV\_NAME/bin` can be added to the PATH variable.
 
 
 .. include:: ../tutorial/introduction.rst
