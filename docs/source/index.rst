@@ -12,6 +12,7 @@
 
     general/welcome
     general/prerequisites
+    general/changelog
     general/installation
     tutorial/tutorial
     general/faq

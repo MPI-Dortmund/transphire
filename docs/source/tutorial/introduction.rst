@@ -25,7 +25,7 @@ This is especially useful if TranSPHIRE is used in an ``environmental module`` e
 |                               |                                        |                           |
 | Environmental variable        |                                        |                           |
 +===============================+========================================+===========================+
-| \-\-root_directory            | TranSPHIRE root directory.             | The users home directory. |
+| `--root_directory`            | TranSPHIRE root directory.             | The users home directory. |
 |                               |                                        |                           |
 | TRANSPHIRE_ROOT_DIRECTORY     | This is the directory where            |                           |
 |                               |                                        |                           |

@@ -12,6 +12,9 @@ The installation can be divided into three parts.
     2. :ref:`Installation of the dependencies`
     3. :ref:`Basic TranSPHIRE setup`
 
+The TranSPHIRE version changelog can be found here:
+
+    1. :ref:`Installation of TranSPHIRE`
 
 Installation of TranSPHIRE
 **************************
@@ -110,6 +113,14 @@ Particle picking
 
 - |SPHIRE| |crYOLO| version >= 1.0.4 - |NOTFREE|
 
+.. note::
+    |crYOLO| cannot be installed within the TranSPHIRE anaconda environment.
+    Fortunately, this is not a problem, due to the total independence of anaconda environments.
+    After following the installation instructions of |crYOLO| and installed it in a seperate environment just deactivate the |crYOLO| environment and activate the `TranSPHIRE` environment again.
+    Just provide the link to the executable |crYOLO| file in the TranSPHIRE GUI.
+    Those are usually located in `${_CONDA_ROOT}/envs/CRYOLO\_ENV\_NAME/bin`.
+    The information how and in which environment to execute the respective executables is provided in the header.
+
 
 2D classification
 ^^^^^^^^^^^^^^^^^
@@ -121,6 +132,14 @@ Particle picking
 ^^^^^^^^^^^^^^^^^^
 
 - |SPHIRE| |Cinderella| version >= 0.3.1
+
+.. note::
+    |Cinderella| cannot be installed within the TranSPHIRE anaconda environment.
+    Fortunately, this is not a problem, due to the total independence of anaconda environments.
+    After following the installation instructions of |Cinderella| and installed it in a seperate environment just deactivate the |Cinderella| environment and activate the `TranSPHIRE` environment again.
+    Just provide the link to the executable |Cinderella| file in the TranSPHIRE GUI.
+    Those are usually located in `${_CONDA_ROOT}/envs/CINDERELLA\_ENV\_NAME/bin`.
+    The information how and in which environment to execute the respective executables is provided in the header.
 
 
 .. include:: ../tutorial/introduction.rst
