@@ -14,7 +14,7 @@ The installation can be divided into three parts.
 
 The TranSPHIRE version changelog can be found here:
 
-    1. :ref:`Installation of TranSPHIRE`
+    1. :ref:`changelog-page`
 
 Installation of TranSPHIRE
 **************************
