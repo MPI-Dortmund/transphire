@@ -801,7 +801,7 @@ class PlotWidget(QWidget):
                                 self.label,
                                 self.plot_typ,
                                 )
-                            )
+                            ).replace(' ', '_')
                         try:
                             tu.mkdir_p(os.path.dirname(output_name))
                             canvas.mpl_canvas.fig.savefig(output_name)
