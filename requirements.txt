@@ -7,3 +7,4 @@ imageio
 hyperspy
 mrcfile
 PyQt5
+pandas
