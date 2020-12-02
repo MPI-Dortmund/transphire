@@ -8,6 +8,11 @@ Changelog
 Version 1.5
 +++++++++++
 
+Version latest (Current master branch, might be unstable)
+********************************************************
+
+    - Set project pattern as default for the Project Name
+
 Version 1.5.11
 **************
 
