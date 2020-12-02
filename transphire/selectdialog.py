@@ -616,7 +616,7 @@ class SelectDialog(QWidget):
                 out_folder = os.path.join(output_folder, 'png{}'.format(suffix))
                 in_file = '{}{}.hdf'.format(file_name, suffix)
                 tu.mkdir_p(out_folder)
-                cmd = '{} {} {} --outmode=uint16 --unstack'.format(
+                cmd = '{} {} {} --outmode=uint16 --unstacking'.format(
                     self.e2proc2d_exec,
                     in_file,
                     os.path.join(
