@@ -261,7 +261,7 @@ def check_update():
     message_insert = None
     message_template = '{{0}}\nUse:\n"{0} install transphire --upgrade"\nto update!\nTo check the changes visit:\n{1}!'.format(
         pip_path,
-        "http://sphire.mpg.de/wiki/doku.php?id=downloads:transphire_1"
+        "https://transphire.readthedocs.io/en/latest/general/changelog.html"
         )
 
     if current_version == 'XX.XX.XX':
