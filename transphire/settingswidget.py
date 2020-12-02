@@ -93,6 +93,7 @@ class SettingsWidget(QWidget):
                             pattern_example = widget[key][0]
             add_to_tooltip = [self.tooltip]
             if pattern:
+                self.default = pattern
                 add_to_tooltip.extend([
                     'Needs to follow:',
                     pattern,
