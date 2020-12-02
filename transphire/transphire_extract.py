@@ -142,7 +142,7 @@ def create_window_1_2_command(extract_name, file_sum, file_box, file_ctf, output
     command.append(os.path.join(output_dir, '{0}_ptcls.mrcs'.format(file_name)))
     command.append(os.path.join(output_dir, 'png', '{0}_ptcls.mrcs.png').format(file_name))
     command.append('--meanshrink=4')
-    command.append('--unstack')
+    command.append('--unstacking')
     command.append('--outmode=uint16')
     return ' '.join(command)
 
