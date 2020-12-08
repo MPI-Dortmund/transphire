@@ -127,6 +127,7 @@ def create_train_command(sum_folder, box_folder, output_dir, name, settings):
     command.append('--train_image_folder={0}'.format(sum_folder))
     command.append('--train_annot_folder={0}'.format(box_folder))
     command.append('--saved_weights_name={0}'.format(weight_file))
+    command.append('--batch_size={0}'.format(settings[prog_name]['--batch_size']))
     command.append('--pretrained_weights={0}'.format(settings[picking_name]['--weights_old']))
     command.append('--filtered_output={0}'.format(os.path.join(
         settings['project_folder'],
@@ -159,6 +160,7 @@ def create_train_command(sum_folder, box_folder, output_dir, name, settings):
     ignore_list.append('--gpu')
     ignore_list.append('Box size')
     ignore_list.append('--train_times')
+    ignore_list.append('--batch_size')
     ignore_list.append('Maximum micrographs')
     ignore_list.append('Use centered')
 
