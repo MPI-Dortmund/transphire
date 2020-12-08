@@ -244,6 +244,7 @@ def default_cryolo_train_v1_5_8():
         ['--gpu_fraction:Memory usage large', '0.9', float, '', 'PLAIN', 'Rare', 'Specify the fraction of memory per GPU used by crYOLO during prediction. Only values between 0.0 and 1.0 are allowed.'],
         ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Rare', 'NOT A CRYOLO TRAIN OPTION. Split the gpu values specified in --gpu to be able to run mutliple crYOLO jobs in parallel.'],
         ['--train_times', '10', int, '', 'PLAIN', 'Rare', 'How often each image is presented to the network during one epoch. The default should be kept until you have many training images.'],
+        ['--batch_size', '5', int, '', 'PLAIN', 'Rare', 'The number of images crYOLO process in parallel during training. Reduce this number if you encounter memory problems.'],
         ['Maximum micrographs', '50', int, '', 'PLAIN', 'Rare', 'NOT A CRYOLO TRAIN OPTION. Maximum number of randomly selected micrographs to consider for training.'],
         ]
     return items

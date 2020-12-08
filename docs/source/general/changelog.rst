@@ -11,6 +11,8 @@ Version 1.5
 Version latest (Current master branch, might be unstable)
 ********************************************************
 
+    - Expose -\\-batch_size option in cryolo train
+
 Version 1.5.13
 **************
 
