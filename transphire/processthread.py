@@ -5135,7 +5135,10 @@ class ProcessThread(object):
 
         do_checksum = os.path.split(file_in)[0] != self.settings['project_folder']
         if do_checksum:
-            len_data_in, checksum_in = self.get_hash(file_in)
+            try:
+                len_data_in, checksum_in = self.get_hash(file_in)
+            except IsADirectoryError:
+                do_checksum = False
 
         while True:
             tu.copy(file_in, file_out)

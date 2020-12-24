@@ -154,6 +154,12 @@ class InputBox(QDialog):
     def get_restart_dict(self):
         for key in self.restart_content:
             self.restart_content[key] = self.restart_content[key].checkState()
+        ctf_name = self.settings['Copy']['CTF']
+        try:
+            is_movie = self.settings[ctf_name]['Use movies'] == 'True'
+        except KeyError:
+            is_movie = False
+        self.restart_content['is_ctf_movie'] =  is_movie
         return self.restart_content
 
     def setText(self, heading, text):

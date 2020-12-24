@@ -1157,11 +1157,12 @@ class ProcessWorker(QObject):
                         '.*\.box',
                         '.*partres.txt',
                         ]
-                elif restart_dict['Picking'] == 1:
-                    assert False, 'Picking cannot be 1 without CTF be 1'
-                elif restart_dict['CTF'] == 1:
-                    assert False, 'Picking cannot be 1 without CTF be 1'
                 elif restart_dict['Picking'] == 2:
+                    # Only reset picking
+                    remove_patterns = [
+                        '.*\.box',
+                        ]
+                elif restart_dict['Picking'] == 1 and restart_dict['is_ctf_movie']:
                     # Only reset picking
                     remove_patterns = [
                         '.*\.box',
@@ -1171,6 +1172,10 @@ class ProcessWorker(QObject):
                     remove_patterns = [
                         '.*partres.txt',
                         ]
+                elif restart_dict['Picking'] == 1:
+                    assert False, 'Picking cannot be 1 without CTF be 1'
+                elif restart_dict['CTF'] == 1:
+                    assert False, 'Picking cannot be 1 without CTF be 1'
 
             elif check_state == 1 and key == 'Train2d':
                 if restart_dict['Motion'] == 2:
