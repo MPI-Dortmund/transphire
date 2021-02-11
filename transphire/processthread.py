@@ -5132,6 +5132,7 @@ class ProcessThread(object):
 
         tu.mkdir_p(os.path.dirname(file_out))
         counter = 0
+        network_counter = 0
 
         do_checksum = os.path.split(file_in)[0] != self.settings['project_folder']
         if do_checksum:
@@ -5141,7 +5142,16 @@ class ProcessThread(object):
                 do_checksum = False
 
         while True:
-            tu.copy(file_in, file_out)
+            try:
+                tu.copy(file_in, file_out)
+            except Exception:
+                if network_counter >= 5:
+                    raise
+                else:
+                    network_counter += 1
+                    time.sleep(1)
+                    continue
+
             if not do_checksum:
                 break
 
