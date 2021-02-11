@@ -14,6 +14,7 @@ Version latest (Current master branch, might be unstable)
     - Expose -\\-batch_size option in cryolo train
     - Do not do checksum calculations if the input file to copy is a directory
     - Proper restart of Motion with CTF Movie mode
+    - Try to copy 5 times before deciding that a file in not able to copy
 
 Version 1.5.13
 **************
