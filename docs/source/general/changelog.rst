@@ -11,6 +11,7 @@ Version 1.5
 Version latest (Current master branch, might be unstable)
 ********************************************************
 
+    - Fixed a crash with connection refused SMTP error
     - Expose -\\-batch_size option in cryolo train
     - Do not do checksum calculations if the input file to copy is a directory
     - Proper restart of Motion with CTF Movie mode
