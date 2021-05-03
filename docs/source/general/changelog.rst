@@ -11,6 +11,7 @@ Version 1.5
 Version latest (Current master branch, might be unstable)
 ********************************************************
 
+    - Fixed a problem with with GPU SPLIT parameter when unchecked global flag in the GUI GPU parameter
     - Fixed a crash with connection refused SMTP error
     - Expose -\\-batch_size option in cryolo train
     - Do not do checksum calculations if the input file to copy is a directory

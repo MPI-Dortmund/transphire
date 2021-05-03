@@ -196,7 +196,7 @@ def default_cinderella_v0_3_1():
         ['--batch_size', '32', int, '', 'PLAIN', 'Rare', 'Number of mini-batches during prediction.'],
         ['--gpu:GPU', '0', [int]*99, '', 'PLAIN', 'Rare', 'Specifiy which gpu\'s should be used.'],
         ['GPU SPLIT:GPU SPLIT LARGE', '1', int, '', 'PLAIN', 'Rare', 'NOT AN ISAC2 OPTION. Specify how many jobs per GPU.'],
-        ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Rare', 'NOT A CRYOLO OPTION. Split the gpu values specified in --gpu to be able to run mutliple crYOLO jobs in parallel.'],
+        ['Split Gpu?', ['True', 'False'], bool, '', 'COMBO', 'Rare', 'NOT A CINDERELLA OPTION. Split the gpu values specified in --gpu to be able to run mutliple CINDERELLA jobs in parallel.'],
         ]
     return items
 

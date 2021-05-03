@@ -987,7 +987,7 @@ class MainWindow(QMainWindow):
         for entry in settings_widget:
             for name in sorted(list(entry.keys())):
                 if name.endswith('_global'):
-                    if entry[name][0] is not None and entry[name][1] and key != 'Global':
+                    if entry[name][0] is not None and key != 'Global':
                         non_global_names_with_global[entry[name][0]] = name.split('_global')[0]
                     del entry[name]
                     continue
