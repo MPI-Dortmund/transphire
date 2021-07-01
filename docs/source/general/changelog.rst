@@ -11,12 +11,13 @@ Version 1.5
 Version latest (Current master branch, might be unstable)
 ********************************************************
 
+    - Reduce the margin around the logfile box
     - Fixed a problem with with GPU SPLIT parameter when unchecked global flag in the GUI GPU parameter
     - Fixed a crash with connection refused SMTP error
     - Expose -\\-batch_size option in cryolo train
     - Do not do checksum calculations if the input file to copy is a directory
     - Proper restart of Motion with CTF Movie mode
-    - Try to copy 5 times before deciding that a file in not able to copy
+    - Try to copy 5 times before deciding that a file is not able to copy
 
 Version 1.5.13
 **************
