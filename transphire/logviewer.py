@@ -22,6 +22,7 @@ class LogViewer(QWidget):
         global_layout.addWidget(widget)
 
         layout = QVBoxLayout(widget)
+        layout.setContentsMargins(0, 0, 0, 0)
 
         self.project_path = ''
         self.log_path = ''
