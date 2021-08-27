@@ -11,6 +11,7 @@ Version 1.5
 Version latest (Current master branch, might be unstable)
 ********************************************************
 
+    - Fix an telegram issue when the messages do not contain proper key entries
     - Reduce the margin around the logfile box
     - Fixed a problem with with GPU SPLIT parameter when unchecked global flag in the GUI GPU parameter
     - Fixed a crash with connection refused SMTP error

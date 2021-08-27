@@ -471,7 +471,10 @@ class NotificationContainer(QWidget):
         """
         user_dict = {}
         for entry in page:
-            msg = entry['message']
+            try:
+                msg = entry['message']
+            except KeyError:
+                continue
             try:
                 msg['text']
             except KeyError:
