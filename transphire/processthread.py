@@ -2273,6 +2273,7 @@ class ProcessThread(object):
         file_stack = None
         queue_dict = {}
         do_subsum = bool(len(self.settings['motion_frames']) > 1)
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', root_name_input, 'Start loop'))
         for motion_idx, key in enumerate(self.settings['motion_frames']):
             # The current settings that we work with
             motion_frames = copy.deepcopy(self.settings['motion_frames'][key])
@@ -2515,6 +2516,7 @@ class ProcessThread(object):
             zero_list.append(file_stderr)
 
             # Sanity check
+            self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', root_name_input, 'Sanity checks'))
             log_files_scratch = glob.glob('{0}0*'.format(file_log_scratch))
             non_zero_list_scratch.extend(log_files_scratch)
             tus.check_outputs(
@@ -2525,6 +2527,7 @@ class ProcessThread(object):
                 command=command
                 )
 
+            self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', root_name_input, 'Copy DW'))
             if do_dw:
                 if os.path.exists(file_dws_pre_move):
                     tu.copy(file_dws_pre_move, file_dws_post_move)
@@ -2544,6 +2547,7 @@ class ProcessThread(object):
                     command='copy'
                     )
 
+            self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', root_name_input, 'Copy Scratch'))
             if os.path.realpath(self.settings['scratch_motion_folder_feedback_0']) != \
                     os.path.realpath(self.settings['motion_folder_feedback_0']):
                 tu.copy(file_output_scratch, file_output)
@@ -2598,6 +2602,7 @@ class ProcessThread(object):
         except IndexError:
             file_for_jpg = queue_dict[0]['sum'][0]
 
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', root_name_input, 'Plot data'))
         import_name = tu.get_name(file_for_jpg)
         data, data_original = tu.get_function_dict()[self.prog_name]['plot_data'](
             self.prog_name,
@@ -2607,17 +2612,20 @@ class ProcessThread(object):
             import_name
             )
 
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', root_name_input, 'Create Mask'))
         mask = np.in1d(
                 np.array(np.char.rsplit(data['file_name'], '/', 1).tolist())[:, -1],
                 [os.path.basename(queue_dict[0]['sum'][0])]
                 )
 
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', root_name_input, 'Create jpg'))
         tum.create_jpg_file(
             file_for_jpg,
             data_original[mask],
             self.settings,
             )
 
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', root_name_input, 'Check outlier'))
         warnings, skip_list = tus.check_for_outlier(
             dict_name='Motion',
             data=data,
@@ -2646,6 +2654,7 @@ class ProcessThread(object):
             except IndexError:
                 dw_file = None
 
+            self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', root_name_input, 'Combine outputs'))
             output_combine = tum.combine_motion_outputs(
                 data=data,
                 data_original=data_original,
@@ -2672,8 +2681,10 @@ class ProcessThread(object):
                 [self.shared_dict['motion_star_lock'], output_name_star, output_name_star_combined],
                 [self.shared_dict['motion_star_relion3_lock'], output_name_star_relion3, output_name_star_relion3_combined],
                 ]
+            self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', root_name_input, 'Create combines'))
             self.create_combines(combine_list)
 
+            self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', root_name_input, 'Distribute'))
             self.file_to_distribute(file_name=star_files_relion3_meta)
         else:
             pass
@@ -2681,6 +2692,7 @@ class ProcessThread(object):
         if skip_list:
             pass
         else:
+            self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', root_name_input, 'Add to other queues'))
             for motion_idx in queue_dict:
                 for aim in self.content_settings['aim']:
                     *compare, aim_name = aim.split(':')
@@ -2750,6 +2762,7 @@ class ProcessThread(object):
                     else:
                         pass
 
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', root_name_input, 'Remove file stack'))
         if do_subsum:
             os.remove(file_stack)
         else:
