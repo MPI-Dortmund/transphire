@@ -989,6 +989,90 @@ def import_cryolo_v1_2_2(name, name_no_feedback, settings, directory_name, impor
         )
 
 
+def import_cryolo_v1_8_0(name, name_no_feedback, settings, directory_name, import_name='', send_data=None, sub_directory=None, ):
+    """
+    Import picking information for crYOLO v1.8.0.
+
+    Arguments:
+    name - Name of picking program
+    directory_name - Name of the directory to search for files
+
+    Return:
+    Imported data
+    """
+
+    if sub_directory is None:
+        sub_directory=['']
+    box_files = []
+    for dir_name in sub_directory:
+        is_break = False
+        for ext_name in ('cbox', 'box', 'txt'):
+            box_files = glob.glob(os.path.join(
+                directory_name,
+                dir_name,
+                '{0}*.{1}'.format(import_name, ext_name)
+                ))
+            if box_files:
+                is_break = True
+                break
+        if is_break:
+            break
+
+    files_box = np.array(box_files)
+    useable_files = []
+    for file_name in files_box:
+        data_cbox = np.array([0])
+        data_box_x = np.array([0])
+        data_box_y = np.array([0])
+        try:
+            data_imported = np.genfromtxt(file_name)
+        except ValueError:
+            useable_files.append([os.path.splitext(os.path.basename(file_name))[0], 0, data_cbox, data_box_x, data_box_y])
+        except IOError:
+            continue
+        except Exception as e:
+            print('File corrupt: {} - {}'.format(file_name, str(e)))
+        else:
+            if file_name.endswith('.cbox') and data_imported.size != 0:
+                data_cbox = np.atleast_2d(data_imported)[:, 4]
+                data_box_x = np.atleast_2d(data_imported)[:, 5]
+                data_box_y = np.atleast_2d(data_imported)[:, 6]
+            useable_files.append([os.path.splitext(os.path.basename(file_name))[0], data_imported.shape[0], data_cbox, data_box_x, data_box_y])
+
+    useable_files_jpg = [
+        tu.get_name(entry)
+        for entry in glob.glob(os.path.join(directory_name, 'jpg*', '*.jpg'))
+        ]
+    useable_files = [
+        entry
+        for entry in sorted(useable_files)
+        if tu.get_name(entry[0]) in useable_files_jpg
+        ]
+
+    data = np.zeros(
+        len(useable_files),
+        dtype=get_dtype_dict()['Picking']
+        )
+    data = np.atleast_1d(data)
+    file_names = [entry[0] for entry in useable_files]
+    jpgs = sorted([os.path.basename(entry) for entry in glob.glob(os.path.join(directory_name, 'jpg*'))])
+    jpg_names = [';;;'.join([os.path.join(directory_name, jpg_dir_name, '{0}.jpg'.format(entry)) for jpg_dir_name in jpgs]) for entry in file_names]
+    data['file_name'] = file_names
+    data['confidence'] = [entry[2] for entry in useable_files]
+    data['box_x'] = [entry[3] for entry in useable_files]
+    data['box_y'] = [entry[4] for entry in useable_files]
+    data['particles'] = [entry[1] for entry in useable_files]
+    data['image'] = jpg_names
+
+    data_original = None
+
+    data = np.sort(data, order='file_name')
+    if send_data is None:
+        return data, data_original
+    else:
+        send_data.send((data, data_original))
+
+
 def import_cryolo_v1_0_4(name, name_no_feedback, settings, directory_name, import_name='', send_data=None, sub_directory=None, ):
     """
     Import picking information for crYOLO v1.0.4.
