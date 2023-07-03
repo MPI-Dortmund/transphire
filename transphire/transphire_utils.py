@@ -506,6 +506,7 @@ def get_function_dict():
     function_dict['crYOLO >=v1.5.8'] = copy_mod.deepcopy(function_dict['crYOLO >=v1.2.2'])
     function_dict['crYOLO >=v1.5.8']['content'] = tc.default_cryolo_v1_5_8
 
+    function_dict['crYOLO >=v1.8.0'] = copy_mod.deepcopy(function_dict['crYOLO >=v1.2.2'])
     function_dict['crYOLO >=v1.8.0']['plot_data'] = ti.import_cryolo_v1_8_0
 
     ### Extract programs
