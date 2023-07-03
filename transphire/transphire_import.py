@@ -681,12 +681,13 @@ def import_gctf_v1_06(name, name_no_feedback, settings, directory_name, import_n
         tu.get_name(entry)
         for entry in glob.glob(os.path.join(directory_name, 'json*', '*.json'))
         ])
+
     if not import_name: 
         useable_files = [
             file_name
             for file_name in sorted(useable_files)
-            if tu.get_name(file_name) in useable_files_jpg and
-            tu.get_name(file_name) in useable_files_json
+            if tu.get_name(tu.get_name(file_name[0])) in useable_files_jpg and
+            tu.get_name(tu.get_name(file_name[0])) in useable_files_json
             ]
 
     data = np.zeros(
@@ -709,7 +710,7 @@ def import_gctf_v1_06(name, name_no_feedback, settings, directory_name, import_n
 
     jpg_json_data = []
     for entry in sorted(useable_files):
-        file_name_base = tu.get_name(file_name)
+        file_name_base = tu.get_name(tu.get_name(entry[0]))
         jpgs = glob.glob(os.path.join(directory_name, 'jpg*', '{}.jpg'.format(file_name_base)))
         json = glob.glob(os.path.join(directory_name, 'json*', '{}.json'.format(file_name_base)))
         jpg_json_data.append(';;;'.join(jpgs + json))
