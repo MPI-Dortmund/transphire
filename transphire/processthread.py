@@ -5457,11 +5457,8 @@ class ProcessThread(object):
         self.write_error(msg=message_error, root_name=file_name)
 
     def create_combines(self, combine_list, output_queue_dict=None):
-        self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', 'create_combines', 'Start combination'))
         for file_lock, in_file, out_file in combine_list:
-            self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', in_file, out_file, file_lock, 'Wait for lock'))
             file_lock.acquire()
-            self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', in_file, out_file, file_lock, 'Aquired'))
             try:
                 with open(in_file, 'r') as read:
                     if not os.path.exists(out_file):
@@ -5471,7 +5468,6 @@ class ProcessThread(object):
                 self.try_write(out_file, 'a+', ''.join(lines))
             finally:
                 file_lock.release()
-            self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', in_file, out_file, file_lock, 'Released'))
             self.file_to_distribute(file_name=in_file, output_queue_dict=output_queue_dict)
             self.file_to_distribute(file_name=out_file, output_queue_dict=output_queue_dict)
 
