@@ -1983,7 +1983,7 @@ class ProcessThread(object):
         else:
             return bool([entry for entry in check_list if entry])
 
-    def remove_from_translate(self, root_name):
+    def remove_from_translate(self, root_name, output_queue_dict=None):
         """
         Remove line from the translation file.
 
@@ -2012,14 +2012,18 @@ class ProcessThread(object):
         finally:
             self.shared_dict['translate_lock'].release()
 
-        self.file_to_distribute(file_name=file_name)
-        self.file_to_distribute(file_name=file_name_bad)
+        self.file_to_distribute(file_name=file_name, output_queue_dict=output_queue_dict)
+        self.file_to_distribute(file_name=file_name_bad, output_queue_dict=output_queue_dict)
 
-    def file_to_distribute(self, file_name):
+    def file_to_distribute(self, file_name, output_queue_dict=None):
         for copy_name in ('work', 'hdd', 'backup'):
             copy_type = 'Copy_to_{0}'.format(copy_name.lower())
             if not self.settings['Copy']['Copy to {0}'.format(copy_name)] == 'False':
-                self.add_to_queue(aim=copy_type, root_name=file_name)
+                if output_queue_dict is not None:
+                    output_queue_dict.setdefault(copy_type, []).append(file_name)
+                    #self.add_to_queue(aim=copy_type, root_name=file_name)
+                else:
+                    self.add_to_queue(aim=copy_type, root_name=file_name)
             else:
                 pass
 
@@ -2126,7 +2130,7 @@ class ProcessThread(object):
                 else:
                     pass
 
-    def append_to_translate(self, root_name, new_name, xml_file):
+    def append_to_translate(self, root_name, new_name, xml_file, output_queue_dict=None):
         """
         Write to the translation file.
 
@@ -2235,8 +2239,8 @@ class ProcessThread(object):
         finally:
             self.shared_dict['translate_lock'].release()
 
-        self.file_to_distribute(file_name=file_name)
-        self.file_to_distribute(file_name=file_name_bad)
+        self.file_to_distribute(file_name=file_name, output_queue_dict=output_queue_dict)
+        self.file_to_distribute(file_name=file_name_bad, output_queue_dict=output_queue_dict)
 
     def run_motion(self, root_name):
         """
@@ -2247,6 +2251,7 @@ class ProcessThread(object):
         Returns:
         None
         """
+        output_queue_dict = {}
         root_name_input = root_name
         start_prog = time.time()
         self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', root_name_input, 'start process'))
@@ -2634,7 +2639,7 @@ class ProcessThread(object):
             )
 
         if skip_list:
-            self.remove_from_translate(os.path.basename(root_name))
+            self.remove_from_translate(os.path.basename(root_name), output_queue_dict=output_queue_dict)
         else:
             pass
 
@@ -2682,10 +2687,10 @@ class ProcessThread(object):
                 [self.shared_dict['motion_star_relion3_lock'], output_name_star_relion3, output_name_star_relion3_combined],
                 ]
             self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', root_name_input, 'Create combines'))
-            self.create_combines(combine_list)
+            self.create_combines(combine_list, output_queue_dict=output_queue_dict)
 
             self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', root_name_input, 'Distribute'))
-            self.file_to_distribute(file_name=star_files_relion3_meta)
+            self.file_to_distribute(file_name=star_files_relion3_meta, output_queue_dict=output_queue_dict)
         else:
             pass
 
@@ -2718,12 +2723,14 @@ class ProcessThread(object):
                         sum_dws_files = queue_dict[motion_idx]['sum_dws']
                         if '!Compress' in compare:
                             if motion_idx == 0:
-                                self.add_to_queue(aim=aim_name, root_name=file_input)
+                                output_queue_dict.setdefault(aim_name, []).append(file_input)
+                                #self.add_to_queue(aim=aim_name, root_name=file_input)
                             else:
                                 pass
                         elif 'Compress' in compare:
                             if motion_idx == 0:
-                                self.add_to_queue(aim=aim_name, root_name=file_input)
+                                output_queue_dict.setdefault(aim_name, []).append(file_input)
+                                #self.add_to_queue(aim=aim_name, root_name=file_input)
                             else:
                                 pass
                         elif 'Extract' in compare or 'Train2d' in compare:
@@ -2732,10 +2739,11 @@ class ProcessThread(object):
                                     dw_file = sum_dw_files[0]
                                 else:
                                     dw_file = sum_files[0]
-                                self.add_to_queue(
-                                    aim=aim_name,
-                                    root_name=dw_file
-                                    )
+                                output_queue_dict.setdefault(aim_name, []).append(dw_file)
+                                #self.add_to_queue(
+                                #    aim=aim_name,
+                                #    root_name=dw_file
+                                #    )
                             else:
                                 pass
                         elif 'CTF' in compare or 'Picking' in compare:
@@ -2751,17 +2759,21 @@ class ProcessThread(object):
                                 if 'CTF' in compare:
                                     string_list.append('CTF_sum')
                                 string_list.extend([sum_file, dw_file, file_input])
-                                self.add_to_queue(
-                                    aim=aim_name,
-                                    root_name=';;;'.join(string_list)
-                                    )
+                                output_queue_dict.setdefault(aim_name, []).append(';;;'.join(string_list))
+                                #self.add_to_queue(
+                                #    aim=aim_name,
+                                #    root_name=';;;'.join(string_list)
+                                #    )
                             else:
                                 pass
                         else:
-                            self.add_to_queue(aim=aim_name, root_name=sum_files+log_files+sum_dw_files+sum_dws_files)
+                            output_queue_dict.setdefault(aim_name, []).extend(sum_files+log_files+sum_dw_files+sum_dws_files)
+                            #self.add_to_queue(aim=aim_name, root_name=sum_files+log_files+sum_dw_files+sum_dws_files)
                     else:
                         pass
 
+        for aim, files in output_queue_dict.items():
+            self.add_to_queue(aim=aim, root_name=files)
         self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', root_name_input, 'Remove file stack'))
         if do_subsum:
             os.remove(file_stack)
@@ -5330,6 +5342,7 @@ class ProcessThread(object):
 
             self.queue_com['log'].put(tu.create_log(self.name, 'run_command', root_name_input, 'start program'))
             while True:
+                self.queue_com['log'].put(tu.create_log(self.name, 'run_command', root_name_input, 'start try'))
                 self.try_write(log_file, 'w', '{}\n'.format(command))
                 with open(log_file, 'a') as out:
                     with open(err_file, 'w') as err:
@@ -5360,6 +5373,15 @@ class ProcessThread(object):
                 self.delete_file_to_delete(file_to_delete)
                 stop_time = time.time()
                 self.try_write(log_file, 'a', '\nTime: {0} sec'.format(stop_time - start_time)) 
+                self.queue_com['log'].put(
+                    tu.create_log(
+                        self.name,
+                        'run_command',
+                        root_name_input,
+                        'stop try',
+                        '{0} sec'.format(stop_time - start_time)
+                        )
+                    )
                 if self.abort.value:
                     raise UserWarning('STOP: abort')
                 with open(err_file, 'r') as err:
@@ -5372,7 +5394,7 @@ class ProcessThread(object):
                     self.name,
                     'run_command',
                     root_name_input,
-                    'stop program'
+                    'stop program',
                     )
                 )
 
@@ -5434,9 +5456,12 @@ class ProcessThread(object):
             pass
         self.write_error(msg=message_error, root_name=file_name)
 
-    def create_combines(self, combine_list):
+    def create_combines(self, combine_list, output_queue_dict=None):
+        self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', 'create_combines', 'Start combination'))
         for file_lock, in_file, out_file in combine_list:
+            self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', in_file, out_file, file_lock, 'Wait for lock'))
             file_lock.acquire()
+            self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', in_file, out_file, file_lock, 'Aquired'))
             try:
                 with open(in_file, 'r') as read:
                     if not os.path.exists(out_file):
@@ -5446,8 +5471,9 @@ class ProcessThread(object):
                 self.try_write(out_file, 'a+', ''.join(lines))
             finally:
                 file_lock.release()
-            self.file_to_distribute(file_name=in_file)
-            self.file_to_distribute(file_name=out_file)
+            self.queue_com['log'].put(tu.create_log(self.name, 'run_motion', in_file, out_file, file_lock, 'Released'))
+            self.file_to_distribute(file_name=in_file, output_queue_dict=output_queue_dict)
+            self.file_to_distribute(file_name=out_file, output_queue_dict=output_queue_dict)
 
     @staticmethod
     @tu.rerun_function_in_case_of_error
