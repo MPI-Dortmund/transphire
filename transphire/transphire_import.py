@@ -1003,16 +1003,17 @@ def import_cryolo_v1_8_0(name, name_no_feedback, settings, directory_name, impor
     """
 
     if sub_directory is None:
-        sub_directory=['']
+        sub_directory=['CBOX', 'EMAN', 'EMAN_HELIX_SEGMENTED']
     box_files = []
     for dir_name in sub_directory:
         is_break = False
         for ext_name in ('cbox', 'box', 'txt'):
-            box_files = glob.glob(os.path.join(
+            search_path = os.path.join(
                 directory_name,
                 dir_name,
                 '{0}*.{1}'.format(import_name, ext_name)
-                ))
+                )
+            box_files = glob.glob(search_path)
             if box_files:
                 is_break = True
                 break
