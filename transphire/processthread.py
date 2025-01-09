@@ -1158,15 +1158,29 @@ class ProcessThread(object):
         Return:
         Name removed from the queue.
         """
-        is_present = False
-        try:
-            with open(file_name, 'r') as read:
-                is_present = bool(re.search(r'^{0}$'.format(re.escape(root_name)), read.read(), re.MULTILINE))
-        except FileNotFoundError:
-            pass
 
-        if not is_present or allow_dublicate:
-            self.try_write(file_name, 'a', '{0}\n'.format(root_name))
+        if isinstance(root_name, list):
+            root_name_list = root_name
+        else:
+            root_name_list = [root_name]
+
+        if allow_dublicate:
+            # Always write if dublicates are allowed
+            files_to_write = root_name_list
+        else:
+            files_to_write = []
+            try:
+                with open(file_name, 'r') as read:
+                    data = read.read()
+            except FileNotFoundError:
+                pass
+            else:
+                for name in root_name_list:
+                    if not re.search(r'^{0}$'.format(re.escape(name)), data, re.MULTILINE):
+                        files_to_write.append(name)
+
+        if files_to_write:
+            self.try_write(file_name, 'a', '{0}\n'.format("\n".join(files_to_write)))
         else:
             pass
 
@@ -1251,11 +1265,11 @@ class ProcessThread(object):
         try:
             for entry in root_name_list:
                 self.shared_dict['queue'][aim].put(entry, block=False)
-                self.add_to_queue_file(
-                    root_name=entry,
-                    file_name=self.shared_dict['typ'][aim]['save_file'],
-                    allow_dublicate=allow_dublicate,
-                    )
+            self.add_to_queue_file(
+                root_name=root_name_list,
+                file_name=self.shared_dict['typ'][aim]['save_file'],
+                allow_dublicate=allow_dublicate,
+                )
         finally:
             self.shared_dict['typ'][aim]['queue_lock'].release()
 
@@ -1818,6 +1832,7 @@ class ProcessThread(object):
             new_stack
             )
 
+
         log_file, err_file = self.run_command(
             root_name_input=root_name_input,
             command=command,
@@ -1827,6 +1842,7 @@ class ProcessThread(object):
             shell=True
             )
 
+
         tus.check_outputs(
             zero_list=[err_file],
             non_zero_list=[log_file, new_stack],
@@ -1834,6 +1850,7 @@ class ProcessThread(object):
             folder=self.settings['stack_folder'],
             command=command
             )
+
 
         meta_files, frame_files = tus.find_all_files(
             root_name=root_name,
@@ -1845,6 +1862,7 @@ class ProcessThread(object):
             )
 
         all_files = meta_files.union(frame_files)
+
 
         xml_file = None
         log_files = []
@@ -1878,6 +1896,7 @@ class ProcessThread(object):
             log_files.append(new_file)
             self.try_write(log_file, 'a', '\ncp {0} {1}\n'.format(file_entry, new_file))
 
+
         tus.check_outputs(
             zero_list=[],
             non_zero_list=[],
@@ -1888,11 +1907,13 @@ class ProcessThread(object):
 
         log_files.extend([log_file, err_file, new_stack])
 
+
         self.append_to_translate(
             root_name=root_name,
             new_name=new_name_meta,
             xml_file=xml_file
             )
+
 
         for aim in self.content_settings['aim']:
             *compare, aim_name = aim.split(':')
@@ -1934,6 +1955,7 @@ class ProcessThread(object):
             else:
                 pass
 
+
         if self.settings['Copy']['Delete data after import?'] == 'True':
             for file_entry in all_files:
                 try:
@@ -1943,6 +1965,7 @@ class ProcessThread(object):
                     raise BlockingIOError('Cannot remove Frames!')
         else:
             pass
+
 
         self.wait(1)
         self.shared_dict['typ'][self.content_settings['group']]['share_lock'].acquire()
@@ -2232,6 +2255,7 @@ class ProcessThread(object):
                 ))
         self.try_write(file_name, 'a', ''.join(content))
 
+        self.queue_com['log'].put(tu.create_log(self.name, 'append_to_translate', root_name, 'translate_lock'))
         self.shared_dict['translate_lock'].acquire()
         try:
             if first_entry:
@@ -2239,8 +2263,11 @@ class ProcessThread(object):
         finally:
             self.shared_dict['translate_lock'].release()
 
+        self.queue_com['log'].put(tu.create_log(self.name, 'append_to_translate', root_name, 'distribute 1'))
         self.file_to_distribute(file_name=file_name, output_queue_dict=output_queue_dict)
+        self.queue_com['log'].put(tu.create_log(self.name, 'append_to_translate', root_name, 'distribute 2'))
         self.file_to_distribute(file_name=file_name_bad, output_queue_dict=output_queue_dict)
+        self.queue_com['log'].put(tu.create_log(self.name, 'append_to_translate', root_name, 'distribute done'))
 
     def run_motion(self, root_name):
         """
